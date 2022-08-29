@@ -1,0 +1,9 @@
+{%if field.is_array%}
+<ul>
+  {% for value in data %}
+  <li>{{value }}</li>
+  {% endfor %}
+</ul>
+{%else%}
+{{ data }}
+{%endif%}

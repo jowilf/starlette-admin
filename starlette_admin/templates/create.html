@@ -1,0 +1,87 @@
+{% extends "layout.html" %} {%set pk = model.pk_attr%} {%set columns= model.cols('create')
+%} {%if not value%} {%set value = {} %} {%endif%} {% block header %}
+<div class="d-flex justify-content-between align-items-center">
+    <h1>{{ model.label }}</h1>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{{url_for(__name__ ~ ':index')}}">Admin</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{{url_for(__name__ ~ ':list', identity=model.identity)}}">{{ model.label }}</a>
+        </li>
+        <li class="breadcrumb-item active">Create New</li>
+    </ol>
+</div>
+{% endblock%}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form
+                        action="{{request.url | safe}}"
+                        method="POST"
+                        enctype="multipart/form-data"
+                >
+                    <div class="card-header">
+                        <div class="container-fluid">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h3 class="card-title">New {{model.name}}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body border-bottom py-3">
+                        {%for key in columns if not columns[key].exclude_from_create %}
+                        <div class="mb-3">
+                            {%set data = value.getlist(key) if (is_form_value and
+                            columns[key].is_array) else value[key]%} {% with
+                            action='create',data=data,is_form_value=is_form_value,
+                            field=columns[key],error=(errors and
+                            errors.has(key))%} {% include "forms/" ~ columns[key].type ~ ".html" %}
+                            {% endwith %} {%if errors and errors.has(key)%}
+                            <div class="invalid-feedback">{{errors.msg(key)}}</div>
+                            {%endif%}
+                        </div>
+                        {%endfor%}
+                    </div>
+                    <div class="card-footer text-black">
+                        <div class="btn-list ms-auto justify-content-end">
+                            <a href="{{url_for(__name__ ~ ':list', identity=model.identity)}}" class="btn btn-danger">Cancel</a>
+                            <button type="submit" name="_add_another" class="btn btn-outline-secondary">Save and add another</button>
+                            <button type="submit" name="_continue_editing" class="btn btn-outline-secondary">Save and continue editing</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock%}
+{%block head_css%}
+{%if model._need_select2()%}
+<link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/select2.min.css') }}">
+{%endif%}
+{%if model._need_jsoneditor()%}
+<link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/jsoneditor.min.css') }}">
+{%endif%}
+{%endblock%}
+{%block script%}
+{%if model._need_select2()%}
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/select2.min.js') }}"></script>
+{%endif%}
+{%if model._need_jsoneditor()%}
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/jsoneditor.min.js') }}"></script>
+{%endif%}
+<script>
+    $(function () {
+       {%for key in columns if not columns[key].exclude_from_create %}
+          {%set data = value.getlist(key) if (is_form_value and columns[key].is_array) else value[key]%}
+          {% with action='create',data=data,is_form_value=is_form_value, field=columns[key],error=(errors is none)%}
+          {% include "forms/js/" ~ columns[key].type ~ ".js" ignore missing %}
+          {% endwith %}
+      {%endfor%}
+  });
+
+</script>
+{%endblock%}

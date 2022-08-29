@@ -1,0 +1,67 @@
+{% extends "base.html" %} {% import "macros/views.html" as macros with context%} {%
+block body %}
+<div class="page">
+  {% block sidebar %}
+  <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbar-menu"
+        aria-expanded="false"
+        aria-controls="navbar-menu"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <h1 class="navbar-brand navbar-brand-autodark">
+        <a class="brand-link" href="{{ url_for(__name__ ~ ':index')}}">
+          {% if logo_url %}
+          <img
+            src="{{logo_url}}"
+            width="110"
+            height="32"
+            alt="Tabler"
+            class="navbar-brand-image"
+          />
+          {% else %}
+          <h3>{{ title }}</h3>
+          {% endif %}
+        </a>
+      </h1>
+      <div class="collapse navbar-collapse" id="navbar-menu">
+        <ul class="navbar-nav pt-lg-3">
+          {% for view in views if view.is_accessible(request) %}
+          {%if (view| is_link)%}
+          {{macros.extern_link(view)}}
+          {%elif (view| is_custom_view)%}
+          {{macros.custom_link(view)}} {%elif (view| is_model)%}
+          {{macros.model_link(view)}} {%elif (view | is_dropdown)%}
+          {{macros.dropdown_link(view)}} {%endif%} {% endfor %}
+          {% if is_auth_enabled %}
+          <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="btn btn-light mx-1 mt-2">
+            <i class="fa fa-sign-out"></i>
+            <span class="ms-2">Logout</span>
+          </a>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </aside>
+  {% endblock %}
+  <div class="page-wrapper">
+    <div class="container-fluid">
+      <div class="page-header d-print-none">
+        {% block header %}{% endblock %}
+      </div>
+    </div>
+    <div class="page-body flex-grow-1">
+      <div class="container-fluid">
+        <div class="row row-deck row-cards">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,3 @@
+{% include "forms/_label.html" %}
+<div id="{{field.name}}" class="{%if error%}is-invalid{%endif%}" style="height: 20em"></div>
+<input type="text" name="{{field.name}}" value="{{ data if is_form_value else ((data|tojson) if data else '{}')}}" hidden />

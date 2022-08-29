@@ -1,0 +1,10 @@
+{% include "forms/_label.html" %}
+<input type="file" class="form-control {%if
+error%}is-invalid{%endif%}" id="{{field.name}}" name="{{field.name}}" {%if field.is_array%}
+multiple {%endif%} />
+{%if action=='edit' and not is_form_value and value[key] %}
+<div class="mt-2 border p-2">
+{% include "displays/file.html" %}
+{% include "forms/_delete.html" %}
+</div>
+{%endif%}

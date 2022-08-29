@@ -1,0 +1,147 @@
+{% extends "layout.html" %} {% block header %}
+<div class="d-flex justify-content-between align-items-center">
+    <h1>{{ model.label }}</h1>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{{ url_for(__name__ ~ ':index')}}">Admin</a>
+        </li>
+        <li class="breadcrumb-item active">{{ model.label }}</li>
+    </ol>
+</div>
+{% endblock %} {% block modal %} {% include "modals/loading.html" %} {% include
+"modals/error.html" %} {% include "modals/delete.html" %} {% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div id="btn_container" class="card-title"></div>
+                    <div class="card-actions">
+                        <div class="btn-list">
+                        {%if model.can_delete(request)%}
+                        <button
+                                id="multi-delete-btn"
+                                class="btn btn-danger btn-block ms-2"
+                                style="display: none"
+                        >
+                            <i class="fa-solid fa-trash me-2"></i>
+                            (<span>0</span>)
+                        </button>
+                        {%endif%}
+                        {%if model.can_create(request)%}
+                        <a
+                                href="{{ url_for(__name__ ~ ':create', identity=model.identity)}}"
+                                class="btn btn-primary btn-block ms-2"
+                        >
+                            <i class="fa-solid fa-plus me-2"></i>
+                            New {{ model.name }}
+                        </a>
+                        {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="d-flex m-3">
+                        <div class="text-muted">
+                            Show
+                            <div class="mx-1 d-inline-block">
+                                <div id="pageLength_container"></div>
+                            </div>
+                            entries
+                        </div>
+                        <div class="ms-auto text-muted">
+                            <div class="ms-2 d-inline-block">
+                                <div class="input-icon">
+              <span class="input-icon-addon">
+                <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                     stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path
+                        stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7"/><line x1="21"
+                                                                                                          y1="21"
+                                                                                                          x2="15"
+                                                                                                          y2="15"/></svg>
+              </span>
+                                    <input type="search" id="searchInput" value="" class="form-control"
+                                           placeholder="Search…"
+                                           aria-label="Search in list">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table id="dt" class="table table-vcenter text-nowrap">
+                        <thead>
+                        <tr id="table-header">
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                    </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block head_css %}
+<link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/dt.min.css') }}">
+<link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/dt.checkboxes.css') }}">
+<style>
+    div.dataTables_wrapper div.dataTables_info {
+        padding-top: 0;
+    }
+    table.dataTable span.highlight {
+      background-color: #FFFF88;
+      border-radius: 0.28571429rem;
+    }
+
+    table.dataTable span.column_highlight {
+      background-color: #ffcc99;
+      border-radius: 0.28571429rem;
+    }
+</style>
+{% endblock %}
+{% block script %}
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/moment.min.js') }}"></script>
+{% if 'pdf' in model.export_types%}
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/pdfmake.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vfs_fonts.js') }}"></script>
+{% endif %}
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/dt.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/dt.checkboxes.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/dt.searchHighlight.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
+<script>
+  $(function () {
+      {%set columns= model.cols() %}
+      var selectedRows = [];
+      var columns = JSON.parse(`{{model.cols() | tojson | safe}}`);
+      console.log(columns);
+      var exportTypes = JSON.parse(`{{model.export_types | tojson | safe}}`)
+      var columnVisibility = {{'true' if model.column_visibility else 'false'}};
+      var searchBuilder = {{'true' if model.search_builder else 'false'}};
+      var lengthMenu = JSON.parse(`{{model._length_menu() | tojson | safe}}`)
+      var pk = '{{model.pk_attr}}';
+      var can_delete = {{model.can_delete(request) | tojson}}
+      var can_edit = {{model.can_edit(request) | tojson}}
+      Object.keys(columns).forEach((key) => {
+        $("#table-header").append(`<th>${columns[key].label}</th>`);
+      });
+      {% include "dt/buttons.js" %}
+      {% include "dt/searchBuilder.js" %}
+
+      dt_columns = [];
+      {% include "dt/render/_col_0.js" %}
+      {% include "dt/render/_col_1.js" %}
+      {%for key in columns if not columns[key].exclude_from_list%}
+      {% with field=columns[key] %}
+      {% include "dt/render/" ~ columns[key].type ~ ".js" %}
+      {% endwith %}
+      {%endfor%}
+      //console.log(dt_columns);
+      {% include "dt/table.js" %}
+      $('[data-toggle="tooltip"]').tooltip()
+
+  });
+</script>
+{% endblock %}

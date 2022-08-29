@@ -1,0 +1,9 @@
+{% include "forms/_label.html" %}
+<select id="{{field.name}}" name="{{field.name}}" class="form-control form-select {%if error%}is-invalid{%endif%}" data-tags="true"
+    multiple>
+    {% if data %}
+    {% for value in data %}
+    <option selected="selected">{{value}}</option>
+    {%endfor%}
+    {%endif%}
+</select>
