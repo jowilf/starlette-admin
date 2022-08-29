@@ -1,0 +1,7 @@
+{%if field.is_array %}
+{% include "forms/tags.html" %}
+{% else %}
+{% include "forms/_label.html" %}
+<input id="{{field.name}}" name="{{field.name}}" type="email" class="form-control {%if error%}is-invalid{%endif%}"
+    placeholder="{{field.label}}" value="{{data or '' }}"  {%if field.required%}required{%endif%} />
+{% endif %}

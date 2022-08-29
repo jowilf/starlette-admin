@@ -1,0 +1,7 @@
+{% include "forms/_label.html" %}
+<select id="{{field.name}}" name="{{field.name}}" data-allow-clear="true" data-placeholder="Select a {{field.label}}"
+    class="form-control form-select {%if error%}is-invalid{%endif%}" {%if field.is_array%}multiple{%endif%}>
+    {%for enum_item in field['values']%}
+    <option value="{{enum_item.value}}" {{'selected="selected"' if (enum_item.value in (value[key] if field.is_array else [value[key]])) else ''}}>{{enum_item.name}}</option>
+    {%endfor%}
+</select>

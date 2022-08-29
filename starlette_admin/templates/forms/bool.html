@@ -1,0 +1,4 @@
+{% include "forms/_label.html" %}
+<label class="form-check form-switch">
+    <input id="{{field.name}}" name="{{field.name}}" class="form-check-input" type="checkbox" {{'checked' if data else ''}} />
+</label>

@@ -1,0 +1,138 @@
+{% extends "layout.html" %} {%set pk = model.pk_attr%} {% set columns =
+model.cols('detail') %} {% block header %}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1>{{ model.label }}</h1>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{{ url_for(__name__ ~ ':index')}}">Admin</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{{ url_for(__name__ ~ ':list', identity=model.identity)}}">{{ model.label }}</a>
+        </li>
+        <li class="breadcrumb-item active">Detail</li>
+    </ol>
+</div>
+{% endblock %} {% block modal %} {% include "modals/loading.html" %} {% include
+"modals/error.html" %} {% include "modals/delete.html" %} {% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        {{pk | upper}}: <strong>{{ value[pk] }}</strong>
+                    </h3>
+                    <div class="card-actions">
+                        <div class="btn-list">
+                        {%if model.can_edit(request)%}
+                        <a href="{{ url_for(__name__ ~ ':edit', identity=model.identity,pk=value[pk])}}">
+                            <button type="button" class="btn btn-primary btn-block me-2">
+                                <i class="fa-solid fa-edit me-2"></i>
+                                Edit
+                            </button>
+                        </a>
+                        {%endif%}
+                        {%if model.can_delete(request)%}
+                        <button
+                                id="delete-btn"
+                                type="button"
+                                class="btn btn-danger btn-block"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modal-delete"
+                        >
+                            <i class="fas fa-trash-alt me-2"></i>
+                            Delete
+                        </button>
+                        {%endif%}
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table
+                                class="table table-bordered table-vcenter table-mobile-md"
+                        >
+                            <thead>
+                            <tr>
+                                <th>Attribute</th>
+                                <th>Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for key in columns if not (columns[key].exclude_from_detail or
+                            key == pk)%}
+                            <tr>
+                                <td data-label="Attribute">
+                                    <div>
+                                        <strong>{{columns[key].label}}</strong>
+                                    </div>
+                                </td>
+                                <td data-label="Value">
+                                    {% with data=value[key], field=columns[key] %}
+                                    {% if data == None%}
+                                    {% include "displays/_null.html" %}
+                                    {%elif field.is_array and (data |length) ==0%}
+                                    {% include "displays/_empty.html" %} {%else%}
+                                    {% include "displays/" ~ field.type ~ ".html" %}
+                                    {%endif%}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% for key in columns if not columns[key].exclude_from_list %} {% set
+                    params = columns[key] %}
+                    <div class="mb-3"></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
+
+<script>
+  $(function () {
+
+
+    {%for key in columns if not (columns[key].exclude_from_list or key == pk) %}
+      {%set data = value[key]%}
+      {% with data=data, field=columns[key]%}
+      {% include "displays/js/" ~ columns[key].type ~ ".js" ignore missing %}
+      {% endwith %}
+    {%endfor%}
+
+    $("#modal-delete-btn").click(function () {
+      $("#modal-delete").modal('hide');
+      $("#modal-loading").modal('show');
+      fetch("{{ url_for(__name__ ~ ':api', identity=model.identity)  | safe}}?pks={{value[pk]}}", {
+        method: "DELETE",
+      }).then(async response => {
+        if (response.ok) {
+          await new Promise(r => setTimeout(r, 500));
+          $("#modal-loading").modal('hide')
+          window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity)  | safe}}")
+        } else
+          return Promise.reject();
+
+      }).catch(async (error) => {
+        await new Promise(r => setTimeout(r, 500));
+        $("#modal-loading").modal('hide')
+        $("#modal-error").modal('show');
+      });
+    });
+  })
+
+
+
+
+</script>
+{% endblock %}

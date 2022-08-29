@@ -1,0 +1,8 @@
+{% include "forms/_label.html" %}
+{%if field.multiline%}
+<textarea id="{{field.name}}" data-bs-toggle="autosize" name="{{field.name}}" class="form-control {%if error%}is-invalid{%endif%}" rows="6"
+    placeholder="{{field.label}}...">{%if data%}{{data}}{%endif%}</textarea>
+{%else%}
+<input id="{{field.name}}" name="{{field.name}}" type="{{field.input_type}}" class="form-control {%if error%}is-invalid{%endif%}"
+    placeholder="{{field.label}}" value="{{data or '' }}" {%if field.required%}required{%endif%} />
+{%endif%}

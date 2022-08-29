@@ -1,0 +1,98 @@
+name: Test suite
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  tests:
+    name: "Python ${{ matrix.python-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.7" , "3.8", "3.9", "3.10" ]
+
+    services:
+      mongodb:
+        image: mongo
+        ports:
+          - 27017:27017
+
+      minio:
+        image: minio/minio:edge-cicd
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: username
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_USER: username
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
+
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install poetry
+        run: |
+          python -m pip install --upgrade pip
+          curl -sSL https://install.python-poetry.org | python3 -
+      - name: Configure poetry
+        run: poetry config virtualenvs.create false
+      - name: Install dependencies
+        run: poetry install
+      - name: Lint
+        run: poetry run bash scripts/lint.sh
+      - name: Test Local Storage provider & postgresql
+        env:
+          ENGINE: 'postgresql+psycopg2://username:password@localhost:5432/test_db'
+          STORAGE_PROVIDER: 'LOCAL'
+          LOCAL_PATH: '/tmp/storage'
+          MONGO_URL: 'mongodb://localhost:27017/test_db'
+        run: poetry run coverage run -m pytest tests
+      - name: Test Local Storage provider & mysql
+        env:
+          ENGINE: 'mysql+pymysql://username:password@localhost:3306/test_db'
+          STORAGE_PROVIDER: 'LOCAL'
+          LOCAL_PATH: '/tmp/storage'
+          MONGO_URL: 'mongodb://localhost:27017/test_db'
+        run: poetry run coverage run -m pytest tests
+      - name: Test Minio Storage provider & sqlite memory
+        env:
+          ENGINE: 'sqlite:///test.db?check_same_thread=False'
+          STORAGE_PROVIDER: 'MINIO'
+          MINIO_KEY: 'minioadmin'
+          MINIO_SECRET: 'minioadmin'
+          MINIO_HOST: 'localhost'
+          MINIO_PORT: 9000
+          MINIO_SECURE: false
+          MONGO_URL: 'mongodb://localhost:27017/test_db'
+        run: poetry run coverage run -m pytest tests
+      - name: Coverage Report
+        run: poetry run bash scripts/coverage.sh
+#      - name: Upload coverage
+#        uses: codecov/codecov-action@v3

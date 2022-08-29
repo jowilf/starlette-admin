@@ -1,0 +1,9 @@
+{%if field.is_array%}
+<ul>
+  {% for value in data %}
+  <li><a href="mailto:{{value }}">{{value }}</a></li>
+  {% endfor %}
+</ul>
+{%else%}
+<a href="mailto:{{ data }}">{{ data }}</a>
+{%endif%}

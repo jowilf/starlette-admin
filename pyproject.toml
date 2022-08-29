@@ -1,0 +1,92 @@
+[tool.poetry]
+name = "starlette-admin"
+version = "0.0.2"
+description = "Simple and extensible admin interface framework for Starlette/FastApi"
+authors = ["Jocelin Hounon <hounonj@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://jowilf.github.io/starlette-admin"
+repository = "https://github.com/jowilf/starlette-admin"
+keywords = ["sqlalchemy","mongoengine","starlette", "fastapi", "admin", "datatables"]
+classifiers = [
+    'Development Status :: 4 - Beta',
+    "Framework :: AsyncIO",
+    'Environment :: Web Environment',
+    'Intended Audience :: Developers',
+    "License :: OSI Approved :: MIT License",
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.7"
+starlette = "*"
+Jinja2 = "*"
+python-multipart = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+sqlmodel = "^0.0.6"
+SQLAlchemy="1.4.35"
+fastapi = "^0.81.0"
+uvicorn = "^0.18.3"
+PyMySQL = { extras = ["rsa"], version = "^1.0.2" }
+Pillow = "^9.2.0"
+fasteners = "^0.17.3"
+mongoengine = "^0.24.2"
+black = "^22.6.0"
+isort = "^5.10.1"
+mypy = "^0.971"
+sqlalchemy-file = "^0.1.2"
+coverage = "^6.4.4"
+flake8 = "^3.9.2"
+async-asgi-testclient = "^1.4.11"
+pytest-asyncio = "^0.19.0"
+psycopg2-binary = "^2.9.3"
+mkdocs-material = "^8.4.2"
+mkdocstrings = {extras = ["python"], version = "^0.19.0"}
+itsdangerous = "^2.1.2"
+
+[tool.coverage.report]
+fail_under = 99
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError"
+]
+
+[tool.coverage.run]
+parallel = true
+command_line = "-m pytest"
+source = ["starlette_admin", "tests"]
+
+[tool.isort]
+profile = "black"
+known_third_party = ["starlette_admin"]
+
+
+[tool.mypy]
+disallow_untyped_calls = false
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+implicit_reexport = false
+strict_equality = true
+ignore_missing_imports = true
+show_error_codes = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

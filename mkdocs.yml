@@ -1,0 +1,74 @@
+site_name: Starlette Admin
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - search.suggest
+    - search.highlight
+    - navigation.tabs
+    - content.tabs.link
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_root_heading: true
+            show_source: false
+
+watch:
+  - starlette_admin
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Overview: 'index.md'
+  - Tutorial - User Guide:
+      - Configurations:
+          - Admin: 'tutorial/configurations/admin.md'
+          - ModelView: 'tutorial/configurations/modelview.md'
+          - CustomView, Link, Dropdown: 'tutorial/configurations/other-views.md'
+      - Handling Files: 'tutorial/files.md'
+      - Authentication: 'tutorial/authentication.md'
+      - Multiple Admin: 'tutorial/multiple-admin.md'
+  - Advanced User Guide:
+      - Custom Field: 'advanced/custom-field.md'
+      - Extending BaseModelView: 'advanced/base-model-view.md'
+  - API Reference:
+      - Fields: 'api/fields.md'
+      - Views: 'api/views.md'
+      - BaseAdmin: 'api/base-admin.md'
+      - AuthProvider: 'api/auth-provider.md'
+
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jowilf
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/jowilf
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/jocelin-hounon-2008aa139

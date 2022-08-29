@@ -1,0 +1,1 @@
+{%if action=='edit'%} {% include "forms/js/_delete.js" %} {%endif%}
