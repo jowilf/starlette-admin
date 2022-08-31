@@ -1,4 +1,8 @@
 site_name: Starlette Admin
+site_description: Simple and extensible admin interface framework for Starlette/FastApi. Design to work with any ORM
+site_url: https://jowilf.github.io/starlette-admin
+repo_name: jowilf/starlette-admin
+repo_url: https://github.com/jowilf/starlette-admin
 theme:
   name: material
   palette:

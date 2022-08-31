@@ -12,3 +12,5 @@ coverage.xml
 site
 *.db
 .cache
+__pycache__/
+.pytest_cache/

@@ -55,7 +55,7 @@ class PostView(BaseModelView):
 ```
 
 !!! important
-`identity` is used to identify the model associated to this view and should be unique.
+     `identity` is used to identify the model associated to this view and should be unique.
 
 ## Primary key
 
