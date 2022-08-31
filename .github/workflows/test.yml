@@ -94,5 +94,5 @@ jobs:
         run: poetry run coverage run -m pytest tests
       - name: Coverage Report
         run: poetry run bash scripts/coverage.sh
-#      - name: Upload coverage
-#        uses: codecov/codecov-action@v3
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3

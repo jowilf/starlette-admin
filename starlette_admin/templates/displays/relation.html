@@ -1,4 +1,4 @@
-<div class="d-flex flex-row">
+<div class="d-flex flex-wrap">
     {% for v in (data if field.many else [data]) %}
     {% set foreign_model = (field.identity | to_model)%}
     <a class="m-1 py-1 px-2 badge bg-blue-lt lead"
