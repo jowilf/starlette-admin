@@ -1,6 +1,8 @@
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
+
+from starlette_admin.helpers import html_params
 
 
 @dataclass
@@ -25,7 +27,7 @@ class BaseField:
 
     name: str
     label: Optional[str] = None
-    type: Optional[str] = None
+    type: str = "BaseField"
     search_builder_type: Optional[str] = "default"
     required: Optional[bool] = False
     is_array: Optional[bool] = False
@@ -35,6 +37,11 @@ class BaseField:
     exclude_from_edit: Optional[bool] = False
     searchable: Optional[bool] = True
     orderable: Optional[bool] = True
+    render_js: str = "js/text.js"
+    form_template: str = "forms/input.html"
+    form_js: Optional[str] = None
+    display_template: str = "displays/text.html"
+    display_js: Optional[str] = None
 
     def __post_init__(self) -> None:
         if self.label is None:
@@ -46,40 +53,72 @@ class BaseField:
 
 @dataclass
 class BooleanField(BaseField):
-    type: str = "bool"
+    type: str = "BooleanField"
     search_builder_type: Optional[str] = "bool"
-
-
-@dataclass
-class NumberField(BaseField):
-    type: str = "num"
-    search_builder_type: str = "num"
-
-
-@dataclass
-class IntegerField(NumberField):
-    pass
-
-
-@dataclass
-class DecimalField(NumberField):
-    decimal: bool = True
+    render_js: str = "js/bool.js"
+    form_template: str = "forms/boolean.html"
+    display_template: str = "displays/boolean.html"
 
 
 @dataclass
 class StringField(BaseField):
-    type: str = "text"
-    input_type = "text"
+    type: str = "StringField"
     search_builder_type: Optional[str] = "string"
+    input_type = "text"
+    class_ = "field-string form-control"
+    error_class = "is-invalid"
+    help_text: Optional[str] = None
+    render_js: str = "js/text.js"
+    form_template: str = "forms/input.html"
+    display_template: str = "displays/text.html"
+
+    def input_params(self):
+        return html_params(dict(type=self.input_type))
+
+
+@dataclass
+class _NumberField(StringField):
+    type: str = "NumberField"
+    search_builder_type: str = "num"
+    input_type = "number"
+    max: Optional[int] = None
+    min: Optional[int] = None
+    step: Union[str, int, None] = None
+
+    def input_params(self):
+        return html_params(
+            dict(type=self.input_type, min=self.min, max=self.max, step=self.step)
+        )
+
+
+@dataclass
+class IntegerField(_NumberField):
+    type: str = "IntegerField"
+    class_ = "field-integer form-control"
+
+
+@dataclass
+class DecimalField(_NumberField):
+    type: str = "DecimalField"
+    step = "any"
+    class_ = "field-decimal form-control"
 
 
 @dataclass
 class TextAreaField(StringField):
-    multiline: bool = True
+    type: str = "TextAreaField"
+    maxlength: Optional[int] = None
+    minlength: Optional[int] = None
+    class_ = "field-textarea form-control"
+
+    form_template: str = "forms/textarea.html"
+
+    def input_params(self):
+        return html_params(dict(minlength=self.minlength, maxlength=self.maxlength))
 
 
 @dataclass
-class TagsField(StringField):
+class TagsField(BaseField):
     """Use select2 tags for form"""
 
     type: str = "tags"
@@ -122,12 +161,12 @@ class EnumField(BaseField):
 
     @classmethod
     def from_enum(
-        cls,
-        name: str,
-        enum_type: Type[Enum],
-        is_array: bool = False,
-        searchable: bool = True,
-        search_builder_type: Optional[str] = "string",
+            cls,
+            name: str,
+            enum_type: Type[Enum],
+            is_array: bool = False,
+            searchable: bool = True,
+            search_builder_type: Optional[str] = "string",
     ) -> "EnumField":
         values = list(map(lambda e: dict(name=e.name, value=e.value), enum_type))  # type: ignore
         return cls(

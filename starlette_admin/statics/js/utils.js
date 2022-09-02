@@ -1,16 +1,17 @@
-var __entityMap = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;",
-  "/": "&#x2F;",
-};
 String.prototype.escape = function () {
+  let __entityMap = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+    "/": "&#x2F;",
+  };
   return String(this).replace(/[&<>"'\/]/g, function (s) {
     return __entityMap[s];
   });
 };
+
 function get_file_icon(mimeType) {
   mapping = {
     image: "fa-file-image",

@@ -1,0 +1,8 @@
+<div>
+    <input name="{{field.name}}" type="{{field.input_type}}"
+           class="{{field.class_}} {%if error%}{{field.error_class}}{%endif%}"
+           placeholder="{{field.label}}" value="{{data or '' }}" {%if field.required%}required{%endif%}/>
+    {% if field.help_text %}
+    <small class="form-hint">{{field.help_text}}</small>
+    {%endif%}
+</div>
