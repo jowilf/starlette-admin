@@ -1,17 +1,3 @@
-String.prototype.escape = function () {
-  let __entityMap = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-    "/": "&#x2F;",
-  };
-  return String(this).replace(/[&<>"'\/]/g, function (s) {
-    return __entityMap[s];
-  });
-};
-
 function get_file_icon(mimeType) {
   mapping = {
     image: "fa-file-image",
@@ -46,12 +32,7 @@ function get_file_icon(mimeType) {
     }
   return "fa-file";
 }
-function null_column() {
-  return '<span class="text-center text-muted">-null-</span>';
-}
-function empty_column() {
-  return '<span class="text-center text-muted">-empty-</span>';
-}
+
 function pretty_print_json(data) {
   var jsonLine = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/gm;
   var replacer = function (match, pIndent, pKey, pVal, pEnd) {

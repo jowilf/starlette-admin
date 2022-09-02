@@ -1,3 +1,0 @@
-{% include "forms/_label.html" %}
-<input id="{{field.name}}" name="{{field.name}}" type="number" class="form-control {%if error%}is-invalid{%endif%}"
-    placeholder="{{field.label}}" value="{{data or '' }}" {%if field.decimal%}step="any"{%endif%}  {%if field.required%}required{%endif%} />

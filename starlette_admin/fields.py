@@ -27,25 +27,24 @@ class BaseField:
 
     name: str
     label: Optional[str] = None
-    type: str = "BaseField"
+    type: Optional[str] = None
     search_builder_type: Optional[str] = "default"
     required: Optional[bool] = False
-    is_array: Optional[bool] = False
     exclude_from_list: Optional[bool] = False
     exclude_from_detail: Optional[bool] = False
     exclude_from_create: Optional[bool] = False
     exclude_from_edit: Optional[bool] = False
     searchable: Optional[bool] = True
     orderable: Optional[bool] = True
-    render_js: str = "js/text.js"
+    render_function_key: str = "text"
     form_template: str = "forms/input.html"
-    form_js: Optional[str] = None
     display_template: str = "displays/text.html"
-    display_js: Optional[str] = None
 
     def __post_init__(self) -> None:
         if self.label is None:
             self.label = self.name.replace("_", " ").capitalize()
+        if self.type is None:
+            self.type = type(self).__name__
 
     def dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -53,32 +52,33 @@ class BaseField:
 
 @dataclass
 class BooleanField(BaseField):
-    type: str = "BooleanField"
     search_builder_type: Optional[str] = "bool"
-    render_js: str = "js/bool.js"
+    render_function_key: str = "boolean"
     form_template: str = "forms/boolean.html"
     display_template: str = "displays/boolean.html"
 
 
 @dataclass
 class StringField(BaseField):
-    type: str = "StringField"
     search_builder_type: Optional[str] = "string"
     input_type = "text"
     class_ = "field-string form-control"
     error_class = "is-invalid"
+    placeholder: Optional[str] = None
     help_text: Optional[str] = None
-    render_js: str = "js/text.js"
-    form_template: str = "forms/input.html"
-    display_template: str = "displays/text.html"
 
     def input_params(self):
-        return html_params(dict(type=self.input_type))
+        return html_params(
+            dict(
+                type=self.input_type,
+                placeholder=self.placeholder,
+                required=self.required,
+            )
+        )
 
 
 @dataclass
-class _NumberField(StringField):
-    type: str = "NumberField"
+class NumberField(StringField):
     search_builder_type: str = "num"
     input_type = "number"
     max: Optional[int] = None
@@ -87,26 +87,31 @@ class _NumberField(StringField):
 
     def input_params(self):
         return html_params(
-            dict(type=self.input_type, min=self.min, max=self.max, step=self.step)
+            dict(
+                type=self.input_type,
+                min=self.min,
+                max=self.max,
+                step=self.step,
+                placeholder=self.placeholder,
+                required=self.required,
+            )
         )
 
 
 @dataclass
-class IntegerField(_NumberField):
-    type: str = "IntegerField"
+class IntegerField(NumberField):
     class_ = "field-integer form-control"
 
 
 @dataclass
-class DecimalField(_NumberField):
-    type: str = "DecimalField"
+class DecimalField(NumberField):
     step = "any"
     class_ = "field-decimal form-control"
 
 
 @dataclass
 class TextAreaField(StringField):
-    type: str = "TextAreaField"
+    rows: int = 6
     maxlength: Optional[int] = None
     minlength: Optional[int] = None
     class_ = "field-textarea form-control"
@@ -114,15 +119,25 @@ class TextAreaField(StringField):
     form_template: str = "forms/textarea.html"
 
     def input_params(self):
-        return html_params(dict(minlength=self.minlength, maxlength=self.maxlength))
+        return html_params(
+            dict(
+                rows=self.rows,
+                minlength=self.minlength,
+                maxlength=self.maxlength,
+                placeholder=self.placeholder,
+                required=self.required,
+            )
+        )
 
 
 @dataclass
 class TagsField(BaseField):
-    """Use select2 tags for form"""
+    """Use select2 tags for form
+    Will return List[str]
+    """
 
-    type: str = "tags"
-    is_array: Optional[bool] = True
+    form_template: str = "forms/tags.html"
+    form_js = "js/field/forms/tags.js"
 
 
 @dataclass
@@ -131,7 +146,9 @@ class EmailField(StringField):
     The field itself doesn't validate data
     """
 
-    type: str = "email"
+    input_type = "email"
+    render_function_key = "email"
+    class_ = "field-email form-control"
 
 
 @dataclass
@@ -139,10 +156,11 @@ class PhoneField(StringField):
     """<input type='phone'>"""
 
     input_type = "phone"
+    class_ = "field-phone form-control"
 
 
 @dataclass
-class EnumField(BaseField):
+class EnumField(StringField):
     """Enum field.
     Example:
         ```Python
@@ -151,94 +169,117 @@ class EnumField(BaseField):
             ONGOING = "ongoing"
             DONE = "done"
 
-        field = EnumField.from_enum("field_name", Status)
+        class MyModel:
+            status: Optional[Status] = None
+
+        class MyModelView(ModelView):
+            fields = [EnumField.from_enum("status", Status)]
         ```
     """
 
-    type: str = "enum"
-    search_builder_type: Optional[str] = "string"
-    values: List[Dict[str, str]] = field(default_factory=list)
+    multiple: bool = False
+    choices: List[Dict[str, str]] = field(default_factory=list)
+    form_template: str = "forms/enum.html"
 
     @classmethod
     def from_enum(
-            cls,
-            name: str,
-            enum_type: Type[Enum],
-            is_array: bool = False,
-            searchable: bool = True,
-            search_builder_type: Optional[str] = "string",
+        cls,
+        name: str,
+        enum_type: Type[Enum],
+        multiple: bool = False,
+        **kwargs: Dict[str, Any]
     ) -> "EnumField":
-        values = list(map(lambda e: dict(name=e.name, value=e.value), enum_type))  # type: ignore
-        return cls(
-            name,
-            values=values,
-            is_array=is_array,
-            searchable=searchable,
-            search_builder_type=search_builder_type,
-        )
+        choices = list(map(lambda e: dict(name=e.name, value=e.value), enum_type))  # type: ignore
+        return cls(name, choices=choices, multiple=multiple, **kwargs)
+
+    @classmethod
+    def from_choices(
+        cls,
+        name: str,
+        choices: List[Dict[str, str]],
+        multiple: bool = False,
+        **kwargs: Dict[str, Any]
+    ) -> "EnumField":
+        return cls(name, choices=choices, multiple=multiple, **kwargs)
 
 
 @dataclass
-class DateTimeField(BaseField):
+class DateTimeField(NumberField):
     """
     Parameters:
-        search_format: Format to send for search. Use None for iso Format
-        output_format: Set display output format
+        search_format: moment.js format to send for searching. Use None for iso Format
+        output_format: display output format
     """
 
-    type: str = "datetime"
+    input_type = "datetime"
+    class_ = "field-datetime form-control"
+    search_builder_type: Optional[str] = "moment-MMMM D, YYYY HH:mm:ss"
     output_format: str = "%B %d, %Y %H:%M:%S"
     search_format: Optional[str] = None
-    search_builder_type: Optional[str] = "moment-MMMM D, YYYY HH:mm:ss"
 
 
 @dataclass
-class DateField(BaseField):
+class DateField(DateTimeField):
     """
     Parameters:
-        search_format: Format to send for search. Use None for iso Format
+        search_format: moment.js format to send for searching. Use None for iso Format
         output_format: Set display output format
     """
 
-    type: str = "date"
+    input_type = "date"
+    class_ = "field-date form-control"
     output_format: str = "%B %d, %Y"
     search_format: Optional[str] = "YYYY-MM-DD"
     search_builder_type: Optional[str] = "moment-MMMM D, YYYY"
 
 
 @dataclass
-class TimeField(BaseField):
+class TimeField(DateTimeField):
     """
     Parameters:
         search_format: Format to send for search. Use None for iso Format
         output_format: Set display output format
     """
 
-    type: str = "time"
+    input_type = "time"
+    class_ = "field-time form-control"
+    search_builder_type: Optional[str] = "moment-HH:mm:ss"
     output_format: str = "%H:%M:%S"
     search_format: Optional[str] = "HH:mm:ss"
-    search_builder_type: Optional[str] = "moment-HH:mm:ss"
 
 
 @dataclass
 class JSONField(BaseField):
-    type: str = "json"
+    """JsonField - return Dict[Any,Any]"""
+
+    render_function_key: str = "json"
+    form_template: str = "forms/json.html"
+    display_template: str = "displays/json.html"
 
 
 @dataclass
 class FileField(BaseField):
-    type: str = "file"
+    accept: Optional[str] = None
+    multiple: bool = False
+    render_function_key = "file"
+    form_template = "forms/file.html"
+    display_template = "displays/file.html"
 
 
 @dataclass
 class ImageField(FileField):
-    type: str = "image"
+    accept = "image/*"
+    render_function_key = "image"
+    display_template = "displays/image.html"
 
 
 @dataclass
 class RelationField(BaseField):
-    type: str = "relation"
     identity: Optional[str] = None
+    multiple: bool = False
+    render_function_key = "relation"
+    form_template = "forms/relation.html"
+    display_template = "displays/relation.html"
 
 
 @dataclass
@@ -258,5 +299,4 @@ class HasMany(RelationField):
         identity: Foreign ModelView identity
     """
 
-    many: bool = True
-    is_array: Optional[bool] = True
+    multiple = True

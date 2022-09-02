@@ -425,8 +425,8 @@ class BaseModelView(BaseView):
     def _export_columns_selector(self) -> List[str]:
         return ["%s:name" % name for name in self.export_fields]
 
-    def cols(self, ctx: str = "list") -> Dict[str, Any]:
-        d = {}
+    def _extract_fields(self, ctx: str = "list") -> List[BaseField]:
+        arr = []
         for field in self.fields:
             if (
                 (ctx == "list" and field.exclude_from_list)
@@ -435,14 +435,13 @@ class BaseModelView(BaseView):
                 or (ctx == "edit" and field.exclude_from_edit)
             ):
                 continue
-            d[field.name] = field.dict()
-        return d
+            arr.append(field)
+        return arr
 
     def _need_select2(self) -> bool:
         for field in self.fields:
             if (
-                field.is_array
-                or isinstance(field, EnumField)
+                isinstance(field, EnumField)
                 or isinstance(field, RelationField)
                 or isinstance(field, TagsField)
             ):
@@ -454,3 +453,19 @@ class BaseModelView(BaseView):
             if isinstance(field, JSONField):
                 return True
         return False
+
+    def _configs(self, request: Request) -> Dict[str, Any]:
+        return {
+            "label": self.label,
+            "pageSize": self.page_size,
+            "lengthMenu": self._length_menu(),
+            "searchColumns": self._search_columns_selector(),
+            "exportColumns": self._export_columns_selector(),
+            "exportTypes": self.export_types,
+            "columnVisibility": self.column_visibility,
+            "searchBuilder": self.search_builder,
+            "fields": list(map(lambda f: f.dict(), self._extract_fields())),
+            "apiUrl": request.url_for(
+                f"{request.app.state.ROUTE_NAME}:api", identity=self.identity
+            ),
+        }

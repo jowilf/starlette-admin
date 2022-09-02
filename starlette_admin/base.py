@@ -27,10 +27,10 @@ from starlette_admin.fields import (
     HasMany,
     HasOne,
     JSONField,
+    NumberField,
     PhoneField,
     RelationField,
     TimeField,
-    _NumberField,
 )
 from starlette_admin.helpers import get_file_icon, is_empty_file
 from starlette_admin.views import (
@@ -124,7 +124,9 @@ class BaseAdmin:
             )
 
     def init_routes(self) -> None:
-        statics = StaticFiles(directory=self.statics_dir, packages=["starlette_admin"])
+        statics = StaticFiles(
+            directory=self.statics_dir, packages=["starlette_admin"], check_dir=False
+        )
         self.routes.extend(
             [
                 Mount("/statics", app=statics, name="statics"),
@@ -517,7 +519,7 @@ class BaseAdmin:
     async def format_form_value(self, field: BaseField, value: Any) -> Any:
         if isinstance(field, BooleanField):
             return value == "on"
-        elif isinstance(field, _NumberField):
+        elif isinstance(field, NumberField):
             return ast.literal_eval(value)
         elif isinstance(field, DateTimeField):
             return datetime.fromisoformat(value)
@@ -563,7 +565,7 @@ class BaseAdmin:
                 isinstance(
                     field,
                     (
-                        _NumberField,
+                        NumberField,
                         EmailField,
                         PhoneField,
                         DateTimeField,

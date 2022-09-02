@@ -1,1 +1,0 @@
-$("#{{field.name}}").select2();

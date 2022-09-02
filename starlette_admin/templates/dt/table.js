@@ -11,7 +11,7 @@ var table = $("#dt").DataTable({
   scrollX: false,
   lengthMenu: lengthMenu,
   pagingType: "full_numbers",
-  pageLength: {{model.page_size}},
+  pageLength: model.pageSize,
   select: {
     style: "multi",
     selector: "td:first-child .form-check-input",
@@ -55,7 +55,7 @@ var table = $("#dt").DataTable({
         query.where = data.search.value
     else if (where) query.where = JSON.stringify(where);
     $.ajax({
-      url: "{{ url_for(__name__ ~ ':api', identity=model.identity)  | safe}}",
+      url: model.apiUrl,
       type: "get",
       data: query,
       traditional: true,
@@ -128,8 +128,8 @@ if (can_delete) {
     $("#modal-delete").modal("hide");
     $("#modal-loading").modal("show");
     query = new URLSearchParams(selectedRows.map((s) => ["pks", s])).toString();
-    fetch(
-      `{{ url_for(__name__ ~ ':api', identity=model.identity)  | safe}}?${query}`,
+    fetch( model.apiUrl + '?'+query
+      ,
       {
         method: "DELETE",
       }
@@ -152,7 +152,7 @@ if (can_delete) {
 
   $("#multi-delete-btn").click(function () {
     $("#modal-delete-body span").text(
-      table.rows({ selected: true }).count() + " {{model.label}}"
+      table.rows({ selected: true }).count() + ` ${model.label}`
     );
     $("#modal-delete").modal("show");
   });

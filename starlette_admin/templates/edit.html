@@ -71,10 +71,10 @@
 {%endblock%}
 {%block script%}
 {%if model._need_select2()%}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/select2.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/select2.min.js') }}"></script>
 {%endif%}
 {%if model._need_jsoneditor()%}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/jsoneditor.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jsoneditor.min.js') }}"></script>
 {%endif%}
 <script>
     $(function () {

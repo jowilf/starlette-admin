@@ -1,4 +1,4 @@
-{% extends "layout.html" %} {%set pk = model.pk_attr%} {%set columns= model.cols('create')
+{% extends "layout.html" %} {%set pk = model.pk_attr%} {%set columns= model._extract_fields('create')
 %} {%if not value%} {%set value = {} %} {%endif%} {% block header %}
 <div class="d-flex justify-content-between align-items-center">
     <h1>{{ model.label }}</h1>
@@ -31,14 +31,12 @@
                         </div>
                     </div>
                     <div class="card-body border-bottom py-3">
-                        {%for key in columns if not columns[key].exclude_from_create %}
+                        {%for field in model._extract_fields('create') %}
                         <div class="mb-3">
-                            {%set data = value.getlist(key) if (is_form_value and
-                            columns[key].is_array) else value[key]%} {% with
-                            action='create',data=data,is_form_value=is_form_value,
-                            field=columns[key],error=(errors and
-                            errors.has(key))%} {% include "forms/" ~ columns[key].type ~ ".html" %}
-                            {% endwith %} {%if errors and errors.has(key)%}
+                            {% with action='create',data=value[field.name], error=(errors and errors.has(key))%}
+                            {% include field.form_template %}
+                            {% endwith %}
+                            {%if errors and errors.has(key)%}
                             <div class="invalid-feedback">{{errors.msg(key)}}</div>
                             {%endif%}
                         </div>
@@ -47,8 +45,12 @@
                     <div class="card-footer text-black">
                         <div class="btn-list ms-auto justify-content-end">
                             <a href="{{url_for(__name__ ~ ':list', identity=model.identity)}}" class="btn btn-danger">Cancel</a>
-                            <button type="submit" name="_add_another" class="btn btn-outline-secondary">Save and add another</button>
-                            <button type="submit" name="_continue_editing" class="btn btn-outline-secondary">Save and continue editing</button>
+                            <button type="submit" name="_add_another" class="btn btn-outline-secondary">Save and add
+                                another
+                            </button>
+                            <button type="submit" name="_continue_editing" class="btn btn-outline-secondary">Save and
+                                continue editing
+                            </button>
                             <button type="submit" class="btn btn-primary">Save</button>
                         </div>
                     </div>
@@ -68,20 +70,10 @@
 {%endblock%}
 {%block script%}
 {%if model._need_select2()%}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/select2.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/select2.min.js') }}"></script>
 {%endif%}
 {%if model._need_jsoneditor()%}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/jsoneditor.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jsoneditor.min.js') }}"></script>
 {%endif%}
-<script>
-    $(function () {
-       {%for key in columns if not columns[key].exclude_from_create %}
-          {%set data = value.getlist(key) if (is_form_value and columns[key].is_array) else value[key]%}
-          {% with action='create',data=data,is_form_value=is_form_value, field=columns[key],error=(errors is none)%}
-          {% include "forms/js/" ~ columns[key].type ~ ".js" ignore missing %}
-          {% endwith %}
-      {%endfor%}
-  });
-
-</script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/form.js') }}"></script>
 {%endblock%}

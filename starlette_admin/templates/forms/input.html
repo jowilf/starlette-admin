@@ -1,7 +1,8 @@
+{% include "forms/_label.html" %}
 <div>
-    <input name="{{field.name}}" type="{{field.input_type}}"
+    <input id="{{field.name}}" name="{{field.name}}" type="{{field.input_type}}"
            class="{{field.class_}} {%if error%}{{field.error_class}}{%endif%}"
-           placeholder="{{field.label}}" value="{{data or '' }}" {%if field.required%}required{%endif%}/>
+           value="{{data or '' }}" {{ field.input_params() }} />
     {% if field.help_text %}
     <small class="form-hint">{{field.help_text}}</small>
     {%endif%}

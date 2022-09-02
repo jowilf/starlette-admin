@@ -1,4 +1,4 @@
-{%if field.is_array%}
+{%if field.type == 'TagsField' %}
 <ul>
   {% for value in data %}
   <li>{{value }}</li>

@@ -57,6 +57,8 @@ def get_file_icon(mime_type: str) -> str:
 def html_params(kwargs: Dict[str, Any]) -> str:
     params = []
     for k, v in sorted(kwargs.items()):
+        if v is None:
+            continue
         if v is True:
             params.append(k)
         elif v is False:
