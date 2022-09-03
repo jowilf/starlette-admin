@@ -1,4 +1,4 @@
-$("select.field-tags, select.field-enum, ").each(function () {
+$("select.field-tags, select.field-enum").each(function () {
   $(this).select2();
 });
 

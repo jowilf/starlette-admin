@@ -1,8 +1,15 @@
+import decimal
+import json
 from dataclasses import asdict, dataclass, field
+from datetime import date, datetime, time
 from enum import Enum
+from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Type, Union
 
-from starlette_admin.helpers import html_params
+from starlette.datastructures import FormData, UploadFile
+from starlette.requests import Request
+from starlette_admin.exceptions import FormValidationError
+from starlette_admin.helpers import html_params, is_empty_file
 
 
 @dataclass
@@ -46,6 +53,12 @@ class BaseField:
         if self.type is None:
             self.type = type(self).__name__
 
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        return form_data.get(self.name)
+
+    async def serialize_value(self, request: Request, value: Any, action: str):
+        return value
+
     def dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -56,6 +69,12 @@ class BooleanField(BaseField):
     render_function_key: str = "boolean"
     form_template: str = "forms/boolean.html"
     display_template: str = "displays/boolean.html"
+
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        return form_data.get(self.name) == "on"
+
+    async def serialize_value(self, request: Request, value: Any, action: str):
+        return bool(value)
 
 
 @dataclass
@@ -75,6 +94,9 @@ class StringField(BaseField):
                 required=self.required,
             )
         )
+
+    async def serialize_value(self, request: Request, value: Any, action: str):
+        return str(value)
 
 
 @dataclass
@@ -102,11 +124,43 @@ class NumberField(StringField):
 class IntegerField(NumberField):
     class_ = "field-integer form-control"
 
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        try:
+            return int(form_data.get(self.name))
+        except (ValueError, TypeError):
+            return None
+
+    async def serialize_value(self, request: Request, value: Any, action: str):
+        return int(value)
+
 
 @dataclass
 class DecimalField(NumberField):
     step = "any"
     class_ = "field-decimal form-control"
+
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        try:
+            return decimal.Decimal(form_data.get(self.name))
+        except (decimal.InvalidOperation, ValueError):
+            return None
+
+    async def serialize_value(self, request: Request, value: Any, action: str):
+        return str(value)
+
+
+@dataclass
+class FloatField(StringField):
+    class_ = "field-float form-control"
+
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        try:
+            return float(form_data.get(self.name))
+        except ValueError:
+            return None
+
+    async def serialize_value(self, request: Request, value: Any, action: str):
+        return float(value)
 
 
 @dataclass
@@ -138,6 +192,9 @@ class TagsField(BaseField):
 
     form_template: str = "forms/tags.html"
     form_js = "js/field/forms/tags.js"
+
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        return form_data.getlist(self.name)
 
 
 @dataclass
@@ -181,13 +238,18 @@ class EnumField(StringField):
     choices: List[Dict[str, str]] = field(default_factory=list)
     form_template: str = "forms/enum.html"
 
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        if self.multiple:
+            return form_data.getlist(self.name)
+        return form_data.get(self.name)
+
     @classmethod
     def from_enum(
         cls,
         name: str,
         enum_type: Type[Enum],
         multiple: bool = False,
-        **kwargs: Dict[str, Any]
+        **kwargs: Dict[str, Any],
     ) -> "EnumField":
         choices = list(map(lambda e: dict(name=e.name, value=e.value), enum_type))  # type: ignore
         return cls(name, choices=choices, multiple=multiple, **kwargs)
@@ -198,7 +260,7 @@ class EnumField(StringField):
         name: str,
         choices: List[Dict[str, str]],
         multiple: bool = False,
-        **kwargs: Dict[str, Any]
+        **kwargs: Dict[str, Any],
     ) -> "EnumField":
         return cls(name, choices=choices, multiple=multiple, **kwargs)
 
@@ -217,6 +279,17 @@ class DateTimeField(NumberField):
     output_format: str = "%B %d, %Y %H:%M:%S"
     search_format: Optional[str] = None
 
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        return datetime.fromisoformat(form_data.get(self.name))
+
+    async def serialize_value(self, request: Request, value: Any, action: str):
+        assert isinstance(
+            value, (datetime, date, time)
+        ), f"Expect datetime, got  {type(value)}"
+        if action != "EDIT":
+            return value.strftime(self.output_format)
+        return value.isoformat()
+
 
 @dataclass
 class DateField(DateTimeField):
@@ -231,6 +304,9 @@ class DateField(DateTimeField):
     output_format: str = "%B %d, %Y"
     search_format: Optional[str] = "YYYY-MM-DD"
     search_builder_type: Optional[str] = "moment-MMMM D, YYYY"
+
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        return date.fromisoformat(form_data.get(self.name))
 
 
 @dataclass
@@ -247,6 +323,9 @@ class TimeField(DateTimeField):
     output_format: str = "%H:%M:%S"
     search_format: Optional[str] = "HH:mm:ss"
 
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        return time.fromisoformat(form_data.get(self.name))
+
 
 @dataclass
 class JSONField(BaseField):
@@ -256,6 +335,15 @@ class JSONField(BaseField):
     form_template: str = "forms/json.html"
     display_template: str = "displays/json.html"
 
+    async def parse_form_data(
+        self, request: Request, form_data: FormData
+    ) -> Optional[Dict[str, Any]]:
+        try:
+            value = form_data.get(self.name)
+            return json.loads(value) if value is not None else None
+        except JSONDecodeError:
+            raise FormValidationError({self.name: "Invalid JSON value"})
+
 
 @dataclass
 class FileField(BaseField):
@@ -264,6 +352,15 @@ class FileField(BaseField):
     render_function_key = "file"
     form_template = "forms/file.html"
     display_template = "displays/file.html"
+
+    async def parse_form_data(
+        self, request: Request, form_data: FormData
+    ) -> Union[UploadFile, List[UploadFile], None]:
+        if self.multiple:
+            files = form_data.getlist(self.name)
+            return [f for f in files if not is_empty_file(f)]
+        file = form_data.get(self.name)
+        return None if is_empty_file(file) else file
 
 
 @dataclass
@@ -280,6 +377,11 @@ class RelationField(BaseField):
     render_function_key = "relation"
     form_template = "forms/relation.html"
     display_template = "displays/relation.html"
+
+    def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        if self.multiple:
+            return form_data.getlist(self.name)
+        return form_data.get(self.name)
 
 
 @dataclass

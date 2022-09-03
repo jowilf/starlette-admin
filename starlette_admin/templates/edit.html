@@ -1,5 +1,5 @@
-{% extends "layout.html" %} {%set pk = model.pk_attr%} {%set columns= model.cols('edit')
-%} {% block header %}
+{% extends "layout.html" %}
+{% block header %}
 <div class="d-flex justify-content-between align-items-center">
     <h1>{{ model.label }}</h1>
     <ol class="breadcrumb">
@@ -30,15 +30,13 @@
                         </div>
                     </div>
                     <div class="card-body border-bottom py-3">
-                        {%for key in columns if not columns[key].exclude_from_edit %}
+                         {%for field in model._extract_fields('EDIT') %}
                         <div class="mb-3">
-                            {%set data = value.getlist(key) if (is_form_value and
-                            columns[key].is_array) else value[key]%} {% with
-                            action='edit',data=data,is_form_value=is_form_value,
-                            field=columns[key],error=(errors and
-                            errors.has(key))%} {% include "forms/" ~ columns[key].type ~ ".html" %}
-                            {% endwith %} {%if errors and errors.has(key)%}
-                            <div class="invalid-feedback">{{errors.msg(key)}}</div>
+                            {% with action='create',data=obj[field.name], error=(errors and errors.has(field.name))%}
+                            {% include field.form_template %}
+                            {% endwith %}
+                            {%if errors and errors.has(field.name)%}
+                            <div class="invalid-feedback">{{errors.msg(field.name)}}</div>
                             {%endif%}
                         </div>
                         {%endfor%}
@@ -76,23 +74,5 @@
 {%if model._need_jsoneditor()%}
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jsoneditor.min.js') }}"></script>
 {%endif%}
-<script>
-    $(function () {
-     {%for key in columns if not columns[key].exclude_from_create %}
-        {%if is_form_value and columns[key].is_array%}
-        {%set data = value.getlist(key)%}
-        {%elif is_form_value or columns[key].type != 'relation'%}
-        {%set data = value[key]%}
-        {%else%}
-        {%set fpk=(columns[key].identity | to_model).pk_attr%}
-        {%set data = (value[key] |map(attribute=fpk) |list) if columns[key].many else value[key][fpk] %}
-        {%endif%}
-        {% with action='edit',data=data,is_form_value=is_form_value, field=columns[key],error=(errors is none)%}
-        {% include "forms/js/" ~ columns[key].type ~ ".js" ignore missing %}
-        {% endwith %}
-    {%endfor%}
-  });
-
-
-</script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/form.js') }}"></script>
 {%endblock%}

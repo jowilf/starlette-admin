@@ -1,5 +1,5 @@
 {% include "forms/_label.html" %}
-<div>
+<div class="{%if error%}{{field.error_class}}{%endif%}">
     <input id="{{field.name}}" name="{{field.name}}" type="{{field.input_type}}"
            class="{{field.class_}} {%if error%}{{field.error_class}}{%endif%}"
            value="{{data or '' }}" {{ field.input_params() }} />

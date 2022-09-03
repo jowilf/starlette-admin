@@ -1,5 +1,6 @@
-{% extends "layout.html" %} {%set pk = model.pk_attr%} {% set columns =
-model.cols('detail') %} {% block header %}
+{% extends "layout.html" %}
+{%set pk = model.pk_attr%}
+{% block header %}
 
 <div class="d-flex justify-content-between align-items-center">
     <h1>{{ model.label }}</h1>
@@ -22,30 +23,30 @@ model.cols('detail') %} {% block header %}
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
-                        {{pk | upper}}: <strong>{{ value[pk] }}</strong>
+                        {{pk | upper}}: <strong>{{ obj[pk] }}</strong>
                     </h3>
                     <div class="card-actions">
                         <div class="btn-list">
-                        {%if model.can_edit(request)%}
-                        <a href="{{ url_for(__name__ ~ ':edit', identity=model.identity,pk=value[pk])}}">
-                            <button type="button" class="btn btn-primary btn-block me-2">
-                                <i class="fa-solid fa-edit me-2"></i>
-                                Edit
+                            {%if model.can_edit(request)%}
+                            <a href="{{ url_for(__name__ ~ ':edit', identity=model.identity,pk=obj[pk])}}">
+                                <button type="button" class="btn btn-primary btn-block me-2">
+                                    <i class="fa-solid fa-edit me-2"></i>
+                                    Edit
+                                </button>
+                            </a>
+                            {%endif%}
+                            {%if model.can_delete(request)%}
+                            <button
+                                    id="delete-btn"
+                                    type="button"
+                                    class="btn btn-danger btn-block"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal-delete"
+                            >
+                                <i class="fas fa-trash-alt me-2"></i>
+                                Delete
                             </button>
-                        </a>
-                        {%endif%}
-                        {%if model.can_delete(request)%}
-                        <button
-                                id="delete-btn"
-                                type="button"
-                                class="btn btn-danger btn-block"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modal-delete"
-                        >
-                            <i class="fas fa-trash-alt me-2"></i>
-                            Delete
-                        </button>
-                        {%endif%}
+                            {%endif%}
                         </div>
                     </div>
 
@@ -63,33 +64,29 @@ model.cols('detail') %} {% block header %}
                             </tr>
                             </thead>
                             <tbody>
-                            {% for key in columns if not (columns[key].exclude_from_detail or
-                            key == pk)%}
+                            {%for field in model._extract_fields('DETAIL') %}
                             <tr>
                                 <td data-label="Attribute">
                                     <div>
-                                        <strong>{{columns[key].label}}</strong>
+                                        <strong>{{field.label}}</strong>
                                     </div>
                                 </td>
                                 <td data-label="Value">
-                                    {% with data=value[key], field=columns[key] %}
+                                    {% with data=obj[field.name] %}
                                     {% if data == None%}
                                     {% include "displays/_null.html" %}
-                                    {%elif field.is_array and (data |length) ==0%}
-                                    {% include "displays/_empty.html" %} {%else%}
-                                    {% include "displays/" ~ field.type ~ ".html" %}
+                                    {%elif field.multiple and (data |length) ==0%}
+                                    {% include "displays/_empty.html" %}
+                                    {%else%}
+                                    {% include field.display_template %}
                                     {%endif%}
                                     {% endwith %}
                                 </td>
                             </tr>
-                            {% endfor %}
+                            {%endfor%}
                             </tbody>
                         </table>
                     </div>
-                    {% for key in columns if not columns[key].exclude_from_list %} {% set
-                    params = columns[key] %}
-                    <div class="mb-3"></div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -101,19 +98,10 @@ model.cols('detail') %} {% block header %}
 
 <script>
   $(function () {
-
-
-    {%for key in columns if not (columns[key].exclude_from_list or key == pk) %}
-      {%set data = value[key]%}
-      {% with data=data, field=columns[key]%}
-      {% include "displays/js/" ~ columns[key].type ~ ".js" ignore missing %}
-      {% endwith %}
-    {%endfor%}
-
     $("#modal-delete-btn").click(function () {
       $("#modal-delete").modal('hide');
       $("#modal-loading").modal('show');
-      fetch("{{ url_for(__name__ ~ ':api', identity=model.identity)  | safe}}?pks={{value[pk]}}", {
+      fetch("{{ url_for(__name__ ~ ':api', identity=model.identity)  | safe}}?pks={{obj[pk]}}", {
         method: "DELETE",
       }).then(async response => {
         if (response.ok) {
@@ -130,9 +118,5 @@ model.cols('detail') %} {% block header %}
       });
     });
   })
-
-
-
-
 </script>
 {% endblock %}

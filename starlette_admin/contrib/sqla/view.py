@@ -222,8 +222,8 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             if isinstance(field, FileField):
                 if data.get(f"_{name}-delete", False):
                     setattr(obj, name, None)
-                elif (not field.is_array and value is not None) or (
-                    field.is_array and isinstance(value, list) and len(value) > 0
+                elif (not field.multiple and value is not None) or (
+                    field.multiple and isinstance(value, list) and len(value) > 0
                 ):
                     setattr(obj, name, value)
             else:
@@ -258,25 +258,30 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         raise exc  # pragma: no cover
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, ctx: str, request: Request
+        self, value: Any, field: BaseField, action: str, request: Request
     ) -> Union[Dict[str, Any], str, None]:
         try:
             """to automatically serve sqlalchemy_file"""
             sqlalchemy_file = __import__("sqlalchemy_file")
-            if isinstance(value, sqlalchemy_file.File):
-                path = value["path"]
-                if ctx == "API" and getattr(value, "thumbnail", None) is not None:
-                    path = value["thumbnail"]["path"]
-                storage, file_id = path.split("/")
-                return {
-                    "content_type": value["content_type"],
-                    "filename": value["filename"],
-                    "url": request.url_for(
-                        request.app.state.ROUTE_NAME + ":api:file",
-                        storage=storage,
-                        file_id=file_id,
-                    ),
-                }
+            if isinstance(field, FileField):
+                data = []
+                for item in value if field.multiple else [value]:
+                    path = item["path"]
+                    if action == "API" and getattr(item, "thumbnail", None) is not None:
+                        path = item["thumbnail"]["path"]
+                    storage, file_id = path.split("/")
+                    return data.append(
+                        {
+                            "content_type": item["content_type"],
+                            "filename": item["filename"],
+                            "url": request.url_for(
+                                request.app.state.ROUTE_NAME + ":api:file",
+                                storage=storage,
+                                file_id=file_id,
+                            ),
+                        }
+                    )
+                return data if field.multiple else data[0]
         except ImportError:  # pragma: no cover
             pass
-        return await super().serialize_field_value(value, field, ctx, request)
+        return await super().serialize_field_value(value, field, action, request)

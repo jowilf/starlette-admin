@@ -82,24 +82,24 @@ class TestView:
             exclude_fields_from_edit = ["views", "id"]
 
         view_instance = PostViewWithExclusion()
-        assert tuple(view_instance._extract_fields("list").keys()) == (
+        assert tuple(view_instance._extract_fields("LIST").keys()) == (
             "id",
             "title",
             "views",
             "tags",
         )
-        assert tuple(view_instance._extract_fields("detail").keys()) == (
+        assert tuple(view_instance._extract_fields("DETAIL").keys()) == (
             "id",
             "title",
             "content",
             "views",
         )
-        assert tuple(view_instance._extract_fields("create").keys()) == (
+        assert tuple(view_instance._extract_fields("CREATE").keys()) == (
             "id",
             "title",
             "content",
         )
-        assert tuple(view_instance._extract_fields("edit").keys()) == (
+        assert tuple(view_instance._extract_fields("EDIT").keys()) == (
             "title",
             "content",
             "tags",

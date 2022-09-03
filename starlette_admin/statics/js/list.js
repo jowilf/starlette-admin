@@ -232,7 +232,7 @@ $(function () {
           total = data.total;
           data = data.items;
           data.forEach((d) => {
-            d.DT_RowId = d[pk];
+            d.DT_RowId = d[model.pk];
           });
           callback({
             recordsFiltered: total,

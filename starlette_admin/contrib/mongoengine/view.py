@@ -176,14 +176,14 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         return query
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, ctx: str, request: Request
+        self, value: Any, field: BaseField, action: str, request: Request
     ) -> Union[Dict[Any, Any], str, None]:
         if isinstance(value, ObjectId):
             return str(value)
         elif isinstance(value, GridFSProxy):
             if value.grid_id:
                 id = value.grid_id
-                if ctx == "API" and getattr(value, "thumbnail_id", None) is not None:
+                if action == "API" and getattr(value, "thumbnail_id", None) is not None:
                     id = getattr(value, "thumbnail_id")
                 return {
                     "filename": getattr(value, "filename", "unamed"),
@@ -198,4 +198,4 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                     ),
                 }
             return None
-        return await super().serialize_field_value(value, field, ctx, request)
+        return await super().serialize_field_value(value, field, action, request)

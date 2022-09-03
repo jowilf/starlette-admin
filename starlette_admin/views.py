@@ -1,8 +1,5 @@
-import uuid
 from abc import abstractmethod
-from datetime import date, datetime, time
-from decimal import Decimal
-from typing import Any, Dict, Iterable, List, Optional, Type, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Type, Union
 
 from jinja2 import Template
 from starlette.requests import Request
@@ -10,14 +7,12 @@ from starlette.responses import Response
 from starlette.templating import Jinja2Templates
 from starlette_admin.fields import (
     BaseField,
-    DateField,
-    DateTimeField,
     EnumField,
     FileField,
+    HasOne,
     JSONField,
     RelationField,
     TagsField,
-    TimeField,
 )
 
 
@@ -331,32 +326,70 @@ class BaseModelView(BaseView):
         return True
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, ctx: str, request: Request
-    ) -> Union[Dict[str, Any], str, None]:
+        self, value: Any, field: BaseField, action: str, request: Request
+    ) -> Any:
         """
         Format output value for each field.
-        !!! note
-            If the field is array, each item will pass through this function.
+
         !!! important
             The returned value should be json serializable
 
         Parameters:
             value: attribute of item returned by `find_all` or `find_by_pk`
             field: Starlette Admin field for this attribute
-            ctx: Specify where the data will be used. Possible values are
+            action: Specify where the data will be used. Possible values are
                 `VIEW` for detail page, `EDIT` for editing page and `API`
                 for listing page and select2 data.
             request: Starlette Request
         """
-        if isinstance(value, (datetime, date, time)):
-            if ctx != "EDIT" and isinstance(
-                field, (DateTimeField, DateField, TimeField)
-            ):
-                return value.strftime(field.output_format)
-            return value.isoformat()
-        elif isinstance(value, (Decimal, uuid.UUID)):
-            return str(value)
-        return value
+        return await field.serialize_value(request, value, action)
+
+    async def serialize(
+        self,
+        obj: Any,
+        request: Request,
+        action: str,
+        include_relationships: bool = True,
+        include_select2: bool = False,
+        find_foreign_model: Optional[Callable[[str], "BaseModelView"]] = None,
+    ) -> Dict[str, Any]:
+        obj_serialized: Dict[str, Any] = dict()
+        for field in self.fields:
+            value = getattr(obj, field.name, None)
+            if isinstance(field, RelationField) and include_relationships:
+                foreign_model = find_foreign_model(field.identity)
+                if value is None:
+                    obj_serialized[field.name] = None
+                elif isinstance(field, HasOne):
+                    obj_serialized[field.name] = await foreign_model.serialize(
+                        value, request, action, include_relationships=False
+                    )
+                else:
+                    obj_serialized[field.name] = [
+                        foreign_model.serialize(
+                            obj, request, action, include_relationships=False
+                        )
+                        for v in value
+                    ]
+            elif not isinstance(field, RelationField):
+                obj_serialized[field.name] = await self.serialize_field_value(
+                    value, field, action, request
+                )
+        if include_select2:
+            obj_serialized["_select2_selection"] = await self.select2_selection(
+                obj, request
+            )
+            obj_serialized["_select2_result"] = await self.select2_result(obj, request)
+        obj_serialized["_repr"] = await self.repr(obj, request)
+        pk = getattr(obj, self.pk_attr)
+        route_name = request.app.state.ROUTE_NAME
+        obj_serialized["_detail_url"] = request.url_for(
+            route_name + ":detail", identity=self.identity, pk=pk
+        )
+        obj_serialized["_edit_url"] = request.url_for(
+            route_name + ":edit", identity=self.identity, pk=pk
+        )
+        return obj_serialized
 
     async def repr(self, obj: Any, request: Request) -> str:
         """
@@ -388,10 +421,7 @@ class BaseModelView(BaseView):
         fields = [
             field.name
             for field in self.fields
-            if (
-                not field.is_array
-                and not isinstance(field, (RelationField, JSONField, FileField))
-            )
+            if not isinstance(field, (RelationField, FileField))
         ]
         return Template(template_str, autoescape=True).render(obj=obj, fields=fields)
 
@@ -425,14 +455,14 @@ class BaseModelView(BaseView):
     def _export_columns_selector(self) -> List[str]:
         return ["%s:name" % name for name in self.export_fields]
 
-    def _extract_fields(self, ctx: str = "list") -> List[BaseField]:
+    def _extract_fields(self, ctx: str = "LIST") -> List[BaseField]:
         arr = []
         for field in self.fields:
             if (
-                (ctx == "list" and field.exclude_from_list)
-                or (ctx == "detail" and field.exclude_from_detail)
-                or (ctx == "create" and field.exclude_from_create)
-                or (ctx == "edit" and field.exclude_from_edit)
+                (ctx == "LIST" and field.exclude_from_list)
+                or (ctx == "DETAIL" and field.exclude_from_detail)
+                or (ctx == "CREATE" and field.exclude_from_create)
+                or (ctx == "EDIT" and field.exclude_from_edit)
             ):
                 continue
             arr.append(field)
@@ -465,6 +495,7 @@ class BaseModelView(BaseView):
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,
             "fields": list(map(lambda f: f.dict(), self._extract_fields())),
+            "pk": self.pk_attr,
             "apiUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:api", identity=self.identity
             ),

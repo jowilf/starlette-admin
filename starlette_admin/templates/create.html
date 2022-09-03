@@ -1,5 +1,5 @@
-{% extends "layout.html" %} {%set pk = model.pk_attr%} {%set columns= model._extract_fields('create')
-%} {%if not value%} {%set value = {} %} {%endif%} {% block header %}
+{% extends "layout.html" %}
+{% block header %}
 <div class="d-flex justify-content-between align-items-center">
     <h1>{{ model.label }}</h1>
     <ol class="breadcrumb">
@@ -31,13 +31,13 @@
                         </div>
                     </div>
                     <div class="card-body border-bottom py-3">
-                        {%for field in model._extract_fields('create') %}
+                        {%for field in model._extract_fields('CREATE') %}
                         <div class="mb-3">
-                            {% with action='create',data=value[field.name], error=(errors and errors.has(key))%}
+                            {% with action='create',data=(None if not obj else obj[field.name]), error=(errors and errors.has(field.name))%}
                             {% include field.form_template %}
                             {% endwith %}
-                            {%if errors and errors.has(key)%}
-                            <div class="invalid-feedback">{{errors.msg(key)}}</div>
+                            {%if errors and errors.has(field.name)%}
+                            <div class="invalid-feedback">{{errors.msg(field.name)}}</div>
                             {%endif%}
                         </div>
                         {%endfor%}
