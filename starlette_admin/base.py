@@ -85,8 +85,9 @@ class BaseAdmin:
         """
         Add View to the Admin interface.
         """
-        self._views.append(view())
-        self.add_routes_for_view(view)
+        view_instance = view()
+        self._views.append(view_instance)
+        self.setup_view(view_instance)
 
     def init_auth(self) -> None:
         if self.auth_provider is not None:
@@ -189,22 +190,23 @@ class BaseAdmin:
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         self.templates = templates
 
-    def add_routes_for_view(self, view: Type[BaseView]) -> None:
-        if issubclass(view, DropDown):
-            for sub_view in view.views:
-                self.add_routes_for_view(sub_view)
-        elif issubclass(view, CustomView):
+    def setup_view(self, view: BaseView) -> None:
+        if isinstance(view, DropDown):
+            for sub_view in view._views_instance:
+                self.setup_view(sub_view)
+        elif isinstance(view, CustomView):
             self.routes.insert(
                 0,
                 Route(
                     view.path,
-                    endpoint=self._render_custom_view(view()),
+                    endpoint=self._render_custom_view(view),
                     methods=view.methods,
                     name=view.name,
                 ),
             )
-        elif issubclass(view, BaseModelView):
-            self._models.append(view())
+        elif isinstance(view, BaseModelView):
+            view._find_foreign_model = lambda i: self._find_model_from_identity(i)
+            self._models.append(view)
 
     def _find_model_from_identity(self, identity: Optional[str]) -> BaseModelView:
         if identity is not None:
@@ -262,9 +264,6 @@ class BaseAdmin:
                                 "API",
                                 include_relationships=not select2,
                                 include_select2=select2,
-                                find_foreign_model=lambda i: self._find_model_from_identity(
-                                    i
-                                ),
                             )
                         )
                         for item in items
@@ -352,12 +351,7 @@ class BaseAdmin:
                 "request": request,
                 "model": model,
                 "raw_obj": obj,
-                "obj": await model.serialize(
-                    obj,
-                    request,
-                    "VIEW",
-                    find_foreign_model=lambda i: self._find_model_from_identity(i),
-                ),
+                "obj": await model.serialize(obj, request, "VIEW"),
             },
         )
 
@@ -412,12 +406,7 @@ class BaseAdmin:
                     "request": request,
                     "model": model,
                     "raw_obj": obj,
-                    "obj": await model.serialize(
-                        obj,
-                        request,
-                        "EDIT",
-                        find_foreign_model=lambda i: self._find_model_from_identity(i),
-                    ),
+                    "obj": await model.serialize(obj, request, "EDIT"),
                 },
             )
         else:
@@ -425,8 +414,6 @@ class BaseAdmin:
             dict_obj = await self.form_to_dict(request, form, model, "EDIT")
             try:
                 obj = await model.edit(request, pk, dict_obj)
-                print(dict_obj["parent"].id)
-                assert False
             except FormValidationError as errors:
                 return self.templates.TemplateResponse(
                     model.edit_template,
@@ -476,23 +463,11 @@ class BaseAdmin:
                 or (action == "CREATE" and field.exclude_from_create)
             ):
                 continue
-            if isinstance(field, HasOne):
-                foreign_model = self._find_model_from_identity(field.identity)
-                pk = await field.parse_form_data(request, form_data)
-                data[field.name] = (
-                    None if pk is None else await foreign_model.find_by_pk(request, pk)
-                )
-            elif isinstance(field, HasMany):
-                foreign_model = self._find_model_from_identity(field.identity)
-                pks = await field.parse_form_data(request, form_data)
-                data[field.name] = await foreign_model.find_by_pks(request, pks)
-            elif isinstance(field, FileField) and action == "EDIT":
+            if isinstance(field, FileField) and action == "EDIT":
                 data[f"_{field.name}-delete"] = await BooleanField(
                     f"_{field.name}-delete"
                 ).parse_form_data(request, form_data)
-                data[field.name] = await field.parse_form_data(request, form_data)
-            else:
-                data[field.name] = await field.parse_form_data(request, form_data)
+            data[field.name] = await field.parse_form_data(request, form_data)
         return data
 
     def mount_to(self, app: Starlette) -> None:

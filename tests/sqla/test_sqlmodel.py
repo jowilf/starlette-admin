@@ -78,8 +78,7 @@ class TestSQLModel:
             assert response.status_code == 200
             assert (
                 '<div class="invalid-feedback">ensure this value has at least 10'
-                " characters</div>"
-                in response.text
+                " characters</div>" in response.text
             )
             assert (
                 '<div class="invalid-feedback">none is not an allowed value</div>'
@@ -104,8 +103,7 @@ class TestSQLModel:
             assert response.status_code == 200
             assert (
                 '<div class="invalid-feedback">ensure this value has at least 10'
-                " characters</div>"
-                in response.text
+                " characters</div>" in response.text
             )
             assert (
                 '<div class="invalid-feedback">none is not an allowed value</div>'

@@ -6,7 +6,8 @@ from sqlalchemy.orm import (
     ColumnProperty,
     InstrumentedAttribute,
     RelationshipProperty,
-    Session, joinedload,
+    Session,
+    joinedload,
 )
 from starlette.requests import Request
 from starlette_admin import RelationField, StringField
@@ -197,7 +198,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         try:
             await self.validate(request, data)
             session: Session = request.state.session
-            obj = await self._populate_obj(self.model(), data)
+            obj = await self._populate_obj(request, self.model(), data)
             session.add(obj)
             session.commit()
             return obj
@@ -209,7 +210,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             await self.validate(request, data)
             session: Session = request.state.session
             obj = await self.find_by_pk(request, pk)
-            session.add(await self._populate_obj(obj, data, True))
+            session.add(await self._populate_obj(request, obj, data, True))
             session.commit()
             session.refresh(obj)
             return obj
@@ -218,6 +219,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
 
     async def _populate_obj(
         self,
+        request: Request,
         obj: Any,
         data: Dict[str, Any],
         is_edit: bool = False,
@@ -235,6 +237,18 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                     field.multiple and isinstance(value, list) and len(value) > 0
                 ):
                     setattr(obj, name, value)
+            elif isinstance(field, HasOne) and value is not None:
+                setattr(
+                    obj,
+                    name,
+                    await self._find_foreign_model(field.identity).find_by_pk(request, value),
+                )
+            elif isinstance(field, HasMany) and value is not None:
+                setattr(
+                    obj,
+                    name,
+                    await self._find_foreign_model(field.identity).find_by_pks(request, value),
+                )
             else:
                 setattr(obj, name, value)
         return obj
@@ -274,7 +288,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             sqlalchemy_file = __import__("sqlalchemy_file")
             if isinstance(field, FileField) and value is not None:
                 data = []
-                for item in (value if field.multiple else [value]):
+                for item in value if field.multiple else [value]:
                     path = item["path"]
                     if action == "API" and getattr(item, "thumbnail", None) is not None:
                         path = item["thumbnail"]["path"]

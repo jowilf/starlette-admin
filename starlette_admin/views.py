@@ -112,8 +112,7 @@ class CustomView(BaseView):
     add_to_menu: bool = True
 
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
-        """Default methods to render view. Override this methods to add your custom logic.
-        """
+        """Default methods to render view. Override this methods to add your custom logic."""
         return templates.TemplateResponse(self.template_path, {"request": request})
 
     def is_active(self, request: Request) -> bool:
@@ -187,6 +186,8 @@ class BaseModelView(BaseView):
     detail_template: str = "detail.html"
     create_template: str = "create.html"
     edit_template: str = "edit.html"
+
+    _find_foreign_model: Callable[[str], "BaseModelView"]
 
     def __init__(self) -> None:
         if self.searchable_fields is None:
@@ -354,26 +355,31 @@ class BaseModelView(BaseView):
         action: str,
         include_relationships: bool = True,
         include_select2: bool = False,
-        find_foreign_model: Optional[Callable[[str], "BaseModelView"]] = None,
     ) -> Dict[str, Any]:
         obj_serialized: Dict[str, Any] = dict()
         for field in self.fields:
             value = getattr(obj, field.name, None)
             if isinstance(field, RelationField) and include_relationships:
-                foreign_model = find_foreign_model(field.identity)
+                foreign_model = self._find_foreign_model(field.identity)
                 if value is None:
                     obj_serialized[field.name] = None
                 elif isinstance(field, HasOne):
-                    obj_serialized[field.name] = await foreign_model.serialize(
-                        value, request, action, include_relationships=False
-                    )
-                else:
-                    obj_serialized[field.name] = [
-                        await foreign_model.serialize(
-                            v, request, action, include_relationships=False
+                    if action == "EDIT":
+                        obj_serialized[field.name] = getattr(value, foreign_model.pk_attr)
+                    else:
+                        obj_serialized[field.name] = await foreign_model.serialize(
+                            value, request, action, include_relationships=False
                         )
-                        for v in value
-                    ]
+                else:
+                    if action == "EDIT":
+                        obj_serialized[field.name] = [getattr(v, foreign_model.pk_attr) for v in value]
+                    else:
+                        obj_serialized[field.name] = [
+                            await foreign_model.serialize(
+                                v, request, action, include_relationships=False
+                            )
+                            for v in value
+                        ]
             elif not isinstance(field, RelationField):
                 obj_serialized[field.name] = await self.serialize_field_value(
                     value, field, action, request
