@@ -1,6 +1,5 @@
 from typing import Any, Dict, Iterable, List, Optional, Type, Union, no_type_check
 
-import starlette_admin
 from bson import ObjectId
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.document import Document
@@ -8,6 +7,9 @@ from mongoengine.errors import DoesNotExist, ValidationError
 from mongoengine.fields import GridFSProxy
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
+
+import starlette_admin
+from starlette_admin import HasMany, HasOne
 from starlette_admin.contrib.mongoengine.helpers import (
     build_order_clauses,
     build_raw_query,
@@ -71,9 +73,9 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     fields: List[BaseField] = []
 
     async def count(
-        self,
-        request: Request,
-        where: Union[Dict[str, Any], str, None] = None,
+            self,
+            request: Request,
+            where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
         if where is None:
             where = {}
@@ -84,12 +86,12 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         return self.document.objects(__raw__=where).count()
 
     async def find_all(
-        self,
-        request: Request,
-        skip: int = 0,
-        limit: int = 100,
-        where: Union[Dict[str, Any], str, None] = None,
-        order_by: Optional[List[str]] = None,
+            self,
+            request: Request,
+            skip: int = 0,
+            limit: int = 100,
+            where: Union[Dict[str, Any], str, None] = None,
+            order_by: Optional[List[str]] = None,
     ) -> List[Any]:
         if where is None:
             where = {}
@@ -101,7 +103,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             *build_order_clauses(order_by or [])
         )
         if limit > 0:
-            return objs[skip : skip + limit]
+            return objs[skip: skip + limit]
         return objs[skip:]
 
     async def find_by_pk(self, request: Request, pk: Any) -> Optional[Document]:
@@ -115,23 +117,27 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
 
     async def create(self, request: Request, data: Dict[str, Any]) -> None:
         try:
-            return (await self._populate_obj(self.document(), data)).save()
+            return (await self._populate_obj(request, self.document(), data)).save()
         except Exception as e:
             self.handle_exception(e)
 
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
             obj = await self.find_by_pk(request, pk)
-            return (await self._populate_obj(obj, data, True)).save()
+            return (await self._populate_obj(request, obj, data, True)).save()
         except Exception as e:
             self.handle_exception(e)
 
     async def _populate_obj(
-        self, obj: Document, data: Dict[str, Any], is_edit: bool = False
+            self,
+            request: Request,
+            obj: Document,
+            data: Dict[str, Any],
+            is_edit: bool = False,
     ) -> Document:
         for field in self.fields:
             if (is_edit and field.exclude_from_edit) or (
-                not is_edit and field.exclude_from_create
+                    not is_edit and field.exclude_from_create
             ):
                 continue
             name, value = field.name, data.get(field.name, None)
@@ -152,6 +158,10 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                             filename=value.filename,
                             content_type=value.content_type,
                         )
+            elif isinstance(field, HasOne) and value is not None:
+                setattr(obj, name, ObjectId(value))
+            elif isinstance(field, HasMany) and value is not None:
+                setattr(obj, name, [ObjectId(v) for v in value])
             else:
                 setattr(obj, name, value)
         return obj
@@ -165,7 +175,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         raise exc  # pragma: no cover
 
     def build_full_text_search_query(
-        self, request: Request, term: str
+            self, request: Request, term: str
     ) -> Dict[str, Any]:
         query: Dict[str, Any] = {"$or": []}
         for field in self.fields:
@@ -176,11 +186,9 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         return query
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, action: str, request: Request
+            self, value: Any, field: BaseField, action: str, request: Request
     ) -> Union[Dict[Any, Any], str, None]:
-        if isinstance(value, ObjectId):
-            return str(value)
-        elif isinstance(value, GridFSProxy):
+        if isinstance(value, GridFSProxy):
             if value.grid_id:
                 id = value.grid_id
                 if action == "API" and getattr(value, "thumbnail_id", None) is not None:

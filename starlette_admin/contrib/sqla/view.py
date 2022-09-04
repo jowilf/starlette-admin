@@ -241,13 +241,17 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 setattr(
                     obj,
                     name,
-                    await self._find_foreign_model(field.identity).find_by_pk(request, value),
+                    await self._find_foreign_model(field.identity).find_by_pk(
+                        request, value
+                    ),
                 )
             elif isinstance(field, HasMany) and value is not None:
                 setattr(
                     obj,
                     name,
-                    await self._find_foreign_model(field.identity).find_by_pks(request, value),
+                    await self._find_foreign_model(field.identity).find_by_pks(
+                        request, value
+                    ),
                 )
             else:
                 setattr(obj, name, value)

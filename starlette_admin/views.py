@@ -365,14 +365,18 @@ class BaseModelView(BaseView):
                     obj_serialized[field.name] = None
                 elif isinstance(field, HasOne):
                     if action == "EDIT":
-                        obj_serialized[field.name] = getattr(value, foreign_model.pk_attr)
+                        obj_serialized[field.name] = getattr(
+                            value, foreign_model.pk_attr
+                        )
                     else:
                         obj_serialized[field.name] = await foreign_model.serialize(
                             value, request, action, include_relationships=False
                         )
                 else:
                     if action == "EDIT":
-                        obj_serialized[field.name] = [getattr(v, foreign_model.pk_attr) for v in value]
+                        obj_serialized[field.name] = [
+                            getattr(v, foreign_model.pk_attr) for v in value
+                        ]
                     else:
                         obj_serialized[field.name] = [
                             await foreign_model.serialize(
