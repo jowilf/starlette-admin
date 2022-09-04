@@ -1,7 +1,7 @@
 {% include "forms/_label.html" %}
 <input type="file" class="form-control {%if error%}is-invalid{%endif%}" id="{{field.name}}" name="{{field.name}}" {%if
        field.multiple%}multiple{%endif%} accept="image/*"/>
-{%if action=='EDIT' and data and data.url %}
+{%if action=='EDIT' and field._isvalid_value(data) %}
 <div class="mt-2 border p-2">
     {% include "displays/image.html" %}
     {% include "forms/_delete.html" %}

@@ -75,7 +75,7 @@ const render = {
   image: function render(data, type, full, meta, fieldOptions) {
     if (!data) return null_column();
     if (Array.isArray(data) && data.length == 0) return empty_column();
-    let urls = Array.isArray(data) ? data : [data].map((d) => escape(d.url));
+    let urls = (Array.isArray(data) ? data : [data]).map((d) => escape(d.url));
     if (type != "display") return urls;
     return `<div class="d-flex">${urls
       .map(

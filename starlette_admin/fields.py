@@ -391,7 +391,7 @@ class JSONField(BaseField):
 @dataclass
 class FileField(BaseField):
     multiple: bool = False
-    render_function_key = "file"
+    render_function_key: str = "file"
     form_template: str = "forms/file.html"
     display_template: str = "displays/file.html"
 
@@ -403,6 +403,17 @@ class FileField(BaseField):
             return [f for f in files if not is_empty_file(f.file)]
         file = form_data.get(self.name)
         return None if is_empty_file(file.file) else file
+
+    def _isvalid_value(self, value):
+        return value is not None and all(
+            [
+                (
+                    hasattr(v, "url")
+                    or (isinstance(v, dict) and v.get("url", None) is not None)
+                )
+                for v in (value if self.multiple else [value])
+            ]
+        )
 
 
 @dataclass
@@ -445,5 +456,6 @@ class HasMany(RelationField):
 
     multiple: bool = True
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print(URLField("").dict())
