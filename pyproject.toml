@@ -33,8 +33,7 @@ python-multipart = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
-sqlmodel = "^0.0.6"
-SQLAlchemy="1.4.35"
+sqlmodel = "^0.0.8"
 fastapi = "^0.81.0"
 uvicorn = "^0.18.3"
 PyMySQL = { extras = ["rsa"], version = "^1.0.2" }
