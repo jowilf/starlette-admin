@@ -49,10 +49,19 @@ const render = {
   email: function render(data, type, full, meta, fieldOptions) {
     if (data == null) return null_column();
     if (Array.isArray(data) && data.length == 0) return empty_column();
-    data = Array.isArray(data) ? data : [data].map((d) => escape(d)).join(",");
-    if (type != "display") return data;
+    data = Array.isArray(data) ? data : [data].map((d) => escape(d));
+    if (type != "display") return data.join(",");
     return `<span class="align-middle d-inline-block text-truncate" data-toggle="tooltip" data-placement="bottom" title='${data}' style="max-width: 30em;">${data.map(
       (d) => '<a href="mailto:' + d + '">' + d + "</a>"
+    )}</span>`;
+  },
+  url: function render(data, type, full, meta, fieldOptions) {
+    if (data == null) return null_column();
+    if (Array.isArray(data) && data.length == 0) return empty_column();
+    data = Array.isArray(data) ? data : [data].map((d) => escape(d));
+    if (type != "display") return data.join(",");
+    return `<span class="align-middle d-inline-block text-truncate" data-toggle="tooltip" data-placement="bottom" title='${data}' style="max-width: 30em;">${data.map(
+      (d) => '<a href="' + d + '">' + d + "</a>"
     )}</span>`;
   },
   json: function render(data, type, full, meta, fieldOptions) {

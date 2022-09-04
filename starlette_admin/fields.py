@@ -203,8 +203,19 @@ class EmailField(StringField):
     """
 
     input_type: str = "email"
-    render_function_key = "email"
+    render_function_key: str = "email"
     class_: str = "field-email form-control"
+
+
+@dataclass
+class URLField(StringField):
+    """Email field. Add highlight to displays value.
+    The field itself doesn't validate data
+    """
+
+    input_type: str = "url"
+    render_function_key: str = "url"
+    class_: str = "field-url form-control"
 
 
 @dataclass
@@ -424,3 +435,6 @@ class HasMany(RelationField):
     """
 
     multiple: bool = True
+
+if __name__ == '__main__':
+    print(URLField("").dict())

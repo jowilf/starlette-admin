@@ -118,6 +118,8 @@ class BaseAdmin:
         statics = StaticFiles(
             directory=self.statics_dir, packages=["starlette_admin"], check_dir=False
         )
+        # Avoid raising error where statics directory is not Found
+        statics.config_checked = True
         self.routes.extend(
             [
                 Mount("/statics", app=statics, name="statics"),
