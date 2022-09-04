@@ -263,7 +263,9 @@ $(function () {
           data: f.name,
           orderable: f.orderable,
           searchBuilderType: f.search_builder_type,
-          render: render[f.render_function_key],
+          render: function (data, type, full, meta) {
+            return render[f.render_function_key](data, type, full, meta, f);
+          },
         };
       }),
     ],

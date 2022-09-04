@@ -33,7 +33,7 @@
                     <div class="card-body border-bottom py-3">
                         {%for field in model._extract_fields('CREATE') %}
                         <div class="mb-3">
-                            {% with action='create',data=(None if not obj else obj[field.name]), error=(errors and errors.has(field.name))%}
+                            {% with action='CREATE',data=(None if not obj else obj[field.name]), error=(errors and errors.has(field.name))%}
                             {% include field.form_template %}
                             {% endwith %}
                             {%if errors and errors.has(field.name)%}

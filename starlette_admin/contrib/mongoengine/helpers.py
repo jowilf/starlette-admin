@@ -12,7 +12,7 @@ mongoengine_to_admin_map = {
     me.StringField: sa.StringField,
     me.IntField: sa.IntegerField,
     me.LongField: sa.IntegerField,
-    me.FloatField: sa.DecimalField,
+    me.FloatField: sa.FloatField,
     me.BooleanField: sa.BooleanField,
     me.DateTimeField: sa.DateTimeField,
     me.DateField: sa.DateField,
@@ -63,10 +63,8 @@ def convert_mongoengine_field_to_admin_field(
                 admin_field = sa.JSONField(name)
             elif isinstance(field.field, me.EnumField):
                 admin_field = sa.EnumField.from_enum(
-                    name, enum_type=field.field._enum_cls, is_array=True
+                    name, enum_type=field.field._enum_cls, multiple=True
                 )
-            elif isinstance(field.field, me.EmailField):
-                admin_field = sa.EmailField(name, is_array=True)
             else:
                 admin_field = TagsField(name)
     elif isinstance(field, me.ReferenceField):

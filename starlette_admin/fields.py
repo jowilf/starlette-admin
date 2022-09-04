@@ -4,11 +4,10 @@ from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, time
 from enum import Enum
 from json import JSONDecodeError
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
-from starlette_admin.exceptions import FormValidationError
 from starlette_admin.helpers import html_params, is_empty_file
 
 
@@ -80,8 +79,8 @@ class BooleanField(BaseField):
 @dataclass
 class StringField(BaseField):
     search_builder_type: Optional[str] = "string"
-    input_type = "text"
-    class_ = "field-string form-control"
+    input_type: str = "text"
+    class_: str = "field-string form-control"
     error_class = "is-invalid"
     placeholder: Optional[str] = None
     help_text: Optional[str] = None
@@ -102,7 +101,7 @@ class StringField(BaseField):
 @dataclass
 class NumberField(StringField):
     search_builder_type: str = "num"
-    input_type = "number"
+    input_type: str = "number"
     max: Optional[int] = None
     min: Optional[int] = None
     step: Union[str, int, None] = None
@@ -122,7 +121,7 @@ class NumberField(StringField):
 
 @dataclass
 class IntegerField(NumberField):
-    class_ = "field-integer form-control"
+    class_: str = "field-integer form-control"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
@@ -136,8 +135,8 @@ class IntegerField(NumberField):
 
 @dataclass
 class DecimalField(NumberField):
-    step = "any"
-    class_ = "field-decimal form-control"
+    step: str = "any"
+    class_: str = "field-decimal form-control"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
@@ -151,7 +150,7 @@ class DecimalField(NumberField):
 
 @dataclass
 class FloatField(StringField):
-    class_ = "field-float form-control"
+    class_: str = "field-float form-control"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
@@ -168,7 +167,7 @@ class TextAreaField(StringField):
     rows: int = 6
     maxlength: Optional[int] = None
     minlength: Optional[int] = None
-    class_ = "field-textarea form-control"
+    class_: str = "field-textarea form-control"
 
     form_template: str = "forms/textarea.html"
 
@@ -203,17 +202,17 @@ class EmailField(StringField):
     The field itself doesn't validate data
     """
 
-    input_type = "email"
+    input_type: str = "email"
     render_function_key = "email"
-    class_ = "field-email form-control"
+    class_: str = "field-email form-control"
 
 
 @dataclass
 class PhoneField(StringField):
     """<input type='phone'>"""
 
-    input_type = "phone"
-    class_ = "field-phone form-control"
+    input_type: str = "phone"
+    class_: str = "field-phone form-control"
 
 
 @dataclass
@@ -235,13 +234,25 @@ class EnumField(StringField):
     """
 
     multiple: bool = False
-    choices: List[Dict[str, str]] = field(default_factory=list)
+    choices: Iterable[Tuple[str, str]] = field(default_factory=dict)
     form_template: str = "forms/enum.html"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         if self.multiple:
             return form_data.getlist(self.name)
         return form_data.get(self.name)
+
+    def _get_label(self, value) -> str:
+        if isinstance(value, Enum):
+            return value.name
+        for v, l in self.choices:
+            if value == v:
+                return l
+        raise ValueError(f"Invalid choice value: {value}")
+
+    async def serialize_value(self, request: Request, value: Any, action: str):
+        labels = [self._get_label(v) for v in (value if self.multiple else [value])]
+        return labels if self.multiple else labels[0]
 
     @classmethod
     def from_enum(
@@ -251,17 +262,19 @@ class EnumField(StringField):
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
-        choices = list(map(lambda e: dict(name=e.name, value=e.value), enum_type))  # type: ignore
+        choices = list(map(lambda e: (e.value, e.name), enum_type))  # type: ignore
         return cls(name, choices=choices, multiple=multiple, **kwargs)
 
     @classmethod
     def from_choices(
         cls,
         name: str,
-        choices: List[Dict[str, str]],
+        choices: Union[List[Tuple[str, str]], List[str]],
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
+        if len(choices) > 0 and not isinstance(choices[0], (list, tuple)):
+            choices = zip(choices, choices)
         return cls(name, choices=choices, multiple=multiple, **kwargs)
 
 
@@ -273,14 +286,17 @@ class DateTimeField(NumberField):
         output_format: display output format
     """
 
-    input_type = "datetime"
-    class_ = "field-datetime form-control"
+    input_type: str = "datetime-local"
+    class_: str = "field-datetime form-control"
     search_builder_type: Optional[str] = "moment-MMMM D, YYYY HH:mm:ss"
     output_format: str = "%B %d, %Y %H:%M:%S"
     search_format: Optional[str] = None
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
-        return datetime.fromisoformat(form_data.get(self.name))
+        try:
+            return datetime.fromisoformat(form_data.get(self.name))
+        except (TypeError, ValueError):
+            return None
 
     async def serialize_value(self, request: Request, value: Any, action: str):
         assert isinstance(
@@ -299,14 +315,17 @@ class DateField(DateTimeField):
         output_format: Set display output format
     """
 
-    input_type = "date"
-    class_ = "field-date form-control"
+    input_type: str = "date"
+    class_: str = "field-date form-control"
     output_format: str = "%B %d, %Y"
     search_format: Optional[str] = "YYYY-MM-DD"
     search_builder_type: Optional[str] = "moment-MMMM D, YYYY"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
-        return date.fromisoformat(form_data.get(self.name))
+        try:
+            return date.fromisoformat(form_data.get(self.name))
+        except (TypeError, ValueError):
+            return None
 
 
 @dataclass
@@ -317,14 +336,17 @@ class TimeField(DateTimeField):
         output_format: Set display output format
     """
 
-    input_type = "time"
-    class_ = "field-time form-control"
+    input_type: str = "time"
+    class_: str = "field-time form-control"
     search_builder_type: Optional[str] = "moment-HH:mm:ss"
     output_format: str = "%H:%M:%S"
     search_format: Optional[str] = "HH:mm:ss"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
-        return time.fromisoformat(form_data.get(self.name))
+        try:
+            return time.fromisoformat(form_data.get(self.name))
+        except (TypeError, ValueError):
+            return None
 
 
 @dataclass
@@ -342,43 +364,43 @@ class JSONField(BaseField):
             value = form_data.get(self.name)
             return json.loads(value) if value is not None else None
         except JSONDecodeError:
-            raise FormValidationError({self.name: "Invalid JSON value"})
+            # raise FormValidationError({self.name: "Invalid JSON value"})
+            return None
 
 
 @dataclass
 class FileField(BaseField):
-    accept: Optional[str] = None
     multiple: bool = False
     render_function_key = "file"
-    form_template = "forms/file.html"
-    display_template = "displays/file.html"
+    form_template: str = "forms/file.html"
+    display_template: str = "displays/file.html"
 
     async def parse_form_data(
         self, request: Request, form_data: FormData
     ) -> Union[UploadFile, List[UploadFile], None]:
         if self.multiple:
             files = form_data.getlist(self.name)
-            return [f for f in files if not is_empty_file(f)]
+            return [f for f in files if not is_empty_file(f.file)]
         file = form_data.get(self.name)
-        return None if is_empty_file(file) else file
+        return None if is_empty_file(file.file) else file
 
 
 @dataclass
 class ImageField(FileField):
-    accept = "image/*"
-    render_function_key = "image"
-    display_template = "displays/image.html"
+    render_function_key: str = "image"
+    form_template: str = "forms/image.html"
+    display_template: str = "displays/image.html"
 
 
 @dataclass
 class RelationField(BaseField):
     identity: Optional[str] = None
     multiple: bool = False
-    render_function_key = "relation"
-    form_template = "forms/relation.html"
-    display_template = "displays/relation.html"
+    render_function_key: str = "relation"
+    form_template: str = "forms/relation.html"
+    display_template: str = "displays/relation.html"
 
-    def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         if self.multiple:
             return form_data.getlist(self.name)
         return form_data.get(self.name)
@@ -401,4 +423,4 @@ class HasMany(RelationField):
         identity: Foreign ModelView identity
     """
 
-    multiple = True
+    multiple: bool = True

@@ -6,7 +6,7 @@ from sqlalchemy.orm import (
     ColumnProperty,
     InstrumentedAttribute,
     RelationshipProperty,
-    Session,
+    Session, joinedload,
 )
 from starlette.requests import Request
 from starlette_admin import RelationField, StringField
@@ -40,8 +40,9 @@ class ModelViewMeta(type):
             "Multiple PK columns not supported, A possible solution is to override "
             "BaseAdminModel class and put your own logic "
         )
-        cls.pk_column = mapper.primary_key[0]
-        cls.pk_attr = cls.pk_column.key
+        cls._pk_column = mapper.primary_key[0]
+        cls._relation_columns = list(mapper.relationships)
+        cls.pk_attr = cls._pk_column.key
         cls.model = model
         cls.identity = attrs.get("identity", slugify_class_name(cls.model.__name__))
         cls.label = attrs.get("label", prettify_class_name(cls.model.__name__) + "s")
@@ -133,7 +134,8 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     model: Type[Any]
     identity: Optional[str] = None
     pk_attr: Optional[str] = None
-    pk_column: Column
+    _pk_column: Column
+    _relation_columns: List[RelationshipProperty] = []
     fields: List[BaseField] = []
 
     async def count(
@@ -142,7 +144,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
         session: Session = request.state.session
-        stmt = select(func.count(self.pk_column))
+        stmt = select(func.count(self._pk_column))
         if where is not None:
             if isinstance(where, dict):
                 where = build_query(where, self.model)
@@ -170,15 +172,22 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 where = self.build_full_text_search_query(request, where, self.model)
             stmt = stmt.where(where)
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
+        for relation in self._relation_columns:
+            stmt.options(joinedload(relation.key))
         return session.execute(stmt).scalars().unique().all()
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: Session = request.state.session
-        return session.get(self.model, pk)
+        stmt = select(self.model).where(self._pk_column == pk)
+        for relation in self._relation_columns:
+            stmt.options(joinedload(relation.key))
+        return session.execute(stmt).scalars().one_or_none()
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
         session: Session = request.state.session
-        stmt = select(self.model).where(self.pk_column.in_(pks))
+        stmt = select(self.model).where(self._pk_column.in_(pks))
+        for relation in self._relation_columns:
+            stmt.options(joinedload(relation.key))
         return session.execute(stmt).scalars().unique().all()
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
@@ -263,14 +272,14 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         try:
             """to automatically serve sqlalchemy_file"""
             sqlalchemy_file = __import__("sqlalchemy_file")
-            if isinstance(field, FileField):
+            if isinstance(field, FileField) and value is not None:
                 data = []
-                for item in value if field.multiple else [value]:
+                for item in (value if field.multiple else [value]):
                     path = item["path"]
                     if action == "API" and getattr(item, "thumbnail", None) is not None:
                         path = item["thumbnail"]["path"]
                     storage, file_id = path.split("/")
-                    return data.append(
+                    data.append(
                         {
                             "content_type": item["content_type"],
                             "filename": item["filename"],

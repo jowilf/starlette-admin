@@ -1,4 +1,4 @@
-{%if field.type == 'TagsField' %}
+{%if data | is_iter %}
 <ul>
   {% for value in data %}
   <li>{{value }}</li>

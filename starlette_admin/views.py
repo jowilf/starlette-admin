@@ -112,7 +112,8 @@ class CustomView(BaseView):
     add_to_menu: bool = True
 
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
-        """Default methods to render view. Override this methods to add your custom logic."""
+        """Default methods to render view. Override this methods to add your custom logic.
+        """
         return templates.TemplateResponse(self.template_path, {"request": request})
 
     def is_active(self, request: Request) -> bool:
@@ -275,7 +276,7 @@ class BaseModelView(BaseView):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> Iterable[Any]:
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
         """
         Find many items
         Parameters:
@@ -342,6 +343,8 @@ class BaseModelView(BaseView):
                 for listing page and select2 data.
             request: Starlette Request
         """
+        if value is None:
+            return value
         return await field.serialize_value(request, value, action)
 
     async def serialize(
@@ -366,8 +369,8 @@ class BaseModelView(BaseView):
                     )
                 else:
                     obj_serialized[field.name] = [
-                        foreign_model.serialize(
-                            obj, request, action, include_relationships=False
+                        await foreign_model.serialize(
+                            v, request, action, include_relationships=False
                         )
                         for v in value
                     ]

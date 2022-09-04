@@ -186,6 +186,7 @@ class BaseAdmin:
         templates.env.filters[
             "to_model"
         ] = lambda identity: self._find_model_from_identity(identity)
+        templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         self.templates = templates
 
     def add_routes_for_view(self, view: Type[BaseView]) -> None:
@@ -236,7 +237,7 @@ class BaseAdmin:
             select2 = "select2" in request.query_params.keys()
             if len(pks) > 0:
                 items = await model.find_by_pks(request, pks)
-                total = len(pks)
+                total = len(items)
             else:
                 if where is not None:
                     try:
@@ -351,7 +352,12 @@ class BaseAdmin:
                 "request": request,
                 "model": model,
                 "raw_obj": obj,
-                "obj": await model.serialize(obj, request, "VIEW"),
+                "obj": await model.serialize(
+                    obj,
+                    request,
+                    "VIEW",
+                    find_foreign_model=lambda i: self._find_model_from_identity(i),
+                ),
             },
         )
 
@@ -406,7 +412,12 @@ class BaseAdmin:
                     "request": request,
                     "model": model,
                     "raw_obj": obj,
-                    "obj": await model.serialize(obj, request, "EDIT"),
+                    "obj": await model.serialize(
+                        obj,
+                        request,
+                        "EDIT",
+                        find_foreign_model=lambda i: self._find_model_from_identity(i),
+                    ),
                 },
             )
         else:
@@ -414,6 +425,8 @@ class BaseAdmin:
             dict_obj = await self.form_to_dict(request, form, model, "EDIT")
             try:
                 obj = await model.edit(request, pk, dict_obj)
+                print(dict_obj["parent"].id)
+                assert False
             except FormValidationError as errors:
                 return self.templates.TemplateResponse(
                     model.edit_template,

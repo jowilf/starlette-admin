@@ -406,7 +406,8 @@ class TestViews:
         )
         assert (
             response.text.count(
-                '<a href="https://google.com" class="dropdown-item" target="_self">LinkToGoogle</a>'
+                '<a href="https://google.com" class="dropdown-item"'
+                ' target="_self">LinkToGoogle</a>'
             )
             == 1
         )
