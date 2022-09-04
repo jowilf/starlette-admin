@@ -22,7 +22,6 @@ class BaseField:
         search_builder_type: datatable columns.searchBuilderType, For more information
             [click here](https://datatables.net/reference/option/columns.searchBuilderType)
         required: Indicate if the fields required
-        is_array: Indicate if the fields is array of values
         exclude_from_list: Control field visibility in list page
         exclude_from_detail: Control field visibility in detail page
         exclude_from_create: Control field visibility in create page
@@ -205,6 +204,7 @@ class EmailField(StringField):
     input_type: str = "email"
     render_function_key: str = "email"
     class_: str = "field-email form-control"
+    display_template: str = "displays/email.html"
 
 
 @dataclass
@@ -216,6 +216,7 @@ class URLField(StringField):
     input_type: str = "url"
     render_function_key: str = "url"
     class_: str = "field-url form-control"
+    display_template: str = "displays/url.html"
 
 
 @dataclass
@@ -224,6 +225,14 @@ class PhoneField(StringField):
 
     input_type: str = "phone"
     class_: str = "field-phone form-control"
+
+
+@dataclass
+class PasswordField(StringField):
+    """<input type='password'>"""
+
+    input_type: str = "password"
+    class_: str = "field-password form-control"
 
 
 @dataclass

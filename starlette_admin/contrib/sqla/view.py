@@ -99,7 +99,7 @@ class ModelViewMeta(type):
                         if isinstance(field, FileField) and getattr(
                             column.type, "multiple", False
                         ):
-                            field.is_array = True
+                            field.multiple = True
 
                     field.required = required
                     converted_fields.append(field)

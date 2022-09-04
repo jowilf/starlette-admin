@@ -17,7 +17,6 @@ $("div.field-json").each(function () {
   );
 });
 
-
 $(':input[data-role="file-field-delete"]').each(function () {
   let el = $(this);
   related = $(`#${el.data("for")}`);
@@ -71,13 +70,13 @@ $("select.field-has-one, select.field-has-many").each(function () {
       return $(item.text);
     },
   });
-  data = String(el.data("initial"));
-  if (data!="")
+  data = el.data("initial");
+  if (data)
     $.ajax({
       url: el.data("url"),
       data: {
         select2: true,
-        pks: data.split(","),
+        pks: String(data).split(","),
       },
       traditional: true,
       dataType: "json",
