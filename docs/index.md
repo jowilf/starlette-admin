@@ -60,6 +60,8 @@ Demo Application
 [starlette-admin-demo](https://github.com/jowilf/starlette-admin-demo) is a complete
 Starlette application that showcases Starlette-Admin features.
 
+click [here](https://starlette-admin-demo.jowilf.com/) to check the online version
+
 
 ## Installation
 
