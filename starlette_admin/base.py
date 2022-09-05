@@ -1,12 +1,10 @@
-import ast
 import json
-from datetime import date, datetime, time
 from json import JSONDecodeError
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Type, Union
 
 from jinja2 import ChoiceLoader, FileSystemLoader, PackageLoader
 from starlette.applications import Starlette
-from starlette.datastructures import FormData, UploadFile
+from starlette.datastructures import FormData
 from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.requests import Request
@@ -17,22 +15,8 @@ from starlette.status import HTTP_204_NO_CONTENT, HTTP_303_SEE_OTHER, HTTP_403_F
 from starlette.templating import Jinja2Templates
 from starlette_admin.auth import AuthMiddleware, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
-from starlette_admin.fields import (
-    BaseField,
-    BooleanField,
-    DateField,
-    DateTimeField,
-    EmailField,
-    FileField,
-    HasMany,
-    HasOne,
-    JSONField,
-    NumberField,
-    PhoneField,
-    RelationField,
-    TimeField,
-)
-from starlette_admin.helpers import get_file_icon, is_empty_file
+from starlette_admin.fields import BooleanField, FileField
+from starlette_admin.helpers import get_file_icon
 from starlette_admin.views import (
     BaseModelView,
     BaseView,
@@ -54,6 +38,7 @@ class BaseAdmin:
         logo_url: Optional[str] = None,
         login_logo_url: Optional[str] = None,
         templates_dir: str = "templates",
+        statics_dir: str = "statics",
         index_view: Type[CustomView] = DefaultAdminIndexView,
         auth_provider: Optional[AuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
@@ -67,6 +52,7 @@ class BaseAdmin:
             logo_url: URL of logo to be displayed instead of title.
             login_logo_url: If set, it will be used for login interface instead of logo_url.
             templates_dir: Templates dir for customisation
+            statics_dir: Statics dir for customisation
             index_view: CustomView to use for index page.
             auth_provider: Authentication Provider
             middlewares: Starlette middlewares
@@ -77,6 +63,7 @@ class BaseAdmin:
         self.logo_url = logo_url
         self.login_logo_url = login_logo_url
         self.templates_dir = templates_dir
+        self.statics_dir = statics_dir
         self.auth_provider = auth_provider
         self.middlewares = middlewares
         self.index_view: Type[CustomView] = index_view
@@ -92,8 +79,9 @@ class BaseAdmin:
         """
         Add View to the Admin interface.
         """
-        self._views.append(view())
-        self.add_routes_for_view(view)
+        view_instance = view()
+        self._views.append(view_instance)
+        self.setup_view(view_instance)
 
     def init_auth(self) -> None:
         if self.auth_provider is not None:
@@ -121,7 +109,11 @@ class BaseAdmin:
             )
 
     def init_routes(self) -> None:
-        statics = StaticFiles(packages=["starlette_admin"])
+        statics = StaticFiles(
+            directory=self.statics_dir, packages=["starlette_admin"], check_dir=False
+        )
+        # Avoid raising error where statics directory is not Found
+        statics.config_checked = True
         self.routes.extend(
             [
                 Mount("/statics", app=statics, name="statics"),
@@ -191,24 +183,26 @@ class BaseAdmin:
         templates.env.filters[
             "to_model"
         ] = lambda identity: self._find_model_from_identity(identity)
+        templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         self.templates = templates
 
-    def add_routes_for_view(self, view: Type[BaseView]) -> None:
-        if issubclass(view, DropDown):
-            for sub_view in view.views:
-                self.add_routes_for_view(sub_view)
-        elif issubclass(view, CustomView):
+    def setup_view(self, view: BaseView) -> None:
+        if isinstance(view, DropDown):
+            for sub_view in view._views_instance:
+                self.setup_view(sub_view)
+        elif isinstance(view, CustomView):
             self.routes.insert(
                 0,
                 Route(
                     view.path,
-                    endpoint=self._render_custom_view(view()),
+                    endpoint=self._render_custom_view(view),
                     methods=view.methods,
                     name=view.name,
                 ),
             )
-        elif issubclass(view, BaseModelView):
-            self._models.append(view())
+        elif isinstance(view, BaseModelView):
+            view._find_foreign_model = lambda i: self._find_model_from_identity(i)  # type: ignore
+            self._models.append(view)
 
     def _find_model_from_identity(self, identity: Optional[str]) -> BaseModelView:
         if identity is not None:
@@ -241,7 +235,7 @@ class BaseAdmin:
             select2 = "select2" in request.query_params.keys()
             if len(pks) > 0:
                 items = await model.find_by_pks(request, pks)
-                total = len(pks)
+                total = len(items)
             else:
                 if where is not None:
                     try:
@@ -260,9 +254,8 @@ class BaseAdmin:
                 dict(
                     items=[
                         (
-                            await self.serialize(
+                            await model.serialize(
                                 item,
-                                model,
                                 request,
                                 "API",
                                 include_relationships=not select2,
@@ -345,16 +338,16 @@ class BaseAdmin:
         if not model.is_accessible(request) or not model.can_view_details(request):
             raise HTTPException(403)
         pk = request.path_params.get("pk")
-        value = await model.find_by_pk(request, pk)
-        if value is None:
+        obj = await model.find_by_pk(request, pk)
+        if obj is None:
             raise HTTPException(404)
         return self.templates.TemplateResponse(
             model.detail_template,
             {
                 "request": request,
                 "model": model,
-                "raw_value": value,
-                "value": await self.serialize(value, model, request, "VIEW"),
+                "raw_obj": obj,
+                "obj": await model.serialize(obj, request, "VIEW"),
             },
         )
 
@@ -370,10 +363,9 @@ class BaseAdmin:
             )
         else:
             form = await request.form()
+            dict_obj = await self.form_to_dict(request, form, model, "CREATE")
             try:
-                obj = await model.create(
-                    request, await self.form_to_dict(request, form, model)
-                )
+                obj = await model.create(request, dict_obj)
             except FormValidationError as errors:
                 return self.templates.TemplateResponse(
                     model.create_template,
@@ -381,8 +373,7 @@ class BaseAdmin:
                         "request": request,
                         "model": model,
                         "errors": errors,
-                        "value": form,
-                        "is_form_value": True,
+                        "obj": dict_obj,
                     },
                 )
             pk = getattr(obj, model.pk_attr)  # type: ignore
@@ -401,8 +392,8 @@ class BaseAdmin:
         if not model.is_accessible(request) or not model.can_edit(request):
             raise HTTPException(403)
         pk = request.path_params.get("pk")
-        value = await model.find_by_pk(request, pk)
-        if value is None:
+        obj = await model.find_by_pk(request, pk)
+        if obj is None:
             raise HTTPException(404)
         if request.method == "GET":
             return self.templates.TemplateResponse(
@@ -410,18 +401,15 @@ class BaseAdmin:
                 {
                     "request": request,
                     "model": model,
-                    "raw_value": value,
-                    "value": await self.serialize(value, model, request, "EDIT"),
+                    "raw_obj": obj,
+                    "obj": await model.serialize(obj, request, "EDIT"),
                 },
             )
         else:
             form = await request.form()
+            dict_obj = await self.form_to_dict(request, form, model, "EDIT")
             try:
-                obj = await model.edit(
-                    request,
-                    pk,
-                    await self.form_to_dict(request, form, model, is_edit=True),
-                )
+                obj = await model.edit(request, pk, dict_obj)
             except FormValidationError as errors:
                 return self.templates.TemplateResponse(
                     model.edit_template,
@@ -429,8 +417,7 @@ class BaseAdmin:
                         "request": request,
                         "model": model,
                         "errors": errors,
-                        "value": form,
-                        "is_form_value": True,
+                        "obj": dict_obj,
                     },
                 )
             pk = getattr(obj, model.pk_attr)  # type: ignore
@@ -457,150 +444,24 @@ class BaseAdmin:
             status_code=exc.status_code,
         )
 
-    async def serialize(
-        self,
-        obj: Any,
-        model: BaseModelView,
-        request: Request,
-        ctx: str,
-        include_relationships: bool = True,
-        include_select2: bool = False,
-    ) -> Dict[str, Any]:
-        obj_serialized: Dict[str, Any] = dict()
-        for field in model.fields:
-            value = getattr(obj, field.name, None)
-            if isinstance(field, RelationField) and include_relationships:
-                foreign_model = self._find_model_from_identity(field.identity)
-                if value is not None and isinstance(field, HasOne):
-                    obj_serialized[field.name] = await self.serialize(
-                        value, foreign_model, request, ctx, include_relationships=False
-                    )
-                elif value is not None:
-                    obj_serialized[field.name] = [
-                        (
-                            await self.serialize(
-                                v,
-                                foreign_model,
-                                request,
-                                ctx,
-                                include_relationships=False,
-                            )
-                        )
-                        for v in value
-                    ]
-                else:
-                    obj_serialized[field.name] = value  # None
-            elif not isinstance(field, RelationField):
-                if value is not None and field.is_array:
-                    obj_serialized[field.name] = [
-                        (await model.serialize_field_value(v, field, ctx, request))
-                        for v in value
-                    ]
-                elif value is not None:
-                    obj_serialized[field.name] = await model.serialize_field_value(
-                        value, field, ctx, request
-                    )
-                else:
-                    obj_serialized[field.name] = value  # None
-
-        if include_select2:
-            obj_serialized["_select2_selection"] = await model.select2_selection(
-                obj, request
-            )
-            obj_serialized["_select2_result"] = await model.select2_result(obj, request)
-        obj_serialized["_repr"] = await model.repr(obj, request)
-        return obj_serialized
-
-    async def format_form_value(self, field: BaseField, value: Any) -> Any:
-        if isinstance(field, BooleanField):
-            return value == "on"
-        elif isinstance(field, NumberField):
-            return ast.literal_eval(value)
-        elif isinstance(field, DateTimeField):
-            return datetime.fromisoformat(value)
-        elif isinstance(field, DateField):
-            return date.fromisoformat(value)
-        elif isinstance(field, TimeField):
-            return time.fromisoformat(value)
-        elif isinstance(field, JSONField):
-            try:
-                return json.loads(value)
-            except JSONDecodeError:
-                raise FormValidationError({field.name: "Invalid JSON value"})
-        elif isinstance(value, UploadFile) and is_empty_file(value.file):
-            """Detect and remove empty file"""
-            return None
-        return value
-
     async def form_to_dict(
         self,
         request: Request,
         form_data: FormData,
         model: BaseModelView,
-        is_edit: bool = False,
+        action: str,
     ) -> Dict[str, Any]:
         data = dict()
         for field in model.fields:
-            if (
-                (field.name == model.pk_attr and not model.form_include_pk)
-                or (is_edit and field.exclude_from_edit)
-                or (not is_edit and field.exclude_from_create)
+            if (action == "EDIT" and field.exclude_from_edit) or (
+                action == "CREATE" and field.exclude_from_create
             ):
                 continue
-            if isinstance(field, FileField) and is_edit:
-                data[f"_{field.name}-delete"] = (
-                    form_data.get(f"_{field.name}-delete") == "on"
-                )
-            if form_data.get(field.name, None) is None:
-                if isinstance(field, BooleanField):
-                    data[field.name] = False
-                else:
-                    data[field.name] = [] if isinstance(field, HasMany) else None
-            elif (
-                isinstance(
-                    field,
-                    (
-                        NumberField,
-                        EmailField,
-                        PhoneField,
-                        DateTimeField,
-                        DateField,
-                        TimeField,
-                    ),
-                )
-                and form_data.get(field.name) == ""
-            ):
-                data[field.name] = None
-            elif not isinstance(field, RelationField):
-                if field.is_array:
-                    data[field.name] = [
-                        (await self.format_form_value(field, v))
-                        for v in form_data.getlist(field.name)
-                    ]
-                    if isinstance(field, FileField):
-                        """Remove empty files"""
-                        data[field.name] = [v for v in data[field.name] if v]
-                else:
-                    data[field.name] = await self.format_form_value(
-                        field, form_data.get(field.name)
-                    )
-            else:
-                if (
-                    isinstance(field, HasOne)
-                    and form_data.get(field.name, None) is not None
-                ):
-                    foreign_model = self._find_model_from_identity(field.identity)
-                    data[field.name] = await foreign_model.find_by_pk(
-                        request, form_data.get(field.name)
-                    )
-                elif (
-                    isinstance(field, HasMany)
-                    and len(form_data.getlist(field.name)) > 0
-                ):
-                    foreign_model = self._find_model_from_identity(field.identity)
-                    data[field.name] = await foreign_model.find_by_pks(
-                        request, form_data.getlist(field.name)
-                    )
+            if isinstance(field, FileField) and action == "EDIT":
+                data[f"_{field.name}-delete"] = await BooleanField(
+                    f"_{field.name}-delete"
+                ).parse_form_data(request, form_data)
+            data[field.name] = await field.parse_form_data(request, form_data)
         return data
 
     def mount_to(self, app: Starlette) -> None:

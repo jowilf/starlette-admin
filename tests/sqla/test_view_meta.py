@@ -114,9 +114,9 @@ def test_fields_conversion():
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
         ImageField("image", orderable=False, searchable=False),
-        ImageField("images", is_array=True, orderable=False, searchable=False),
+        ImageField("images", multiple=True, orderable=False, searchable=False),
         FileField("file", orderable=False, searchable=False),
-        FileField("files", is_array=True, orderable=False, searchable=False),
+        FileField("files", multiple=True, orderable=False, searchable=False),
         HasOne("document", identity="document", orderable=False, searchable=False),
     ]
     assert DocumentView().fields == [

@@ -7,10 +7,11 @@ poetry.lock
 dist
 htmlcov
 *.egg-info
-.coverage
+.coverage*
 coverage.xml
 site
 *.db
 .cache
 __pycache__/
 .pytest_cache/
+examples/

@@ -12,7 +12,7 @@ mongoengine_to_admin_map = {
     me.StringField: sa.StringField,
     me.IntField: sa.IntegerField,
     me.LongField: sa.IntegerField,
-    me.FloatField: sa.DecimalField,
+    me.FloatField: sa.FloatField,
     me.BooleanField: sa.BooleanField,
     me.DateTimeField: sa.DateTimeField,
     me.DateField: sa.DateField,
@@ -20,7 +20,7 @@ mongoengine_to_admin_map = {
     me.DecimalField: sa.DecimalField,
     me.EmailField: sa.EmailField,
     me.UUIDField: sa.StringField,
-    me.URLField: sa.StringField,
+    me.URLField: sa.URLField,
     me.MapField: sa.JSONField,
     me.DictField: sa.JSONField,
     me.FileField: sa.FileField,
@@ -35,7 +35,7 @@ reference_fields = (
     me.LazyReferenceField,
 )
 
-json_like_field = (
+json_like_fields = (
     me.DictField,
     me.MapField,
     me.GenericEmbeddedDocumentField,
@@ -59,14 +59,12 @@ def convert_mongoengine_field_to_admin_field(
             )
             admin_field = sa.HasMany(name, identity=identity)
         else:
-            if isinstance(field.field, json_like_field):
+            if isinstance(field.field, json_like_fields):
                 admin_field = sa.JSONField(name)
             elif isinstance(field.field, me.EnumField):
                 admin_field = sa.EnumField.from_enum(
-                    name, enum_type=field.field._enum_cls, is_array=True
+                    name, enum_type=field.field._enum_cls, multiple=True
                 )
-            elif isinstance(field.field, me.EmailField):
-                admin_field = sa.EmailField(name, is_array=True)
             else:
                 admin_field = TagsField(name)
     elif isinstance(field, me.ReferenceField):

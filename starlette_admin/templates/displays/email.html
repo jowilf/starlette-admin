@@ -1,4 +1,4 @@
-{%if field.is_array%}
+{%if data | is_iter %}
 <ul>
   {% for value in data %}
   <li><a href="mailto:{{value }}">{{value }}</a></li>

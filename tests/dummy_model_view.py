@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
 from requests import Request
+from starlette_admin import HasMany, HasOne
 from starlette_admin.views import BaseModelView
 
 
@@ -76,7 +77,20 @@ class DummyModelView(BaseModelView):
     async def validate_data(self, data: Dict):
         pass
 
+    async def arrange(self, request: Request, data: Dict):
+        for field in self.fields:
+            if isinstance(field, HasOne) and data[field.name] is not None:
+                data[field.name] = await self._find_foreign_model(
+                    field.identity
+                ).find_by_pk(request, int(data[field.name]))
+            elif isinstance(field, HasMany) and data[field.name] is not None:
+                data[field.name] = await self._find_foreign_model(
+                    field.identity
+                ).find_by_pks(request, list(map(int, data[field.name])))
+        return data
+
     async def create(self, request: Request, data: Dict):
+        data = await self.arrange(request, data)
         await self.validate_data(data)
         obj = self.model(id=type(self).seq, **data)
         type(self).db[type(self).seq] = obj
@@ -84,6 +98,7 @@ class DummyModelView(BaseModelView):
         return obj
 
     async def edit(self, request: Request, pk, data: Dict):
+        data = await self.arrange(request, data)
         await self.validate_data(data)
         type(self).db[int(pk)].update(data)
         return type(self).db[int(pk)]

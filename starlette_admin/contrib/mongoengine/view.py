@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Optional, Type, Union, no_type_check
+from typing import Any, Dict, List, Optional, Type, Union, no_type_check
 
 import starlette_admin
 from bson import ObjectId
@@ -8,6 +8,7 @@ from mongoengine.errors import DoesNotExist, ValidationError
 from mongoengine.fields import GridFSProxy
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
+from starlette_admin import HasMany, HasOne
 from starlette_admin.contrib.mongoengine.helpers import (
     build_order_clauses,
     build_raw_query,
@@ -110,24 +111,28 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         except (DoesNotExist, ValidationError):
             return None
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> Iterable[Document]:
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Document]:
         return self.document.objects(id__in=pks)
 
     async def create(self, request: Request, data: Dict[str, Any]) -> None:
         try:
-            return (await self._populate_obj(self.document(), data)).save()
+            return (await self._populate_obj(request, self.document(), data)).save()
         except Exception as e:
             self.handle_exception(e)
 
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
             obj = await self.find_by_pk(request, pk)
-            return (await self._populate_obj(obj, data, True)).save()
+            return (await self._populate_obj(request, obj, data, True)).save()
         except Exception as e:
             self.handle_exception(e)
 
     async def _populate_obj(
-        self, obj: Document, data: Dict[str, Any], is_edit: bool = False
+        self,
+        request: Request,
+        obj: Document,
+        data: Dict[str, Any],
+        is_edit: bool = False,
     ) -> Document:
         for field in self.fields:
             if (is_edit and field.exclude_from_edit) or (
@@ -152,6 +157,10 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                             filename=value.filename,
                             content_type=value.content_type,
                         )
+            elif isinstance(field, HasOne) and value is not None:
+                setattr(obj, name, ObjectId(value))
+            elif isinstance(field, HasMany) and value is not None:
+                setattr(obj, name, [ObjectId(v) for v in value])
             else:
                 setattr(obj, name, value)
         return obj
@@ -176,14 +185,12 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         return query
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, ctx: str, request: Request
-    ) -> Union[Dict[Any, Any], str, None]:
-        if isinstance(value, ObjectId):
-            return str(value)
-        elif isinstance(value, GridFSProxy):
+        self, value: Any, field: BaseField, action: str, request: Request
+    ) -> Any:
+        if isinstance(value, GridFSProxy):
             if value.grid_id:
                 id = value.grid_id
-                if ctx == "API" and getattr(value, "thumbnail_id", None) is not None:
+                if action == "API" and getattr(value, "thumbnail_id", None) is not None:
                     id = getattr(value, "thumbnail_id")
                 return {
                     "filename": getattr(value, "filename", "unamed"),
@@ -198,4 +205,4 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                     ),
                 }
             return None
-        return await super().serialize_field_value(value, field, ctx, request)
+        return await super().serialize_field_value(value, field, action, request)

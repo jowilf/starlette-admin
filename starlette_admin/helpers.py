@@ -1,6 +1,8 @@
 import os
 import re
-from typing import Any
+from typing import Any, Dict
+
+from markupsafe import escape
 
 
 def prettify_class_name(name: str) -> str:
@@ -50,3 +52,17 @@ def get_file_icon(mime_type: str) -> str:
             if key in mime_type:
                 return mapping[key]
     return "fa-file"
+
+
+def html_params(kwargs: Dict[str, Any]) -> str:
+    params = []
+    for k, v in kwargs.items():
+        if v is None:
+            continue
+        if v is True:
+            params.append(k)
+        elif v is False:
+            pass
+        else:
+            params.append('{}="{}"'.format(str(k), escape(v)))
+    return " ".join(params)

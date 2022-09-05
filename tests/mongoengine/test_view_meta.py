@@ -10,6 +10,7 @@ from starlette_admin import (
     EmailField,
     EnumField,
     FileField,
+    FloatField,
     HasMany,
     HasOne,
     ImageField,
@@ -17,6 +18,7 @@ from starlette_admin import (
     JSONField,
     StringField,
     TagsField,
+    URLField,
 )
 from starlette_admin.contrib.mongoengine import ModelView
 from starlette_admin.contrib.mongoengine.exceptions import NotSupportedField
@@ -43,7 +45,7 @@ class MyDocument(me.Document):
     date = me.DateField()
     decimal = me.DecimalField()
     email = me.EmailField()
-    emails = me.ListField(me.EmailField())
+    url = me.URLField()
     enum = me.EnumField(Status)
     dict_field = me.DictField()
     map_field = me.MapField(me.StringField())
@@ -88,18 +90,18 @@ def test_fields_conversion():
         StringField("id", exclude_from_create=True, exclude_from_edit=True),
         IntegerField("int"),
         IntegerField("long"),
-        DecimalField("float"),
+        FloatField("float"),
         BooleanField("bool"),
         DateTimeField("datetime"),
         DateTimeField("cplx_datetime"),
         DateField("date"),
         DecimalField("decimal"),
         EmailField("email"),
-        EmailField("emails", is_array=True),
+        URLField("url"),
         EnumField.from_enum("enum", Status),
         JSONField("dict_field"),
         JSONField("map_field"),
-        EnumField.from_enum("list_enum", Status, is_array=True),
+        EnumField.from_enum("list_enum", Status, multiple=True),
         TagsField("tags"),
         JSONField("json_array"),
         HasOne("attachment", identity="attachment"),

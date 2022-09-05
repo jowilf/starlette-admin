@@ -1,0 +1,5 @@
+{% include "forms/_label.html" %}
+<textarea name="{{field.name}}" data-bs-toggle="autosize"
+          class="form-control {%if error%}{{field.error_class}}{%endif%}"
+          {{ field.input_params() }}
+>{%if data%}{{data}}{%endif%}</textarea>

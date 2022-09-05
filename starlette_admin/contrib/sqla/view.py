@@ -7,9 +7,10 @@ from sqlalchemy.orm import (
     InstrumentedAttribute,
     RelationshipProperty,
     Session,
+    joinedload,
 )
 from starlette.requests import Request
-from starlette_admin import RelationField, StringField
+from starlette_admin import RelationField, StringField, TextAreaField
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
@@ -40,8 +41,9 @@ class ModelViewMeta(type):
             "Multiple PK columns not supported, A possible solution is to override "
             "BaseAdminModel class and put your own logic "
         )
-        cls.pk_column = mapper.primary_key[0]
-        cls.pk_attr = cls.pk_column.key
+        cls._pk_column = mapper.primary_key[0]
+        cls._relation_columns = list(mapper.relationships)
+        cls.pk_attr = cls._pk_column.key
         cls.model = model
         cls.identity = attrs.get("identity", slugify_class_name(cls.model.__name__))
         cls.label = attrs.get("label", prettify_class_name(cls.model.__name__) + "s")
@@ -97,7 +99,7 @@ class ModelViewMeta(type):
                         if isinstance(field, FileField) and getattr(
                             column.type, "multiple", False
                         ):
-                            field.is_array = True
+                            field.multiple = True
 
                     field.required = required
                     converted_fields.append(field)
@@ -133,7 +135,8 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     model: Type[Any]
     identity: Optional[str] = None
     pk_attr: Optional[str] = None
-    pk_column: Column
+    _pk_column: Column
+    _relation_columns: List[RelationshipProperty] = []
     fields: List[BaseField] = []
 
     async def count(
@@ -142,7 +145,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
         session: Session = request.state.session
-        stmt = select(func.count(self.pk_column))
+        stmt = select(func.count(self._pk_column))
         if where is not None:
             if isinstance(where, dict):
                 where = build_query(where, self.model)
@@ -170,15 +173,22 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 where = self.build_full_text_search_query(request, where, self.model)
             stmt = stmt.where(where)
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
+        for relation in self._relation_columns:
+            stmt.options(joinedload(relation.key))
         return session.execute(stmt).scalars().unique().all()
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: Session = request.state.session
-        return session.get(self.model, pk)
+        stmt = select(self.model).where(self._pk_column == pk)
+        for relation in self._relation_columns:
+            stmt.options(joinedload(relation.key))
+        return session.execute(stmt).scalars().one_or_none()
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
         session: Session = request.state.session
-        stmt = select(self.model).where(self.pk_column.in_(pks))
+        stmt = select(self.model).where(self._pk_column.in_(pks))
+        for relation in self._relation_columns:
+            stmt.options(joinedload(relation.key))
         return session.execute(stmt).scalars().unique().all()
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
@@ -188,7 +198,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         try:
             await self.validate(request, data)
             session: Session = request.state.session
-            obj = await self._populate_obj(self.model(), data)
+            obj = await self._populate_obj(request, self.model(), data)
             session.add(obj)
             session.commit()
             return obj
@@ -200,7 +210,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             await self.validate(request, data)
             session: Session = request.state.session
             obj = await self.find_by_pk(request, pk)
-            session.add(await self._populate_obj(obj, data, True))
+            session.add(await self._populate_obj(request, obj, data, True))
             session.commit()
             session.refresh(obj)
             return obj
@@ -209,6 +219,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
 
     async def _populate_obj(
         self,
+        request: Request,
         obj: Any,
         data: Dict[str, Any],
         is_edit: bool = False,
@@ -222,10 +233,24 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             if isinstance(field, FileField):
                 if data.get(f"_{name}-delete", False):
                     setattr(obj, name, None)
-                elif (not field.is_array and value is not None) or (
-                    field.is_array and isinstance(value, list) and len(value) > 0
+                elif (not field.multiple and value is not None) or (
+                    field.multiple and isinstance(value, list) and len(value) > 0
                 ):
                     setattr(obj, name, value)
+            elif isinstance(field, RelationField) and value is not None:
+                foreign_model = self._find_foreign_model(field.identity)  # type: ignore
+                if not field.multiple:
+                    setattr(
+                        obj,
+                        name,
+                        await foreign_model.find_by_pk(request, value),
+                    )
+                else:
+                    setattr(
+                        obj,
+                        name,
+                        await foreign_model.find_by_pks(request, value),
+                    )
             else:
                 setattr(obj, name, value)
         return obj
@@ -243,7 +268,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     ) -> Dict[str, Any]:
         query: Dict[str, Any] = {"or": []}
         for field in self.fields:
-            if field.searchable and isinstance(field, StringField):
+            if field.searchable and type(field) in [StringField, TextAreaField]:
                 query["or"].append({field.name: {"contains": term}})
         return build_query(query, model)
 
@@ -258,25 +283,30 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         raise exc  # pragma: no cover
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, ctx: str, request: Request
-    ) -> Union[Dict[str, Any], str, None]:
+        self, value: Any, field: BaseField, action: str, request: Request
+    ) -> Any:
         try:
             """to automatically serve sqlalchemy_file"""
-            sqlalchemy_file = __import__("sqlalchemy_file")
-            if isinstance(value, sqlalchemy_file.File):
-                path = value["path"]
-                if ctx == "API" and getattr(value, "thumbnail", None) is not None:
-                    path = value["thumbnail"]["path"]
-                storage, file_id = path.split("/")
-                return {
-                    "content_type": value["content_type"],
-                    "filename": value["filename"],
-                    "url": request.url_for(
-                        request.app.state.ROUTE_NAME + ":api:file",
-                        storage=storage,
-                        file_id=file_id,
-                    ),
-                }
+            __import__("sqlalchemy_file")
+            if isinstance(field, FileField) and value is not None:
+                data = []
+                for item in value if field.multiple else [value]:
+                    path = item["path"]
+                    if action == "API" and getattr(item, "thumbnail", None) is not None:
+                        path = item["thumbnail"]["path"]
+                    storage, file_id = path.split("/")
+                    data.append(
+                        {
+                            "content_type": item["content_type"],
+                            "filename": item["filename"],
+                            "url": request.url_for(
+                                request.app.state.ROUTE_NAME + ":api:file",
+                                storage=storage,
+                                file_id=file_id,
+                            ),
+                        }
+                    )
+                return data if field.multiple else data[0]
         except ImportError:  # pragma: no cover
             pass
-        return await super().serialize_field_value(value, field, ctx, request)
+        return await super().serialize_field_value(value, field, action, request)

@@ -1,6 +1,5 @@
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Dict, List, Optional
 
 import pytest
@@ -9,7 +8,8 @@ from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 from starlette_admin import (
     BaseAdmin,
-    DateTimeField,
+    EnumField,
+    FloatField,
     HasMany,
     HasOne,
     IntegerField,
@@ -274,48 +274,81 @@ class TestViews:
         assert len(PostView.db) == 2
         assert [x for x in PostView.db.keys()] == [2, 4]
 
-    def test_json_field_default_validation(self):
+    def test_other_fields(self):
         @dataclass
-        class JsonModel(DummyBaseModel):
-            json_field: dict
-            created_at: datetime = field(default_factory=datetime.utcnow)
+        class MyModel(DummyBaseModel):
+            score: Optional[float]
+            gender: str
+            json_field: Optional[dict]
+            # created_at: datetime = field(default_factory=datetime.utcnow)
 
-        class JsonModelView(DummyModelView):
+        class MyModelView(DummyModelView):
             fields = [
-                JSONField("json_field"),
-                DateTimeField(
-                    "created_at", exclude_from_create=True, exclude_from_edit=True
+                IntegerField("id"),
+                FloatField("score"),
+                EnumField.from_choices(
+                    "gender",
+                    (
+                        "male",
+                        "female",
+                    ),
                 ),
+                JSONField("json_field"),
+                # DateTimeField(
+                #     "created_at", exclude_from_create=True, exclude_from_edit=True
+                # ),
             ]
-            identity = "json"
-            model = JsonModel
+            identity = "mymodel"
+            model = MyModel
             db = {}
             seq = 1
 
         admin = BaseAdmin()
         app = Starlette()
-        admin.add_view(JsonModelView)
+        admin.add_view(MyModelView)
         admin.mount_to(app)
         client = TestClient(app)
-        response = client.post("/admin/json/create", data={"json_field": "{"})
-        assert response.status_code == 200
-        assert '<div class="invalid-feedback">Invalid JSON value</div>' in response.text
+        # response = client.post("/admin/mymodel/create", data={"json_field": "{"})
+        # assert response.status_code == 200
+        # assert '<div class="invalid-feedback">Invalid JSON value</div>' in response.text
 
         response = client.post(
-            "/admin/json/create", data={"json_field": '{"key":"value"}'}
+            "/admin/mymodel/create",
+            data={"score": 3.4, "gender": "male", "json_field": '{"key":"value"}'},
         )
         assert response.status_code == 303
-        assert JsonModelView.db[1].json_field == dict(key="value")
+        assert MyModelView.db[1] == MyModel(
+            id=1, score=3.4, gender="male", json_field=dict(key="value")
+        )
+        response = client.get("/admin/mymodel/edit/1")
+        assert response.status_code == 200
 
         response = client.post(
-            "/admin/json/edit/1", data={"json_field": '{"key":"value"}'}
+            "/admin/mymodel/edit/1",
+            data={
+                "score": 5.6,
+                "gender": "female",
+                "json_field": '{"new_key":"new_value"}',
+            },
         )
         assert response.status_code == 303
-        assert JsonModelView.db[1].json_field == dict(key="value")
+        assert MyModelView.db[1] == MyModel(
+            id=1, score=5.6, gender="female", json_field={"new_key": "new_value"}
+        )
+        # Test None for float and invalid json
+        response = client.post(
+            "/admin/mymodel/edit/1",
+            data={"score": "", "gender": "male", "json_field": "}"},
+        )
+        assert response.status_code == 303
+        assert MyModelView.db[1] == MyModel(
+            id=1, score=None, gender="male", json_field=None
+        )
 
-        response = client.post("/admin/json/edit/1", data={"json_field": "}"})
-        assert response.status_code == 200
-        assert '<div class="invalid-feedback">Invalid JSON value</div>' in response.text
+        # Test enum value error
+        MyModelView.db[2] = MyModel(id=2, score=4.5, gender="unknow", json_field=dict())
+        with pytest.raises(ValueError, match="Invalid choice value: unknow"):
+            response = client.get("/admin/api/mymodel?pks=2")
 
     def test_has_one_relationships(self):
         admin = BaseAdmin()
@@ -406,7 +439,8 @@ class TestViews:
         )
         assert (
             response.text.count(
-                '<a href="https://google.com" class="dropdown-item" target="_self">LinkToGoogle</a>'
+                '<a href="https://google.com" class="dropdown-item"'
+                ' target="_self">LinkToGoogle</a>'
             )
             == 1
         )
