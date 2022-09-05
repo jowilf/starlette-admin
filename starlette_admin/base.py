@@ -15,13 +15,7 @@ from starlette.status import HTTP_204_NO_CONTENT, HTTP_303_SEE_OTHER, HTTP_403_F
 from starlette.templating import Jinja2Templates
 from starlette_admin.auth import AuthMiddleware, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
-from starlette_admin.fields import (
-    BooleanField,
-    FileField,
-    HasMany,
-    HasOne,
-    RelationField,
-)
+from starlette_admin.fields import BooleanField, FileField
 from starlette_admin.helpers import get_file_icon
 from starlette_admin.views import (
     BaseModelView,
@@ -207,7 +201,7 @@ class BaseAdmin:
                 ),
             )
         elif isinstance(view, BaseModelView):
-            view._find_foreign_model = lambda i: self._find_model_from_identity(i)
+            view._find_foreign_model = lambda i: self._find_model_from_identity(i)  # type: ignore
             self._models.append(view)
 
     def _find_model_from_identity(self, identity: Optional[str]) -> BaseModelView:

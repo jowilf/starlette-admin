@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Optional, Type, Union, no_type_check
+from typing import Any, Dict, List, Optional, Type, Union, no_type_check
 
 import starlette_admin
 from bson import ObjectId
@@ -111,7 +111,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         except (DoesNotExist, ValidationError):
             return None
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> Iterable[Document]:
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Document]:
         return self.document.objects(id__in=pks)
 
     async def create(self, request: Request, data: Dict[str, Any]) -> None:
@@ -186,7 +186,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
 
     async def serialize_field_value(
         self, value: Any, field: BaseField, action: str, request: Request
-    ) -> Union[Dict[Any, Any], str, None]:
+    ) -> Any:
         if isinstance(value, GridFSProxy):
             if value.grid_id:
                 id = value.grid_id

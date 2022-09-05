@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, Callable, Dict, Iterable, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from jinja2 import Template
 from starlette.requests import Request
@@ -360,7 +360,8 @@ class BaseModelView(BaseView):
         for field in self.fields:
             value = getattr(obj, field.name, None)
             if isinstance(field, RelationField) and include_relationships:
-                foreign_model = self._find_foreign_model(field.identity)
+                foreign_model = self._find_foreign_model(field.identity)  # type: ignore
+                assert foreign_model.pk_attr is not None
                 if value is None:
                     obj_serialized[field.name] = None
                 elif isinstance(field, HasOne):
@@ -394,6 +395,7 @@ class BaseModelView(BaseView):
             )
             obj_serialized["_select2_result"] = await self.select2_result(obj, request)
         obj_serialized["_repr"] = await self.repr(obj, request)
+        assert self.pk_attr is not None
         pk = getattr(obj, self.pk_attr)
         route_name = request.app.state.ROUTE_NAME
         obj_serialized["_detail_url"] = request.url_for(

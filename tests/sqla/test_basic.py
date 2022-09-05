@@ -148,6 +148,14 @@ class TestSQLABasic:
         assert data["total"] == 5
         assert len(data["items"]) == 2
         # assert ["iPhone 9", "Samsung Universe 9"] == [x["title"] for x in data["items"]]
+        # Find by pks
+        response = client.get(
+            "/admin/api/product",
+            params={"pks": [x["id"] for x in data["items"]]},
+        )
+        assert {"Samsung Universe 9", "iPhone 9"} == {
+            x["title"] for x in response.json()["items"]
+        }
 
     def test_api_fulltext(self, client):
         response = client.get(
@@ -478,3 +486,22 @@ class TestSQLABasic:
             user = session.execute(stmt).scalar_one()
             assert user.products == []
             assert user.files is None
+
+        response = client.post(
+            "/admin/product/create",
+            data={
+                "title": "Infinix INBOOK of John",
+                "description": "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey",
+                "price": 1049,
+                "brand": "Infinix",
+                "user": "John",
+            },
+        )
+        assert response.status_code == 303
+        with Session(engine) as session:
+            stmt = select(Product).where(Product.title == "Infinix INBOOK of John")
+            product = session.execute(stmt).scalar_one()
+            assert product.user.name == "John"
+
+            response = await async_client.get("/admin/api/product?pks=%d" % product.id)
+            assert response.status_code == 200

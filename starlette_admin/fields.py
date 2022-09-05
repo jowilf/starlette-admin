@@ -54,7 +54,7 @@ class BaseField:
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         return form_data.get(self.name)
 
-    async def serialize_value(self, request: Request, value: Any, action: str):
+    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
         return value
 
     def dict(self) -> Dict[str, Any]:
@@ -68,10 +68,10 @@ class BooleanField(BaseField):
     form_template: str = "forms/boolean.html"
     display_template: str = "displays/boolean.html"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(self, request: Request, form_data: FormData) -> bool:
         return form_data.get(self.name) == "on"
 
-    async def serialize_value(self, request: Request, value: Any, action: str):
+    async def serialize_value(self, request: Request, value: Any, action: str) -> bool:
         return bool(value)
 
 
@@ -84,7 +84,7 @@ class StringField(BaseField):
     placeholder: Optional[str] = None
     help_text: Optional[str] = None
 
-    def input_params(self):
+    def input_params(self) -> str:
         return html_params(
             dict(
                 type=self.input_type,
@@ -93,7 +93,7 @@ class StringField(BaseField):
             )
         )
 
-    async def serialize_value(self, request: Request, value: Any, action: str):
+    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
         return str(value)
 
 
@@ -105,7 +105,7 @@ class NumberField(StringField):
     min: Optional[int] = None
     step: Union[str, int, None] = None
 
-    def input_params(self):
+    def input_params(self) -> str:
         return html_params(
             dict(
                 type=self.input_type,
@@ -122,13 +122,15 @@ class NumberField(StringField):
 class IntegerField(NumberField):
     class_: str = "field-integer form-control"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(
+        self, request: Request, form_data: FormData
+    ) -> Optional[int]:
         try:
             return int(form_data.get(self.name))
         except (ValueError, TypeError):
             return None
 
-    async def serialize_value(self, request: Request, value: Any, action: str):
+    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
         return int(value)
 
 
@@ -137,13 +139,15 @@ class DecimalField(NumberField):
     step: str = "any"
     class_: str = "field-decimal form-control"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(
+        self, request: Request, form_data: FormData
+    ) -> Optional[decimal.Decimal]:
         try:
             return decimal.Decimal(form_data.get(self.name))
         except (decimal.InvalidOperation, ValueError):
             return None
 
-    async def serialize_value(self, request: Request, value: Any, action: str):
+    async def serialize_value(self, request: Request, value: Any, action: str) -> str:
         return str(value)
 
 
@@ -151,13 +155,15 @@ class DecimalField(NumberField):
 class FloatField(StringField):
     class_: str = "field-float form-control"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(
+        self, request: Request, form_data: FormData
+    ) -> Optional[float]:
         try:
             return float(form_data.get(self.name))
         except ValueError:
             return None
 
-    async def serialize_value(self, request: Request, value: Any, action: str):
+    async def serialize_value(self, request: Request, value: Any, action: str) -> float:
         return float(value)
 
 
@@ -170,7 +176,7 @@ class TextAreaField(StringField):
 
     form_template: str = "forms/textarea.html"
 
-    def input_params(self):
+    def input_params(self) -> str:
         return html_params(
             dict(
                 rows=self.rows,
@@ -191,7 +197,7 @@ class TagsField(BaseField):
     form_template: str = "forms/tags.html"
     form_js = "js/field/forms/tags.js"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(self, request: Request, form_data: FormData) -> List[str]:
         return form_data.getlist(self.name)
 
 
@@ -257,12 +263,14 @@ class EnumField(StringField):
     choices: Iterable[Tuple[str, str]] = field(default_factory=dict)
     form_template: str = "forms/enum.html"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
-        if self.multiple:
-            return form_data.getlist(self.name)
-        return form_data.get(self.name)
+    async def parse_form_data(
+        self, request: Request, form_data: FormData
+    ) -> Union[str, List[str], None]:
+        return (
+            form_data.getlist(self.name) if self.multiple else form_data.get(self.name)
+        )
 
-    def _get_label(self, value) -> str:
+    def _get_label(self, value: Any) -> str:
         if isinstance(value, Enum):
             return value.name
         for v, l in self.choices:
@@ -270,7 +278,9 @@ class EnumField(StringField):
                 return l
         raise ValueError(f"Invalid choice value: {value}")
 
-    async def serialize_value(self, request: Request, value: Any, action: str):
+    async def serialize_value(
+        self, request: Request, value: Any, action: str
+    ) -> Union[List[str], str]:
         labels = [self._get_label(v) for v in (value if self.multiple else [value])]
         return labels if self.multiple else labels[0]
 
@@ -283,19 +293,19 @@ class EnumField(StringField):
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
         choices = list(map(lambda e: (e.value, e.name), enum_type))  # type: ignore
-        return cls(name, choices=choices, multiple=multiple, **kwargs)
+        return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
 
     @classmethod
     def from_choices(
         cls,
         name: str,
-        choices: Union[List[Tuple[str, str]], List[str]],
+        choices: Union[List[Tuple[str, str]], List[str], Tuple],
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
         if len(choices) > 0 and not isinstance(choices[0], (list, tuple)):
-            choices = zip(choices, choices)
-        return cls(name, choices=choices, multiple=multiple, **kwargs)
+            choices = list(zip(choices, choices))
+        return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
 
 
 @dataclass
@@ -308,7 +318,7 @@ class DateTimeField(NumberField):
 
     input_type: str = "datetime-local"
     class_: str = "field-datetime form-control"
-    search_builder_type: Optional[str] = "moment-MMMM D, YYYY HH:mm:ss"
+    search_builder_type: str = "moment-MMMM D, YYYY HH:mm:ss"
     output_format: str = "%B %d, %Y %H:%M:%S"
     search_format: Optional[str] = None
 
@@ -318,7 +328,7 @@ class DateTimeField(NumberField):
         except (TypeError, ValueError):
             return None
 
-    async def serialize_value(self, request: Request, value: Any, action: str):
+    async def serialize_value(self, request: Request, value: Any, action: str) -> str:
         assert isinstance(
             value, (datetime, date, time)
         ), f"Expect datetime, got  {type(value)}"
@@ -338,8 +348,8 @@ class DateField(DateTimeField):
     input_type: str = "date"
     class_: str = "field-date form-control"
     output_format: str = "%B %d, %Y"
-    search_format: Optional[str] = "YYYY-MM-DD"
-    search_builder_type: Optional[str] = "moment-MMMM D, YYYY"
+    search_format: str = "YYYY-MM-DD"
+    search_builder_type: str = "moment-MMMM D, YYYY"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
@@ -358,9 +368,9 @@ class TimeField(DateTimeField):
 
     input_type: str = "time"
     class_: str = "field-time form-control"
-    search_builder_type: Optional[str] = "moment-HH:mm:ss"
+    search_builder_type: str = "moment-HH:mm:ss"
     output_format: str = "%H:%M:%S"
-    search_format: Optional[str] = "HH:mm:ss"
+    search_format: str = "HH:mm:ss"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
@@ -402,9 +412,9 @@ class FileField(BaseField):
             files = form_data.getlist(self.name)
             return [f for f in files if not is_empty_file(f.file)]
         file = form_data.get(self.name)
-        return None if is_empty_file(file.file) else file
+        return None if (file and is_empty_file(file.file)) else file
 
-    def _isvalid_value(self, value):
+    def _isvalid_value(self, value: Any) -> bool:
         return value is not None and all(
             [
                 (
@@ -444,8 +454,6 @@ class HasOne(RelationField):
         identity: Foreign ModelView identity
     """
 
-    pass
-
 
 @dataclass
 class HasMany(RelationField):
@@ -455,7 +463,3 @@ class HasMany(RelationField):
     """
 
     multiple: bool = True
-
-
-if __name__ == "__main__":
-    print(URLField("").dict())

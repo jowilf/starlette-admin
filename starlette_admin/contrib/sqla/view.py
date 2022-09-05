@@ -237,22 +237,20 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                     field.multiple and isinstance(value, list) and len(value) > 0
                 ):
                     setattr(obj, name, value)
-            elif isinstance(field, HasOne) and value is not None:
-                setattr(
-                    obj,
-                    name,
-                    await self._find_foreign_model(field.identity).find_by_pk(
-                        request, value
-                    ),
-                )
-            elif isinstance(field, HasMany) and value is not None:
-                setattr(
-                    obj,
-                    name,
-                    await self._find_foreign_model(field.identity).find_by_pks(
-                        request, value
-                    ),
-                )
+            elif isinstance(field, RelationField) and value is not None:
+                foreign_model = self._find_foreign_model(field.identity)  # type: ignore
+                if not field.multiple:
+                    setattr(
+                        obj,
+                        name,
+                        await foreign_model.find_by_pk(request, value),
+                    )
+                else:
+                    setattr(
+                        obj,
+                        name,
+                        await foreign_model.find_by_pks(request, value),
+                    )
             else:
                 setattr(obj, name, value)
         return obj
@@ -286,10 +284,10 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
 
     async def serialize_field_value(
         self, value: Any, field: BaseField, action: str, request: Request
-    ) -> Union[Dict[str, Any], str, None]:
+    ) -> Any:
         try:
             """to automatically serve sqlalchemy_file"""
-            sqlalchemy_file = __import__("sqlalchemy_file")
+            __import__("sqlalchemy_file")
             if isinstance(field, FileField) and value is not None:
                 data = []
                 for item in value if field.multiple else [value]:

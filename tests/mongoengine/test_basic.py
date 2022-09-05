@@ -32,12 +32,21 @@ class Product(me.Document):
     created_at = me.DateTimeField(default=datetime.datetime.now())
 
 
-class User(me.Document):
+class Store(me.Document):
     name = me.StringField(min_length=3)
     products = me.ListField(me.ReferenceField(Product))
 
 
+class User(me.Document):
+    name = me.StringField(min_length=3)
+    store = me.ReferenceField("Store")
+
+
 class UserView(ModelView, document=User):
+    pass
+
+
+class StoreView(ModelView, document=Store):
     pass
 
 
@@ -53,14 +62,16 @@ class TestMongoBasic:
 
     def teardown(self):
         Product.drop_collection()
+        Store.drop_collection()
         User.drop_collection()
         disconnect()
 
     @pytest.fixture
     def admin(self):
         admin = Admin()
-        admin.add_view(UserView)
+        admin.add_view(StoreView)
         admin.add_view(ProductView)
+        admin.add_view(UserView)
         return admin
 
     @pytest.fixture
@@ -89,7 +100,7 @@ class TestMongoBasic:
         return file
 
     def test_base(self, admin, app, client):
-        assert len(admin._views) == 2
+        assert len(admin._views) == 3
         assert (
             app.url_path_for("admin:api:file", db="db", col="col", pk="pk")
             == "/admin/api/file/db/col/pk"
@@ -103,6 +114,14 @@ class TestMongoBasic:
         assert data["total"] == 5
         assert len(data["items"]) == 2
         assert ["iPhone 9", "Samsung Universe 9"] == [x["title"] for x in data["items"]]
+        # Find by pks
+        response = client.get(
+            "/admin/api/product",
+            params={"pks": [x["id"] for x in data["items"]]},
+        )
+        assert {"Samsung Universe 9", "iPhone 9"} == {
+            x["title"] for x in response.json()["items"]
+        }
 
     def test_api_fulltext(self, client):
         response = client.get(
@@ -327,9 +346,9 @@ class TestMongoBasic:
 
     def test_relationships(self, client):
         response = client.post(
-            "/admin/user/create",
+            "/admin/store/create",
             data={
-                "name": "John",
+                "name": "Jewelry store",
                 "products": [
                     x["id"]
                     for x in Product.objects(title__in=["iPhone 9", "Huawei P30"])
@@ -337,6 +356,20 @@ class TestMongoBasic:
             },
         )
         assert response.status_code == 303
+        assert Store.objects.count() == 1
+        store = Store.objects(name="Jewelry store").get()
+        assert sorted(x["title"] for x in store.products) == [
+            "Huawei P30",
+            "iPhone 9",
+        ]
+        response = client.post(
+            "/admin/user/create",
+            data={
+                "name": "John",
+                "store": store.id,
+            },
+        )
+        assert response.status_code == 303
         assert User.objects.count() == 1
         user = User.objects(name="John").get()
-        assert sorted([x["title"] for x in user.products]) == ["Huawei P30", "iPhone 9"]
+        assert user.store.name == "Jewelry store"
