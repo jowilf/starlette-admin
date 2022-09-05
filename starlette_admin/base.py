@@ -453,10 +453,8 @@ class BaseAdmin:
     ) -> Dict[str, Any]:
         data = dict()
         for field in model.fields:
-            if (
-                (field.name == model.pk_attr and not model.form_include_pk)
-                or (action == "EDIT" and field.exclude_from_edit)
-                or (action == "CREATE" and field.exclude_from_create)
+            if (action == "EDIT" and field.exclude_from_edit) or (
+                action == "CREATE" and field.exclude_from_create
             ):
                 continue
             if isinstance(field, FileField) and action == "EDIT":
