@@ -2,11 +2,14 @@
 :::starlette_admin.fields.BooleanField
 :::starlette_admin.fields.IntegerField
 :::starlette_admin.fields.DecimalField
+:::starlette_admin.fields.FloatField
 :::starlette_admin.fields.StringField
 :::starlette_admin.fields.TextAreaField
 :::starlette_admin.fields.TagsField
 :::starlette_admin.fields.EmailField
+:::starlette_admin.fields.URLField
 :::starlette_admin.fields.PhoneField
+:::starlette_admin.fields.PasswordField
 :::starlette_admin.fields.EnumField
 :::starlette_admin.fields.DateTimeField
 :::starlette_admin.fields.DateField

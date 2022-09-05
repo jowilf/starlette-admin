@@ -14,20 +14,23 @@ from starlette_admin.helpers import html_params, is_empty_file
 @dataclass
 class BaseField:
     """
-    Base class for field
+    Base class for fields
     Parameters:
         name: Field name, same as attribute name in your model
         label: Field label
         type: Field type, unique key used to define the field
         search_builder_type: datatable columns.searchBuilderType, For more information
             [click here](https://datatables.net/reference/option/columns.searchBuilderType)
-        required: Indicate if the fields required
+        required: Indicate if the fields is required
         exclude_from_list: Control field visibility in list page
         exclude_from_detail: Control field visibility in detail page
         exclude_from_create: Control field visibility in create page
         exclude_from_edit: Control field visibility in edit page
         searchable: Indicate if the fields is searchable
         orderable: Indicate if the fields is orderable
+        render_function_key: Render function key inside the global `render` variable in javascript
+        form_template: template for rendering this field in creation and edit page
+        display_template: template for displaying this field in detail page
     """
 
     name: str
@@ -63,6 +66,8 @@ class BaseField:
 
 @dataclass
 class BooleanField(BaseField):
+    """This field displays the `true/false` value of a boolean property."""
+
     search_builder_type: Optional[str] = "bool"
     render_function_key: str = "boolean"
     form_template: str = "forms/boolean.html"
@@ -77,6 +82,8 @@ class BooleanField(BaseField):
 
 @dataclass
 class StringField(BaseField):
+    """This field is used to represent any kind of short text content."""
+
     search_builder_type: Optional[str] = "string"
     input_type: str = "text"
     class_: str = "field-string form-control"
@@ -98,7 +105,37 @@ class StringField(BaseField):
 
 
 @dataclass
+class TextAreaField(StringField):
+    """This field is used to represent any kind of long text content.
+    For short text contents, use [StringField][starlette_admin.fields.StringField]"""
+
+    rows: int = 6
+    maxlength: Optional[int] = None
+    minlength: Optional[int] = None
+    class_: str = "field-textarea form-control"
+
+    form_template: str = "forms/textarea.html"
+
+    def input_params(self) -> str:
+        return html_params(
+            dict(
+                rows=self.rows,
+                minlength=self.minlength,
+                maxlength=self.maxlength,
+                placeholder=self.placeholder,
+                required=self.required,
+            )
+        )
+
+
+@dataclass
 class NumberField(StringField):
+    """This field is used to represent the value of properties
+    that store numbers of any type (integers or decimals).
+    Should not be used directly. use [IntegerField][starlette_admin.fields.IntegerField]
+    or [DecimalField][starlette_admin.fields.DecimalField]
+    """
+
     search_builder_type: str = "num"
     input_type: str = "number"
     max: Optional[int] = None
@@ -120,6 +157,10 @@ class NumberField(StringField):
 
 @dataclass
 class IntegerField(NumberField):
+    """
+    This field is used to represent the value of properties that store integer numbers.
+    Erroneous input is ignored and will not be accepted as a value."""
+
     class_: str = "field-integer form-control"
 
     async def parse_form_data(
@@ -136,6 +177,11 @@ class IntegerField(NumberField):
 
 @dataclass
 class DecimalField(NumberField):
+    """
+    This field is used to represent the value of properties that store decimal numbers.
+    Erroneous input is ignored and will not be accepted as a value.
+    """
+
     step: str = "any"
     class_: str = "field-decimal form-control"
 
@@ -153,6 +199,11 @@ class DecimalField(NumberField):
 
 @dataclass
 class FloatField(StringField):
+    """
+    A text field, except all input is coerced to an float.
+     Erroneous input is ignored and will not be accepted as a value.
+    """
+
     class_: str = "field-float form-control"
 
     async def parse_form_data(
@@ -168,30 +219,10 @@ class FloatField(StringField):
 
 
 @dataclass
-class TextAreaField(StringField):
-    rows: int = 6
-    maxlength: Optional[int] = None
-    minlength: Optional[int] = None
-    class_: str = "field-textarea form-control"
-
-    form_template: str = "forms/textarea.html"
-
-    def input_params(self) -> str:
-        return html_params(
-            dict(
-                rows=self.rows,
-                minlength=self.minlength,
-                maxlength=self.maxlength,
-                placeholder=self.placeholder,
-                required=self.required,
-            )
-        )
-
-
-@dataclass
 class TagsField(BaseField):
-    """Use select2 tags for form
-    Will return List[str]
+    """
+    This field is used to represent the value of properties that store a list of
+    string values. Render as `select2` tags input.
     """
 
     form_template: str = "forms/tags.html"
@@ -203,9 +234,8 @@ class TagsField(BaseField):
 
 @dataclass
 class EmailField(StringField):
-    """Email field. Add highlight to displays value.
-    The field itself doesn't validate data
-    """
+    """This field is used to represent a text content
+    that stores a single email address."""
 
     input_type: str = "email"
     render_function_key: str = "email"
@@ -215,9 +245,7 @@ class EmailField(StringField):
 
 @dataclass
 class URLField(StringField):
-    """Email field. Add highlight to displays value.
-    The field itself doesn't validate data
-    """
+    """This field is used to represent a text content that stores a single URL."""
 
     input_type: str = "url"
     render_function_key: str = "url"
@@ -227,7 +255,7 @@ class URLField(StringField):
 
 @dataclass
 class PhoneField(StringField):
-    """<input type='phone'>"""
+    """A StringField, except renders an `<input type="phone">`."""
 
     input_type: str = "phone"
     class_: str = "field-phone form-control"
@@ -235,7 +263,7 @@ class PhoneField(StringField):
 
 @dataclass
 class PasswordField(StringField):
-    """<input type='password'>"""
+    """A StringField, except renders an `<input type="password">`."""
 
     input_type: str = "password"
     class_: str = "field-password form-control"
@@ -243,7 +271,10 @@ class PasswordField(StringField):
 
 @dataclass
 class EnumField(StringField):
-    """Enum field.
+    """
+    Enumeration Field.
+    It take a python `enum.Enum` class or a list of *(value, label)* pairs.
+    It can also be a list of only values, in which case the value is used as the label.
     Example:
         ```Python
         class Status(str, enum.Enum):
@@ -257,30 +288,37 @@ class EnumField(StringField):
         class MyModelView(ModelView):
             fields = [EnumField.from_enum("status", Status)]
         ```
+
+        ```Python
+        class MyModel:
+            language: str
+
+        class MyModelView(ModelView):
+            fields = [EnumField.from_choices("language", [('cpp', 'C++'), ('py', 'Python'), ('text', 'Plain Text')])]
+        ```
     """
 
     multiple: bool = False
     choices: Iterable[Tuple[str, str]] = field(default_factory=dict)
     form_template: str = "forms/enum.html"
+    coerce: type = str
 
-    async def parse_form_data(
-        self, request: Request, form_data: FormData
-    ) -> Union[str, List[str], None]:
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         return (
-            form_data.getlist(self.name) if self.multiple else form_data.get(self.name)
+            list(map(self.coerce, form_data.getlist(self.name)))
+            if self.multiple
+            else self.coerce(form_data.get(self.name))
         )
 
-    def _get_label(self, value: Any) -> str:
+    def _get_label(self, value: Any) -> Any:
         if isinstance(value, Enum):
             return value.name
         for v, l in self.choices:
             if value == v:
-                return l
+                return self.coerce(l)
         raise ValueError(f"Invalid choice value: {value}")
 
-    async def serialize_value(
-        self, request: Request, value: Any, action: str
-    ) -> Union[List[str], str]:
+    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
         labels = [self._get_label(v) for v in (value if self.multiple else [value])]
         return labels if self.multiple else labels[0]
 
@@ -311,6 +349,7 @@ class EnumField(StringField):
 @dataclass
 class DateTimeField(NumberField):
     """
+    This field is used to represent a value that stores a python datetime.datetime object
     Parameters:
         search_format: moment.js format to send for searching. Use None for iso Format
         output_format: display output format
@@ -340,6 +379,7 @@ class DateTimeField(NumberField):
 @dataclass
 class DateField(DateTimeField):
     """
+    This field is used to represent a value that stores a python datetime.date object
     Parameters:
         search_format: moment.js format to send for searching. Use None for iso Format
         output_format: Set display output format
@@ -361,6 +401,7 @@ class DateField(DateTimeField):
 @dataclass
 class TimeField(DateTimeField):
     """
+    This field is used to represent a value that stores a python datetime.time object
     Parameters:
         search_format: Format to send for search. Use None for iso Format
         output_format: Set display output format
@@ -381,7 +422,9 @@ class TimeField(DateTimeField):
 
 @dataclass
 class JSONField(BaseField):
-    """JsonField - return Dict[Any,Any]"""
+    """
+    This field render jsoneditor and represent a value that stores python dict object.
+    Erroneous input is ignored and will not be accepted as a value."""
 
     render_function_key: str = "json"
     form_template: str = "forms/json.html"
@@ -400,6 +443,13 @@ class JSONField(BaseField):
 
 @dataclass
 class FileField(BaseField):
+    """
+    Renders a file upload field.
+    This field is used to represent a value that stores starlette UploadFile object.
+    For displaying value, this field wait for three properties which is `filename`,
+    `content-type` and `url`. Use `multiple=True` for multiple file upload
+    """
+
     multiple: bool = False
     render_function_key: str = "file"
     form_template: str = "forms/file.html"
@@ -428,6 +478,10 @@ class FileField(BaseField):
 
 @dataclass
 class ImageField(FileField):
+    """
+    FileField with `accept="image/*"`.
+    """
+
     render_function_key: str = "image"
     form_template: str = "forms/image.html"
     display_template: str = "displays/image.html"

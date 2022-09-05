@@ -14,86 +14,125 @@ class CustomField(BaseField):
     pass
 ```
 
-## Type
-
-The most important property is `type` which should be unique.
-
-```python
-from starlette_admin import BaseField
-
-
-class CustomField(BaseField):
-    type = "custom"
-```
-
 ## List Rendering
 
-*Starlette-Admin* use [Datatables](https://datatables.net/) to render list. You need to write a javascript function to
+*Starlette-Admin* use [Datatables](https://datatables.net/) to render list. By default all fields will be render as text field.
+To customize this behavior you need to write a javascript function to
 render your column inside datatable instance. For more information on how to write your function
 read [Datatables documentation](https://datatables.net/reference/option/columns.render).
 
-Put your file inside your custom templates directory under `dt/render/`. The filename is the concatenation of
-the field type and `.js`. For our example, you should create `dt/render/custom.js` and put your logic.
+* First, override the static file `js/render.js` and put your own function inside the `render` object
 
-You can add jinja2 syntax inside your javascript function. You field intance will be available under the variable `field`
+```js title="statics/js/render.js"
+const render = {
+    ...
+    mycustomkey: function render(data, type, full, meta, fieldOptions){
+        return `<span>Hello ${escape(data)}</span>`;
+    }
+}
 
-!!! example
-    ```js title="dt/render/custom.js"
-    dt_columns.push({
-        name: "{{field.name}}",
-        data: "{{field.name}}",
-        orderable: columns["{{field.name}}"].orderable,
-        searchBuilderType: "{{field.search_builder_type}}",
-        render: function (data, type, full, meta) {
-        return '<span>' + data +  '</span>';
-    });
-    ```
+```
+!!! note
+    `fieldOptions` is your field as javascript object. Your field attributes is serialized into
+    javascript object by using dataclass `asdict` function.
+    
+* Then, set `render_function_key` value
+
+```python
+from starlette_admin import BaseField
+from dataclasses import dataclass
+
+@dataclass
+class CustomField(BaseField):
+    render_function_key: str = "mycustomkey" 
+```
+
 ## Form
 
-For form rendering, you should create a new html file under the directory `forms`. If you
-need to add javascript function to your field, you can write a javascript function under the directory  `forms/js`.
-For our example, you need to create `forms/custom.html` and if you have to write javascript function, you can
-create it under `forms/js/custom.js`
+For form rendering, you should create a new html file under the directory `forms` in your templates dir.
 
 These jinja2 variables are available:
 
 * `field`: Your field instance
 * `error`: Error message coming from `FormValidationError`
-* `data`: Field value. Will be available if it is edit or when validation error occur
+* `data`: current value. Will be available if it is edit or when validation error occur
 * `action`: Will be `EDIT` or `CREATE`
-* `is_form_value`: True when validation error occur. This means the data are same value send 
-from your input not database value.
 
 !!! Example
     ```html title="forms/custom.html"
-    <input id="{{field.name}}" name="{{field.name}}" type="{{field.input_type}}" class="form-control {%if error%}is-invalid{%endif%}"
+    <input id="{{field.name}}" name="{{field.name}}" type="text" class="form-control {%if error%}is-invalid{%endif%}"
         placeholder="{{field.label}}" value="{{data or '' }}" {%if field.required%}required{%endif%} />
     ```
+```python
+from starlette_admin import BaseField
+from dataclasses import dataclass
 
-    ```js title="forms/js/custom.js"
-    var unique_variable_name = $("#{{field.name}}")
-    // Do whatever you want
-    ```
+@dataclass
+class CustomField(BaseField):
+    render_function_key: str = "mycustomkey" 
+    form_template: str = "forms/custom.html" 
+```
 
 ## Detail Page
 
-To render your field on detail page, you should create a new html file under the directory `displays`. If you
-need to add javascript function to your field, you can write a javascript function under the directory  `displays/js`.
-For our example, you need to create `displays/custom.html` and if you have to write javascript function, you can
-create it under `displays/js/custom.js`
+To render your field on detail page, you should create a new html file under the directory `displays` in your template dir.
 
 These jinja2 variables are available:
 
 * `field`: Your field instance
-* `data`: Field value. Will be available if it is edit or when validation error occur
+* `data`: value to display
 
 
 !!! Example
     ```html title="displays/custom.html"
-    <div id="{{field.name}}">{{data}}</div>
+    <span>Hello {{data}}</span>
     ```
+```python
+from starlette_admin import BaseField
+from dataclasses import dataclass
 
-    ```js title="displays/js/custom.js"
-    $("#{{field.name}}").append(...)
-    ```
+@dataclass
+class CustomField(BaseField):
+    render_function_key: str = "mycustomkey" 
+    form_template: str = "forms/custom.html" 
+    display_template = "displays/custom.html"
+```
 
+## Data processing 
+
+For data processing you will need to override two functions:
+
+* `process_form_data`:  Will be call when converting field value into python dict object
+* `serialize_field_value`: Will be call when serializing value to send through the API. This is the same data
+you will get in your *render* function
+
+
+```python
+from dataclasses import dataclass
+from typing import Any, Dict
+
+from requests import Request
+from starlette.datastructures import FormData
+from starlette_admin import BaseField
+
+
+@dataclass
+class CustomField(BaseField):
+    render_function_key: str = "mycustomkey"
+    form_template: str = "forms/custom.html"
+    display_template = "displays/custom.html"
+
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        return form_data.get(self.name)
+
+    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
+        return value
+
+    def dict(self) -> Dict[str, Any]:
+        return super().dict()
+
+```
+
+
+!!! important
+    Override `dict` function to get control of the options which is available in javascript.
