@@ -113,33 +113,31 @@ class TestMongoBasic:
         data = response.json()
         assert data["total"] == 5
         assert len(data["items"]) == 2
-        assert ["iPhone 9", "Samsung Universe 9"] == [x["title"] for x in data["items"]]
+        assert ["OPPOF19", "IPhone X"] == [x["title"] for x in data["items"]]
         # Find by pks
         response = client.get(
             "/admin/api/product",
             params={"pks": [x["id"] for x in data["items"]]},
         )
-        assert {"Samsung Universe 9", "iPhone 9"} == {
-            x["title"] for x in response.json()["items"]
-        }
+        assert {"IPhone X", "OPPOF19"} == {x["title"] for x in response.json()["items"]}
 
     def test_api_fulltext(self, client):
         response = client.get(
-            "/admin/api/product?limit=-1&where=iPhone&order_by=price asc"
+            "/admin/api/product?limit=-1&where=IPhone&order_by=price asc"
         )
         data = response.json()
         assert data["total"] == 2
-        assert ["iPhone 9", "iPhone X"] == [x["title"] for x in data["items"]]
+        assert ["IPhone 9", "IPhone X"] == [x["title"] for x in data["items"]]
 
     def test_api_query1(self, client):
         where = (
-            '{"or": [{"title": {"eq": "iPhone 9"}}, {"price": {"between": [200,'
+            '{"or": [{"title": {"eq": "IPhone 9"}}, {"price": {"between": [200,'
             " 500]}}]}"
         )
         response = client.get(f"/admin/api/product?where={where}&order_by=price asc")
         data = response.json()
         assert data["total"] == 3
-        assert ["OPPOF19", "Huawei P30", "iPhone 9"] == [
+        assert ["OPPOF19", "Huawei P30", "IPhone 9"] == [
             x["title"] for x in data["items"]
         ]
 
@@ -151,7 +149,7 @@ class TestMongoBasic:
         response = client.get(f"/admin/api/product?where={where}")
         data = response.json()
         assert data["total"] == 1
-        assert ["iPhone X"] == [x["title"] for x in data["items"]]
+        assert ["IPhone X"] == [x["title"] for x in data["items"]]
 
     def test_api_query3(self, client):
         where = (
@@ -164,7 +162,7 @@ class TestMongoBasic:
         assert ["OPPOF19", "Huawei P30"] == [x["title"] for x in data["items"]]
 
     def test_detail(self, client):
-        id = Product.objects(title="iPhone 9").get().id
+        id = Product.objects(title="IPhone 9").get().id
         response = client.get(f"/admin/product/detail/{id}")
         assert response.status_code == 200
         assert str(id) in response.text
@@ -211,7 +209,7 @@ class TestMongoBasic:
             Product.objects(brand="Infinix").get()
 
     def test_edit(self, client):
-        id = Product.objects(title="iPhone 9").get().id
+        id = Product.objects(title="IPhone 9").get().id
         response = client.post(
             f"/admin/product/edit/{id}",
             data={
@@ -228,10 +226,10 @@ class TestMongoBasic:
         assert Product.objects.count() == 5
         assert Product.objects(id=id).get().title == "Infinix INBOOK"
         with pytest.raises(me.DoesNotExist):
-            Product.objects(title="iPhone 9").get()
+            Product.objects(title="IPhone 9").get()
 
     def test_edit_validation_error(self, client):
-        id = Product.objects(title="iPhone 9").get().id
+        id = Product.objects(title="IPhone 9").get().id
         response = client.post(
             f"/admin/product/edit/{id}",
             data={
@@ -256,12 +254,12 @@ class TestMongoBasic:
     def test_delete(self, client):
         ids = [
             str(x.id)
-            for x in Product.objects(title__in=["iPhone 9", "Huawei P30", "OPPOF19"])
+            for x in Product.objects(title__in=["IPhone 9", "Huawei P30", "OPPOF19"])
         ]
         response = client.delete("/admin/api/product", params={"pks": ids})
         assert response.status_code == 204
         assert (
-            Product.objects(title__in=["iPhone 9", "Huawei P30", "OPPOF19"]).count()
+            Product.objects(title__in=["IPhone 9", "Huawei P30", "OPPOF19"]).count()
             == 0
         )
 
@@ -351,7 +349,7 @@ class TestMongoBasic:
                 "name": "Jewelry store",
                 "products": [
                     x["id"]
-                    for x in Product.objects(title__in=["iPhone 9", "Huawei P30"])
+                    for x in Product.objects(title__in=["IPhone 9", "Huawei P30"])
                 ],
             },
         )
@@ -360,7 +358,7 @@ class TestMongoBasic:
         store = Store.objects(name="Jewelry store").get()
         assert sorted(x["title"] for x in store.products) == [
             "Huawei P30",
-            "iPhone 9",
+            "IPhone 9",
         ]
         response = client.post(
             "/admin/user/create",

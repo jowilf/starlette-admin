@@ -43,7 +43,7 @@ class Brand(str, enum.Enum):
 class Product(Base):
     __tablename__ = "product"
     id = Column(Integer, primary_key=True)
-    title = Column(String(100), unique=True)
+    title = Column(String(100))
     description = Column(Text)
     price = Column(Float)
     brand = Column(Enum(Brand))
@@ -147,33 +147,31 @@ class TestSQLABasic:
         data = response.json()
         assert data["total"] == 5
         assert len(data["items"]) == 2
-        # assert ["iPhone 9", "Samsung Universe 9"] == [x["title"] for x in data["items"]]
+        assert ["OPPOF19", "IPhone X"] == [x["title"] for x in data["items"]]
         # Find by pks
         response = client.get(
             "/admin/api/product",
             params={"pks": [x["id"] for x in data["items"]]},
         )
-        assert {"Samsung Universe 9", "iPhone 9"} == {
-            x["title"] for x in response.json()["items"]
-        }
+        assert {"OPPOF19", "IPhone X"} == {x["title"] for x in response.json()["items"]}
 
     def test_api_fulltext(self, client):
         response = client.get(
-            "/admin/api/product?limit=-1&where=iPhone&order_by=price asc"
+            "/admin/api/product?limit=-1&where=IPhone&order_by=price asc"
         )
         data = response.json()
         assert data["total"] == 2
-        assert ["iPhone 9", "iPhone X"] == [x["title"] for x in data["items"]]
+        assert ["IPhone 9", "IPhone X"] == [x["title"] for x in data["items"]]
 
     def test_api_query1(self, client):
         where = (
             '{"or": [{"in_stock": {"neq": true}},{"in_stock": {"eq": false}}, {"title":'
-            ' {"eq": "iPhone 9"}}, {"price": {"between": [200, 500]}}]}'
+            ' {"eq": "IPhone 9"}}, {"price": {"between": [200, 500]}}]}'
         )
         response = client.get(f"/admin/api/product?where={where}&order_by=price asc")
         data = response.json()
         assert data["total"] == 3
-        assert ["OPPOF19", "Huawei P30", "iPhone 9"] == [
+        assert ["OPPOF19", "Huawei P30", "IPhone 9"] == [
             x["title"] for x in data["items"]
         ]
 
@@ -185,12 +183,12 @@ class TestSQLABasic:
         response = client.get(f"/admin/api/product?where={where}")
         data = response.json()
         assert data["total"] == 1
-        assert ["iPhone X"] == [x["title"] for x in data["items"]]
+        assert ["IPhone X"] == [x["title"] for x in data["items"]]
 
     def test_api_query3(self, client):
         where = (
             '{"and": [{"description": {"not": {"endsWith": "Universe"}}}, {"title":'
-            ' {"not": {"startsWith":"iPhone"}}}]}'
+            ' {"not": {"startsWith":"IPhone"}}}]}'
         )
         response = client.get(f"/admin/api/product?where={where}&order_by=price asc")
         data = response.json()
