@@ -12,6 +12,7 @@ Multiple options are available to customise your admin interface
         title="SQLModel Admin",
         base_url="/admin",
         route_name="admin",
+        statics_dir="statics/admin",
         templates_dir="templates/admin",
         logo_url="`https`://preview.tabler.io/static/logo-white.svg",
         login_logo_url="`https`://preview.tabler.io/static/logo.svg",
@@ -31,6 +32,7 @@ Multiple options are available to customise your admin interface
         title="SQLModel Admin",
         base_url="/admin",
         route_name="admin",
+        statics_dir="statics/admin",
         templates_dir="templates/admin",
         logo_url="`https`://preview.tabler.io/static/logo-white.svg",
         login_logo_url="`https`://preview.tabler.io/static/logo.svg",
@@ -48,6 +50,7 @@ Multiple options are available to customise your admin interface
 * `route_name`: Mounted Admin name
 * `logo_url`: URL of logo to be displayed instead of title.
 * `login_logo_url`: If set, it will be used for login interface instead of logo_url.
+* `statics_dir`: Templates dir for static files customisation
 * `templates_dir`: Templates dir for customisation
 * `index_view`: CustomView to use for index page. Default to [DefaultAdminIndexView][starlette_admin.views.DefaultAdminIndexView]
 * `auth_provider`: Authentication Provider

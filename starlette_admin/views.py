@@ -430,8 +430,8 @@ class BaseModelView(BaseView):
 
         """
         template_str = (
-            "<span>{%for col in fields %}{%if obj[col]%}<strong>{{col}}: </strong>{{obj[col]}}"
-            " {%endif%}{%endfor%}</span>"
+            "<span>{%for col in fields %}{%if obj[col]%}<strong>{{col}}:"
+            " </strong>{{obj[col]}} {%endif%}{%endfor%}</span>"
         )
         fields = [
             field.name
