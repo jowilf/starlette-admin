@@ -262,6 +262,14 @@ class PhoneField(StringField):
 
 
 @dataclass
+class ColorField(StringField):
+    """A StringField, except renders an `<input type="color">`."""
+
+    input_type: str = "color"
+    class_: str = "field-color form-control"
+
+
+@dataclass
 class PasswordField(StringField):
     """A StringField, except renders an `<input type="password">`."""
 
