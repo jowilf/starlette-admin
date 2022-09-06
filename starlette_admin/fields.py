@@ -266,7 +266,7 @@ class ColorField(StringField):
     """A StringField, except renders an `<input type="color">`."""
 
     input_type: str = "color"
-    class_: str = "field-color form-control"
+    class_: str = "field-color form-control form-control-color"
 
 
 @dataclass
