@@ -19,8 +19,7 @@ def get_async_test_engine() -> AsyncEngine:
     return create_async_engine(
         os.environ.get(
             "ASYNC_ENGINE", "sqlite+aiosqlite:////tmp/test.db?check_same_thread=False"
-        ),
-        echo=True,
+        )
     )
 
 
