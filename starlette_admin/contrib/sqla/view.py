@@ -7,11 +7,17 @@ from sqlalchemy.orm import (
     ColumnProperty,
     InstrumentedAttribute,
     RelationshipProperty,
-    Session,
     joinedload,
 )
 from starlette.requests import Request
-from starlette_admin import RelationField, StringField, TextAreaField
+from starlette_admin import (
+    EmailField,
+    PhoneField,
+    RelationField,
+    StringField,
+    TextAreaField,
+    URLField,
+)
 from starlette_admin.contrib.sqla._types import SESSION_TYPE
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
@@ -292,7 +298,13 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     ) -> Dict[str, Any]:
         query: Dict[str, Any] = {"or": []}
         for field in self.fields:
-            if field.searchable and type(field) in [StringField, TextAreaField]:
+            if field.searchable and type(field) in [
+                StringField,
+                TextAreaField,
+                EmailField,
+                URLField,
+                PhoneField,
+            ]:
                 query["or"].append({field.name: {"contains": term}})
         return build_query(query, model)
 

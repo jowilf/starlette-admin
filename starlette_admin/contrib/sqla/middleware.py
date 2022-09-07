@@ -41,14 +41,3 @@ def get_session(engine: Engine) -> Generator[Session, None, None]:
         raise e
     finally:
         session.close()
-
-
-async def get_async_session(engine: AsyncEngine) -> Generator[AsyncSession, None, None]:
-    session: AsyncSession = AsyncSession(engine, expire_on_commit=False)
-    try:
-        yield session
-    except Exception as e:  # pragma: no cover
-        await session.rollback()
-        raise e
-    finally:
-        await session.close()
