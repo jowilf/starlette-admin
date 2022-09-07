@@ -53,7 +53,7 @@ class ModelViewMeta(type):
         cls._pk_column = mapper.primary_key[0]
         cls._relation_columns = list(mapper.relationships)
         cls.pk_attr = cls._pk_column.key
-        cls._pk_corce = get_column_python_type(cls._pk_column)
+        cls._pk_coerce = get_column_python_type(cls._pk_column)
         cls.model = model
         cls.identity = attrs.get("identity", slugify_class_name(cls.model.__name__))
         cls.label = attrs.get("label", prettify_class_name(cls.model.__name__) + "s")
@@ -146,6 +146,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     identity: Optional[str] = None
     pk_attr: Optional[str] = None
     _pk_column: Column
+    _pk_coerce: type
     _relation_columns: List[RelationshipProperty] = []
     fields: List[BaseField] = []
 
@@ -193,7 +194,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: SESSION_TYPE = request.state.session
-        stmt = select(self.model).where(self._pk_column == self._pk_corce(pk))
+        stmt = select(self.model).where(self._pk_column == self._pk_coerce(pk))
         for relation in self._relation_columns:
             stmt.options(joinedload(relation.key))
         if isinstance(session, AsyncSession):
@@ -202,7 +203,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
         session: SESSION_TYPE = request.state.session
-        stmt = select(self.model).where(self._pk_column.in_(map(self._pk_corce, pks)))
+        stmt = select(self.model).where(self._pk_column.in_(map(self._pk_coerce, pks)))
         for relation in self._relation_columns:
             stmt.options(joinedload(relation.key))
         if isinstance(session, AsyncSession):
