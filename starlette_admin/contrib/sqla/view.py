@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Type, Union, no_type_check
 
 from sqlalchemy import Boolean, Column, func, inspect, select
 from sqlalchemy.exc import NoInspectionAvailable
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     ColumnProperty,
     InstrumentedAttribute,
@@ -11,6 +12,7 @@ from sqlalchemy.orm import (
 )
 from starlette.requests import Request
 from starlette_admin import RelationField, StringField, TextAreaField
+from starlette_admin.contrib.sqla._types import SESSION_TYPE
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
@@ -144,7 +146,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         request: Request,
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
-        session: Session = request.state.session
+        session: SESSION_TYPE = request.state.session
         stmt = select(func.count(self._pk_column))
         if where is not None:
             if isinstance(where, dict):
@@ -152,6 +154,8 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             else:
                 where = self.build_full_text_search_query(request, where, self.model)
             stmt = stmt.where(where)
+        if isinstance(session, AsyncSession):
+            return (await session.execute(stmt)).scalar_one()
         return session.execute(stmt).scalar_one()
 
     async def find_all(
@@ -162,7 +166,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
     ) -> List[Any]:
-        session: Session = request.state.session
+        session: SESSION_TYPE = request.state.session
         stmt = select(self.model).offset(skip)
         if limit > 0:
             stmt = stmt.limit(limit)
@@ -175,20 +179,26 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
         for relation in self._relation_columns:
             stmt.options(joinedload(relation.key))
+        if isinstance(session, AsyncSession):
+            return (await session.execute(stmt)).scalars().unique().all()
         return session.execute(stmt).scalars().unique().all()
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
-        session: Session = request.state.session
+        session: SESSION_TYPE = request.state.session
         stmt = select(self.model).where(self._pk_column == pk)
         for relation in self._relation_columns:
             stmt.options(joinedload(relation.key))
+        if isinstance(session, AsyncSession):
+            return (await session.execute(stmt)).scalars().one_or_none()
         return session.execute(stmt).scalars().one_or_none()
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
-        session: Session = request.state.session
+        session: SESSION_TYPE = request.state.session
         stmt = select(self.model).where(self._pk_column.in_(pks))
         for relation in self._relation_columns:
             stmt.options(joinedload(relation.key))
+        if isinstance(session, AsyncSession):
+            return (await session.execute(stmt)).scalars().unique().all()
         return session.execute(stmt).scalars().unique().all()
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
@@ -197,10 +207,15 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
         try:
             await self.validate(request, data)
-            session: Session = request.state.session
+            session: SESSION_TYPE = request.state.session
             obj = await self._populate_obj(request, self.model(), data)
             session.add(obj)
-            session.commit()
+            if isinstance(session, AsyncSession):
+                await session.commit()
+                await session.refresh(obj)
+            else:
+                session.commit()
+                session.refresh(obj)
             return obj
         except Exception as e:
             return self.handle_exception(e)
@@ -208,11 +223,15 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
             await self.validate(request, data)
-            session: Session = request.state.session
+            session: SESSION_TYPE = request.state.session
             obj = await self.find_by_pk(request, pk)
             session.add(await self._populate_obj(request, obj, data, True))
-            session.commit()
-            session.refresh(obj)
+            if isinstance(session, AsyncSession):
+                await session.commit()
+                await session.refresh(obj)
+            else:
+                session.commit()
+                session.refresh(obj)
             return obj
         except Exception as e:
             self.handle_exception(e)
@@ -256,11 +275,16 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         return obj
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
-        session: Session = request.state.session
+        session: SESSION_TYPE = request.state.session
         objs = await self.find_by_pks(request, pks)
-        for obj in objs:
-            session.delete(obj)
-        session.commit()
+        if isinstance(session, AsyncSession):
+            for obj in objs:
+                await session.delete(obj)
+            await session.commit()
+        else:
+            for obj in objs:
+                session.delete(obj)
+            session.commit()
         return len(objs)
 
     def build_full_text_search_query(
