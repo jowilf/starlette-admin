@@ -9,6 +9,7 @@
 :::starlette_admin.fields.EmailField
 :::starlette_admin.fields.URLField
 :::starlette_admin.fields.PhoneField
+:::starlette_admin.fields.ColorField
 :::starlette_admin.fields.PasswordField
 :::starlette_admin.fields.EnumField
 :::starlette_admin.fields.DateTimeField
