@@ -11,6 +11,7 @@ from sqlalchemy.orm import (
 )
 from starlette.requests import Request
 from starlette_admin import (
+    ColorField,
     EmailField,
     PhoneField,
     RelationField,
@@ -312,6 +313,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 EmailField,
                 URLField,
                 PhoneField,
+                ColorField,
             ]:
                 query["or"].append({field.name: {"contains": term}})
         return build_query(query, model)

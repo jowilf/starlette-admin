@@ -66,9 +66,13 @@ nav:
       - Views: 'api/views.md'
       - BaseAdmin: 'api/base-admin.md'
       - AuthProvider: 'api/auth-provider.md'
+  - Changelog: 'changelog.md'
 
 
 extra:
+  analytics:
+    provider: google
+    property: G-65T0Z8JY8D
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/jowilf
