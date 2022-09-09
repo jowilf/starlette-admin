@@ -70,6 +70,9 @@ nav:
 
 
 extra:
+  analytics:
+    provider: google
+    property: G-65T0Z8JY8D
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/jowilf
