@@ -51,7 +51,6 @@ class ModelViewMeta(type):
             "BaseAdminModel class and put your own logic "
         )
         cls._pk_column = mapper.primary_key[0]
-        cls._relation_columns = list(mapper.relationships)
         cls.pk_attr = cls._pk_column.key
         cls._pk_coerce = get_column_python_type(cls._pk_column)
         cls.model = model
@@ -147,7 +146,6 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     pk_attr: Optional[str] = None
     _pk_column: Column
     _pk_coerce: type
-    _relation_columns: List[RelationshipProperty] = []
     fields: List[BaseField] = []
 
     async def count(
@@ -186,8 +184,9 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 where = self.build_full_text_search_query(request, where, self.model)
             stmt = stmt.where(where)
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
-        for relation in self._relation_columns:
-            stmt.options(joinedload(relation.key))
+        for field in self.fields:
+            if isinstance(field, RelationField):
+                stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
         return session.execute(stmt).scalars().unique().all()
@@ -195,23 +194,29 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: SESSION_TYPE = request.state.session
         stmt = select(self.model).where(self._pk_column == self._pk_coerce(pk))
-        for relation in self._relation_columns:
-            stmt.options(joinedload(relation.key))
+        for field in self.fields:
+            if isinstance(field, RelationField):
+                stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
-            return (await session.execute(stmt)).scalars().one_or_none()
-        return session.execute(stmt).scalars().one_or_none()
+            return (await session.execute(stmt)).scalars().unique().one_or_none()
+        return session.execute(stmt).scalars().unique().one_or_none()
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
         session: SESSION_TYPE = request.state.session
         stmt = select(self.model).where(self._pk_column.in_(map(self._pk_coerce, pks)))
-        for relation in self._relation_columns:
-            stmt.options(joinedload(relation.key))
+        for field in self.fields:
+            if isinstance(field, RelationField):
+                stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
         return session.execute(stmt).scalars().unique().all()
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
-        pass
+        """
+        Inherit this method to validate your data.
+        Raise:
+            FormValidationError to display errors to users
+        """
 
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
         try:
