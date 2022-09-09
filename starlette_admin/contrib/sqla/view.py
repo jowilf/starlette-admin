@@ -11,12 +11,13 @@ from sqlalchemy.orm import (
 )
 from starlette.requests import Request
 from starlette_admin import (
+    ColorField,
     EmailField,
     PhoneField,
     RelationField,
     StringField,
     TextAreaField,
-    URLField, ColorField,
+    URLField,
 )
 from starlette_admin.contrib.sqla._types import SESSION_TYPE
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
@@ -312,7 +313,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 EmailField,
                 URLField,
                 PhoneField,
-                ColorField
+                ColorField,
             ]:
                 query["or"].append({field.name: {"contains": term}})
         return build_query(query, model)
