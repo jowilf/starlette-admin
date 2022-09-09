@@ -66,6 +66,7 @@ nav:
       - Views: 'api/views.md'
       - BaseAdmin: 'api/base-admin.md'
       - AuthProvider: 'api/auth-provider.md'
+  - Changelog: 'changelog.md'
 
 
 extra:

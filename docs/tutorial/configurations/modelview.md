@@ -208,8 +208,8 @@ The pagination options in the list page can be configured. The available options
 The template files are built using Jinja2 and can be completely overridden in the configurations. The pages available are:
 
 * `list_template`: List view template. Default is `list.html`.
-* `detail_template`: Details view template. Default is `details.html`.
-* `create_template`: Edit view template. Default is `edit.html`.
+* `detail_template`: Details view template. Default is `detail.html`.
+* `create_template`: Edit view template. Default is `create.html`.
 * `edit_template`: Edit view template. Default is `edit.html`.
 
 !!! Example

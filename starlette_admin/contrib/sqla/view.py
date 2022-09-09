@@ -16,7 +16,7 @@ from starlette_admin import (
     RelationField,
     StringField,
     TextAreaField,
-    URLField,
+    URLField, ColorField,
 )
 from starlette_admin.contrib.sqla._types import SESSION_TYPE
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
@@ -312,6 +312,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 EmailField,
                 URLField,
                 PhoneField,
+                ColorField
             ]:
                 query["or"].append({field.name: {"contains": term}})
         return build_query(query, model)
