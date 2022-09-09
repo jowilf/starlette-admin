@@ -199,7 +199,7 @@ class TestSQLABasic:
         response = client.get("/admin/api/product", params={"pks": [1, 2, 3]})
         data = response.json()
         assert data["total"] == 3
-        assert [x["id"] for x in data["items"]] == [1, 2, 3]
+        assert sorted([x["id"] for x in data["items"]]) == [1, 2, 3]
 
     def test_api_query5(self, client):
         where = (

@@ -2,20 +2,29 @@ from typing import Any, Dict, List, Optional, Type, Union, no_type_check
 
 from sqlalchemy import Boolean, Column, func, inspect, select
 from sqlalchemy.exc import NoInspectionAvailable
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     ColumnProperty,
     InstrumentedAttribute,
     RelationshipProperty,
-    Session,
     joinedload,
 )
 from starlette.requests import Request
-from starlette_admin import RelationField, StringField, TextAreaField
+from starlette_admin import (
+    EmailField,
+    PhoneField,
+    RelationField,
+    StringField,
+    TextAreaField,
+    URLField,
+)
+from starlette_admin.contrib.sqla._types import SESSION_TYPE
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
     build_query,
     convert_to_field,
+    get_column_python_type,
     normalize_list,
 )
 from starlette_admin.exceptions import FormValidationError
@@ -42,8 +51,8 @@ class ModelViewMeta(type):
             "BaseAdminModel class and put your own logic "
         )
         cls._pk_column = mapper.primary_key[0]
-        cls._relation_columns = list(mapper.relationships)
         cls.pk_attr = cls._pk_column.key
+        cls._pk_coerce = get_column_python_type(cls._pk_column)
         cls.model = model
         cls.identity = attrs.get("identity", slugify_class_name(cls.model.__name__))
         cls.label = attrs.get("label", prettify_class_name(cls.model.__name__) + "s")
@@ -136,7 +145,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     identity: Optional[str] = None
     pk_attr: Optional[str] = None
     _pk_column: Column
-    _relation_columns: List[RelationshipProperty] = []
+    _pk_coerce: type
     fields: List[BaseField] = []
 
     async def count(
@@ -144,7 +153,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         request: Request,
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
-        session: Session = request.state.session
+        session: SESSION_TYPE = request.state.session
         stmt = select(func.count(self._pk_column))
         if where is not None:
             if isinstance(where, dict):
@@ -152,6 +161,8 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             else:
                 where = self.build_full_text_search_query(request, where, self.model)
             stmt = stmt.where(where)
+        if isinstance(session, AsyncSession):
+            return (await session.execute(stmt)).scalar_one()
         return session.execute(stmt).scalar_one()
 
     async def find_all(
@@ -162,7 +173,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
     ) -> List[Any]:
-        session: Session = request.state.session
+        session: SESSION_TYPE = request.state.session
         stmt = select(self.model).offset(skip)
         if limit > 0:
             stmt = stmt.limit(limit)
@@ -173,34 +184,52 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 where = self.build_full_text_search_query(request, where, self.model)
             stmt = stmt.where(where)
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
-        for relation in self._relation_columns:
-            stmt.options(joinedload(relation.key))
+        for field in self.fields:
+            if isinstance(field, RelationField):
+                stmt = stmt.options(joinedload(field.name))
+        if isinstance(session, AsyncSession):
+            return (await session.execute(stmt)).scalars().unique().all()
         return session.execute(stmt).scalars().unique().all()
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
-        session: Session = request.state.session
-        stmt = select(self.model).where(self._pk_column == pk)
-        for relation in self._relation_columns:
-            stmt.options(joinedload(relation.key))
-        return session.execute(stmt).scalars().one_or_none()
+        session: SESSION_TYPE = request.state.session
+        stmt = select(self.model).where(self._pk_column == self._pk_coerce(pk))
+        for field in self.fields:
+            if isinstance(field, RelationField):
+                stmt = stmt.options(joinedload(field.name))
+        if isinstance(session, AsyncSession):
+            return (await session.execute(stmt)).scalars().unique().one_or_none()
+        return session.execute(stmt).scalars().unique().one_or_none()
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
-        session: Session = request.state.session
-        stmt = select(self.model).where(self._pk_column.in_(pks))
-        for relation in self._relation_columns:
-            stmt.options(joinedload(relation.key))
+        session: SESSION_TYPE = request.state.session
+        stmt = select(self.model).where(self._pk_column.in_(map(self._pk_coerce, pks)))
+        for field in self.fields:
+            if isinstance(field, RelationField):
+                stmt = stmt.options(joinedload(field.name))
+        if isinstance(session, AsyncSession):
+            return (await session.execute(stmt)).scalars().unique().all()
         return session.execute(stmt).scalars().unique().all()
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
-        pass
+        """
+        Inherit this method to validate your data.
+        Raise:
+            FormValidationError to display errors to users
+        """
 
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
         try:
             await self.validate(request, data)
-            session: Session = request.state.session
+            session: SESSION_TYPE = request.state.session
             obj = await self._populate_obj(request, self.model(), data)
             session.add(obj)
-            session.commit()
+            if isinstance(session, AsyncSession):
+                await session.commit()
+                await session.refresh(obj)
+            else:
+                session.commit()
+                session.refresh(obj)
             return obj
         except Exception as e:
             return self.handle_exception(e)
@@ -208,11 +237,15 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
             await self.validate(request, data)
-            session: Session = request.state.session
+            session: SESSION_TYPE = request.state.session
             obj = await self.find_by_pk(request, pk)
             session.add(await self._populate_obj(request, obj, data, True))
-            session.commit()
-            session.refresh(obj)
+            if isinstance(session, AsyncSession):
+                await session.commit()
+                await session.refresh(obj)
+            else:
+                session.commit()
+                session.refresh(obj)
             return obj
         except Exception as e:
             self.handle_exception(e)
@@ -256,11 +289,16 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         return obj
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
-        session: Session = request.state.session
+        session: SESSION_TYPE = request.state.session
         objs = await self.find_by_pks(request, pks)
-        for obj in objs:
-            session.delete(obj)
-        session.commit()
+        if isinstance(session, AsyncSession):
+            for obj in objs:
+                await session.delete(obj)
+            await session.commit()
+        else:
+            for obj in objs:
+                session.delete(obj)
+            session.commit()
         return len(objs)
 
     def build_full_text_search_query(
@@ -268,7 +306,13 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     ) -> Dict[str, Any]:
         query: Dict[str, Any] = {"or": []}
         for field in self.fields:
-            if field.searchable and type(field) in [StringField, TextAreaField]:
+            if field.searchable and type(field) in [
+                StringField,
+                TextAreaField,
+                EmailField,
+                URLField,
+                PhoneField,
+            ]:
                 query["or"].append({field.name: {"contains": term}})
         return build_query(query, model)
 

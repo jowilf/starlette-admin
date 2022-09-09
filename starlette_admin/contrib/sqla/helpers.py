@@ -108,7 +108,7 @@ converters = {
     "Enum": EnumField,
     "Integer": IntegerField,  # includes BigInteger and SmallInteger
     "Numeric": DecimalField,  # includes DECIMAL, Float/FLOAT, REAL, and DOUBLE
-    "JSON": JSONField,  # includes DECIMAL, Float/FLOAT, REAL, and DOUBLE
+    "JSON": JSONField,
     "dialects.mysql.types.YEAR": StringField,
     "dialects.mysql.base.YEAR": StringField,
     "dialects.postgresql.base.INET": StringField,
@@ -168,3 +168,10 @@ def normalize_list(arr: Optional[List[Any]]) -> Optional[List[str]]:
                 f"Expected str or InstrumentedAttribute, got {type(v).__name__}"
             )
     return _new_list
+
+
+def get_column_python_type(column: Column) -> type:
+    try:
+        return column.type.python_type
+    except NotImplementedError:
+        return str

@@ -358,8 +358,8 @@ class BaseModelView(BaseView):
     ) -> Dict[str, Any]:
         obj_serialized: Dict[str, Any] = dict()
         for field in self.fields:
-            value = getattr(obj, field.name, None)
             if isinstance(field, RelationField) and include_relationships:
+                value = getattr(obj, field.name, None)
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
                 assert foreign_model.pk_attr is not None
                 if value is None:
@@ -386,6 +386,7 @@ class BaseModelView(BaseView):
                             for v in value
                         ]
             elif not isinstance(field, RelationField):
+                value = getattr(obj, field.name, None)
                 obj_serialized[field.name] = await self.serialize_field_value(
                     value, field, action, request
                 )

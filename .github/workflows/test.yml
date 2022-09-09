@@ -70,6 +70,7 @@ jobs:
       - name: Test Local Storage provider & postgresql
         env:
           ENGINE: 'postgresql+psycopg2://username:password@localhost:5432/test_db'
+          ASYNC_ENGINE: 'postgresql+asyncpg://username:password@localhost:5432/test_db'
           STORAGE_PROVIDER: 'LOCAL'
           LOCAL_PATH: '/tmp/storage'
           MONGO_URL: 'mongodb://localhost:27017/test_db'
@@ -77,6 +78,7 @@ jobs:
       - name: Test Local Storage provider & mysql
         env:
           ENGINE: 'mysql+pymysql://username:password@localhost:3306/test_db'
+          ASYNC_ENGINE: 'mysql+aiomysql://username:password@localhost:3306/test_db'
           STORAGE_PROVIDER: 'LOCAL'
           LOCAL_PATH: '/tmp/storage'
           MONGO_URL: 'mongodb://localhost:27017/test_db'
@@ -84,6 +86,7 @@ jobs:
       - name: Test Minio Storage provider & sqlite memory
         env:
           ENGINE: 'sqlite:///test.db?check_same_thread=False'
+          ASYNC_ENGINE: 'sqlite+aiosqlite:///test.db?check_same_thread=False'
           STORAGE_PROVIDER: 'MINIO'
           MINIO_KEY: 'minioadmin'
           MINIO_SECRET: 'minioadmin'

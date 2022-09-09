@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from sqlalchemy.engine import Engine
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.requests import Request
@@ -13,13 +12,14 @@ from starlette.responses import (
 )
 from starlette.routing import Route
 from starlette_admin.base import BaseAdmin
+from starlette_admin.contrib.sqla._types import ENGINE_TYPE
 from starlette_admin.contrib.sqla.middleware import DBSessionMiddleware
 
 
 class Admin(BaseAdmin):
     def __init__(
         self,
-        engine: Engine,
+        engine: ENGINE_TYPE,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)  # type: ignore
