@@ -1,19 +1,11 @@
 from abc import abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Type, Union
 
 from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
-from starlette_admin.fields import (
-    BaseField,
-    EnumField,
-    FileField,
-    HasOne,
-    JSONField,
-    RelationField,
-    TagsField,
-)
+from starlette_admin.fields import BaseField, FileField, HasOne, RelationField
 
 
 class BaseView:
@@ -471,34 +463,38 @@ class BaseModelView(BaseView):
     def _export_columns_selector(self) -> List[str]:
         return ["%s:name" % name for name in self.export_fields]
 
-    def _extract_fields(self, ctx: str = "LIST") -> List[BaseField]:
+    def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
         arr = []
         for field in self.fields:
             if (
-                (ctx == "LIST" and field.exclude_from_list)
-                or (ctx == "DETAIL" and field.exclude_from_detail)
-                or (ctx == "CREATE" and field.exclude_from_create)
-                or (ctx == "EDIT" and field.exclude_from_edit)
+                (action == "LIST" and field.exclude_from_list)
+                or (action == "DETAIL" and field.exclude_from_detail)
+                or (action == "CREATE" and field.exclude_from_create)
+                or (action == "EDIT" and field.exclude_from_edit)
             ):
                 continue
             arr.append(field)
         return arr
 
-    def _need_select2(self) -> bool:
+    def _additional_css_links(self, request: Request, action: str) -> Set[str]:
+        links = set()
         for field in self.fields:
-            if (
-                isinstance(field, EnumField)
-                or isinstance(field, RelationField)
-                or isinstance(field, TagsField)
+            if (action == "CREATE" and field.exclude_from_create) or (
+                action == "EDIT" and field.exclude_from_edit
             ):
-                return True
-        return False
+                continue
+            links.update(field.additional_css_links(request))
+        return links
 
-    def _need_jsoneditor(self) -> bool:
+    def _additional_js_links(self, request: Request, action: str) -> Set[str]:
+        links = set()
         for field in self.fields:
-            if isinstance(field, JSONField):
-                return True
-        return False
+            if (action == "CREATE" and field.exclude_from_create) or (
+                action == "EDIT" and field.exclude_from_edit
+            ):
+                continue
+            links.update(field.additional_js_links(request))
+        return links
 
     def _configs(self, request: Request) -> Dict[str, Any]:
         return {

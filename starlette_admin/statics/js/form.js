@@ -94,3 +94,40 @@ $("select.field-has-one, select.field-has-many").each(function () {
       }
     });
 });
+$("input.field-datetime").each(function () {
+  let el = $(this);
+  el.flatpickr({
+    enableTime: true,
+    allowInput: true,
+    enableSeconds: true,
+    time_24hr: true,
+    altInput: true,
+    dateFormat: "Y-m-d H:i:S",
+    altFormat: el.data("alt-format"),
+  });
+});
+
+$("input.field-date").each(function () {
+  let el = $(this);
+  el.flatpickr({
+    enableTime: false,
+    allowInput: true,
+    altInput: true,
+    dateFormat: "Y-m-d",
+    altFormat: el.data("alt-format"),
+  });
+});
+
+$("input.field-time").each(function () {
+  let el = $(this);
+  el.flatpickr({
+    noCalendar: true,
+    enableTime: true,
+    allowInput: true,
+    enableSeconds: true,
+    time_24hr: true,
+    altInput: true,
+    dateFormat: "H:i:S",
+    altFormat: el.data("alt-format"),
+  });
+});

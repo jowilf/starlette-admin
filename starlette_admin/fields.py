@@ -60,6 +60,12 @@ class BaseField:
     async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
         return value
 
+    def additional_css_links(self, request: Request) -> List[str]:
+        return []
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        return []
+
     def dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -231,6 +237,21 @@ class TagsField(BaseField):
     async def parse_form_data(self, request: Request, form_data: FormData) -> List[str]:
         return form_data.getlist(self.name)
 
+    def additional_css_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics", path="css/select2.min.css"
+            )
+        ]
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics",
+                path="js/vendor/select2.min.js",
+            )
+        ]
+
 
 @dataclass
 class EmailField(StringField):
@@ -330,6 +351,21 @@ class EnumField(StringField):
         labels = [self._get_label(v) for v in (value if self.multiple else [value])]
         return labels if self.multiple else labels[0]
 
+    def additional_css_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics", path="css/select2.min.css"
+            )
+        ]
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics",
+                path="js/vendor/select2.min.js",
+            )
+        ]
+
     @classmethod
     def from_enum(
         cls,
@@ -368,6 +404,20 @@ class DateTimeField(NumberField):
     search_builder_type: str = "moment-MMMM D, YYYY HH:mm:ss"
     output_format: str = "%B %d, %Y %H:%M:%S"
     search_format: Optional[str] = None
+    form_alt_format: Optional[str] = "F j, Y  H:i:S"
+
+    def input_params(self) -> str:
+        return html_params(
+            dict(
+                type=self.input_type,
+                min=self.min,
+                max=self.max,
+                step=self.step,
+                data_alt_format=self.form_alt_format,
+                placeholder=self.placeholder,
+                required=self.required,
+            )
+        )
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
@@ -382,6 +432,21 @@ class DateTimeField(NumberField):
         if action != "EDIT":
             return value.strftime(self.output_format)
         return value.isoformat()
+
+    def additional_css_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics", path="css/flatpickr.min.css"
+            )
+        ]
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics",
+                path="js/vendor/flatpickr.min.js",
+            )
+        ]
 
 
 @dataclass
@@ -398,6 +463,7 @@ class DateField(DateTimeField):
     output_format: str = "%B %d, %Y"
     search_format: str = "YYYY-MM-DD"
     search_builder_type: str = "moment-MMMM D, YYYY"
+    form_alt_format: Optional[str] = "F j, Y"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
@@ -420,6 +486,7 @@ class TimeField(DateTimeField):
     search_builder_type: str = "moment-HH:mm:ss"
     output_format: str = "%H:%M:%S"
     search_format: str = "HH:mm:ss"
+    form_alt_format: Optional[str] = "H:i:S"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
@@ -445,8 +512,22 @@ class JSONField(BaseField):
             value = form_data.get(self.name)
             return json.loads(value) if value is not None else None
         except JSONDecodeError:
-            # raise FormValidationError({self.name: "Invalid JSON value"})
             return None
+
+    def additional_css_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics", path="css/jsoneditor.min.css"
+            )
+        ]
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics",
+                path="js/vendor/jsoneditor.min.js",
+            )
+        ]
 
 
 @dataclass
@@ -507,6 +588,21 @@ class RelationField(BaseField):
         if self.multiple:
             return form_data.getlist(self.name)
         return form_data.get(self.name)
+
+    def additional_css_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics", path="css/select2.min.css"
+            )
+        ]
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        return [
+            request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics",
+                path="js/vendor/select2.min.js",
+            )
+        ]
 
 
 @dataclass
