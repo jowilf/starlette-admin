@@ -60,19 +60,13 @@
 </div>
 {% endblock%}
 {%block head_css%}
-{%if model._need_select2()%}
-<link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/select2.min.css') }}">
-{%endif%}
-{%if model._need_jsoneditor()%}
-<link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/jsoneditor.min.css') }}">
-{%endif%}
+{%for link in model._additional_css_links(request, "EDIT")%}
+<link rel="stylesheet" href="{{ link }}">
+{%endfor%}
 {%endblock%}
 {%block script%}
-{%if model._need_select2()%}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/select2.min.js') }}"></script>
-{%endif%}
-{%if model._need_jsoneditor()%}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jsoneditor.min.js') }}"></script>
-{%endif%}
+{%for link in model._additional_js_links(request, "EDIT")%}
+<script type="text/javascript" src="{{ link}}"></script>
+{%endfor%}
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/form.js') }}"></script>
 {%endblock%}

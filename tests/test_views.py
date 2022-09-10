@@ -280,7 +280,6 @@ class TestViews:
             score: Optional[float]
             gender: str
             json_field: Optional[dict]
-            # created_at: datetime = field(default_factory=datetime.utcnow)
 
         class MyModelView(DummyModelView):
             fields = [
@@ -294,9 +293,6 @@ class TestViews:
                     ),
                 ),
                 JSONField("json_field"),
-                # DateTimeField(
-                #     "created_at", exclude_from_create=True, exclude_from_edit=True
-                # ),
             ]
             identity = "mymodel"
             model = MyModel
@@ -308,9 +304,6 @@ class TestViews:
         admin.add_view(MyModelView)
         admin.mount_to(app)
         client = TestClient(app)
-        # response = client.post("/admin/mymodel/create", data={"json_field": "{"})
-        # assert response.status_code == 200
-        # assert '<div class="invalid-feedback">Invalid JSON value</div>' in response.text
 
         response = client.post(
             "/admin/mymodel/create",

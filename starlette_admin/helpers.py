@@ -64,5 +64,5 @@ def html_params(kwargs: Dict[str, Any]) -> str:
         elif v is False:
             pass
         else:
-            params.append('{}="{}"'.format(str(k), escape(v)))
+            params.append('{}="{}"'.format(str(k).replace("_", "-"), escape(v)))
     return " ".join(params)
