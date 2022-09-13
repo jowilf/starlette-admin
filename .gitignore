@@ -14,4 +14,4 @@ site
 .cache
 __pycache__/
 .pytest_cache/
-examples/
+.examples/

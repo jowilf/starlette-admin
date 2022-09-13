@@ -10,8 +10,7 @@ def prettify_class_name(name: str) -> str:
 
 
 def slugify_class_name(name: str) -> str:
-    dashed = re.sub("(.)([A-Z][a-z]+)", r"\1-\2", name)
-    return re.sub("([a-z0-9])([A-Z])", r"\1-\2", dashed).lower()
+    return ''.join(['-'+c.lower() if c.isupper() else c for c in name]).lstrip('-')
 
 
 def is_empty_file(file: Any) -> bool:
@@ -66,3 +65,4 @@ def html_params(kwargs: Dict[str, Any]) -> str:
         else:
             params.append('{}="{}"'.format(str(k).replace("_", "-"), escape(v)))
     return " ".join(params)
+
