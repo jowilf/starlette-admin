@@ -12,7 +12,7 @@ Let's say you've defined your models like this:
     
     Base = declarative_base()
     engine = create_engine(
-        "sqlite:///example.db", connect_args={"check_same_thread": False}
+        "sqlite:///test.db", connect_args={"check_same_thread": False}
     )
     
     

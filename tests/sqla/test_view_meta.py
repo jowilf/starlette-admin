@@ -207,7 +207,7 @@ def test_conversion_when_impl_callable() -> None:
         impl = String
 
     class CustomModel(Base):
-        __tablename__ = "impl_callable"
+        __tablename__ = "custom_model"
 
         id = Column(Integer, primary_key=True)
         name = Column(CustomString)
@@ -227,13 +227,13 @@ def test_conversion_when_impl_not_callable() -> None:
     class CustomString(TypeDecorator):
         impl = String(length=100)
 
-    class CustomModel(Base):
-        __tablename__ = "impl_non_callable"
+    class CustomModel2(Base):
+        __tablename__ = "custom_model_2"
 
         id = Column(Integer, primary_key=True)
         name = Column(CustomString)
 
-    class CustomModelView(ModelView, model=CustomModel):
+    class CustomModelView(ModelView, model=CustomModel2):
         pass
 
     assert CustomModelView().fields == [

@@ -6,7 +6,7 @@ Multiple options are available to customise your admin interface
     from sqlalchemy import create_engine
     from starlette_admin.contrib.sqla import Admin
     
-    engine = create_engine("`sqlite`:///example.db")
+    engine = create_engine("`sqlite`:///test.db")
     admin = Admin(
         engine,
         title="SQLModel Admin",

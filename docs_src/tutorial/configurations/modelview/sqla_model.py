@@ -2,9 +2,7 @@ from sqlalchemy import JSON, Column, Integer, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
-engine = create_engine(
-    "sqlite:///example.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
 
 
 class Post(Base):

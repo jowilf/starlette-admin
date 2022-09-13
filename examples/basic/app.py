@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Union
 
-import uvicorn
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
@@ -19,14 +18,14 @@ class Post:
     content: str
     tags: List[str]
 
-    def is_valid_for_term(self, term):
+    def is_valid_for_term(self, term: str) -> bool:
         return (
             str(term).lower() in self.title.lower()
             or str(term).lower() in self.content.lower()
             or any([str(term).lower() in tag.lower() for tag in self.tags])
         )
 
-    def update(self, data: Dict):
+    def update(self, data: Dict) -> None:
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
@@ -36,7 +35,7 @@ db: Dict[int, Post] = dict()
 next_id = 1
 
 
-def filter_values(values: Iterable[Post], term):
+def filter_values(values: Iterable[Post], term: str) -> List[Post]:
     filtered_values = []
     for value in values:
         if value.is_valid_for_term(term):
@@ -50,12 +49,12 @@ class PostView(BaseModelView):
     label = "Blog Posts"
     icon = "fa fa-blog"
     pk_attr = "id"
-    fields = (
+    fields = [
         IntegerField("id"),
         StringField("title"),
         TextAreaField("content"),
         TagsField("tags"),
-    )
+    ]
     sortable_fields = ("id", "title", "content")
     search_builder = False
     page_size = 10
@@ -92,13 +91,13 @@ class PostView(BaseModelView):
             return values[skip : skip + limit]
         return values[skip:]
 
-    async def find_by_pk(self, request: Request, pk):
+    async def find_by_pk(self, request: Request, pk: Any) -> Optional[Post]:
         return db.get(int(pk), None)
 
-    async def find_by_pks(self, request: Request, pks):
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Post]:
         return [db.get(int(pk)) for pk in pks]
 
-    async def validate_data(self, data: Dict):
+    async def validate_data(self, data: Dict) -> None:
         errors = {}
         if data["title"] is None or len(data["title"]) < 3:
             errors["title"] = "Ensure title has at least 03 characters"
@@ -107,7 +106,7 @@ class PostView(BaseModelView):
         if len(errors) > 0:
             raise FormValidationError(errors)
 
-    async def create(self, request: Request, data: Dict):
+    async def create(self, request: Request, data: Dict) -> Post:
         await self.validate_data(data)
         global next_id
         obj = Post(id=next_id, **data)
@@ -115,7 +114,7 @@ class PostView(BaseModelView):
         next_id += 1
         return obj
 
-    async def edit(self, request: Request, pk, data: Dict):
+    async def edit(self, request: Request, pk, data: Dict) -> Post:
         await self.validate_data(data)
         db[int(pk)].update(data)
         return db[int(pk)]
@@ -130,7 +129,7 @@ class PostView(BaseModelView):
         return cnt
 
 
-def fill_db():
+def fill_db() -> None:
     values = [
         {
             "title": "His mother had always taught him",

@@ -90,7 +90,7 @@ from starlette_admin.contrib.sqla import Admin, ModelView
 
 Base = declarative_base()
 engine = create_engine(
-    "sqlite:///example.db", connect_args={"check_same_thread": False}
+    "sqlite:///test.db", connect_args={"check_same_thread": False}
 )
 
 
