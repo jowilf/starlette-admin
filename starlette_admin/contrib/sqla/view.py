@@ -7,6 +7,7 @@ from sqlalchemy.orm import (
     ColumnProperty,
     InstrumentedAttribute,
     RelationshipProperty,
+    Session,
     joinedload,
 )
 from starlette.requests import Request
@@ -19,13 +20,12 @@ from starlette_admin import (
     TextAreaField,
     URLField,
 )
-from starlette_admin.contrib.sqla._types import SESSION_TYPE
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
     build_query,
     convert_to_field,
-    get_column_python_type,
+    extract_column_python_type,
     normalize_list,
 )
 from starlette_admin.exceptions import FormValidationError
@@ -53,7 +53,7 @@ class ModelViewMeta(type):
         )
         cls._pk_column = mapper.primary_key[0]
         cls.pk_attr = cls._pk_column.key
-        cls._pk_coerce = get_column_python_type(cls._pk_column)
+        cls._pk_coerce = extract_column_python_type(cls._pk_column)
         cls.model = model
         cls.identity = attrs.get("identity", slugify_class_name(cls.model.__name__))
         cls.label = attrs.get("label", prettify_class_name(cls.model.__name__) + "s")
@@ -154,7 +154,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         request: Request,
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
-        session: SESSION_TYPE = request.state.session
+        session: Union[Session, AsyncSession] = request.state.session
         stmt = select(func.count(self._pk_column))
         if where is not None:
             if isinstance(where, dict):
@@ -174,7 +174,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
     ) -> List[Any]:
-        session: SESSION_TYPE = request.state.session
+        session: Union[Session, AsyncSession] = request.state.session
         stmt = select(self.model).offset(skip)
         if limit > 0:
             stmt = stmt.limit(limit)
@@ -193,7 +193,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         return session.execute(stmt).scalars().unique().all()
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
-        session: SESSION_TYPE = request.state.session
+        session: Union[Session, AsyncSession] = request.state.session
         stmt = select(self.model).where(self._pk_column == self._pk_coerce(pk))
         for field in self.fields:
             if isinstance(field, RelationField):
@@ -203,7 +203,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         return session.execute(stmt).scalars().unique().one_or_none()
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
-        session: SESSION_TYPE = request.state.session
+        session: Union[Session, AsyncSession] = request.state.session
         stmt = select(self.model).where(self._pk_column.in_(map(self._pk_coerce, pks)))
         for field in self.fields:
             if isinstance(field, RelationField):
@@ -222,7 +222,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
         try:
             await self.validate(request, data)
-            session: SESSION_TYPE = request.state.session
+            session: Union[Session, AsyncSession] = request.state.session
             obj = await self._populate_obj(request, self.model(), data)
             session.add(obj)
             if isinstance(session, AsyncSession):
@@ -238,7 +238,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
             await self.validate(request, data)
-            session: SESSION_TYPE = request.state.session
+            session: Union[Session, AsyncSession] = request.state.session
             obj = await self.find_by_pk(request, pk)
             session.add(await self._populate_obj(request, obj, data, True))
             if isinstance(session, AsyncSession):
@@ -290,7 +290,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         return obj
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
-        session: SESSION_TYPE = request.state.session
+        session: Union[Session, AsyncSession] = request.state.session
         objs = await self.find_by_pks(request, pks)
         if isinstance(session, AsyncSession):
             for obj in objs:

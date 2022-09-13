@@ -170,7 +170,7 @@ def normalize_list(arr: Optional[List[Any]]) -> Optional[List[str]]:
     return _new_list
 
 
-def get_column_python_type(column: Column) -> type:
+def extract_column_python_type(column: Column) -> type:
     try:
         return column.type.python_type
     except NotImplementedError:

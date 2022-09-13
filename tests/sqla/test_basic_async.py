@@ -24,52 +24,51 @@ class ProductView(ModelView, model=Product):
     pass
 
 
-class TestAsyncSQLABasic:
-    @pytest.mark.asyncio
-    async def test_crud(self):
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
-            await conn.run_sync(Base.metadata.create_all)
+@pytest.mark.asyncio
+async def test_basic_async():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
-        admin = Admin(engine)
-        admin.add_view(ProductView)
-        app = Starlette()
-        admin.mount_to(app)
+    admin = Admin(engine)
+    admin.add_view(ProductView)
+    app = Starlette()
+    admin.mount_to(app)
 
-        client = TestClient(app)
-        response = await client.post(
-            "/admin/product/create",
-            form={"title": "Infinix INBOOK"},
-            allow_redirects=False,
-        )
-        assert response.status_code == 303
-        async with AsyncSession(engine) as session:
-            stmt = select(Product).where(Product.title == "Infinix INBOOK")
-            product = (await session.execute(stmt)).scalar_one()
-            assert product is not None
+    client = TestClient(app)
+    response = await client.post(
+        "/admin/product/create",
+        form={"title": "Infinix INBOOK"},
+        allow_redirects=False,
+    )
+    assert response.status_code == 303
+    async with AsyncSession(engine) as session:
+        stmt = select(Product).where(Product.title == "Infinix INBOOK")
+        product = (await session.execute(stmt)).scalar_one()
+        assert product is not None
 
-        response = await client.post(
-            "/admin/product/edit/1",
-            form={"title": "Infinix INBOOK 2"},
-            allow_redirects=False,
-        )
-        assert response.status_code == 303
-        async with AsyncSession(engine) as session:
-            stmt = select(Product).where(Product.title == "Infinix INBOOK 2")
-            product = (await session.execute(stmt)).scalar_one()
-            assert product is not None
+    response = await client.post(
+        "/admin/product/edit/1",
+        form={"title": "Infinix INBOOK 2"},
+        allow_redirects=False,
+    )
+    assert response.status_code == 303
+    async with AsyncSession(engine) as session:
+        stmt = select(Product).where(Product.title == "Infinix INBOOK 2")
+        product = (await session.execute(stmt)).scalar_one()
+        assert product is not None
 
-        response = await client.get("/admin/api/product")
-        assert response.status_code == 200
-        assert response.json()["items"][0]["title"] == "Infinix INBOOK 2"
+    response = await client.get("/admin/api/product")
+    assert response.status_code == 200
+    assert response.json()["items"][0]["title"] == "Infinix INBOOK 2"
 
-        response = await client.delete("/admin/api/product", query_string={"pks": [1]})
-        assert response.status_code == 204
+    response = await client.delete("/admin/api/product", query_string={"pks": [1]})
+    assert response.status_code == 204
 
-        async with AsyncSession(engine) as session:
-            stmt = select(Product).where(Product.title == "Infinix INBOOK 2")
-            product = (await session.execute(stmt)).one_or_none()
-            assert product is None
+    async with AsyncSession(engine) as session:
+        stmt = select(Product).where(Product.title == "Infinix INBOOK 2")
+        product = (await session.execute(stmt)).one_or_none()
+        assert product is None
 
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)

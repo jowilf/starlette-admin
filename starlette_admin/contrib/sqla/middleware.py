@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, Union
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
@@ -8,11 +8,10 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
-from starlette_admin.contrib.sqla._types import ENGINE_TYPE
 
 
 class DBSessionMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: ASGIApp, engine: ENGINE_TYPE) -> None:
+    def __init__(self, app: ASGIApp, engine: Union[Engine, AsyncEngine]) -> None:
         super().__init__(app)
         self.engine = engine
 
