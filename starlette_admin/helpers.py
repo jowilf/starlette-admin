@@ -10,7 +10,7 @@ def prettify_class_name(name: str) -> str:
 
 
 def slugify_class_name(name: str) -> str:
-    return ''.join(['-'+c.lower() if c.isupper() else c for c in name]).lstrip('-')
+    return "".join(["-" + c.lower() if c.isupper() else c for c in name]).lstrip("-")
 
 
 def is_empty_file(file: Any) -> bool:
@@ -65,4 +65,3 @@ def html_params(kwargs: Dict[str, Any]) -> str:
         else:
             params.append('{}="{}"'.format(str(k).replace("_", "-"), escape(v)))
     return " ".join(params)
-

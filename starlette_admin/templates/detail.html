@@ -23,18 +23,10 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
-                        {{pk | upper}}: <strong>{{ obj[pk] }}</strong>
+                         <strong>#{{ obj[pk] }}</strong>
                     </h3>
                     <div class="card-actions">
                         <div class="btn-list">
-                            {%if model.can_edit(request)%}
-                            <a href="{{ url_for(__name__ ~ ':edit', identity=model.identity,pk=obj[pk])}}">
-                                <button type="button" class="btn btn-primary btn-block me-2">
-                                    <i class="fa-solid fa-edit me-2"></i>
-                                    Edit
-                                </button>
-                            </a>
-                            {%endif%}
                             {%if model.can_delete(request)%}
                             <button
                                     id="delete-btn"
@@ -46,6 +38,14 @@
                                 <i class="fas fa-trash-alt me-2"></i>
                                 Delete
                             </button>
+                            {%endif%}
+                            {%if model.can_edit(request)%}
+                            <a href="{{ url_for(__name__ ~ ':edit', identity=model.identity,pk=obj[pk])}}">
+                                <button type="button" class="btn btn-primary btn-block me-2">
+                                    <i class="fa-solid fa-edit me-2"></i>
+                                    Edit
+                                </button>
+                            </a>
                             {%endif%}
                         </div>
                     </div>

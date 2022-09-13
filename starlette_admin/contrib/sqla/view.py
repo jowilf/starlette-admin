@@ -7,6 +7,7 @@ from sqlalchemy.orm import (
     ColumnProperty,
     InstrumentedAttribute,
     RelationshipProperty,
+    Session,
     joinedload,
 )
 from starlette.requests import Request
