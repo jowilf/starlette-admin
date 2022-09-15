@@ -8,7 +8,8 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
-from starlette_admin.helpers import html_params, is_empty_file
+
+from starlette_admin.helpers import extract_fields, html_params, is_empty_file
 
 
 @dataclass
@@ -47,6 +48,7 @@ class BaseField:
     render_function_key: str = "text"
     form_template: str = "forms/input.html"
     display_template: str = "displays/text.html"
+    error_class = "is-invalid"
 
     def __post_init__(self) -> None:
         if self.label is None:
@@ -93,7 +95,6 @@ class StringField(BaseField):
     search_builder_type: Optional[str] = "string"
     input_type: str = "text"
     class_: str = "field-string form-control"
-    error_class = "is-invalid"
     placeholder: Optional[str] = None
     help_text: Optional[str] = None
 
@@ -119,7 +120,6 @@ class TextAreaField(StringField):
     maxlength: Optional[int] = None
     minlength: Optional[int] = None
     class_: str = "field-textarea form-control"
-
     form_template: str = "forms/textarea.html"
 
     def input_params(self) -> str:
@@ -170,7 +170,7 @@ class IntegerField(NumberField):
     class_: str = "field-integer form-control"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
+            self, request: Request, form_data: FormData
     ) -> Optional[int]:
         try:
             return int(form_data.get(self.name))
@@ -192,7 +192,7 @@ class DecimalField(NumberField):
     class_: str = "field-decimal form-control"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
+            self, request: Request, form_data: FormData
     ) -> Optional[decimal.Decimal]:
         try:
             return decimal.Decimal(form_data.get(self.name))
@@ -213,7 +213,7 @@ class FloatField(StringField):
     class_: str = "field-float form-control"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
+            self, request: Request, form_data: FormData
     ) -> Optional[float]:
         try:
             return float(form_data.get(self.name))
@@ -232,7 +232,8 @@ class TagsField(BaseField):
     """
 
     form_template: str = "forms/tags.html"
-    form_js = "js/field/forms/tags.js"
+    form_js: str = "js/field/forms/tags.js"
+    class_: str = "field-tags form-control form-select"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> List[str]:
         return form_data.getlist(self.name)
@@ -330,6 +331,7 @@ class EnumField(StringField):
     multiple: bool = False
     choices: Iterable[Tuple[str, str]] = field(default_factory=dict)
     form_template: str = "forms/enum.html"
+    class_: str = "field-enum form-control form-select"
     coerce: type = str
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
@@ -368,22 +370,22 @@ class EnumField(StringField):
 
     @classmethod
     def from_enum(
-        cls,
-        name: str,
-        enum_type: Type[Enum],
-        multiple: bool = False,
-        **kwargs: Dict[str, Any],
+            cls,
+            name: str,
+            enum_type: Type[Enum],
+            multiple: bool = False,
+            **kwargs: Dict[str, Any],
     ) -> "EnumField":
         choices = list(map(lambda e: (e.value, e.name), enum_type))  # type: ignore
         return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
 
     @classmethod
     def from_choices(
-        cls,
-        name: str,
-        choices: Union[List[Tuple[str, str]], List[str], Tuple],
-        multiple: bool = False,
-        **kwargs: Dict[str, Any],
+            cls,
+            name: str,
+            choices: Union[List[Tuple[str, str]], List[str], Tuple],
+            multiple: bool = False,
+            **kwargs: Dict[str, Any],
     ) -> "EnumField":
         if len(choices) > 0 and not isinstance(choices[0], (list, tuple)):
             choices = list(zip(choices, choices))
@@ -506,7 +508,7 @@ class JSONField(BaseField):
     display_template: str = "displays/json.html"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
+            self, request: Request, form_data: FormData
     ) -> Optional[Dict[str, Any]]:
         try:
             value = form_data.get(self.name)
@@ -545,7 +547,7 @@ class FileField(BaseField):
     display_template: str = "displays/file.html"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
+            self, request: Request, form_data: FormData
     ) -> Union[UploadFile, List[UploadFile], None]:
         if self.multiple:
             files = form_data.getlist(self.name)
@@ -557,8 +559,8 @@ class FileField(BaseField):
         return value is not None and all(
             [
                 (
-                    hasattr(v, "url")
-                    or (isinstance(v, dict) and v.get("url", None) is not None)
+                        hasattr(v, "url")
+                        or (isinstance(v, dict) and v.get("url", None) is not None)
                 )
                 for v in (value if self.multiple else [value])
             ]
@@ -621,3 +623,36 @@ class HasMany(RelationField):
     """
 
     multiple: bool = True
+
+
+@dataclass
+class CollectionField(BaseField):
+    fields: List[BaseField] = field(default_factory=list)
+    form_template: str = "forms/collection.html"
+    display_template: str = "displays/collection.html"
+    _is_prefix_updated = False
+
+    def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
+        self._update_name_prefix()
+        return extract_fields(self.fields, action)
+
+    def _update_name_prefix(self):
+        if self._is_prefix_updated:
+            return
+        """Will update fields name by adding his name as prefix"""
+        for field in self.fields:
+            field._real_name = field.name
+            field.name = "{}.{}".format(self.name, field.name)
+            if isinstance(field, type(self)):
+                field._update_name_prefix()
+        self._is_prefix_updated = True
+
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        value = dict()
+        for field in self.fields:
+            value[field._real_name] = await field.parse_form_data(request, form_data)
+        return value
+
+
+if __name__ == "__main__":
+    print(CollectionField("c", fields=[StringField("name")]).dict())

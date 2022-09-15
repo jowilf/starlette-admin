@@ -3,3 +3,4 @@
           class="form-control {%if error%}{{field.error_class}}{%endif%}"
           {{ field.input_params() }}
 >{%if data%}{{data}}{%endif%}</textarea>
+{% include "forms/_error.html" %}

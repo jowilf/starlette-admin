@@ -1,7 +1,8 @@
 {% include "forms/_label.html" %}
 <select id="{{field.name}}" name="{{field.name}}" data-allow-clear="true" data-placeholder="Select a {{field.label}}"
-    class="field-enum form-control form-select {%if error%}is-invalid{%endif%}" {%if field.multiple%}multiple{%endif%}>
+    class="{{field.class_}} {%if error%}{{field.error_class}}{%endif%}" {%if field.multiple%}multiple{%endif%}>
     {%for value, label in field.choices%}
     <option value="{{value}}" {{'selected="selected"' if (data and (value in (data if field.multiple else [data]))) else ''}}>{{label}}</option>
     {%endfor%}
 </select>
+{% include "forms/_error.html" %}

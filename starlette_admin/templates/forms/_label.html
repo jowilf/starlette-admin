@@ -1,1 +1,3 @@
+{% if not _disabled_label %}
 <label class="form-label {%if field.required%}required{%endif%}" for="{{field.name}}" >{{field.label}}</label>
+{%endif%}

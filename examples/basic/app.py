@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 from starlette.applications import Starlette
@@ -6,7 +6,13 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
 from starlette_admin import BaseAdmin as Admin
-from starlette_admin import IntegerField, StringField, TagsField, TextAreaField
+from starlette_admin import (
+    CollectionField,
+    IntegerField,
+    StringField,
+    TagsField,
+    TextAreaField,
+)
 from starlette_admin.exceptions import FormValidationError
 from starlette_admin.views import BaseModelView
 
@@ -17,6 +23,7 @@ class Post:
     title: str
     content: str
     tags: List[str]
+    config: dict = field(default_factory=dict)
 
     def is_valid_for_term(self, term: str) -> bool:
         return (
@@ -54,6 +61,14 @@ class PostView(BaseModelView):
         StringField("title"),
         TextAreaField("content"),
         TagsField("tags"),
+        CollectionField(
+            "config",
+            fields=[
+                StringField("name", required=True),
+                TextAreaField("description"),
+                TagsField("tags"),
+            ],
+        ),
     ]
     sortable_fields = ("id", "title", "content")
     search_builder = False

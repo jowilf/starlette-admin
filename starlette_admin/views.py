@@ -6,6 +6,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
 from starlette_admin.fields import BaseField, FileField, HasOne, RelationField
+from starlette_admin.helpers import extract_fields
 
 
 class BaseView:
@@ -464,17 +465,7 @@ class BaseModelView(BaseView):
         return ["%s:name" % name for name in self.export_fields]
 
     def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
-        arr = []
-        for field in self.fields:
-            if (
-                (action == "LIST" and field.exclude_from_list)
-                or (action == "DETAIL" and field.exclude_from_detail)
-                or (action == "CREATE" and field.exclude_from_create)
-                or (action == "EDIT" and field.exclude_from_edit)
-            ):
-                continue
-            arr.append(field)
-        return arr
+        return extract_fields(self.fields, action)
 
     def _additional_css_links(self, request: Request, action: str) -> Set[str]:
         links = set()
