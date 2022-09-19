@@ -13,8 +13,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 * Fix SearchBuilder not working with dates (SQLAlchemy) in [#15](https://github.com/jowilf/starlette-admin/pull/15)
 
-**Full Changelog**: https://github.com/jowilf/starlette-admin/compare/0.1.1...0.2.0
-
 
 ## [0.2.0] - 2022-09-14
 
