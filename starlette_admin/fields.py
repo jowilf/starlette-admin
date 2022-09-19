@@ -632,6 +632,12 @@ class CollectionField(BaseField):
     display_template: str = "displays/collection.html"
     _is_prefix_updated = False
 
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        for f in self.fields:
+            """Save field real name, it can be modified later"""
+            f._real_name = f.name
+
     def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
         self._update_name_prefix()
         return extract_fields(self.fields, action)
@@ -652,6 +658,31 @@ class CollectionField(BaseField):
         for field in self.fields:
             value[field._real_name] = await field.parse_form_data(request, form_data)
         return value
+
+    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
+        if value is None:
+            return value
+        serialized_value = dict()
+        for field in self.fields:
+            name = field._real_name
+            serialized_value[name] = None
+            if hasattr(value, name) or (isinstance(value, dict) and name in value):
+                field_value = getattr(value, name) if hasattr(value, name) else value[name]
+                if field_value is not None:
+                    serialized_value[name] = await field.serialize_value(request, field_value, action)
+        return serialized_value
+
+    def additional_css_links(self, request: Request) -> List[str]:
+        _links = []
+        for f in self.fields:
+            _links.extend(f.additional_css_links(request))
+        return _links
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        _links = []
+        for f in self.fields:
+            _links.extend(f.additional_js_links(request))
+        return _links
 
 
 if __name__ == "__main__":

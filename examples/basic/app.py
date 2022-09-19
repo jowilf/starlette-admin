@@ -8,6 +8,7 @@ from starlette.routing import Route
 from starlette_admin import BaseAdmin as Admin
 from starlette_admin import (
     CollectionField,
+    DateTimeField,
     IntegerField,
     StringField,
     TagsField,
@@ -67,6 +68,16 @@ class PostView(BaseModelView):
                 StringField("name", required=True),
                 TextAreaField("description"),
                 TagsField("tags"),
+                DateTimeField("datetime"),
+                CollectionField(
+                    "config2",
+                    fields=[
+                        StringField("name", required=True),
+                        TextAreaField("description"),
+                        TagsField("tags"),
+                        DateTimeField("datetime"),
+                    ],
+                ),
             ],
         ),
     ]
@@ -132,6 +143,7 @@ class PostView(BaseModelView):
     async def edit(self, request: Request, pk, data: Dict) -> Post:
         await self.validate_data(data)
         db[int(pk)].update(data)
+        print("edit ", db[int(pk)])
         return db[int(pk)]
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
