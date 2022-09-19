@@ -50,14 +50,14 @@ and your admin views like this
     from starlette_admin.contrib.sqla import Admin, ModelView
     
     
-    class PostAdmin(ModelView, model=Post):
+    class PostView(ModelView, model=Post):
         pass
     
     
     app = Starlette()
     
     admin = Admin(engine)
-    admin.add_view(PostAdmin)
+    admin.add_view(PostView)
     admin.mount_to(app)
     ```
 === "MongoEngine"
@@ -67,14 +67,14 @@ and your admin views like this
     from starlette_admin.contrib.mongoengine import Admin, ModelView
     
     
-    class PostAdmin(ModelView, document=Post):
+    class PostView(ModelView, document=Post):
         pass
     
     
     app = Starlette()
     
     admin = Admin()
-    admin.add_view(PostAdmin)
+    admin.add_view(PostView)
     admin.mount_to(app)
     ```
 ## Metadata
@@ -107,14 +107,14 @@ or give the attribute, and it will automatically convert into StarletteAdmin Fie
     from .sqla_model import Post, engine
     
     
-    class PostAdmin(ModelView, model=Post):
+    class PostView(ModelView, model=Post):
         fields = ["id", "title", Post.content, TagsField("tags", label="Tags")]
     
     
     app = Starlette()
     
     admin = Admin(engine)
-    admin.add_view(PostAdmin)
+    admin.add_view(PostView)
     admin.mount_to(app)
     ```
 
@@ -128,14 +128,14 @@ or give the attribute, and it will automatically convert into StarletteAdmin Fie
     from .mongoengine_model import Post
     
     
-    class PostAdmin(ModelView, document=Post):
+    class PostView(ModelView, document=Post):
         fields = ["id", Post.title, TextAreaField("content"), "tags"]
     
     
     app = Starlette()
     
     admin = Admin()
-    admin.add_view(PostAdmin)
+    admin.add_view(PostView)
     admin.mount_to(app)
 
     ```
@@ -154,7 +154,7 @@ The options are:
 
 !!! Example
     ```Python
-    class PostAdmin(ModelView, model=Post):
+    class PostView(ModelView, model=Post):
         exclude_fields_from_list = [Post.content]
     ```
 
@@ -167,7 +167,7 @@ Two options are available to specify which fields can be sorted or searched.
 
 !!! Example
     ```Python
-    class PostAdmin(ModelView, model=Post):
+    class PostView(ModelView, model=Post):
         sortable_fields = [Post.id, Post.title]
         searchable_fields = [Post.id, Post.title, Post.tags]
     ```
@@ -182,7 +182,7 @@ exports are `['csv', 'excel', 'pdf', 'print']`. All of them are activated by def
 
 !!! Example
     ```Python
-    class PostAdmin(ModelView, model=Post):
+    class PostView(ModelView, model=Post):
         export_fields = [Post.id, Post.content, Post.tags]
         export_types = ["csv", "excel"]
     ```
@@ -199,7 +199,7 @@ The pagination options in the list page can be configured. The available options
 
 !!! Example
     ```Python
-    class PostAdmin(ModelView, model=Post):
+    class PostView(ModelView, model=Post):
         page_size = 5
         page_size_options = [5, 10, 25, 50, -1]
     ```
@@ -214,6 +214,6 @@ The template files are built using Jinja2 and can be completely overridden in th
 
 !!! Example
     ```Python
-    class PostAdmin(ModelView, model=Post):
+    class PostView(ModelView, model=Post):
         detail_template = "post_detail.html"
     ```

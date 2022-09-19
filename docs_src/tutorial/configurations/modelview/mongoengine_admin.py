@@ -5,7 +5,7 @@ from starlette_admin.contrib.mongoengine import Admin, ModelView
 from .mongoengine_model import Post
 
 
-class PostAdmin(ModelView, document=Post):
+class PostView(ModelView, document=Post):
     fields = ["id", Post.title, TextAreaField("content"), "tags"]
     exclude_fields_from_list = [Post.content]
     searchable_fields = [Post.id, Post.title]
@@ -20,5 +20,5 @@ class PostAdmin(ModelView, document=Post):
 app = Starlette()
 
 admin = Admin()
-admin.add_view(PostAdmin)
+admin.add_view(PostView)
 admin.mount_to(app)
