@@ -14,7 +14,7 @@ class Post(Base):
     title = Column(String)
 
 
-class PostAdmin(ModelView, model=Post):
+class PostView(ModelView, model=Post):
     pass
 
 
@@ -22,5 +22,5 @@ Base.metadata.create_all(engine)
 app = Starlette()
 
 admin = Admin(engine)
-admin.add_view(PostAdmin)
+admin.add_view(PostView)
 admin.mount_to(app)

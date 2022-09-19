@@ -86,12 +86,11 @@ SQLAlchemy integration
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from starlette.applications import Starlette
+
 from starlette_admin.contrib.sqla import Admin, ModelView
 
 Base = declarative_base()
-engine = create_engine(
-    "sqlite:///test.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
 
 
 class Post(Base):
@@ -101,7 +100,7 @@ class Post(Base):
     title = Column(String)
 
 
-class PostAdmin(ModelView, model=Post):
+class PostView(ModelView, model=Post):
     pass
 
 
@@ -109,7 +108,7 @@ Base.metadata.create_all(engine)
 app = Starlette()
 
 admin = Admin(engine)
-admin.add_view(PostAdmin)
+admin.add_view(PostView)
 admin.mount_to(app)
 ```
 
@@ -127,14 +126,14 @@ class Post(mongoengine.Document):
     title = mongoengine.StringField(min_length=3, required=True)
 
 
-class PostAdmin(ModelView, document=Post):
+class PostView(ModelView, document=Post):
     pass
 
 
 app = Starlette()
 
 admin = Admin()
-admin.add_view(PostAdmin)
+admin.add_view(PostView)
 admin.mount_to(app)
 ```
 Access your admin interface in your browser at http://localhost:8000/admin
