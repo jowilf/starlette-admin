@@ -285,8 +285,8 @@ class BaseAdmin:
             try:
                 assert self.auth_provider is not None
                 return await self.auth_provider.login(
-                    form.get("username"),
-                    form.get("password"),
+                    form.get("username"),  # type: ignore
+                    form.get("password"),  # type: ignore
                     form.get("remember_me") == "on",
                     request,
                     RedirectResponse(

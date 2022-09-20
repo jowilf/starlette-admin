@@ -20,7 +20,7 @@
 </a>
 </p>
 
-![Starlette-Admin Promo Image](docs/images/promo.png)
+![Starlette-Admin Promo Image](https://github.com/jowilf/starlette-admin/raw/main/docs/images/promo.png)
 
 The key features are:
 

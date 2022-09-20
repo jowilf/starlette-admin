@@ -173,7 +173,7 @@ class IntegerField(NumberField):
         self, request: Request, form_data: FormData
     ) -> Optional[int]:
         try:
-            return int(form_data.get(self.name))
+            return int(form_data.get(self.name))  # type: ignore
         except (ValueError, TypeError):
             return None
 
@@ -195,7 +195,7 @@ class DecimalField(NumberField):
         self, request: Request, form_data: FormData
     ) -> Optional[decimal.Decimal]:
         try:
-            return decimal.Decimal(form_data.get(self.name))
+            return decimal.Decimal(form_data.get(self.name))  # type: ignore
         except (decimal.InvalidOperation, ValueError):
             return None
 
@@ -216,7 +216,7 @@ class FloatField(StringField):
         self, request: Request, form_data: FormData
     ) -> Optional[float]:
         try:
-            return float(form_data.get(self.name))
+            return float(form_data.get(self.name))  # type: ignore
         except ValueError:
             return None
 
@@ -235,7 +235,7 @@ class TagsField(BaseField):
     form_js = "js/field/forms/tags.js"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> List[str]:
-        return form_data.getlist(self.name)
+        return form_data.getlist(self.name)  # type: ignore
 
     def additional_css_links(self, request: Request) -> List[str]:
         return [
@@ -336,7 +336,11 @@ class EnumField(StringField):
         return (
             list(map(self.coerce, form_data.getlist(self.name)))
             if self.multiple
-            else self.coerce(form_data.get(self.name))
+            else (
+                self.coerce(form_data.get(self.name))
+                if form_data.get(self.name)
+                else None
+            )
         )
 
     def _get_label(self, value: Any) -> Any:
@@ -344,11 +348,14 @@ class EnumField(StringField):
             return value.name
         for v, l in self.choices:
             if value == v:
-                return self.coerce(l)
+                return l
         raise ValueError(f"Invalid choice value: {value}")
 
     async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
-        labels = [self._get_label(v) for v in (value if self.multiple else [value])]
+        labels = [
+            (self._get_label(v) if action != "EDIT" else v)
+            for v in (value if self.multiple else [value])
+        ]
         return labels if self.multiple else labels[0]
 
     def additional_css_links(self, request: Request) -> List[str]:
@@ -421,7 +428,7 @@ class DateTimeField(NumberField):
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
-            return datetime.fromisoformat(form_data.get(self.name))
+            return datetime.fromisoformat(form_data.get(self.name))  # type: ignore
         except (TypeError, ValueError):
             return None
 
@@ -467,7 +474,7 @@ class DateField(DateTimeField):
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
-            return date.fromisoformat(form_data.get(self.name))
+            return date.fromisoformat(form_data.get(self.name))  # type: ignore
         except (TypeError, ValueError):
             return None
 
@@ -490,7 +497,7 @@ class TimeField(DateTimeField):
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
-            return time.fromisoformat(form_data.get(self.name))
+            return time.fromisoformat(form_data.get(self.name))  # type: ignore
         except (TypeError, ValueError):
             return None
 
@@ -510,7 +517,7 @@ class JSONField(BaseField):
     ) -> Optional[Dict[str, Any]]:
         try:
             value = form_data.get(self.name)
-            return json.loads(value) if value is not None else None
+            return json.loads(value) if value is not None else None  # type: ignore
         except JSONDecodeError:
             return None
 
@@ -549,9 +556,9 @@ class FileField(BaseField):
     ) -> Union[UploadFile, List[UploadFile], None]:
         if self.multiple:
             files = form_data.getlist(self.name)
-            return [f for f in files if not is_empty_file(f.file)]
+            return [f for f in files if not is_empty_file(f.file)]  # type: ignore
         file = form_data.get(self.name)
-        return None if (file and is_empty_file(file.file)) else file
+        return None if (file and is_empty_file(file.file)) else file  # type: ignore
 
     def _isvalid_value(self, value: Any) -> bool:
         return value is not None and all(

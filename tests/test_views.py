@@ -313,9 +313,16 @@ class TestViews:
         assert MyModelView.db[1] == MyModel(
             id=1, score=3.4, gender="male", json_field=dict(key="value")
         )
+        # Test Api
+        response = client.get("/admin/api/mymodel?pks=1")
+        assert response.status_code == 200
+        assert [1] == [x["id"] for x in response.json()["items"]]
+
+        # Test edit page load
         response = client.get("/admin/mymodel/edit/1")
         assert response.status_code == 200
 
+        # Test edition
         response = client.post(
             "/admin/mymodel/edit/1",
             data={
@@ -339,8 +346,10 @@ class TestViews:
         )
 
         # Test enum value error
-        MyModelView.db[2] = MyModel(id=2, score=4.5, gender="unknow", json_field=dict())
-        with pytest.raises(ValueError, match="Invalid choice value: unknow"):
+        MyModelView.db[2] = MyModel(
+            id=2, score=4.5, gender="unknown", json_field=dict()
+        )
+        with pytest.raises(ValueError, match="Invalid choice value: unknown"):
             response = client.get("/admin/api/mymodel?pks=2")
 
     def test_has_one_relationships(self):
