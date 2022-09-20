@@ -346,7 +346,9 @@ class TestViews:
         )
 
         # Test enum value error
-        MyModelView.db[2] = MyModel(id=2, score=4.5, gender="unknown", json_field=dict())
+        MyModelView.db[2] = MyModel(
+            id=2, score=4.5, gender="unknown", json_field=dict()
+        )
         with pytest.raises(ValueError, match="Invalid choice value: unknown"):
             response = client.get("/admin/api/mymodel?pks=2")
 
