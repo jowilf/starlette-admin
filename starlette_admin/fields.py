@@ -348,7 +348,7 @@ class EnumField(StringField):
             return value.name
         for v, l in self.choices:
             if value == v:
-                return self.coerce(l)
+                return l
         raise ValueError(f"Invalid choice value: {value}")
 
     async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
