@@ -1,0 +1,3 @@
+starlette-admin
+odmantic
+uvicorn

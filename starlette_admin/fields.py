@@ -336,7 +336,11 @@ class EnumField(StringField):
         return (
             list(map(self.coerce, form_data.getlist(self.name)))
             if self.multiple
-            else self.coerce(form_data.get(self.name))
+            else (
+                self.coerce(form_data.get(self.name))
+                if form_data.get(self.name)
+                else None
+            )
         )
 
     def _get_label(self, value: Any) -> Any:
@@ -348,7 +352,10 @@ class EnumField(StringField):
         raise ValueError(f"Invalid choice value: {value}")
 
     async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
-        labels = [self._get_label(v) for v in (value if self.multiple else [value])]
+        labels = [
+            (self._get_label(v) if action != "EDIT" else v)
+            for v in (value if self.multiple else [value])
+        ]
         return labels if self.multiple else labels[0]
 
     def additional_css_links(self, request: Request) -> List[str]:
