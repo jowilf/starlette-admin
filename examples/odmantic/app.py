@@ -9,8 +9,9 @@ from starlette.responses import HTMLResponse
 from starlette.routing import Route
 from starlette_admin import BaseAdmin as Admin
 from starlette_admin import BaseModelView, EnumField, IntegerField, StringField
-from starlette_admin.contrib.mongoengine.helpers import build_raw_query
 from starlette_admin.exceptions import FormValidationError
+
+from examples.odmantic.helpers import build_raw_query
 
 engine = AIOEngine()
 app = Starlette(
