@@ -1,8 +1,39 @@
 $(function () {
   var selectedRows = [];
-  model.fields.map((f) => {
-    $("#table-header").append(`<th>${f.label}</th>`);
-  });
+  var dt_columns = [];
+
+  (function () {
+    fringe = model.fields;
+    while (fringe.length > 0) {
+      field = fringe.shift(0);
+      if (field.type === "CollectionField")
+        fringe = fringe.concat(
+          field.fields.map((f) => {
+            f.name = field.name + "." + f.name;
+            f.label = field.label + "." + f.label;
+            return f;
+          })
+        );
+      else {
+        $("#table-header").append(`<th>${field.label}</th>`);
+        dt_columns.push({
+          name: field.name,
+          data: field.name,
+          orderable: field.orderable,
+          searchBuilderType: field.search_builder_type,
+          render: function (data, type, full, meta) {
+            return render[field.render_function_key](
+              data,
+              type,
+              full,
+              meta,
+              field
+            );
+          },
+        });
+      }
+    }
+  })();
 
   // Buttons declarations
 
@@ -259,17 +290,7 @@ $(function () {
         orderable: false,
         render: render.col_1,
       },
-      ...model.fields.map((f) => {
-        return {
-          name: f.name,
-          data: f.name,
-          orderable: f.orderable,
-          searchBuilderType: f.search_builder_type,
-          render: function (data, type, full, meta) {
-            return render[f.render_function_key](data, type, full, meta, f);
-          },
-        };
-      }),
+      ...dt_columns,
     ],
     order: [],
   });

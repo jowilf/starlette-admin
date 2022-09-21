@@ -82,7 +82,7 @@ class PostView(BaseModelView):
         ),
     ]
     sortable_fields = ("id", "title", "content")
-    search_builder = False
+    search_builder = True
     page_size = 10
     page_size_options = [5, 10, -1]
 
@@ -123,7 +123,7 @@ class PostView(BaseModelView):
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Post]:
         return [db.get(int(pk)) for pk in pks]
 
-    async def validate_data(self, data: Dict) -> None:
+    def validate_data(self, data: Dict) -> None:
         errors = {}
         if data["title"] is None or len(data["title"]) < 3:
             errors["title"] = "Ensure title has at least 03 characters"
@@ -133,7 +133,7 @@ class PostView(BaseModelView):
             raise FormValidationError(errors)
 
     async def create(self, request: Request, data: Dict) -> Post:
-        await self.validate_data(data)
+        self.validate_data(data)
         global next_id
         obj = Post(id=next_id, **data)
         db[next_id] = obj
@@ -141,9 +141,8 @@ class PostView(BaseModelView):
         return obj
 
     async def edit(self, request: Request, pk, data: Dict) -> Post:
-        await self.validate_data(data)
+        self.validate_data(data)
         db[int(pk)].update(data)
-        print("edit ", db[int(pk)])
         return db[int(pk)]
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:

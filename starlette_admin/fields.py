@@ -686,6 +686,5 @@ class CollectionField(BaseField):
             _links.extend(f.additional_js_links(request))
         return _links
 
-
 if __name__ == "__main__":
     print(CollectionField("c", fields=[StringField("name")]).dict())

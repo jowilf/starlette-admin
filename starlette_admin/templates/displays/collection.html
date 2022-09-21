@@ -1,1 +1,10 @@
-{{data}}
+<dl>
+    {%for field in field._extract_fields('DETAIL') %}
+    <dt>{{field.label}}:</dt>
+    <dd>
+        {% with data=(data[field.name] if data else None) %}
+        {% include field.display_template %}
+        {% endwith %}
+    </dd>
+    {%endfor%}
+</dl>
