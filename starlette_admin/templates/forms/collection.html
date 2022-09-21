@@ -3,9 +3,9 @@
     {%for field in field._extract_fields(action) %}
     <div class="form-group row mb-3">
         <label class="col-3 col-form-label {%if field.required%}required{%endif%}"
-               for="{{field.name}}">{{field.label}}</label>
+               for="{{field.id}}">{{field.label}}</label>
         <div class="col">
-            {%set item_data= (data[field._real_name] if data else None)%}
+            {%set item_data= (data[field.name] if data else None)%}
             {% with data=item_data, _disabled_label=True, error=False %}
             {% include field.form_template %}
             {% endwith %}

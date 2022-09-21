@@ -131,7 +131,7 @@ class BaseModelView(BaseView):
         identity: Unique identity to identify the model associated to this view.
             Will be used for URL of the endpoints.
         name: Name of the view to be displayed
-        fields: List[BaseField] = []
+        fields: List of fields
         pk_attr: Primary key field name
         form_include_pk: Indicate if the primary key should be excluded from create and
             edit. Default to True

@@ -20,6 +20,7 @@ class BaseField:
         name: Field name, same as attribute name in your model
         label: Field label
         type: Field type, unique key used to define the field
+        id: Unique id, used to represent field instance
         search_builder_type: datatable columns.searchBuilderType, For more information
             [click here](https://datatables.net/reference/option/columns.searchBuilderType)
         required: Indicate if the fields is required
@@ -37,6 +38,7 @@ class BaseField:
     name: str
     label: Optional[str] = None
     type: Optional[str] = None
+    id: Optional[str] = None
     search_builder_type: Optional[str] = "default"
     required: Optional[bool] = False
     exclude_from_list: Optional[bool] = False
@@ -55,9 +57,10 @@ class BaseField:
             self.label = self.name.replace("_", " ").capitalize()
         if self.type is None:
             self.type = type(self).__name__
+        self.id = self.name
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
-        return form_data.get(self.name)
+        return form_data.get(self.id)
 
     async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
         return value
@@ -82,7 +85,7 @@ class BooleanField(BaseField):
     display_template: str = "displays/boolean.html"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> bool:
-        return form_data.get(self.name) == "on"
+        return form_data.get(self.id) == "on"
 
     async def serialize_value(self, request: Request, value: Any, action: str) -> bool:
         return bool(value)
@@ -173,7 +176,7 @@ class IntegerField(NumberField):
             self, request: Request, form_data: FormData
     ) -> Optional[int]:
         try:
-            return int(form_data.get(self.name))  # type: ignore
+            return int(form_data.get(self.id))  # type: ignore
         except (ValueError, TypeError):
             return None
 
@@ -195,7 +198,7 @@ class DecimalField(NumberField):
             self, request: Request, form_data: FormData
     ) -> Optional[decimal.Decimal]:
         try:
-            return decimal.Decimal(form_data.get(self.name))  # type: ignore
+            return decimal.Decimal(form_data.get(self.id))  # type: ignore
         except (decimal.InvalidOperation, ValueError):
             return None
 
@@ -216,7 +219,7 @@ class FloatField(StringField):
             self, request: Request, form_data: FormData
     ) -> Optional[float]:
         try:
-            return float(form_data.get(self.name))  # type: ignore
+            return float(form_data.get(self.id))  # type: ignore
         except ValueError:
             return None
 
@@ -236,7 +239,7 @@ class TagsField(BaseField):
     class_: str = "field-tags form-control form-select"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> List[str]:
-        return form_data.getlist(self.name)  # type: ignore
+        return form_data.getlist(self.id)  # type: ignore
 
     def additional_css_links(self, request: Request) -> List[str]:
         return [
@@ -336,11 +339,11 @@ class EnumField(StringField):
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         return (
-            list(map(self.coerce, form_data.getlist(self.name)))
+            list(map(self.coerce, form_data.getlist(self.id)))
             if self.multiple
             else (
-                self.coerce(form_data.get(self.name))
-                if form_data.get(self.name)
+                self.coerce(form_data.get(self.id))
+                if form_data.get(self.id)
                 else None
             )
         )
@@ -430,7 +433,7 @@ class DateTimeField(NumberField):
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
-            return datetime.fromisoformat(form_data.get(self.name))  # type: ignore
+            return datetime.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
 
@@ -476,7 +479,7 @@ class DateField(DateTimeField):
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
-            return date.fromisoformat(form_data.get(self.name))  # type: ignore
+            return date.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
 
@@ -499,7 +502,7 @@ class TimeField(DateTimeField):
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         try:
-            return time.fromisoformat(form_data.get(self.name))  # type: ignore
+            return time.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
 
@@ -518,7 +521,7 @@ class JSONField(BaseField):
             self, request: Request, form_data: FormData
     ) -> Optional[Dict[str, Any]]:
         try:
-            value = form_data.get(self.name)
+            value = form_data.get(self.id)
             return json.loads(value) if value is not None else None  # type: ignore
         except JSONDecodeError:
             return None
@@ -557,9 +560,9 @@ class FileField(BaseField):
             self, request: Request, form_data: FormData
     ) -> Union[UploadFile, List[UploadFile], None]:
         if self.multiple:
-            files = form_data.getlist(self.name)
+            files = form_data.getlist(self.id)
             return [f for f in files if not is_empty_file(f.file)]  # type: ignore
-        file = form_data.get(self.name)
+        file = form_data.get(self.id)
         return None if (file and is_empty_file(file.file)) else file  # type: ignore
 
     def _isvalid_value(self, value: Any) -> bool:
@@ -595,8 +598,8 @@ class RelationField(BaseField):
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         if self.multiple:
-            return form_data.getlist(self.name)
-        return form_data.get(self.name)
+            return form_data.getlist(self.id)
+        return form_data.get(self.id)
 
     def additional_css_links(self, request: Request) -> List[str]:
         return [
@@ -637,33 +640,25 @@ class CollectionField(BaseField):
     fields: List[BaseField] = field(default_factory=list)
     form_template: str = "forms/collection.html"
     display_template: str = "displays/collection.html"
-    _is_prefix_updated = False
 
     def __post_init__(self) -> None:
         super().__post_init__()
-        for f in self.fields:
-            """Save field real name, it can be modified later"""
-            f._real_name = f.name
+        self._update_childs_id()
 
     def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
-        self._update_name_prefix()
         return extract_fields(self.fields, action)
 
-    def _update_name_prefix(self):
-        if self._is_prefix_updated:
-            return
-        """Will update fields name by adding his name as prefix"""
+    def _update_childs_id(self):
+        """Will update fields id by adding his id as prefix"""
         for field in self.fields:
-            field._real_name = field.name
-            field.name = "{}.{}".format(self.name, field.name)
+            field.id = "{}.{}".format(self.id, field.name)
             if isinstance(field, type(self)):
-                field._update_name_prefix()
-        self._is_prefix_updated = True
+                field._update_childs_id()
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         value = dict()
         for field in self.fields:
-            value[field._real_name] = await field.parse_form_data(request, form_data)
+            value[field.name] = await field.parse_form_data(request, form_data)
         return value
 
     async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
@@ -671,7 +666,7 @@ class CollectionField(BaseField):
             return value
         serialized_value = dict()
         for field in self.fields:
-            name = field._real_name
+            name = field.name
             serialized_value[name] = None
             if hasattr(value, name) or (isinstance(value, dict) and name in value):
                 field_value = getattr(value, name) if hasattr(value, name) else value[name]

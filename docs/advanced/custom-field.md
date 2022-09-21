@@ -60,7 +60,7 @@ These jinja2 variables are available:
 
 !!! Example
     ```html title="forms/custom.html"
-    <input id="{{field.name}}" name="{{field.name}}" type="text" class="form-control {%if error%}is-invalid{%endif%}"
+    <input id="{{field.id}}" name="{{field.id}}" type="text" class="form-control {%if error%}is-invalid{%endif%}"
         placeholder="{{field.label}}" value="{{data or '' }}" {%if field.required%}required{%endif%} />
     ```
 ```python
