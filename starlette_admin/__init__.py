@@ -1,4 +1,4 @@
-__version__ = "0.2.0"
+__version__ = "0.2.2"
 
 from starlette_admin.base import BaseAdmin
 from starlette_admin.fields import *

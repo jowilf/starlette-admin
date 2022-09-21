@@ -45,7 +45,6 @@ class Admin(BaseAdmin):
 
 
 def _serve_file(request: Request) -> Response:
-    from libcloud.storage.drivers.local import LocalStorageDriver
     from libcloud.storage.types import ObjectDoesNotExistError
     from sqlalchemy_file.storage import StorageManager
 
@@ -53,7 +52,7 @@ def _serve_file(request: Request) -> Response:
         storage = request.path_params.get("storage")
         file_id = request.path_params.get("file_id")
         file = StorageManager.get_file(f"{storage}/{file_id}")
-        if isinstance(file.object.driver, LocalStorageDriver):
+        if file.object.driver.name == "Local Storage":
             """If file is stored in local storage, just return a
             FileResponse with the fill full path."""
             return FileResponse(

@@ -105,15 +105,17 @@ $(function () {
       });
     } else {
       if (c.type.startsWith("moment-")) {
-        search_format = columns[c.origData].search_format;
-        if (!search_format) search_format = moment.defaultFormat;
+        searchFormat = model.fields.find(
+          (f) => f.name == c.origData
+        )?.search_format;
+        if (!searchFormat) searchFormat = moment.defaultFormat;
         c.value = [];
         if (c.value1) {
-          c.value1 = moment(c.value1).format(search_format);
+          c.value1 = moment(c.value1).format(searchFormat);
           c.value.push(c.value1);
         }
         if (c.value2) {
-          c.value2 = moment(c.value2).format(search_format);
+          c.value2 = moment(c.value2).format(searchFormat);
           c.value.push(c.value2);
         }
       } else if (c.type == "num") {

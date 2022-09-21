@@ -84,7 +84,7 @@ class PostView(BaseModelView):
     sortable_fields = ("id", "title", "content")
     search_builder = False
     page_size = 10
-    page_size_options = [2, -1]
+    page_size_options = [5, 10, -1]
 
     async def count(
         self,

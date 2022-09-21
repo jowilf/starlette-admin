@@ -10,12 +10,12 @@ class Post(mongoengine.Document):
     title = mongoengine.StringField(min_length=3, required=True)
 
 
-class PostAdmin(ModelView, document=Post):
+class PostView(ModelView, document=Post):
     pass
 
 
 app = Starlette()
 
 admin = Admin()
-admin.add_view(PostAdmin)
+admin.add_view(PostView)
 admin.mount_to(app)
