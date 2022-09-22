@@ -17,8 +17,6 @@ class Post(DummyBaseModel):
 class TestView:
     def test_basic(self):
         class PostView(DummyModelView):
-            identity = "post"
-            label = "Post"
             model = Post
             fields = (
                 IntegerField("id"),
@@ -47,8 +45,6 @@ class TestView:
 
     def test_force_include_pk_in_form(self):
         class PostViewWithPkInForm(DummyModelView):
-            identity = "post"
-            label = "Post"
             model = Post
             fields = (
                 IntegerField("id"),
@@ -65,8 +61,6 @@ class TestView:
 
     def test_fields_exclusion(self):
         class PostViewWithExclusion(DummyModelView):
-            identity = "post"
-            label = "Post"
             model = Post
             fields = (
                 IntegerField("id"),

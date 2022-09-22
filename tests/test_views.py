@@ -54,8 +54,6 @@ class UserView(DummyModelView):
 
 
 class PostView(DummyModelView):
-    identity = "post"
-    label = "Post"
     model = Post
     fields = (
         IntegerField("id"),
@@ -122,7 +120,7 @@ class TestViews:
         admin.add_view(PostView)
         admin.mount_to(app)
         assert len(admin._views) == 1
-        identity = PostView.identity
+        identity = "post"
         assert admin._find_model_from_identity(identity) is not None
         with pytest.raises(
             HTTPException, match="Model with identity unknown not found"
@@ -292,7 +290,6 @@ class TestViews:
                 ),
                 JSONField("json_field"),
             ]
-            identity = "mymodel"
             model = MyModel
             db = {}
             seq = 1
@@ -304,7 +301,7 @@ class TestViews:
         client = TestClient(app)
 
         response = client.post(
-            "/admin/mymodel/create",
+            "/admin/my-model/create",
             data={"score": 3.4, "gender": "male", "json_field": '{"key":"value"}'},
         )
         assert response.status_code == 303
@@ -312,17 +309,17 @@ class TestViews:
             id=1, score=3.4, gender="male", json_field=dict(key="value")
         )
         # Test Api
-        response = client.get("/admin/api/mymodel?pks=1")
+        response = client.get("/admin/api/my-model?pks=1")
         assert response.status_code == 200
         assert [1] == [x["id"] for x in response.json()["items"]]
 
         # Test edit page load
-        response = client.get("/admin/mymodel/edit/1")
+        response = client.get("/admin/my-model/edit/1")
         assert response.status_code == 200
 
         # Test edition
         response = client.post(
-            "/admin/mymodel/edit/1",
+            "/admin/my-model/edit/1",
             data={
                 "score": 5.6,
                 "gender": "female",
@@ -335,7 +332,7 @@ class TestViews:
         )
         # Test None for float and invalid json
         response = client.post(
-            "/admin/mymodel/edit/1",
+            "/admin/my-model/edit/1",
             data={"score": "", "gender": "male", "json_field": "}"},
         )
         assert response.status_code == 303
@@ -348,7 +345,7 @@ class TestViews:
             id=2, score=4.5, gender="unknown", json_field=dict()
         )
         with pytest.raises(ValueError, match="Invalid choice value: unknown"):
-            response = client.get("/admin/api/mymodel?pks=2")
+            response = client.get("/admin/api/my-model?pks=2")
 
     def test_has_one_relationships(self):
         admin = BaseAdmin()
@@ -426,7 +423,7 @@ class TestViews:
         assert (
             response.text.count(
                 '<a href="http://testserver/admin/user/list"'
-                ' class="dropdown-item">User</a>'
+                ' class="dropdown-item">Users</a>'
             )
             == 1
         )

@@ -29,8 +29,6 @@ class User(DummyBaseModel):
 
 
 class UserView(DummyModelView):
-    identity = "user"
-    label = "User"
     model = User
     fields = [IntegerField("id"), StringField("name")]
     db = {}
@@ -38,8 +36,6 @@ class UserView(DummyModelView):
 
 
 class PostView(DummyModelView):
-    identity = "post"
-    label = "Post"
     model = Post
     fields = (
         IntegerField("id"),
@@ -77,13 +73,13 @@ def test_multiple_admin():
     assert response.status_code == 200
     assert response.text.count("<title>Admin1</title>") == 1
     assert response.text.count('<span class="nav-link-title">Report</span>') == 1
-    assert response.text.count('<span class="nav-link-title">Post</span>') == 1
+    assert response.text.count('<span class="nav-link-title">Posts</span>') == 1
 
     response = client.get("/admin2")
     assert response.status_code == 200
     assert response.text.count("<title>Admin2</title>") == 1
-    assert response.text.count('<span class="nav-link-title">User</span>') == 1
-    assert response.text.count('<span class="nav-link-title">Post</span>') == 1
+    assert response.text.count('<span class="nav-link-title">Users</span>') == 1
+    assert response.text.count('<span class="nav-link-title">Posts</span>') == 1
 
     assert client.get("/admin1/report").status_code == 200
     assert client.get("/admin1/post/list").status_code == 200
