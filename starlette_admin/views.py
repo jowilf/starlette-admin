@@ -5,7 +5,13 @@ from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
-from starlette_admin.fields import BaseField, FileField, HasOne, RelationField
+from starlette_admin.fields import (
+    BaseField,
+    CollectionField,
+    FileField,
+    HasOne,
+    RelationField,
+)
 from starlette_admin.helpers import extract_fields
 
 
@@ -170,7 +176,7 @@ class BaseModelView(BaseView):
     searchable_fields: Optional[List[str]] = None
     sortable_fields: Optional[List[str]] = None
     export_types: List[str] = ["csv", "excel", "pdf", "print"]
-    export_fields: List[str] = []
+    export_fields: Optional[List[str]] = None
     column_visibility: bool = True
     search_builder: bool = True
     page_size = 10
@@ -183,26 +189,42 @@ class BaseModelView(BaseView):
     _find_foreign_model: Callable[[str], "BaseModelView"]
 
     def __init__(self) -> None:
+        fringe = list(self.fields)
+        all_field_names = []
+        while len(fringe) > 0:
+            field = fringe.pop(0)
+            if not hasattr(field, "_name"):
+                field._name = field.name
+            if isinstance(field, CollectionField):
+                for f in field.fields:
+                    f._name = "{}.{}".format(field._name, f.name)
+                fringe.extend(field.fields)
+            else:
+                name = field._name
+                all_field_names.append(name)
+                if name == self.pk_attr and not self.form_include_pk:
+                    field.exclude_from_create = True
+                    field.exclude_from_edit = True
+                if name in self.exclude_fields_from_list:
+                    field.exclude_from_list = True
+                if name in self.exclude_fields_from_detail:
+                    field.exclude_from_detail = True
+                if name in self.exclude_fields_from_create:
+                    field.exclude_from_create = True
+                if name in self.exclude_fields_from_edit:
+                    field.exclude_from_edit = True
+                field.searchable = (self.searchable_fields is None) or (
+                    name in self.searchable_fields
+                )
+                field.orderable = (self.sortable_fields is None) or (
+                    name in self.sortable_fields
+                )
         if self.searchable_fields is None:
-            self.searchable_fields = [f.name for f in self.fields]
+            self.searchable_fields = all_field_names[:]
         if self.sortable_fields is None:
-            self.sortable_fields = [f.name for f in self.fields]
+            self.sortable_fields = all_field_names[:]
         if self.export_fields is None:
-            self.export_fields = [f.name for f in self.fields]
-        for field in self.fields:
-            if field.name == self.pk_attr and not self.form_include_pk:
-                field.exclude_from_create = True
-                field.exclude_from_edit = True
-            if field.name in self.exclude_fields_from_list:
-                field.exclude_from_list = True
-            if field.name in self.exclude_fields_from_detail:
-                field.exclude_from_detail = True
-            if field.name in self.exclude_fields_from_create:
-                field.exclude_from_create = True
-            if field.name in self.exclude_fields_from_edit:
-                field.exclude_from_edit = True
-            field.searchable = field.name in self.searchable_fields
-            field.orderable = field.name in self.sortable_fields
+            self.export_fields = all_field_names[:]
 
     def is_active(self, request: Request) -> bool:
         return request.path_params.get("identity", None) == self.identity
@@ -459,7 +481,7 @@ class BaseModelView(BaseView):
         ]
 
     def _search_columns_selector(self) -> List[str]:
-        return ["%s:name" % field.name for field in self.fields if field.searchable]
+        return ["%s:name" % name for name in self.searchable_fields]
 
     def _export_columns_selector(self) -> List[str]:
         return ["%s:name" % name for name in self.export_fields]

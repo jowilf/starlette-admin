@@ -40,8 +40,6 @@ class User(DummyBaseModel):
 
 
 class UserView(DummyModelView):
-    identity = "user"
-    label = "User"
     model = User
     fields = [
         IntegerField("id"),

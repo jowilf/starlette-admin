@@ -9,6 +9,7 @@ $(function () {
       if (field.type === "CollectionField")
         fringe = fringe.concat(
           field.fields.map((f) => {
+            // Produce nested name (ex: category.name)
             f.name = field.name + "." + f.name;
             f.label = field.label + "." + f.label;
             return f;

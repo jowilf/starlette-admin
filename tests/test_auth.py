@@ -41,8 +41,6 @@ class ReportView(CustomView):
 
 class PostView(DummyModelView):
     page_size = 2
-    identity = "post"
-    label = "Post"
     model = Post
     fields = (
         IntegerField("id"),

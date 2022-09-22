@@ -8,7 +8,6 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
-
 from starlette_admin.helpers import extract_fields, html_params, is_empty_file
 
 
@@ -173,7 +172,7 @@ class IntegerField(NumberField):
     class_: str = "field-integer form-control"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Optional[int]:
         try:
             return int(form_data.get(self.id))  # type: ignore
@@ -195,7 +194,7 @@ class DecimalField(NumberField):
     class_: str = "field-decimal form-control"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Optional[decimal.Decimal]:
         try:
             return decimal.Decimal(form_data.get(self.id))  # type: ignore
@@ -216,7 +215,7 @@ class FloatField(StringField):
     class_: str = "field-float form-control"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Optional[float]:
         try:
             return float(form_data.get(self.id))  # type: ignore
@@ -342,9 +341,7 @@ class EnumField(StringField):
             list(map(self.coerce, form_data.getlist(self.id)))
             if self.multiple
             else (
-                self.coerce(form_data.get(self.id))
-                if form_data.get(self.id)
-                else None
+                self.coerce(form_data.get(self.id)) if form_data.get(self.id) else None
             )
         )
 
@@ -380,22 +377,22 @@ class EnumField(StringField):
 
     @classmethod
     def from_enum(
-            cls,
-            name: str,
-            enum_type: Type[Enum],
-            multiple: bool = False,
-            **kwargs: Dict[str, Any],
+        cls,
+        name: str,
+        enum_type: Type[Enum],
+        multiple: bool = False,
+        **kwargs: Dict[str, Any],
     ) -> "EnumField":
         choices = list(map(lambda e: (e.value, e.name), enum_type))  # type: ignore
         return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
 
     @classmethod
     def from_choices(
-            cls,
-            name: str,
-            choices: Union[List[Tuple[str, str]], List[str], Tuple],
-            multiple: bool = False,
-            **kwargs: Dict[str, Any],
+        cls,
+        name: str,
+        choices: Union[List[Tuple[str, str]], List[str], Tuple],
+        multiple: bool = False,
+        **kwargs: Dict[str, Any],
     ) -> "EnumField":
         if len(choices) > 0 and not isinstance(choices[0], (list, tuple)):
             choices = list(zip(choices, choices))
@@ -518,7 +515,7 @@ class JSONField(BaseField):
     display_template: str = "displays/json.html"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Optional[Dict[str, Any]]:
         try:
             value = form_data.get(self.id)
@@ -557,7 +554,7 @@ class FileField(BaseField):
     display_template: str = "displays/file.html"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Union[UploadFile, List[UploadFile], None]:
         if self.multiple:
             files = form_data.getlist(self.id)
@@ -569,8 +566,8 @@ class FileField(BaseField):
         return value is not None and all(
             [
                 (
-                        hasattr(v, "url")
-                        or (isinstance(v, dict) and v.get("url", None) is not None)
+                    hasattr(v, "url")
+                    or (isinstance(v, dict) and v.get("url", None) is not None)
                 )
                 for v in (value if self.multiple else [value])
             ]
@@ -669,9 +666,13 @@ class CollectionField(BaseField):
             name = field.name
             serialized_value[name] = None
             if hasattr(value, name) or (isinstance(value, dict) and name in value):
-                field_value = getattr(value, name) if hasattr(value, name) else value[name]
+                field_value = (
+                    getattr(value, name) if hasattr(value, name) else value[name]
+                )
                 if field_value is not None:
-                    serialized_value[name] = await field.serialize_value(request, field_value, action)
+                    serialized_value[name] = await field.serialize_value(
+                        request, field_value, action
+                    )
         return serialized_value
 
     def additional_css_links(self, request: Request) -> List[str]:
@@ -685,6 +686,3 @@ class CollectionField(BaseField):
         for f in self.fields:
             _links.extend(f.additional_js_links(request))
         return _links
-
-if __name__ == "__main__":
-    print(CollectionField("c", fields=[StringField("name")]).dict())

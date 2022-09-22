@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
 from requests import Request
 from starlette_admin import HasMany, HasOne
+from starlette_admin.helpers import slugify_class_name, prettify_class_name
 from starlette_admin.views import BaseModelView
 
 
@@ -28,6 +29,12 @@ class DummyModelView(BaseModelView):
     model: Optional[Type[DummyBaseModel]] = None
     db: Dict[int, DummyBaseModel] = dict()
     seq = 1
+
+    def __init__(self):
+        self.identity = slugify_class_name(self.model.__name__)
+        self.name = prettify_class_name(self.model.__name__)
+        self.label = prettify_class_name(self.model.__name__) + 's'
+        super().__init__()
 
     def filter_values(self, values: Iterable[DummyBaseModel], term):
         filtered_values = []
