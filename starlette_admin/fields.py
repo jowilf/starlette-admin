@@ -659,8 +659,6 @@ class CollectionField(BaseField):
         return value
 
     async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
-        if value is None:
-            return value
         serialized_value = dict()
         for field in self.fields:
             name = field.name
