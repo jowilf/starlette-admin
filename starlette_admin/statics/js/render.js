@@ -58,7 +58,7 @@ const render = {
   url: function render(data, type, full, meta, fieldOptions) {
     if (data == null) return null_column();
     if (Array.isArray(data) && data.length == 0) return empty_column();
-    data = Array.isArray(data) ? data : [data].map((d) => escape(d));
+    data = Array.isArray(data) ? data : [data].map((d) => new URL(d));
     if (type != "display") return data.join(",");
     return `<span class="align-middle d-inline-block text-truncate" data-toggle="tooltip" data-placement="bottom" title='${data}' style="max-width: 30em;">${data.map(
       (d) => '<a href="' + d + '">' + d + "</a>"
@@ -75,7 +75,7 @@ const render = {
   image: function render(data, type, full, meta, fieldOptions) {
     if (!data) return null_column();
     if (Array.isArray(data) && data.length == 0) return empty_column();
-    let urls = (Array.isArray(data) ? data : [data]).map((d) => escape(d.url));
+    let urls = (Array.isArray(data) ? data : [data]).map((d) => new URL(d.url));
     if (type != "display") return urls;
     return `<div class="d-flex">${urls
       .map(
@@ -88,11 +88,11 @@ const render = {
     if (!data) return null_column();
     if (Array.isArray(data) && data.length == 0) return empty_column();
     data = Array.isArray(data) ? data : [data];
-    if (type != "display") return data.map((d) => escape(d.url));
+    if (type != "display") return data.map((d) => new URL(d.url));
     return `<div class="d-flex flex-column">${data
       .map(
         (e) =>
-          `<a href="${e.url}" class="btn-link">
+          `<a href="${new URL(e.url)}" class="btn-link">
           <i class="fa-solid fa-fw ${get_file_icon(
             e.content_type
           )}"></i><span class="align-middle d-inline-block text-truncate" data-toggle="tooltip" data-placement="bottom" title="${escape(

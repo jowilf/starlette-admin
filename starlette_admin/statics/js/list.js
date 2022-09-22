@@ -3,9 +3,9 @@ $(function () {
   var dt_columns = [];
 
   (function () {
-    fringe = model.fields;
+    let fringe = model.fields;
     while (fringe.length > 0) {
-      field = fringe.shift(0);
+      let field = fringe.shift(0);
       if (field.type === "CollectionField")
         fringe = fringe.concat(
           field.fields.map((f) => {

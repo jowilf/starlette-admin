@@ -14,8 +14,8 @@ from starlette_admin import (
 )
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
-@dataclass
-class DBConfig:
+
+class DBConfig(TypedDict):
     host: str
     username: str
     password: str
