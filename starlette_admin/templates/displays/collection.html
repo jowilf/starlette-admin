@@ -3,7 +3,13 @@
     <dt>{{field.label}}:</dt>
     <dd>
         {% with data=(data[field.name] if data else None) %}
-        {% include field.display_template %}
+            {% if data == None%}
+                {% include "displays/_null.html" %}
+            {%elif (data | is_iter) and (data |length) ==0%}
+                {% include "displays/_empty.html" %}
+            {%else%}
+                {% include field.display_template %}
+            {%endif%}
         {% endwith %}
     </dd>
     {%endfor%}

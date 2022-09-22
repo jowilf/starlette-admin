@@ -73,13 +73,13 @@
                                 </td>
                                 <td data-label="Value">
                                     {% with data=obj[field.name] %}
-                                    {% if data == None%}
-                                    {% include "displays/_null.html" %}
-                                    {%elif field.multiple and (data |length) ==0%}
-                                    {% include "displays/_empty.html" %}
-                                    {%else%}
-                                    {% include field.display_template %}
-                                    {%endif%}
+                                        {% if data == None%}
+                                            {% include "displays/_null.html" %}
+                                        {%elif (data | is_iter) and (data |length) ==0%}
+                                            {% include "displays/_empty.html" %}
+                                        {%else%}
+                                            {% include field.display_template %}
+                                        {%endif%}
                                     {% endwith %}
                                 </td>
                             </tr>
