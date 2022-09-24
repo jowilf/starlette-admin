@@ -1,6 +1,7 @@
 import decimal
 import json
-from dataclasses import asdict, dataclass, field as dc_field
+from dataclasses import asdict, dataclass
+from dataclasses import field as dc_field
 from datetime import date, datetime, time
 from enum import Enum
 from json import JSONDecodeError
