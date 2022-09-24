@@ -5,7 +5,7 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
-from starlette_admin import BaseAdmin as Admin
+from starlette_admin import BaseAdmin as Admin, ListField
 from starlette_admin import (
     CollectionField,
     DateTimeField,
@@ -61,25 +61,16 @@ class PostView(BaseModelView):
         IntegerField("id"),
         StringField("title"),
         TextAreaField("content"),
-        TagsField("tags"),
-        CollectionField(
-            "config",
-            fields=[
-                StringField("name", required=True),
-                TextAreaField("description"),
-                TagsField("tags"),
-                DateTimeField("datetime"),
-                CollectionField(
-                    "config2",
-                    fields=[
-                        StringField("name", required=True),
-                        TextAreaField("description"),
-                        TagsField("tags"),
-                        DateTimeField("datetime"),
-                    ],
-                ),
-            ],
-        ),
+        ListField(StringField("tags")),
+        # CollectionField(
+        #     "config",
+        #     fields=[
+        #         StringField("name", required=True),
+        #         TextAreaField("description"),
+        #         TagsField("tags"),
+        #         DateTimeField("datetime")
+        #     ],
+        # ),
     ]
     sortable_fields = ("id", "title", "content")
     search_builder = True
