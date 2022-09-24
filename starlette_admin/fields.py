@@ -1,6 +1,6 @@
 import decimal
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field as dc_field
 from datetime import date, datetime, time
 from enum import Enum
 from json import JSONDecodeError
@@ -37,7 +37,7 @@ class BaseField:
     name: str
     label: Optional[str] = None
     type: Optional[str] = None
-    id: Optional[str] = None
+    id: str = ""
     search_builder_type: Optional[str] = "default"
     required: Optional[bool] = False
     exclude_from_list: Optional[bool] = False
@@ -331,7 +331,7 @@ class EnumField(StringField):
     """
 
     multiple: bool = False
-    choices: Iterable[Tuple[str, str]] = field(default_factory=dict)
+    choices: Iterable[Tuple[str, str]] = dc_field(default_factory=dict)
     form_template: str = "forms/enum.html"
     class_: str = "field-enum form-control form-select"
     coerce: type = str
@@ -634,7 +634,7 @@ class HasMany(RelationField):
 
 @dataclass
 class CollectionField(BaseField):
-    fields: List[BaseField] = field(default_factory=list)
+    fields: List[BaseField] = dc_field(default_factory=list)
     form_template: str = "forms/collection.html"
     display_template: str = "displays/collection.html"
 
@@ -645,7 +645,7 @@ class CollectionField(BaseField):
     def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
         return extract_fields(self.fields, action)
 
-    def _update_childs_id(self):
+    def _update_childs_id(self) -> None:
         """Will update fields id by adding his id as prefix"""
         for field in self.fields:
             field.id = "{}.{}".format(self.id, field.name)
@@ -659,7 +659,7 @@ class CollectionField(BaseField):
         return value
 
     async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
-        serialized_value = dict()
+        serialized_value: Dict[str, Any] = dict()
         for field in self.fields:
             name = field.name
             serialized_value[name] = None

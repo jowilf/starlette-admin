@@ -4,7 +4,6 @@ from typing import Optional, TypedDict
 import pytest
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
-
 from starlette_admin import (
     BaseAdmin,
     CollectionField,
@@ -12,6 +11,7 @@ from starlette_admin import (
     PasswordField,
     StringField,
 )
+
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
 
@@ -73,10 +73,10 @@ class TestCollectionField:
     def test_view_default_values(self, all):
         config_view = ConfigView()
         assert (
-                tuple(config_view.searchable_fields)
-                == tuple(config_view.sortable_fields)
-                == tuple(config_view.export_fields)
-                == all
+            tuple(config_view.searchable_fields)
+            == tuple(config_view.sortable_fields)
+            == tuple(config_view.export_fields)
+            == all
         )
 
     def test_form_ids(self, all, client):
@@ -127,7 +127,10 @@ class TestCollectionField:
         assert response.json()["items"][1]["db"] == DBConfig(
             host="localhost2", username="username2", password="password2"
         )
-        assert response.json()["items"][1]["nested"] == {"level1": "dummy1", "other": None}
+        assert response.json()["items"][1]["nested"] == {
+            "level1": "dummy1",
+            "other": None,
+        }
 
     def test_edit(self, client):
         ConfigView.db[1] = Config(

@@ -194,13 +194,13 @@ class BaseModelView(BaseView):
         while len(fringe) > 0:
             field = fringe.pop(0)
             if not hasattr(field, "_name"):
-                field._name = field.name
+                field._name = field.name  # type: ignore
             if isinstance(field, CollectionField):
                 for f in field.fields:
-                    f._name = "{}.{}".format(field._name, f.name)
+                    f._name = "{}.{}".format(field._name, f.name)  # type: ignore
                 fringe.extend(field.fields)
             else:
-                name = field._name
+                name = field._name  # type: ignore
                 all_field_names.append(name)
                 if name == self.pk_attr and not self.form_include_pk:
                     field.exclude_from_create = True
@@ -481,10 +481,10 @@ class BaseModelView(BaseView):
         ]
 
     def _search_columns_selector(self) -> List[str]:
-        return ["%s:name" % name for name in self.searchable_fields]
+        return ["%s:name" % name for name in self.searchable_fields]  # type: ignore
 
     def _export_columns_selector(self) -> List[str]:
-        return ["%s:name" % name for name in self.export_fields]
+        return ["%s:name" % name for name in self.export_fields]  # type: ignore
 
     def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
         return extract_fields(self.fields, action)
