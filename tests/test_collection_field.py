@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Optional, TypedDict
+from typing import Optional
 
 import pytest
+from pydantic import BaseModel
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 from starlette_admin import (
@@ -15,7 +16,7 @@ from starlette_admin import (
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
 
-class DBConfig(TypedDict):
+class DBConfig(BaseModel):
     host: str
     username: str
     password: Optional[str]
