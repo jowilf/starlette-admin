@@ -15,7 +15,7 @@ $(function () {
             return f;
           })
         );
-      else {
+      else if (!field.exclude_from_list) {
         $("#table-header").append(`<th>${field.label}</th>`);
         dt_columns.push({
           name: field.name,

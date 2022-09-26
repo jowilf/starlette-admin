@@ -5,15 +5,8 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
-from starlette_admin import BaseAdmin as Admin, ListField
-from starlette_admin import (
-    CollectionField,
-    DateTimeField,
-    IntegerField,
-    StringField,
-    TagsField,
-    TextAreaField,
-)
+from starlette_admin import BaseAdmin as Admin, CollectionField, TagsField, DateTimeField
+from starlette_admin import IntegerField, ListField, StringField, TextAreaField
 from starlette_admin.exceptions import FormValidationError
 from starlette_admin.views import BaseModelView
 
@@ -66,7 +59,7 @@ class PostView(BaseModelView):
         #     "config",
         #     fields=[
         #         StringField("name", required=True),
-        #         TextAreaField("description"),
+        #         TextAreaField("description", exclude_from_list=True),
         #         TagsField("tags"),
         #         DateTimeField("datetime")
         #     ],
@@ -118,8 +111,8 @@ class PostView(BaseModelView):
         errors = {}
         if data["title"] is None or len(data["title"]) < 3:
             errors["title"] = "Ensure title has at least 03 characters"
-        if data["tags"] is None or len(data["tags"]) < 1:
-            errors["tags"] = "You need at least one tag"
+        # if data["tags"] is None or len(data["tags"]) < 1:
+        #     errors["tags"] = "You need at least one tag"
         if len(errors) > 0:
             raise FormValidationError(errors)
 

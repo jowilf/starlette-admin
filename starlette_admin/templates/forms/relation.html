@@ -1,4 +1,3 @@
-{% include "forms/_label.html" %}
 {% set foreign_model = (field.identity | to_model) %}
 {% set fpk = foreign_model.pk_attr %}
 <select data-allow-clear="true" data-placeholder="Select {{field.id}}" id="{{field.id}}" name="{{field.id}}"

@@ -131,3 +131,32 @@ $("input.field-time").each(function () {
     altFormat: el.data("alt-format"),
   });
 });
+
+$(".field-list-btn-add").each(function () {
+  var el = $(this);
+  el.on("click", function () {
+    var field = el.parent();
+    var baseName = field.attr("id");
+    var idx = field.children(`input[name=${baseName}-next-idx]`).val();
+    var template = $(field.children(".template").text());
+    $("[name]", template).each(function () {
+      var me = $(this);
+      prefix = baseName + "." + idx;
+
+      var id = me.attr("id");
+      var name = me.attr("name");
+
+      id = prefix + (id !== "" ? "." + id : "");
+      name = prefix + (name !== "" ? "." + name : "");
+
+      me.attr("id", id);
+      me.attr("name", name);
+    });
+    template.find("button.field-list-btn-remove").on("click", function () {
+      template.remove();
+    });
+    template.appendTo(field.children(".list-container"));
+    field.children(`input[name=${baseName}-next-idx]`).val(parseInt(idx) + 1);
+  });
+});
+

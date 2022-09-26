@@ -1,4 +1,3 @@
-{% include "forms/_label.html" %}
 <select id="{{field.id}}" name="{{field.id}}" data-allow-clear="true" data-placeholder="Select a {{field.label}}"
     class="{{field.class_}} {%if error%}{{field.error_class}}{%endif%}" {%if field.multiple%}multiple{%endif%}>
     {%if not field.multiple%}<option></option>{%endif%}

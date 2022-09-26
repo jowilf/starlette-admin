@@ -50,6 +50,7 @@ class BaseField:
     orderable: Optional[bool] = True
     render_function_key: str = "text"
     form_template: str = "forms/input.html"
+    label_template: str = "forms/_label.html"
     display_template: str = "displays/text.html"
     error_class = "is-invalid"
 
@@ -634,13 +635,15 @@ class HasMany(RelationField):
     multiple: bool = True
 
 
-@dataclass
+@dataclass(init=False)
 class CollectionField(BaseField):
     fields: List[BaseField] = dc_field(default_factory=list)
     form_template: str = "forms/collection.html"
     display_template: str = "displays/collection.html"
 
-    def __post_init__(self) -> None:
+    def __init__(self, name: str, fields: List[BaseField]) -> None:
+        self.name = name
+        self.fields = fields
         super().__post_init__()
         self._update_childs_id()
 
@@ -648,7 +651,7 @@ class CollectionField(BaseField):
         return extract_fields(self.fields, action)
 
     def _update_childs_id(self) -> None:
-        """Will update fields id by adding his id as prefix"""
+        """Will update fields id by adding his id as prefix (ex: category.name)"""
         for field in self.fields:
             field.id = "{}.{}".format(self.id, field.name)
             if isinstance(field, type(self)):
@@ -693,11 +696,17 @@ class ListField(BaseField):
     form_template: str = "forms/list.html"
     display_template: str = "displays/list.html"
 
-    def __init__(self, field: BaseField):
+    def __init__(self, field: BaseField) -> None:
         self.field = field
         self.name = field.name
+        self.__post_init__()
+
+    def __post_init__(self) -> None:
         super().__post_init__()
+        self.field.id = ""
+        if isinstance(self.field, CollectionField):
+            self.field._update_childs_id()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(ListField(StringField("name")))

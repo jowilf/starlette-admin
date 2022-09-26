@@ -1,16 +1,19 @@
-{% include "forms/_label.html" %}
-<div id="{{field.id}}">
+<div id="{{field.id}}" class="field-list">
+    <input name="{{field.id}}-next-idx" value="1" hidden>
     <div class="template d-none">
         {% filter forceescape %}
-        <div class="d-flex">
-            <div class="flex-grow-1">
-                {% with data=None, _disabled_label=True, error=False, field=field.field %}
-                {% include field.form_template%}
-                {% endwith %}
+        <div class="mb-3">
+            <div class="d-flex">
+                <div class="flex-grow-1">
+                    {% with data=None, error=False, field=field.field %}
+                    {% include field.form_template%}
+                    {% endwith %}
+                </div>
+                <button type="button" class="field-list-btn-remove btn btn-ghost-danger btn-icon mx-2">
+                    <i class="fa fa-close"></i>
+                </button>
+
             </div>
-            <a href="#" class="btn btn-ghost-danger btn-icon mx-2" aria-label="Button">
-                <i class="fa fa-close"></i>
-            </a>
         </div>
         {% endfilter %}
     </div>
@@ -18,7 +21,7 @@
 
     </div>
 
-    <button type="button" class="btn btn-ghost-primary mt-2">
+    <button type="button" class="field-list-btn-add btn btn-ghost-primary mt-2">
         <i class="fa fa-add me-2"></i>
         Add item
     </button>
