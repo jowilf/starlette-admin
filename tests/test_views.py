@@ -185,20 +185,20 @@ class TestViews:
             "views": 10,
             "tags": ["tag1", "tag2"],
         }
-        response = client.post("/admin/post/create", data=dummy_data)
+        response = client.post("/admin/post/create", data=dummy_data, follow_redirects=False)
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/list"
         assert len(PostView.db) == 6
         assert PostView.db[6] == Post(id=6, **dummy_data)
 
         response = client.post(
-            "/admin/post/create", data=dict(**dummy_data, _continue_editing=True)
+            "/admin/post/create", data=dict(**dummy_data, _continue_editing=True), follow_redirects=False
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/edit/7"
 
         response = client.post(
-            "/admin/post/create", data=dict(**dummy_data, _add_another=True)
+            "/admin/post/create", data=dict(**dummy_data, _add_another=True), follow_redirects=False
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/create"
@@ -215,20 +215,20 @@ class TestViews:
             "views": 10,
             "tags": ["tag1", "tag2"],
         }
-        response = client.post("/admin/post/edit/5", data=dummy_data)
+        response = client.post("/admin/post/edit/5", data=dummy_data, follow_redirects=False)
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/list"
         assert len(PostView.db) == 5
         assert PostView.db[5] == Post(id=5, **dummy_data)
 
         response = client.post(
-            "/admin/post/edit/5", data=dict(**dummy_data, _continue_editing=True)
+            "/admin/post/edit/5", data=dict(**dummy_data, _continue_editing=True), follow_redirects=False
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/edit/5"
 
         response = client.post(
-            "/admin/post/edit/5", data=dict(**dummy_data, _add_another=True)
+            "/admin/post/edit/5", data=dict(**dummy_data, _add_another=True), follow_redirects=False
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/create"
@@ -302,7 +302,7 @@ class TestViews:
 
         response = client.post(
             "/admin/my-model/create",
-            data={"score": 3.4, "gender": "male", "json_field": '{"key":"value"}'},
+            data={"score": 3.4, "gender": "male", "json_field": '{"key":"value"}'}, follow_redirects=False
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(
@@ -324,7 +324,7 @@ class TestViews:
                 "score": 5.6,
                 "gender": "female",
                 "json_field": '{"new_key":"new_value"}',
-            },
+            }, follow_redirects=False
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(
@@ -333,7 +333,7 @@ class TestViews:
         # Test None for float and invalid json
         response = client.post(
             "/admin/my-model/edit/1",
-            data={"score": "", "gender": "male", "json_field": "}"},
+            data={"score": "", "gender": "male", "json_field": "}"}, follow_redirects=False
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(
@@ -364,7 +364,7 @@ class TestViews:
         client.post("/admin/user/edit/3", data=dummy_data)
         assert len(UserView.db) == 3
         assert UserView.db[3].reviewer == UserView.db[2]
-        dummy_data.update({"reviewer": None})
+        del dummy_data["reviewer"]
         assert client.get("/admin/user/edit/3").status_code == 200
         client.post("/admin/user/edit/3", data=dummy_data)
         assert len(UserView.db) == 3

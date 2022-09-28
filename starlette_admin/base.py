@@ -197,7 +197,7 @@ class BaseAdmin:
                 ),
             )
         elif isinstance(view, BaseModelView):
-            view._find_foreign_model = lambda i: self._find_model_from_identity(i)  # type: ignore
+            view._find_foreign_model = lambda i: self._find_model_from_identity(i)
             self._models.append(view)
 
     def _find_model_from_identity(self, identity: Optional[str]) -> BaseModelView:

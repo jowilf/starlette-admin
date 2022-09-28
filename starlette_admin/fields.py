@@ -9,7 +9,6 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
-
 from starlette_admin.helpers import extract_fields, html_params, is_empty_file
 
 
@@ -175,7 +174,7 @@ class IntegerField(NumberField):
     class_: str = "field-integer form-control"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Optional[int]:
         try:
             return int(form_data.get(self.id))  # type: ignore
@@ -197,7 +196,7 @@ class DecimalField(NumberField):
     class_: str = "field-decimal form-control"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Optional[decimal.Decimal]:
         try:
             return decimal.Decimal(form_data.get(self.id))  # type: ignore
@@ -218,7 +217,7 @@ class FloatField(StringField):
     class_: str = "field-float form-control"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Optional[float]:
         try:
             return float(form_data.get(self.id))  # type: ignore
@@ -380,22 +379,22 @@ class EnumField(StringField):
 
     @classmethod
     def from_enum(
-            cls,
-            name: str,
-            enum_type: Type[Enum],
-            multiple: bool = False,
-            **kwargs: Dict[str, Any],
+        cls,
+        name: str,
+        enum_type: Type[Enum],
+        multiple: bool = False,
+        **kwargs: Dict[str, Any],
     ) -> "EnumField":
         choices = list(map(lambda e: (e.value, e.name), enum_type))  # type: ignore
         return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
 
     @classmethod
     def from_choices(
-            cls,
-            name: str,
-            choices: Union[List[Tuple[str, str]], List[str], Tuple],
-            multiple: bool = False,
-            **kwargs: Dict[str, Any],
+        cls,
+        name: str,
+        choices: Union[List[Tuple[str, str]], List[str], Tuple],
+        multiple: bool = False,
+        **kwargs: Dict[str, Any],
     ) -> "EnumField":
         if len(choices) > 0 and not isinstance(choices[0], (list, tuple)):
             choices = list(zip(choices, choices))
@@ -518,7 +517,7 @@ class JSONField(BaseField):
     display_template: str = "displays/json.html"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Optional[Dict[str, Any]]:
         try:
             value = form_data.get(self.id)
@@ -557,7 +556,7 @@ class FileField(BaseField):
     display_template: str = "displays/file.html"
 
     async def parse_form_data(
-            self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData
     ) -> Union[UploadFile, List[UploadFile], None]:
         if self.multiple:
             files = form_data.getlist(self.id)
@@ -569,8 +568,8 @@ class FileField(BaseField):
         return value is not None and all(
             [
                 (
-                        hasattr(v, "url")
-                        or (isinstance(v, dict) and v.get("url", None) is not None)
+                    hasattr(v, "url")
+                    or (isinstance(v, dict) and v.get("url", None) is not None)
                 )
                 for v in (value if self.multiple else [value])
             ]
@@ -741,7 +740,7 @@ class ListField(BaseField):
         indices = set()
         for k in form_data:
             if k.startswith(self.id):
-                k = k[len(self.id) + 1:].split(".", maxsplit=1)[0]
+                k = k[len(self.id) + 1 :].split(".", maxsplit=1)[0]
                 if k.isdigit():
                     indices.add(int(k))
         return sorted(indices)
@@ -761,35 +760,3 @@ class ListField(BaseField):
 
     def additional_js_links(self, request: Request) -> List[str]:
         return self.field.additional_js_links(request)
-
-
-async def main():
-    f = FormData(
-        [
-            ("title", "His mother had always taught him"),
-            ("content", "Dummy content"),
-            ("tags.1", "history"),
-            ("tags.2", "american"),
-            ("tags.3", "crime"),
-            ("config.1.name", "Nopeless"),
-            ("config.1.datetime", "2022-09-26 12:00:00"),
-            ("tags.1", "Hopeless"),
-            ("tags.2", "Nopeless"),
-            ("_continue_editing", ""),
-        ]
-    )
-
-    field = ListField(
-        CollectionField(
-            "config",
-            fields=[StringField("name"), DateTimeField("datetime"), ListField(StringField("tags"))],
-        ),
-    )
-    print(field._field_at().fields[2])
-    print(await field.parse_form_data(None, f))
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
