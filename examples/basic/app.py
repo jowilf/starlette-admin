@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Union
 
@@ -5,8 +6,15 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
-from starlette_admin import BaseAdmin as Admin, CollectionField, TagsField, DateTimeField
-from starlette_admin import IntegerField, ListField, StringField, TextAreaField
+from starlette_admin import BaseAdmin as Admin
+from starlette_admin import (
+    CollectionField,
+    DateTimeField,
+    IntegerField,
+    ListField,
+    StringField,
+    TextAreaField,
+)
 from starlette_admin.exceptions import FormValidationError
 from starlette_admin.views import BaseModelView
 
@@ -17,7 +25,9 @@ class Post:
     title: str
     content: str
     tags: List[str]
-    config: dict = field(default_factory=dict)
+    bools: List[bool] = field(default_factory=list)
+    dts: List[datetime.datetime] = field(default_factory=list)
+    config: List[dict] = field(default_factory=list)
 
     def is_valid_for_term(self, term: str) -> bool:
         return (
@@ -55,15 +65,16 @@ class PostView(BaseModelView):
         StringField("title"),
         TextAreaField("content"),
         ListField(StringField("tags")),
-        # CollectionField(
-        #     "config",
-        #     fields=[
-        #         StringField("name", required=True),
-        #         TextAreaField("description", exclude_from_list=True),
-        #         TagsField("tags"),
-        #         DateTimeField("datetime")
-        #     ],
-        # ),
+        ListField(
+            CollectionField(
+                "config",
+                fields=[
+                    StringField("name"),
+                    DateTimeField("datetime"),
+                    ListField(StringField("tags")),
+                ],
+            ),
+        ),
     ]
     sortable_fields = ("id", "title", "content")
     search_builder = True

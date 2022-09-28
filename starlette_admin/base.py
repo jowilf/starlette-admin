@@ -38,7 +38,7 @@ class BaseAdmin:
         logo_url: Optional[str] = None,
         login_logo_url: Optional[str] = None,
         templates_dir: str = "templates",
-        statics_dir: str = "statics",
+        statics_dir: Optional[str] = None,
         index_view: Type[CustomView] = DefaultAdminIndexView,
         auth_provider: Optional[AuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
@@ -109,11 +109,7 @@ class BaseAdmin:
             )
 
     def init_routes(self) -> None:
-        statics = StaticFiles(
-            directory=self.statics_dir, packages=["starlette_admin"], check_dir=False
-        )
-        # Avoid raising error where statics directory is not Found
-        statics.config_checked = True
+        statics = StaticFiles(directory=self.statics_dir, packages=["starlette_admin"])
         self.routes.extend(
             [
                 Mount("/statics", app=statics, name="statics"),

@@ -15,7 +15,27 @@ $(function () {
             return f;
           })
         );
-      else if (!field.exclude_from_list) {
+      else if (field.type === "ListField") {
+        // To reduce complexity, List of CollectionField will render as json
+        if (field.field.type == "CollectionField") {
+          $("#table-header").append(`<th>${field.label}</th>`);
+          dt_columns.push({
+            name: field.name,
+            data: field.name,
+            orderable: field.field.orderable,
+            searchBuilderType: field.search_builder_type,
+            render: function (data, type, full, meta) {
+              return render[field.field.render_function_key](
+                data,
+                type,
+                full,
+                meta,
+                field
+              );
+            },
+          });
+        } else fringe.push(field.field);
+      } else if (!field.exclude_from_list) {
         $("#table-header").append(`<th>${field.label}</th>`);
         dt_columns.push({
           name: field.name,

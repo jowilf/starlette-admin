@@ -638,6 +638,7 @@ class HasMany(RelationField):
 @dataclass(init=False)
 class CollectionField(BaseField):
     fields: List[BaseField] = dc_field(default_factory=list)
+    render_function_key: str = "json"
     form_template: str = "forms/collection.html"
     display_template: str = "displays/collection.html"
 
@@ -645,17 +646,17 @@ class CollectionField(BaseField):
         self.name = name
         self.fields = fields
         super().__post_init__()
-        self._update_childs_id()
+        self._propagate_id()
 
     def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
         return extract_fields(self.fields, action)
 
-    def _update_childs_id(self) -> None:
+    def _propagate_id(self) -> None:
         """Will update fields id by adding his id as prefix (ex: category.name)"""
         for field in self.fields:
-            field.id = "{}.{}".format(self.id, field.name)
+            field.id = self.id + ("." if self.id else "") + field.name
             if isinstance(field, type(self)):
-                field._update_childs_id()
+                field._propagate_id()
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         value = dict()
@@ -695,6 +696,8 @@ class CollectionField(BaseField):
 class ListField(BaseField):
     form_template: str = "forms/list.html"
     display_template: str = "displays/list.html"
+    search_builder_type: str = "array"
+    field: BaseField = BaseField("")
 
     def __init__(self, field: BaseField) -> None:
         self.field = field
@@ -705,8 +708,88 @@ class ListField(BaseField):
         super().__post_init__()
         self.field.id = ""
         if isinstance(self.field, CollectionField):
-            self.field._update_childs_id()
+            self.field._propagate_id()
+
+    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        indices = self._extra_indices(form_data)
+        value = []
+        for index in indices:
+            self.field.id = "{}.{}".format(self.id, index)
+            if isinstance(self.field, CollectionField):
+                self.field._propagate_id()
+            value.append(await self.field.parse_form_data(request, form_data))
+        return value
+
+    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
+        serialized_value = []
+        for item in value:
+            if item is not None:
+                serialized_value.append(
+                    await self.field.serialize_value(request, item, action)
+                )
+            else:
+                serialized_value.append(None)
+        return serialized_value
+
+    def _extra_indices(self, form_data: FormData) -> List[int]:
+        """
+        Return list of all indices.  For example, if form_data contains
+         keys 'foo.0.bar', 'foo.1.baz', then the indices are [0,1].
+        Note that some numbers can be skipped. For example, you may have [0,1,3,8]
+        as indices.
+        """
+        indices = set()
+        for k in form_data:
+            if k.startswith(self.id):
+                k = k[len(self.id) + 1:].split(".", maxsplit=1)[0]
+                if k.isdigit():
+                    indices.add(int(k))
+        return sorted(indices)
+
+    def _field_at(self, idx: Optional[int] = None) -> BaseField:
+        if idx is not None:
+            self.field.id = self.id + "." + str(idx)
+        else:
+            """To generate template string to be used in javascript"""
+            self.field.id = ""
+        if isinstance(self.field, CollectionField):
+            self.field._propagate_id()
+        return self.field
+
+    def additional_css_links(self, request: Request) -> List[str]:
+        return self.field.additional_css_links(request)
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        return self.field.additional_js_links(request)
+
+
+async def main():
+    f = FormData(
+        [
+            ("title", "His mother had always taught him"),
+            ("content", "Dummy content"),
+            ("tags.1", "history"),
+            ("tags.2", "american"),
+            ("tags.3", "crime"),
+            ("config.1.name", "Nopeless"),
+            ("config.1.datetime", "2022-09-26 12:00:00"),
+            ("tags.1", "Hopeless"),
+            ("tags.2", "Nopeless"),
+            ("_continue_editing", ""),
+        ]
+    )
+
+    field = ListField(
+        CollectionField(
+            "config",
+            fields=[StringField("name"), DateTimeField("datetime"), ListField(StringField("tags"))],
+        ),
+    )
+    print(field._field_at().fields[2])
+    print(await field.parse_form_data(None, f))
 
 
 if __name__ == "__main__":
-    print(ListField(StringField("name")))
+    import asyncio
+
+    asyncio.run(main())

@@ -41,10 +41,16 @@ const render = {
   },
   boolean: function render(data, type, full, meta, fieldOptions) {
     if (data == null) return null_column();
-    if (type != "display") return data === true;
-    return data === true
-      ? `<span class="text-center text-success"><i class="fa-solid fa-check-circle fa-lg"></i></span>`
-      : `<span class="text-center text-danger"><i class="fa-solid fa-times-circle fa-lg"></i></span>`;
+    if (Array.isArray(data) && data.length == 0) return empty_column();
+    data = Array.isArray(data) ? data : [data].map((d) => d === true);
+    if (type != "display") return data.join(",");
+    return `<div class="d-flex">${data
+      .map((d) =>
+        d === true
+          ? `<div class="p-1"><span class="text-center text-success"><i class="fa-solid fa-check-circle fa-lg"></i></span></div>`
+          : `<div class="p-1"><span class="text-center text-danger"><i class="fa-solid fa-times-circle fa-lg"></i></span></div>`
+      )
+      .join("")}</div>`;
   },
   email: function render(data, type, full, meta, fieldOptions) {
     if (data == null) return null_column();
