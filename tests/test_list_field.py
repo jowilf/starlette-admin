@@ -4,8 +4,15 @@ import pytest
 from pydantic import BaseModel, Field, HttpUrl
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
+from starlette_admin import (
+    BaseAdmin,
+    CollectionField,
+    IntegerField,
+    ListField,
+    StringField,
+    URLField,
+)
 
-from starlette_admin import BaseAdmin, CollectionField, ListField, StringField, URLField, IntegerField
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
 

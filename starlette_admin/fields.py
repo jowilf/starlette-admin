@@ -724,7 +724,9 @@ class ListField(BaseField):
         for item in value:
             serialized_item_value = None
             if item is not None:
-                serialized_item_value = await self.field.serialize_value(request, item, action)
+                serialized_item_value = await self.field.serialize_value(
+                    request, item, action
+                )
             serialized_value.append(serialized_item_value)
         return serialized_value
 
