@@ -1,8 +1,8 @@
 import json
-from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 import pytest
+from pydantic import Field
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
@@ -24,18 +24,16 @@ from starlette_admin.views import CustomView, DropDown, Link
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
 
-@dataclass
 class Post(DummyBaseModel):
     title: str
     content: str
-    views: int
+    views: Optional[int] = 0
     tags: List[str]
 
 
-@dataclass
 class User(DummyBaseModel):
     name: str
-    posts: List[Post] = field(default_factory=list)
+    posts: List[Post] = Field(default_factory=list)
     reviewer: Optional["User"] = None
 
 
@@ -185,20 +183,26 @@ class TestViews:
             "views": 10,
             "tags": ["tag1", "tag2"],
         }
-        response = client.post("/admin/post/create", data=dummy_data, follow_redirects=False)
+        response = client.post(
+            "/admin/post/create", data=dummy_data, follow_redirects=False
+        )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/list"
         assert len(PostView.db) == 6
         assert PostView.db[6] == Post(id=6, **dummy_data)
 
         response = client.post(
-            "/admin/post/create", data=dict(**dummy_data, _continue_editing=True), follow_redirects=False
+            "/admin/post/create",
+            data=dict(**dummy_data, _continue_editing=True),
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/edit/7"
 
         response = client.post(
-            "/admin/post/create", data=dict(**dummy_data, _add_another=True), follow_redirects=False
+            "/admin/post/create",
+            data=dict(**dummy_data, _add_another=True),
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/create"
@@ -215,20 +219,26 @@ class TestViews:
             "views": 10,
             "tags": ["tag1", "tag2"],
         }
-        response = client.post("/admin/post/edit/5", data=dummy_data, follow_redirects=False)
+        response = client.post(
+            "/admin/post/edit/5", data=dummy_data, follow_redirects=False
+        )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/list"
         assert len(PostView.db) == 5
         assert PostView.db[5] == Post(id=5, **dummy_data)
 
         response = client.post(
-            "/admin/post/edit/5", data=dict(**dummy_data, _continue_editing=True), follow_redirects=False
+            "/admin/post/edit/5",
+            data=dict(**dummy_data, _continue_editing=True),
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/edit/5"
 
         response = client.post(
-            "/admin/post/edit/5", data=dict(**dummy_data, _add_another=True), follow_redirects=False
+            "/admin/post/edit/5",
+            data=dict(**dummy_data, _add_another=True),
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/create"
@@ -271,7 +281,6 @@ class TestViews:
         assert [x for x in PostView.db.keys()] == [2, 4]
 
     def test_other_fields(self):
-        @dataclass
         class MyModel(DummyBaseModel):
             score: Optional[float]
             gender: str
@@ -302,7 +311,8 @@ class TestViews:
 
         response = client.post(
             "/admin/my-model/create",
-            data={"score": 3.4, "gender": "male", "json_field": '{"key":"value"}'}, follow_redirects=False
+            data={"score": 3.4, "gender": "male", "json_field": '{"key":"value"}'},
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(
@@ -324,7 +334,8 @@ class TestViews:
                 "score": 5.6,
                 "gender": "female",
                 "json_field": '{"new_key":"new_value"}',
-            }, follow_redirects=False
+            },
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(
@@ -333,7 +344,8 @@ class TestViews:
         # Test None for float and invalid json
         response = client.post(
             "/admin/my-model/edit/1",
-            data={"score": "", "gender": "male", "json_field": "}"}, follow_redirects=False
+            data={"score": "", "gender": "male", "json_field": "}"},
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(

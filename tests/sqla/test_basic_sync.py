@@ -229,7 +229,7 @@ class TestSQLABasic:
                 "price": 1049,
                 "brand": "Infinix",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         with Session(engine) as session:
@@ -246,7 +246,9 @@ class TestSQLABasic:
             "price": 1049,
             "brand": "Infinix",
         }
-        response = client.post("/admin/product/edit/1", data=data, follow_redirects=False)
+        response = client.post(
+            "/admin/product/edit/1", data=data, follow_redirects=False
+        )
         assert response.status_code == 303
         with Session(engine) as session:
             product = session.get(Product, 1)
@@ -276,7 +278,7 @@ class TestSQLABasic:
                 "brand": "Infinix",
             },
             files={"image": ("image.png", fake_image, "image/png")},
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
 
@@ -306,7 +308,7 @@ class TestSQLABasic:
                 "brand": "Infinix",
             },
             files={"image": ("image_edit.png", fake_image, "image/png")},
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         with Session(engine) as session:
@@ -327,7 +329,7 @@ class TestSQLABasic:
                 "price": "",  # None input
                 "brand": "Infinix",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
 
@@ -349,7 +351,7 @@ class TestSQLABasic:
                 "brand": "Infinix",
                 "_image-delete": "on",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         with Session(engine) as session:
             stmt = select(Product).where(Product.title == "Infinix INBOOK")
@@ -408,7 +410,7 @@ class TestSQLABasic:
                 ("files", ("text1.txt", fake_image_content, "text/plain")),
                 ("files", ("text2", fake_image_content, "")),
             ],
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
 
@@ -434,7 +436,7 @@ class TestSQLABasic:
                 ("files", ("new2.txt", fake_image_content, "text/plain")),
                 ("files", ("new3.txt", fake_image_content, "text/plain")),
             ],
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         with Session(engine) as session:
@@ -461,7 +463,7 @@ class TestSQLABasic:
                     ("new1.txt", fake_empty_file, "text/plain"),
                 ),  # browser empty files simulation
             ],
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         with Session(engine) as session:
@@ -485,7 +487,7 @@ class TestSQLABasic:
                     ("new1.txt", fake_empty_file, "text/plain"),
                 ),  # browser empty files simulation
             ],
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         with Session(engine) as session:
@@ -503,7 +505,7 @@ class TestSQLABasic:
                 "brand": "Infinix",
                 "user": "John",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         with Session(engine) as session:

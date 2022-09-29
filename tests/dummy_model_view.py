@@ -1,14 +1,13 @@
-from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
+from pydantic import BaseModel
 from requests import Request
 from starlette_admin import HasMany, HasOne
 from starlette_admin.helpers import prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
 
-@dataclass
-class DummyBaseModel:
+class DummyBaseModel(BaseModel):
     id: int
 
     def is_valid_for_term(self, term, searchable_fields):

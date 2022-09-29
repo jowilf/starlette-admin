@@ -181,7 +181,7 @@ class TestMongoBasic:
                 "price": 1049,
                 "brand": "Infinix",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert Product.objects.count() == 6
@@ -222,7 +222,7 @@ class TestMongoBasic:
                 "price": 1049,
                 "brand": "Infinix",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert Product.objects.count() == 5
@@ -278,7 +278,7 @@ class TestMongoBasic:
                 "brand": "Infinix",
             },
             files={"image": ("image.png", fake_image, "image/png")},
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert Product.objects.count() == 6
@@ -318,7 +318,7 @@ class TestMongoBasic:
                 "brand": "Infinix",
             },
             files={"image": ("image_edit.png", fake_image, "image/png")},
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert Product.objects.count() == 6
@@ -341,7 +341,7 @@ class TestMongoBasic:
                 "brand": "Infinix",
                 "_image-delete": "on",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert Product.objects.count() == 6
@@ -357,7 +357,7 @@ class TestMongoBasic:
                     for x in Product.objects(title__in=["IPhone 9", "Huawei P30"])
                 ],
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert Store.objects.count() == 1
@@ -372,7 +372,7 @@ class TestMongoBasic:
                 "name": "John",
                 "store": store.id,
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert User.objects.count() == 1

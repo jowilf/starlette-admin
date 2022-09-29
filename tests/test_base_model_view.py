@@ -1,17 +1,16 @@
-from dataclasses import dataclass, field
 from typing import List
 
+from pydantic import Field
 from starlette_admin import IntegerField, StringField, TagsField, TextAreaField
 
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
 
-@dataclass
 class Post(DummyBaseModel):
     title: str
     content: str
     views: int = 0
-    tags: List[str] = field(default_factory=list)
+    tags: List[str] = Field(default_factory=list)
 
 
 class TestView:

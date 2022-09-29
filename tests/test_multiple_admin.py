@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 from starlette_admin import BaseAdmin, IntegerField, StringField, TextAreaField
@@ -8,7 +6,6 @@ from starlette_admin.views import CustomView
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
 
-@dataclass
 class Post(DummyBaseModel):
     title: str
     content: str
@@ -23,7 +20,6 @@ class ReportView(CustomView):
     name = "report"
 
 
-@dataclass
 class User(DummyBaseModel):
     name: str
 

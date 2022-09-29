@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Optional
 
 import pytest
@@ -22,7 +21,6 @@ class DBConfig(BaseModel):
     password: Optional[str]
 
 
-@dataclass()
 class Config(DummyBaseModel):
     db: DBConfig
     nested: Optional[dict]
@@ -97,7 +95,7 @@ class TestCollectionField:
                 "nested.level1": "dummy1",
                 "nested.other.level2": "dummy2",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert ConfigView.db[1] == Config(
@@ -149,7 +147,7 @@ class TestCollectionField:
                 "nested.level1": "dummy11",
                 "nested.other.level2": "dummy22",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert ConfigView.db[1] == Config(

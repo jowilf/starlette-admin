@@ -732,8 +732,8 @@ class ListField(BaseField):
 
     def _extra_indices(self, form_data: FormData) -> List[int]:
         """
-        Return list of all indices.  For example, if form_data contains
-         keys 'foo.0.bar', 'foo.1.baz', then the indices are [0,1].
+        Return list of all indices.  For example, if field id is `foo` and
+        form_data contains following keys ['foo.0.bar', 'foo.1.baz'], then the indices are [0,1].
         Note that some numbers can be skipped. For example, you may have [0,1,3,8]
         as indices.
         """

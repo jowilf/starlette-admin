@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from typing import Optional
 
 import pytest
 from async_asgi_testclient import TestClient
@@ -21,11 +21,10 @@ users = {
 }
 
 
-@dataclass
 class Post(DummyBaseModel):
     title: str
     content: str
-    views: int
+    views: Optional[int] = 0
 
 
 class ReportView(CustomView):
@@ -242,7 +241,10 @@ class TestAccess:
         assert response.status_code == 403
         response = await client.get("/admin/post/create", cookies={"session": "terry"})
         assert response.status_code == 200
-        response = await client.post("/admin/post/create", cookies={"session": "terry"})
+        data = {"title": "title", "content": "content"}
+        response = await client.post(
+            "/admin/post/create", form=data, cookies={"session": "terry"}
+        )
         assert response.status_code == 200
 
     @pytest.mark.asyncio
