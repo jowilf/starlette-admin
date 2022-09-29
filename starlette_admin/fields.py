@@ -722,12 +722,10 @@ class ListField(BaseField):
     async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
         serialized_value = []
         for item in value:
+            serialized_item_value = None
             if item is not None:
-                serialized_value.append(
-                    await self.field.serialize_value(request, item, action)
-                )
-            else:
-                serialized_value.append(None)
+                serialized_item_value = await self.field.serialize_value(request, item, action)
+            serialized_value.append(serialized_item_value)
         return serialized_value
 
     def _extra_indices(self, form_data: FormData) -> List[int]:
