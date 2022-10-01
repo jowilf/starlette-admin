@@ -9,19 +9,18 @@ from starlette_admin import (
     DecimalField,
     EmailField,
     EnumField,
-    FileField,
     FloatField,
     HasMany,
     HasOne,
-    ImageField,
     IntegerField,
     JSONField,
+    ListField,
     StringField,
-    TagsField,
     URLField,
 )
 from starlette_admin.contrib.mongoengine import ModelView
 from starlette_admin.contrib.mongoengine.exceptions import NotSupportedField
+from starlette_admin.contrib.mongoengine.fields import FileField, ImageField
 
 
 class Status(str, Enum):
@@ -102,7 +101,7 @@ def test_fields_conversion():
         JSONField("dict_field"),
         JSONField("map_field"),
         EnumField.from_enum("list_enum", Status, multiple=True),
-        TagsField("tags"),
+        ListField(StringField("tags")),
         JSONField("json_array"),
         HasOne("attachment", identity="attachment"),
     ]

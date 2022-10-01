@@ -20,6 +20,7 @@ from starlette_admin import (
     TextAreaField,
     URLField,
 )
+from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
@@ -265,7 +266,8 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 continue
             name, value = field.name, data.get(field.name, None)
             if isinstance(field, FileField):
-                if data.get(f"_{name}-delete", False):
+                value, should_be_deleted = value
+                if should_be_deleted:
                     setattr(obj, name, None)
                 elif (not field.multiple and value is not None) or (
                     field.multiple and isinstance(value, list) and len(value) > 0
@@ -329,7 +331,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         raise exc  # pragma: no cover
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, action: str, request: Request
+        self, value: Any, field: BaseField, action: RequestAction, request: Request
     ) -> Any:
         try:
             """to automatically serve sqlalchemy_file"""
@@ -338,7 +340,11 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 data = []
                 for item in value if field.multiple else [value]:
                     path = item["path"]
-                    if action == "API" and getattr(item, "thumbnail", None) is not None:
+                    if (
+                        action == RequestAction.LIST
+                        and getattr(item, "thumbnail", None) is not None
+                    ):
+                        """Use thumbnail on list page if available"""
                         path = item["thumbnail"]["path"]
                     storage, file_id = path.split("/")
                     data.append(

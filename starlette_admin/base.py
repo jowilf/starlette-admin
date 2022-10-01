@@ -13,9 +13,9 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_303_SEE_OTHER, HTTP_403_FORBIDDEN
 from starlette.templating import Jinja2Templates
+from starlette_admin._types import RequestAction
 from starlette_admin.auth import AuthMiddleware, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
-from starlette_admin.fields import BooleanField, FileField
 from starlette_admin.helpers import get_file_icon
 from starlette_admin.views import (
     BaseModelView,
@@ -253,7 +253,7 @@ class BaseAdmin:
                             await model.serialize(
                                 item,
                                 request,
-                                "API",
+                                RequestAction.API if select2 else RequestAction.LIST,
                                 include_relationships=not select2,
                                 include_select2=select2,
                             )
@@ -343,7 +343,7 @@ class BaseAdmin:
                 "request": request,
                 "model": model,
                 "raw_obj": obj,
-                "obj": await model.serialize(obj, request, "VIEW"),
+                "obj": await model.serialize(obj, request, RequestAction.DETAIL),
             },
         )
 
@@ -359,7 +359,9 @@ class BaseAdmin:
             )
         else:
             form = await request.form()
-            dict_obj = await self.form_to_dict(request, form, model, "CREATE")
+            dict_obj = await self.form_to_dict(
+                request, form, model, RequestAction.CREATE
+            )
             try:
                 obj = await model.create(request, dict_obj)
             except FormValidationError as errors:
@@ -398,12 +400,12 @@ class BaseAdmin:
                     "request": request,
                     "model": model,
                     "raw_obj": obj,
-                    "obj": await model.serialize(obj, request, "EDIT"),
+                    "obj": await model.serialize(obj, request, RequestAction.EDIT),
                 },
             )
         else:
             form = await request.form()
-            dict_obj = await self.form_to_dict(request, form, model, "EDIT")
+            dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
             try:
                 obj = await model.edit(request, pk, dict_obj)
             except FormValidationError as errors:
@@ -445,19 +447,15 @@ class BaseAdmin:
         request: Request,
         form_data: FormData,
         model: BaseModelView,
-        action: str,
+        action: RequestAction,
     ) -> Dict[str, Any]:
         data = dict()
         for field in model.fields:
-            if (action == "EDIT" and field.exclude_from_edit) or (
-                action == "CREATE" and field.exclude_from_create
+            if (action == RequestAction.EDIT and field.exclude_from_edit) or (
+                action == RequestAction.CREATE and field.exclude_from_create
             ):
                 continue
-            if isinstance(field, FileField) and action == "EDIT":
-                data[f"_{field.name}-delete"] = await BooleanField(
-                    f"_{field.name}-delete"
-                ).parse_form_data(request, form_data)
-            data[field.name] = await field.parse_form_data(request, form_data)
+            data[field.name] = await field.parse_form_data(request, form_data, action)
         return data
 
     def mount_to(self, app: Starlette) -> None:

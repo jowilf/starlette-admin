@@ -5,6 +5,7 @@ from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
+from starlette_admin._types import RequestAction
 from starlette_admin.fields import (
     BaseField,
     CollectionField,
@@ -199,20 +200,20 @@ class BaseModelView(BaseView):
                 for f in field.fields:
                     f._name = "{}.{}".format(field._name, f.name)  # type: ignore
                 fringe.extend(field.fields)
-            else:
-                name = field._name  # type: ignore
+            name = field._name  # type: ignore
+            if name == self.pk_attr and not self.form_include_pk:
+                field.exclude_from_create = True
+                field.exclude_from_edit = True
+            if name in self.exclude_fields_from_list:
+                field.exclude_from_list = True
+            if name in self.exclude_fields_from_detail:
+                field.exclude_from_detail = True
+            if name in self.exclude_fields_from_create:
+                field.exclude_from_create = True
+            if name in self.exclude_fields_from_edit:
+                field.exclude_from_edit = True
+            if not isinstance(field, CollectionField):
                 all_field_names.append(name)
-                if name == self.pk_attr and not self.form_include_pk:
-                    field.exclude_from_create = True
-                    field.exclude_from_edit = True
-                if name in self.exclude_fields_from_list:
-                    field.exclude_from_list = True
-                if name in self.exclude_fields_from_detail:
-                    field.exclude_from_detail = True
-                if name in self.exclude_fields_from_create:
-                    field.exclude_from_create = True
-                if name in self.exclude_fields_from_edit:
-                    field.exclude_from_edit = True
                 field.searchable = (self.searchable_fields is None) or (
                     name in self.searchable_fields
                 )
@@ -343,7 +344,7 @@ class BaseModelView(BaseView):
         return True
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, action: str, request: Request
+        self, value: Any, field: BaseField, action: RequestAction, request: Request
     ) -> Any:
         """
         Format output value for each field.
@@ -367,7 +368,7 @@ class BaseModelView(BaseView):
         self,
         obj: Any,
         request: Request,
-        action: str,
+        action: RequestAction,
         include_relationships: bool = True,
         include_select2: bool = False,
     ) -> Dict[str, Any]:
@@ -380,7 +381,7 @@ class BaseModelView(BaseView):
                 if value is None:
                     obj_serialized[field.name] = None
                 elif isinstance(field, HasOne):
-                    if action == "EDIT":
+                    if action == RequestAction.EDIT:
                         obj_serialized[field.name] = getattr(
                             value, foreign_model.pk_attr
                         )
@@ -389,7 +390,7 @@ class BaseModelView(BaseView):
                             value, request, action, include_relationships=False
                         )
                 else:
-                    if action == "EDIT":
+                    if action == RequestAction.EDIT:
                         obj_serialized[field.name] = [
                             getattr(v, foreign_model.pk_attr) for v in value
                         ]
@@ -486,24 +487,28 @@ class BaseModelView(BaseView):
     def _export_columns_selector(self) -> List[str]:
         return ["%s:name" % name for name in self.export_fields]  # type: ignore
 
-    def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
+    def _extract_fields(
+        self, action: RequestAction = RequestAction.LIST
+    ) -> List[BaseField]:
         return extract_fields(self.fields, action)
 
-    def _additional_css_links(self, request: Request, action: str) -> Set[str]:
+    def _additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> Set[str]:
         links = set()
         for field in self.fields:
-            if (action == "CREATE" and field.exclude_from_create) or (
-                action == "EDIT" and field.exclude_from_edit
+            if (action == RequestAction.CREATE and field.exclude_from_create) or (
+                action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
             links.update(field.additional_css_links(request))
         return links
 
-    def _additional_js_links(self, request: Request, action: str) -> Set[str]:
+    def _additional_js_links(self, request: Request, action: RequestAction) -> Set[str]:
         links = set()
         for field in self.fields:
-            if (action == "CREATE" and field.exclude_from_create) or (
-                action == "EDIT" and field.exclude_from_edit
+            if (action == RequestAction.CREATE and field.exclude_from_create) or (
+                action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
             links.update(field.additional_js_links(request))

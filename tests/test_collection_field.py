@@ -42,11 +42,14 @@ class ConfigView(DummyModelView):
             "nested",
             fields=[
                 StringField("level1"),
-                CollectionField("other", fields=[StringField("level2")]),
+                CollectionField(
+                    "other", fields=[StringField("level2"), StringField("excluded")]
+                ),
             ],
         ),
     )
-    # exclude_fields_from_list = ("nested.other.level2",)
+    exclude_fields_from_create = ("nested.other.excluded",)
+    exclude_fields_from_edit = ("nested.other.excluded",)
 
 
 class TestCollectionField:
@@ -67,6 +70,7 @@ class TestCollectionField:
             "db.password",
             "nested.level1",
             "nested.other.level2",
+            "nested.other.excluded",
         )
 
     def test_view_default_values(self, all):
@@ -82,8 +86,10 @@ class TestCollectionField:
         response = client.get("/admin/config/create")
         assert response.status_code == 200
         for value in all:
-            if value != "id":
+            if value not in ["id", "nested.other.excluded"]:
                 assert response.text.count(f'name="{value}"') == 1
+            else:
+                assert response.text.count(f'name="{value}"') == 0
 
     def test_create(self, all, client):
         response = client.post(
@@ -94,6 +100,7 @@ class TestCollectionField:
                 "db.password": "password",
                 "nested.level1": "dummy1",
                 "nested.other.level2": "dummy2",
+                "nested.other.excluded": "will be ignored",
             },
             follow_redirects=False,
         )
@@ -108,7 +115,10 @@ class TestCollectionField:
         ConfigView.db[1] = Config(
             id=1,
             db=DBConfig(host="localhost", username="username", password="password"),
-            nested={"level1": "dummy1", "other": {"level2": "dummy2"}},
+            nested={
+                "level1": "dummy1",
+                "other": {"level2": "dummy2", "excluded": "dummy3"},
+            },
         )
         ConfigView.db[2] = Config(
             id=2,
@@ -122,7 +132,7 @@ class TestCollectionField:
         )
         assert response.json()["items"][0]["nested"] == {
             "level1": "dummy1",
-            "other": {"level2": "dummy2"},
+            "other": {"level2": "dummy2", "excluded": "dummy3"},
         }
         assert response.json()["items"][1]["db"] == DBConfig(
             host="localhost2", username="username2", password="password2"
@@ -146,6 +156,7 @@ class TestCollectionField:
                 "db.password": "dbpass",
                 "nested.level1": "dummy11",
                 "nested.other.level2": "dummy22",
+                "nested.other.excluded": "will be ignored",
             },
             follow_redirects=False,
         )

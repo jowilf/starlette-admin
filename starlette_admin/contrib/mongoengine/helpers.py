@@ -2,9 +2,10 @@ from typing import Any, Dict, List, Optional
 
 import mongoengine.fields as me
 import starlette_admin as sa
+from mongoengine import EmbeddedDocument
 from mongoengine.base.fields import BaseField as MongoBaseField
-from starlette_admin import TagsField
 from starlette_admin.contrib.mongoengine.exceptions import NotSupportedField
+from starlette_admin.contrib.mongoengine.fields import FileField, ImageField
 from starlette_admin.helpers import slugify_class_name
 
 mongoengine_to_admin_map = {
@@ -23,10 +24,8 @@ mongoengine_to_admin_map = {
     me.URLField: sa.URLField,
     me.MapField: sa.JSONField,
     me.DictField: sa.JSONField,
-    me.FileField: sa.FileField,
-    me.ImageField: sa.ImageField,
-    me.GenericEmbeddedDocumentField: sa.JSONField,
-    me.EmbeddedDocumentField: sa.JSONField,
+    me.FileField: FileField,
+    me.ImageField: ImageField,
 }
 
 reference_fields = (
@@ -58,21 +57,33 @@ def convert_mongoengine_field_to_admin_field(
                 dtype if isinstance(dtype, str) else dtype.__name__
             )
             admin_field = sa.HasMany(name, identity=identity)
+        elif isinstance(field.field, (me.DictField, me.MapField)):
+            admin_field = sa.JSONField(name)
+        elif isinstance(field.field, me.EnumField):
+            admin_field = sa.EnumField.from_enum(
+                name, enum_type=field.field._enum_cls, multiple=True
+            )
         else:
-            if isinstance(field.field, json_like_fields):
-                admin_field = sa.JSONField(name)
-            elif isinstance(field.field, me.EnumField):
-                admin_field = sa.EnumField.from_enum(
-                    name, enum_type=field.field._enum_cls, multiple=True
-                )
-            else:
-                admin_field = TagsField(name)
+            field.field.name = name
+            admin_field = sa.ListField(
+                convert_mongoengine_field_to_admin_field(field.field)
+            )
     elif isinstance(field, me.ReferenceField):
         dtype = field.document_type_obj
         identity = slugify_class_name(
             dtype if isinstance(dtype, str) else dtype.__name__
         )
         admin_field = sa.HasOne(name, identity=identity)
+    elif isinstance(field, me.EmbeddedDocumentField):
+        document_type_obj: EmbeddedDocument = field.document_type
+        _fields = []
+        for _field in document_type_obj._fields_ordered:
+            _fields.append(
+                convert_mongoengine_field_to_admin_field(
+                    getattr(document_type_obj, _field)
+                )
+            )
+        admin_field = sa.CollectionField(name, fields=_fields)
     elif isinstance(field, me.EnumField):
         admin_field = sa.EnumField.from_enum(name, enum_type=field._enum_cls)
     else:

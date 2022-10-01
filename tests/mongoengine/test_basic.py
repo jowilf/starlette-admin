@@ -1,7 +1,6 @@
 import base64
 import datetime
 import json
-import os
 import tempfile
 from enum import Enum
 
@@ -12,7 +11,7 @@ from starlette.applications import Starlette
 from starlette.testclient import TestClient
 from starlette_admin.contrib.mongoengine import Admin, ModelView
 
-MONGO_URL = os.environ.get("MONGO_URL", "mongodb://127.0.0.1:27017/testdb")
+from tests.mongoengine import MONGO_URL
 
 
 class Brand(str, Enum):
@@ -28,6 +27,7 @@ class Product(me.Document):
     description = me.StringField()
     price = me.DecimalField()
     brand = me.EnumField(Brand)
+    manual = me.FileField()
     image = me.ImageField(thumbnail_size=(128, 128))
     created_at = me.DateTimeField(default=datetime.datetime.now())
 
@@ -297,7 +297,6 @@ class TestMongoBasic:
         product = Product.objects(title="Infinix INBOOK").get()
         response = client.get(f"/admin/product/detail/{product.id}")
         assert response.status_code == 200
-        print(response.text)
         assert (
             f'src="http://testserver/admin/api/file/default/images/{product.image.grid_id}"'
             in response.text

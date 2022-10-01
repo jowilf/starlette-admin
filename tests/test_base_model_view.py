@@ -1,7 +1,13 @@
 from typing import List
 
 from pydantic import Field
-from starlette_admin import IntegerField, StringField, TagsField, TextAreaField
+from starlette_admin import (
+    IntegerField,
+    RequestAction,
+    StringField,
+    TagsField,
+    TextAreaField,
+)
 
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
@@ -75,24 +81,32 @@ class TestView:
             exclude_fields_from_edit = ["views", "id"]
 
         view_instance = PostViewWithExclusion()
-        assert tuple(f.name for f in view_instance._extract_fields("LIST")) == (
+        assert tuple(
+            f.name for f in view_instance._extract_fields(RequestAction.LIST)
+        ) == (
             "id",
             "title",
             "views",
             "tags",
         )
-        assert tuple(f.name for f in view_instance._extract_fields("DETAIL")) == (
+        assert tuple(
+            f.name for f in view_instance._extract_fields(RequestAction.DETAIL)
+        ) == (
             "id",
             "title",
             "content",
             "views",
         )
-        assert tuple(f.name for f in view_instance._extract_fields("CREATE")) == (
+        assert tuple(
+            f.name for f in view_instance._extract_fields(RequestAction.CREATE)
+        ) == (
             "id",
             "title",
             "content",
         )
-        assert tuple(f.name for f in view_instance._extract_fields("EDIT")) == (
+        assert tuple(
+            f.name for f in view_instance._extract_fields(RequestAction.EDIT)
+        ) == (
             "title",
             "content",
             "tags",

@@ -3,6 +3,7 @@ import re
 from typing import TYPE_CHECKING, Any, Dict, List
 
 from markupsafe import escape
+from starlette_admin._types import RequestAction
 
 if TYPE_CHECKING:
     from starlette_admin import BaseField
@@ -71,15 +72,15 @@ def html_params(kwargs: Dict[str, Any]) -> str:
 
 
 def extract_fields(
-    fields: List["BaseField"], action: str = "LIST"
+    fields: List["BaseField"], action: RequestAction = RequestAction.LIST
 ) -> List["BaseField"]:
     arr = []
     for field in fields:
         if (
-            (action == "LIST" and field.exclude_from_list)
-            or (action == "DETAIL" and field.exclude_from_detail)
-            or (action == "CREATE" and field.exclude_from_create)
-            or (action == "EDIT" and field.exclude_from_edit)
+            (action == RequestAction.LIST and field.exclude_from_list)
+            or (action == RequestAction.DETAIL and field.exclude_from_detail)
+            or (action == RequestAction.CREATE and field.exclude_from_create)
+            or (action == RequestAction.EDIT and field.exclude_from_edit)
         ):
             continue
         arr.append(field)

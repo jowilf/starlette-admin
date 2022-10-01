@@ -1,14 +1,16 @@
 from typing import Any, Dict, List, Optional, Type, Union, no_type_check
 
-import starlette_admin
+import mongoengine as me
+import starlette_admin as sa
 from bson import ObjectId
+from mongoengine.base import BaseDocument
 from mongoengine.base.fields import BaseField as MongoBaseField
-from mongoengine.document import Document
 from mongoengine.errors import DoesNotExist, ValidationError
 from mongoengine.fields import GridFSProxy
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
-from starlette_admin import HasMany, HasOne
+from starlette_admin import CollectionField
+from starlette_admin.contrib.mongoengine.fields import FileField, ImageField
 from starlette_admin.contrib.mongoengine.helpers import (
     build_order_clauses,
     build_raw_query,
@@ -16,7 +18,6 @@ from starlette_admin.contrib.mongoengine.helpers import (
     normalize_list,
 )
 from starlette_admin.exceptions import FormValidationError
-from starlette_admin.fields import BaseField
 from starlette_admin.helpers import prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
@@ -25,7 +26,7 @@ class ModelViewMeta(type):
     @no_type_check
     def __new__(mcs, name, bases, attrs: dict, **kwargs: Any):
         cls: Type["ModelView"] = super().__new__(mcs, name, bases, attrs)
-        document: Optional[Document] = kwargs.get("document")
+        document: Optional[me.Document] = kwargs.get("document")
         if document is None:
             return cls
         cls.document = document
@@ -35,7 +36,7 @@ class ModelViewMeta(type):
         fields = attrs.get("fields", document._fields_ordered)
         converted_fields = []
         for value in fields:
-            if isinstance(value, BaseField):
+            if isinstance(value, sa.BaseField):
                 converted_fields.append(value)
             else:
                 field = None
@@ -66,10 +67,10 @@ class ModelViewMeta(type):
 
 
 class ModelView(BaseModelView, metaclass=ModelViewMeta):
-    document: Type[Document]
+    document: Type[me.Document]
     identity: Optional[str] = None
     pk_attr: Optional[str] = "id"
-    fields: List[BaseField] = []
+    fields: List[sa.BaseField] = []
 
     async def count(
         self,
@@ -105,13 +106,13 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             return objs[skip : skip + limit]
         return objs[skip:]
 
-    async def find_by_pk(self, request: Request, pk: Any) -> Optional[Document]:
+    async def find_by_pk(self, request: Request, pk: Any) -> Optional[me.Document]:
         try:
             return self.document.objects(id=pk).get()
         except (DoesNotExist, ValidationError):
             return None
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Document]:
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[me.Document]:
         return self.document.objects(id__in=pks)
 
     async def create(self, request: Request, data: Dict[str, Any]) -> None:
@@ -130,19 +131,27 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
     async def _populate_obj(
         self,
         request: Request,
-        obj: Document,
+        obj: me.Document,
         data: Dict[str, Any],
         is_edit: bool = False,
-    ) -> Document:
-        for field in self.fields:
+        document: Optional[BaseDocument] = None,
+        fields: Optional[List[sa.BaseField]] = None,
+    ) -> me.Document:
+        if document is None:
+            document = self.document
+        if fields is None:
+            fields = self.fields
+        for field in fields:
             if (is_edit and field.exclude_from_edit) or (
                 not is_edit and field.exclude_from_create
             ):
                 continue
             name, value = field.name, data.get(field.name, None)
-            if isinstance(field, starlette_admin.FileField):
+            me_field = getattr(document, name)
+            if isinstance(field, (FileField, ImageField)):
                 proxy: GridFSProxy = getattr(obj, name)
-                if data.get(f"_{name}-delete", False):
+                value, should_be_deleted = value
+                if should_be_deleted:
                     proxy.delete()
                 elif isinstance(value, UploadFile):
                     if proxy.grid_id is not None:
@@ -157,9 +166,58 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                             filename=value.filename,
                             content_type=value.content_type,
                         )
-            elif isinstance(field, HasOne) and value is not None:
+
+            elif isinstance(me_field, me.EmbeddedDocumentField) and value is not None:
+                assert isinstance(field, CollectionField)
+                old_value = getattr(obj, name, None)
+                if old_value is None:
+                    old_value = me_field.document_type()
+                setattr(
+                    obj,
+                    name,
+                    await self._populate_obj(
+                        request,
+                        old_value,
+                        value,
+                        is_edit,
+                        me_field.document_type,
+                        field.fields,
+                    ),
+                )
+            elif (
+                isinstance(me_field, me.ListField)
+                and isinstance(me_field.field, me.EmbeddedDocumentField)
+                and value is not None
+            ):
+                assert isinstance(field, sa.ListField) and isinstance(
+                    field.field, sa.CollectionField
+                )
+                old_value = getattr(obj, name, [])
+                if len(old_value) < len(value):
+                    old_value.extend(
+                        [
+                            me_field.field.document_type()
+                            for _ in range(len(value) - len(old_value))
+                        ]
+                    )
+                setattr(
+                    obj,
+                    name,
+                    [
+                        await self._populate_obj(
+                            request,
+                            old_value[idx],
+                            _val,
+                            is_edit,
+                            me_field.field.document_type,
+                            field.field.fields,
+                        )
+                        for idx, _val in enumerate(value)
+                    ],
+                )
+            elif isinstance(field, sa.HasOne) and value is not None:
                 setattr(obj, name, ObjectId(value))
-            elif isinstance(field, HasMany) and value is not None:
+            elif isinstance(field, sa.HasMany) and value is not None:
                 setattr(obj, name, [ObjectId(v) for v in value])
             else:
                 setattr(obj, name, value)
@@ -183,26 +241,3 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                     {field.name: {"$regex": str(term), "$options": "mi"}}
                 )
         return query
-
-    async def serialize_field_value(
-        self, value: Any, field: BaseField, action: str, request: Request
-    ) -> Any:
-        if isinstance(value, GridFSProxy):
-            if value.grid_id:
-                id = value.grid_id
-                if action == "API" and getattr(value, "thumbnail_id", None) is not None:
-                    id = getattr(value, "thumbnail_id")
-                return {
-                    "filename": getattr(value, "filename", "unamed"),
-                    "content_type": getattr(
-                        value, "content_type", "application/octet-stream"
-                    ),
-                    "url": request.url_for(
-                        request.app.state.ROUTE_NAME + ":api:file",
-                        db=value.db_alias,
-                        col=value.collection_name,
-                        pk=id,
-                    ),
-                }
-            return None
-        return await super().serialize_field_value(value, field, action, request)

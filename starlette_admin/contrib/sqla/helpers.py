@@ -77,8 +77,9 @@ def build_query(where: Dict[str, Any], model: Any) -> Any:
             filters.append(and_(*[build_query(v, model) for v in where[key]]))
         else:
             attr = where[key]
-            p: InstrumentedAttribute = getattr(model, key)
-            filters.append(expression(attr, p))
+            p: Optional[InstrumentedAttribute] = getattr(model, key, None)
+            if p is not None:
+                filters.append(expression(attr, p))
     if len(filters) == 1:
         return filters[0]
     return and_(*filters)
