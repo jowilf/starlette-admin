@@ -17,14 +17,7 @@ from starlette_admin._types import RequestAction
 from starlette_admin.auth import AuthMiddleware, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 from starlette_admin.helpers import get_file_icon
-from starlette_admin.views import (
-    BaseModelView,
-    BaseView,
-    CustomView,
-    DefaultAdminIndexView,
-    DropDown,
-    Link,
-)
+from starlette_admin.views import BaseModelView, BaseView, CustomView, DropDown, Link
 
 
 class BaseAdmin:
@@ -39,7 +32,7 @@ class BaseAdmin:
         login_logo_url: Optional[str] = None,
         templates_dir: str = "templates",
         statics_dir: Optional[str] = None,
-        index_view: Type[CustomView] = DefaultAdminIndexView,
+        index_view: Optional[CustomView] = None,
         auth_provider: Optional[AuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
@@ -66,7 +59,11 @@ class BaseAdmin:
         self.statics_dir = statics_dir
         self.auth_provider = auth_provider
         self.middlewares = middlewares
-        self.index_view: Type[CustomView] = index_view
+        self.index_view: CustomView = (
+            index_view
+            if (index_view is not None)
+            else CustomView("", add_to_menu=False)
+        )
         self._views: List[BaseView] = []
         self._models: List[BaseModelView] = []
         self.routes: List[Union[Route, Mount]] = []
@@ -75,11 +72,14 @@ class BaseAdmin:
         self.init_auth()
         self.init_routes()
 
-    def add_view(self, view: Type[BaseView]) -> None:
+    def add_view(self, view: Union[Type[BaseView], BaseView]) -> None:
         """
         Add View to the Admin interface.
         """
-        view_instance = view()
+        if isinstance(view, BaseView):
+            view_instance = view
+        else:
+            view_instance = view()
         self._views.append(view_instance)
         self.setup_view(view_instance)
 
@@ -115,7 +115,7 @@ class BaseAdmin:
                 Mount("/statics", app=statics, name="statics"),
                 Route(
                     self.index_view.path,
-                    self._render_custom_view(self.index_view()),
+                    self._render_custom_view(self.index_view),
                     methods=self.index_view.methods,
                     name="index",
                 ),
@@ -152,7 +152,7 @@ class BaseAdmin:
             ]
         )
         if self.index_view.add_to_menu:
-            self._views.append(self.index_view())
+            self._views.append(self.index_view)
 
     def _setup_templates(self) -> None:
         templates = Jinja2Templates(self.templates_dir)
@@ -184,7 +184,7 @@ class BaseAdmin:
 
     def setup_view(self, view: BaseView) -> None:
         if isinstance(view, DropDown):
-            for sub_view in view._views_instance:
+            for sub_view in view.views:
                 self.setup_view(sub_view)
         elif isinstance(view, CustomView):
             self.routes.insert(

@@ -28,14 +28,19 @@ class Post(DummyBaseModel):
 
 
 class ReportView(CustomView):
-    label = "Report"
-    icon = "fa fa-report"
-    path = "/report"
-    template_path = "report.html"
-    name = "report"
-
     def is_accessible(self, request: Request) -> bool:
         return "admin" in request.state.user_roles
+
+
+@pytest.fixture()
+def report_view() -> ReportView:
+    return ReportView(
+        "Report",
+        icon="fa fa-report",
+        path="/report",
+        template_path="report.html",
+        name="report",
+    )
 
 
 class PostView(DummyModelView):
@@ -195,12 +200,12 @@ class TestAccess:
         PostView.seq = len(PostView.db.keys()) + 1
 
     @pytest.fixture
-    def client(self):
+    def client(self, report_view):
         admin = BaseAdmin(
             auth_provider=MyAuthProvider(), templates_dir="tests/templates"
         )
         app = Starlette()
-        admin.add_view(ReportView)
+        admin.add_view(report_view)
         admin.add_view(PostView)
         admin.mount_to(app)
         return TestClient(app)

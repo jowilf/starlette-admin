@@ -61,7 +61,7 @@
   <div class="dropdown-menu {% if view.is_active(request) or view.always_open %}show{% endif %}">
     <div class="dropdown-menu-columns">
       <div class="dropdown-menu-column">
-        {% for item in view._views_instance  if item.is_accessible(request)%}
+        {% for item in view.views  if item.is_accessible(request)%}
         {%if (item| is_link)%}
         <a href="{{ item.url}}" class="dropdown-item" target="{{item.target}}">{{ item.label }}</a>
         {%elif (item| is_custom_view)%}

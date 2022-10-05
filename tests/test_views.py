@@ -66,24 +66,27 @@ class PostView(DummyModelView):
     seq = 1
 
 
-class ReportView(CustomView):
-    label = "Report"
-    icon = "fa fa-report"
-    path = "/report"
-    template_path = "report.html"
-    name = "report"
+@pytest.fixture()
+def report_view() -> CustomView:
+    return CustomView(
+        "Report",
+        icon="fa fa-report",
+        path="/report",
+        template_path="report.html",
+        name="report",
+    )
 
 
-class LinkToGoogle(Link):
-    label = "LinkToGoogle"
-    icon = "fa fa-link"
-    url = "https://google.com"
+@pytest.fixture()
+def link_to_google() -> Link:
+    return Link("LinkToGoogle", icon="fa fa-link", url="https://google.com")
 
 
-class Section(DropDown):
-    label = "Models"
-    icon = "fa fa-models"
-    views = [UserView, ReportView, LinkToGoogle]
+@pytest.fixture()
+def section_dropdown(report_view, link_to_google) -> DropDown:
+    return DropDown(
+        "Models", icon="fa fa-models", views=[UserView, report_view, link_to_google]
+    )
 
 
 class TestViews:
@@ -98,10 +101,10 @@ class TestViews:
             PostView.db[post["id"]] = Post(**post)
         PostView.seq = len(PostView.db.keys()) + 1
 
-    def test_add_custom_view(self):
+    def test_add_custom_view(self, report_view):
         admin = BaseAdmin(templates_dir="tests/templates")
         app = Starlette()
-        admin.add_view(ReportView)
+        admin.add_view(report_view)
         admin.mount_to(app)
         assert len(admin._views) == 1
         assert app.url_path_for("admin:report") == "/admin/report"
@@ -401,10 +404,10 @@ class TestViews:
         assert len(UserView.db) == 3
         assert UserView.db[3].posts == [PostView.db[x] for x in [2, 5]]
 
-    def test_add_link(self):
+    def test_add_link(self, link_to_google):
         admin = BaseAdmin()
         app = Starlette()
-        admin.add_view(LinkToGoogle)
+        admin.add_view(link_to_google)
         admin.mount_to(app)
         assert len(admin._views) == 1
         client = TestClient(app, base_url="http://testserver")
@@ -419,11 +422,11 @@ class TestViews:
             == 1
         )
 
-    def test_add_dropdown(self):
+    def test_add_dropdown(self, section_dropdown):
         admin = BaseAdmin()
         app = Starlette()
         admin.add_view(PostView)
-        admin.add_view(Section)
+        admin.add_view(section_dropdown)
         admin.mount_to(app)
         assert len(admin._views) == 2
         assert admin._find_model_from_identity("user") is not None

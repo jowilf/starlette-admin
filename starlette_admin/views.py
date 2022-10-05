@@ -5,7 +5,7 @@ from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
-from starlette_admin._types import RequestAction
+from starlette_admin._types import ExportType, RequestAction
 from starlette_admin.fields import (
     BaseField,
     CollectionField,
@@ -49,21 +49,29 @@ class DropDown(BaseView):
         class Blog(DropDown):
             label = "Blog"
             icon = "fa fa-blog"
-            views = [UserView, PostView, CommentView]
+            views = [ModelView(User), ModelView(Post), CommentView]
         ```
     """
 
-    always_open: bool = True
-    views: List[Type[BaseView]] = []
-
-    def __init__(self) -> None:
-        self._views_instance = [v() for v in self.views]
+    def __init__(
+        self,
+        label: str,
+        views: List[Union[Type[BaseView], BaseView]],
+        icon: Optional[str] = None,
+        always_open: bool = True,
+    ) -> None:
+        self.label = label
+        self.icon = icon
+        self.always_open = always_open
+        self.views: List[BaseView] = [
+            (v if isinstance(v, BaseView) else v()) for v in views
+        ]
 
     def is_active(self, request: Request) -> bool:
-        return any([v.is_active(request) for v in self._views_instance])
+        return any([v.is_active(request) for v in self.views])
 
     def is_accessible(self, request: Request) -> bool:
-        return any([v.is_accessible(request) for v in self._views_instance])
+        return any([v.is_accessible(request) for v in self.views])
 
 
 class Link(BaseView):
@@ -79,8 +87,17 @@ class Link(BaseView):
         ```
     """
 
-    url: str = ""
-    target: str = "_self"
+    def __init__(
+        self,
+        label: str = "",
+        icon: Optional[str] = None,
+        url: str = "/",
+        target: Optional[str] = "_self",
+    ):
+        self.label = label
+        self.icon = icon
+        self.url = url
+        self.target = target
 
 
 class CustomView(BaseView):
@@ -105,11 +122,23 @@ class CustomView(BaseView):
         ```
     """
 
-    path: str = "/"
-    template_path: str = "index.html"
-    methods: List[str] = ["GET"]
-    name: Optional[str] = None
-    add_to_menu: bool = True
+    def __init__(
+        self,
+        label: str,
+        icon: Optional[str] = None,
+        path: str = "/",
+        template_path: str = "index.html",
+        name: Optional[str] = None,
+        methods: Optional[List[str]] = None,
+        add_to_menu: bool = True,
+    ):
+        self.label = label
+        self.icon = icon
+        self.path = path
+        self.template_path = template_path
+        self.name = name
+        self.methods = methods
+        self.add_to_menu = add_to_menu
 
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
         """Default methods to render view. Override this methods to add your custom logic."""
@@ -176,7 +205,7 @@ class BaseModelView(BaseView):
     exclude_fields_from_edit: List[str] = []
     searchable_fields: Optional[List[str]] = None
     sortable_fields: Optional[List[str]] = None
-    export_types: List[str] = ["csv", "excel", "pdf", "print"]
+    export_types: List[ExportType] = list(ExportType)
     export_fields: Optional[List[str]] = None
     column_visibility: bool = True
     search_builder: bool = True

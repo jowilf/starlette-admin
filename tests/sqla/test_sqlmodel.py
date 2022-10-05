@@ -22,10 +22,6 @@ class Todo(SQLModel, table=True):
     completed_time: Optional[time]
 
 
-class TodoView(SQLModelView, model=Todo):
-    pass
-
-
 class TestSQLModel:
     def setup(self) -> None:
         SQLModel.metadata.create_all(engine)
@@ -36,7 +32,7 @@ class TestSQLModel:
     @pytest.fixture
     def admin(self):
         admin = Admin(engine)
-        admin.add_view(TodoView)
+        admin.add_view(SQLModelView(Todo))
         return admin
 
     @pytest.fixture

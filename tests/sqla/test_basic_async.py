@@ -20,10 +20,6 @@ class Product(Base):
     title = Column(String(100))
 
 
-class ProductView(ModelView, model=Product):
-    pass
-
-
 @pytest.mark.asyncio
 async def test_basic_async():
     async with engine.begin() as conn:
@@ -31,7 +27,7 @@ async def test_basic_async():
         await conn.run_sync(Base.metadata.create_all)
 
     admin = Admin(engine)
-    admin.add_view(ProductView)
+    admin.add_view(ModelView(Product))
     app = Starlette()
     admin.mount_to(app)
 

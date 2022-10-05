@@ -1,3 +1,4 @@
+import pytest
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 from starlette_admin import BaseAdmin, IntegerField, StringField, TextAreaField
@@ -12,12 +13,15 @@ class Post(DummyBaseModel):
     views: int
 
 
-class ReportView(CustomView):
-    label = "Report"
-    icon = "fa fa-report"
-    path = "/report"
-    template_path = "report.html"
-    name = "report"
+@pytest.fixture()
+def report_view() -> CustomView:
+    return CustomView(
+        "Report",
+        icon="fa fa-report",
+        path="/report",
+        template_path="report.html",
+        name="report",
+    )
 
 
 class User(DummyBaseModel):
@@ -43,7 +47,7 @@ class PostView(DummyModelView):
     seq = 1
 
 
-def test_multiple_admin():
+def test_multiple_admin(report_view):
     app = Starlette()
 
     admin1 = BaseAdmin(
@@ -52,7 +56,7 @@ def test_multiple_admin():
         route_name="admin1",
         templates_dir="tests/templates",
     )
-    admin1.add_view(ReportView)
+    admin1.add_view(report_view)
     admin1.add_view(PostView)
     admin1.mount_to(app)
 

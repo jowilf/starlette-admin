@@ -7,3 +7,10 @@ class RequestAction(str, Enum):
     DETAIL = "DETAIL"
     CREATE = "CREATE"
     EDIT = "EDIT"
+
+
+class ExportType(str, Enum):
+    CSV = "csv"
+    EXCEL = "excel"
+    PDF = "pdf"
+    PRINT = "print"

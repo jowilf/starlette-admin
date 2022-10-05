@@ -1,8 +1,13 @@
 import inspect
 from typing import Any, Dict, List, Optional, Type
 
-from sqlalchemy import ARRAY, Column, and_, false, not_, or_, true
-from sqlalchemy.orm import InstrumentedAttribute
+from sqlalchemy import ARRAY, Boolean, Column, and_, false, not_, or_, true
+from sqlalchemy.orm import (
+    ColumnProperty,
+    InstrumentedAttribute,
+    Mapper,
+    RelationshipProperty,
+)
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
 from starlette_admin.fields import (
     BaseField,
@@ -12,6 +17,8 @@ from starlette_admin.fields import (
     DecimalField,
     EnumField,
     FileField,
+    HasMany,
+    HasOne,
     ImageField,
     IntegerField,
     JSONField,
@@ -20,6 +27,7 @@ from starlette_admin.fields import (
     TextAreaField,
     TimeField,
 )
+from starlette_admin.helpers import slugify_class_name
 
 
 def expression(where: Dict[str, Any], p: InstrumentedAttribute) -> Any:
@@ -153,6 +161,57 @@ def convert_to_field(column: Column) -> Type[BaseField]:
     raise NotSupportedColumn(  # pragma: no cover
         f"Column {column.type} is not supported"
     )
+
+
+def normalize_fields(fields: List[Any], mapper: Mapper) -> List[BaseField]:
+    converted_fields = []
+    for field in fields:
+        if isinstance(field, BaseField):
+            converted_fields.append(field)
+        else:
+            if isinstance(field, InstrumentedAttribute):
+                attr = mapper.attrs.get(field.key)
+            else:
+                attr = mapper.attrs.get(field)
+            if attr is None:
+                raise ValueError(f"Can't find column with key {field}")
+            if isinstance(attr, RelationshipProperty):
+                identity = slugify_class_name(attr.entity.class_.__name__)
+                if attr.direction.name == "MANYTOONE" or (
+                    attr.direction.name == "ONETOMANY" and not attr.uselist
+                ):
+                    converted_fields.append(HasOne(attr.key, identity=identity))
+                else:
+                    converted_fields.append(HasMany(attr.key, identity=identity))
+            elif isinstance(attr, ColumnProperty):
+                assert (
+                    len(attr.columns) == 1
+                ), "Multiple-column properties are not supported"
+                column = attr.columns[0]
+                required = False
+                if column.foreign_keys:
+                    continue
+                if (
+                    not column.nullable
+                    and not isinstance(column.type, (Boolean,))
+                    and not column.default
+                    and not column.server_default
+                ):
+                    required = True
+
+                field = convert_to_field(column)
+                if field is EnumField:
+                    field = EnumField.from_enum(attr.key, column.type.enum_class)
+                else:
+                    field = field(attr.key)
+                    if isinstance(field, FileField) and getattr(
+                        column.type, "multiple", False
+                    ):
+                        field.multiple = True
+
+                field.required = required
+                converted_fields.append(field)
+    return converted_fields
 
 
 def normalize_list(arr: Optional[List[Any]]) -> Optional[List[str]]:

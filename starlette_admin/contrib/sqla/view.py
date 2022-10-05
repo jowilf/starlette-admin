@@ -1,15 +1,9 @@
-from typing import Any, Dict, List, Optional, Type, Union, no_type_check
+from typing import Any, Dict, List, Optional, Type, Union
 
-from sqlalchemy import Boolean, Column, func, inspect, select
+from sqlalchemy import Column, func, inspect, select
 from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import (
-    ColumnProperty,
-    InstrumentedAttribute,
-    RelationshipProperty,
-    Session,
-    joinedload,
-)
+from sqlalchemy.orm import InstrumentedAttribute, Session, joinedload
 from starlette.requests import Request
 from starlette_admin import (
     ColorField,
@@ -25,23 +19,25 @@ from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
     build_query,
-    convert_to_field,
     extract_column_python_type,
+    normalize_fields,
     normalize_list,
 )
 from starlette_admin.exceptions import FormValidationError
-from starlette_admin.fields import BaseField, EnumField, FileField, HasMany, HasOne
+from starlette_admin.fields import BaseField, FileField
 from starlette_admin.helpers import prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
 
-class ModelViewMeta(type):
-    @no_type_check
-    def __new__(mcs, name, bases, attrs: dict, **kwargs: Any):
-        cls: Type["ModelView"] = super().__new__(mcs, name, bases, attrs)
-        model = kwargs.get("model")
-        if model is None:
-            return cls
+class ModelView(BaseModelView):
+    def __init__(
+        self,
+        model: Type[Any],
+        icon: Optional[str] = None,
+        name: Optional[str] = None,
+        label: Optional[str] = None,
+        identity: Optional[str] = None,
+    ):
         try:
             mapper = inspect(model)
         except NoInspectionAvailable:
@@ -52,103 +48,45 @@ class ModelViewMeta(type):
             "Multiple PK columns not supported, A possible solution is to override "
             "BaseAdminModel class and put your own logic "
         )
-        cls._pk_column = mapper.primary_key[0]
-        cls.pk_attr = cls._pk_column.key
-        cls._pk_coerce = extract_column_python_type(cls._pk_column)
-        cls.model = model
-        cls.identity = attrs.get("identity", slugify_class_name(cls.model.__name__))
-        cls.label = attrs.get("label", prettify_class_name(cls.model.__name__) + "s")
-        cls.name = attrs.get("name", prettify_class_name(cls.model.__name__))
-        fields = attrs.get(
-            "fields",
+        self.model = model
+        self._pk_column: Column = mapper.primary_key[0]
+        self.pk_attr = self._pk_column.key
+        self._pk_coerce = extract_column_python_type(self._pk_column)
+        self.identity = identity or slugify_class_name(self.model.__name__)
+        self.label = label or prettify_class_name(self.model.__name__) + "s"
+        self.name = name or prettify_class_name(self.model.__name__)
+        self.icon = icon
+        self.fields = normalize_fields(
             [
-                cls.model.__dict__[f].key
-                for f in cls.model.__dict__
-                if type(cls.model.__dict__[f]) is InstrumentedAttribute
-            ],
+                self.model.__dict__[f].key
+                for f in self.model.__dict__
+                if type(self.model.__dict__[f]) is InstrumentedAttribute
+            ]
+            if (self.fields is None or len(self.fields) == 0)
+            else self.fields,
+            mapper,
         )
-        converted_fields = []
-        for field in fields:
-            if isinstance(field, BaseField):
-                converted_fields.append(field)
-            else:
-                if isinstance(field, InstrumentedAttribute):
-                    attr = mapper.attrs.get(field.key)
-                else:
-                    attr = mapper.attrs.get(field)
-                if attr is None:
-                    raise ValueError(f"Can't find column with key {field}")
-                if isinstance(attr, RelationshipProperty):
-                    identity = slugify_class_name(attr.entity.class_.__name__)
-                    if attr.direction.name == "MANYTOONE" or (
-                        attr.direction.name == "ONETOMANY" and not attr.uselist
-                    ):
-                        converted_fields.append(HasOne(attr.key, identity=identity))
-                    else:
-                        converted_fields.append(HasMany(attr.key, identity=identity))
-                elif isinstance(attr, ColumnProperty):
-                    assert (
-                        len(attr.columns) == 1
-                    ), "Multiple-column properties are not supported"
-                    column = attr.columns[0]
-                    required = False
-                    if column.foreign_keys:
-                        continue
-                    if (
-                        not column.nullable
-                        and not isinstance(column.type, (Boolean,))
-                        and not column.default
-                        and not column.server_default
-                    ):
-                        required = True
-
-                    field = convert_to_field(column)
-                    if field is EnumField:
-                        field = EnumField.from_enum(attr.key, column.type.enum_class)
-                    else:
-                        field = field(attr.key)
-                        if isinstance(field, FileField) and getattr(
-                            column.type, "multiple", False
-                        ):
-                            field.multiple = True
-
-                    field.required = required
-                    converted_fields.append(field)
-        cls.fields = converted_fields
-        cls.exclude_fields_from_list = normalize_list(
-            attrs.get("exclude_fields_from_list", [])
-        )
-        cls.exclude_fields_from_detail = normalize_list(
-            attrs.get("exclude_fields_from_detail", [])
-        )
-        cls.exclude_fields_from_create = normalize_list(
-            attrs.get("exclude_fields_from_create", [])
-        )
-        cls.exclude_fields_from_edit = normalize_list(
-            attrs.get("exclude_fields_from_edit", [])
-        )
+        self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
+        self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
+        self.exclude_fields_from_create = normalize_list(self.exclude_fields_from_create)  # type: ignore
+        self.exclude_fields_from_edit = normalize_list(self.exclude_fields_from_edit)  # type: ignore
         _default_list = [
             field.name
-            for field in cls.fields
+            for field in self.fields
             if not isinstance(field, (RelationField, FileField))
         ]
-        cls.searchable_fields = normalize_list(
-            attrs.get("searchable_fields", _default_list)
+        self.searchable_fields = normalize_list(
+            self.searchable_fields
+            if (self.searchable_fields is not None)
+            else _default_list
         )
-        cls.sortable_fields = normalize_list(
-            attrs.get("sortable_fields", _default_list)
+        self.sortable_fields = normalize_list(
+            self.sortable_fields
+            if (self.sortable_fields is not None)
+            else _default_list
         )
-        cls.export_fields = normalize_list(attrs.get("export_fields", None))
-        return cls
-
-
-class ModelView(BaseModelView, metaclass=ModelViewMeta):
-    model: Type[Any]
-    identity: Optional[str] = None
-    pk_attr: Optional[str] = None
-    _pk_column: Column
-    _pk_coerce: type
-    fields: List[BaseField] = []
+        self.export_fields = normalize_list(self.export_fields)
+        super().__init__()
 
     async def count(
         self,

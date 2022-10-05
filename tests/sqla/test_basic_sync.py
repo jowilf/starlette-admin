@@ -60,12 +60,8 @@ class User(Base):
     products = relationship("Product", back_populates="user")
 
 
-class UserView(ModelView, model=User):
+class UserView(ModelView):
     form_include_pk = True
-
-
-class ProductView(ModelView, model=Product):
-    pass
 
 
 class TestSQLABasic:
@@ -87,8 +83,8 @@ class TestSQLABasic:
     @pytest.fixture
     def admin(self):
         admin = Admin(engine)
-        admin.add_view(UserView)
-        admin.add_view(ProductView)
+        admin.add_view(UserView(User))
+        admin.add_view(ModelView(Product))
         return admin
 
     @pytest.fixture
