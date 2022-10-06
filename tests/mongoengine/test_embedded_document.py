@@ -23,9 +23,6 @@ class Post(me.Document):
     comments = me.EmbeddedDocumentListField(Comment)
 
 
-class PostView(ModelView, document=Post):
-    pass
-
 
 class TestEmbeddedDocument:
     def setup(self):
@@ -45,7 +42,7 @@ class TestEmbeddedDocument:
     def client(self):
         admin = Admin()
         app = Starlette()
-        admin.add_view(PostView)
+        admin.add_view(ModelView(Post))
         admin.mount_to(app)
         return TestClient(app, base_url="http://testserver")
 

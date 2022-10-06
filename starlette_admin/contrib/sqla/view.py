@@ -49,13 +49,13 @@ class ModelView(BaseModelView):
             "BaseAdminModel class and put your own logic "
         )
         self.model = model
-        self._pk_column: Column = mapper.primary_key[0]
-        self.pk_attr = self._pk_column.key
-        self._pk_coerce = extract_column_python_type(self._pk_column)
         self.identity = identity or slugify_class_name(self.model.__name__)
         self.label = label or prettify_class_name(self.model.__name__) + "s"
         self.name = name or prettify_class_name(self.model.__name__)
         self.icon = icon
+        self._pk_column: Column = mapper.primary_key[0]
+        self.pk_attr = self._pk_column.key
+        self._pk_coerce = extract_column_python_type(self._pk_column)
         self.fields = normalize_fields(
             [
                 self.model.__dict__[f].key

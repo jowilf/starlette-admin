@@ -25,6 +25,7 @@ class DummyBaseModel(BaseModel):
 
 class DummyModelView(BaseModelView):
     """Custom ModelView which store data in memory only for testing purpose"""
+
     pk_attr = "id"
     model: Optional[Type[DummyBaseModel]] = None
     db: Dict[int, DummyBaseModel] = dict()

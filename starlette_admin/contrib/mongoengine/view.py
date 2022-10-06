@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Type, Union, no_type_check
+from typing import Any, Dict, List, Optional, Type, Union
 
 import mongoengine as me
 import starlette_admin as sa
@@ -22,55 +22,47 @@ from starlette_admin.helpers import prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
 
-class ModelViewMeta(type):
-    @no_type_check
-    def __new__(mcs, name, bases, attrs: dict, **kwargs: Any):
-        cls: Type["ModelView"] = super().__new__(mcs, name, bases, attrs)
-        document: Optional[me.Document] = kwargs.get("document")
-        if document is None:
-            return cls
-        cls.document = document
-        cls.identity = attrs.get("identity", slugify_class_name(document.__name__))
-        cls.label = attrs.get("label", prettify_class_name(document.__name__) + "s")
-        cls.name = attrs.get("name", prettify_class_name(document.__name__))
-        fields = attrs.get("fields", document._fields_ordered)
+class ModelView(BaseModelView):
+    def __init__(
+        self,
+        document: Type[me.Document],
+        icon: Optional[str] = None,
+        name: Optional[str] = None,
+        label: Optional[str] = None,
+        identity: Optional[str] = None,
+    ):
+        self.document = document
+        self.identity = identity or slugify_class_name(self.document.__name__)
+        self.label = label or prettify_class_name(self.document.__name__) + "s"
+        self.name = name or prettify_class_name(self.document.__name__)
+        self.icon = icon
+        self.pk_attr = "id"
+        fields = (
+            document._fields_ordered
+            if (self.fields is None or len(self.fields) == 0)
+            else self.fields
+        )
         converted_fields = []
         for value in fields:
             if isinstance(value, sa.BaseField):
                 converted_fields.append(value)
             else:
-                field = None
                 if isinstance(value, MongoBaseField):
                     field = value
-                elif isinstance(value, str):
+                elif isinstance(value, str) and hasattr(document, value):
                     field = getattr(document, value)
                 else:
                     raise ValueError(f"Can't find column with key {value}")
                 converted_fields.append(convert_mongoengine_field_to_admin_field(field))
-        cls.fields = converted_fields
-        cls.exclude_fields_from_list = normalize_list(
-            attrs.get("exclude_fields_from_list", [])
-        )
-        cls.exclude_fields_from_detail = normalize_list(
-            attrs.get("exclude_fields_from_detail", [])
-        )
-        cls.exclude_fields_from_create = normalize_list(
-            attrs.get("exclude_fields_from_create", [])
-        )
-        cls.exclude_fields_from_edit = normalize_list(
-            attrs.get("exclude_fields_from_edit", [])
-        )
-        cls.searchable_fields = normalize_list(attrs.get("searchable_fields", None))
-        cls.sortable_fields = normalize_list(attrs.get("sortable_fields", None))
-        cls.export_fields = normalize_list(attrs.get("export_fields", None))
-        return cls
-
-
-class ModelView(BaseModelView, metaclass=ModelViewMeta):
-    document: Type[me.Document]
-    identity: Optional[str] = None
-    pk_attr: Optional[str] = "id"
-    fields: List[sa.BaseField] = []
+        self.fields = converted_fields
+        self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
+        self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
+        self.exclude_fields_from_create = normalize_list(self.exclude_fields_from_create)  # type: ignore
+        self.exclude_fields_from_edit = normalize_list(self.exclude_fields_from_edit)  # type: ignore
+        self.searchable_fields = normalize_list(self.searchable_fields)
+        self.sortable_fields = normalize_list(self.sortable_fields)
+        self.export_fields = normalize_list(self.export_fields)
+        super().__init__()
 
     async def count(
         self,

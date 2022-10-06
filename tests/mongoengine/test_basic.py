@@ -42,18 +42,6 @@ class User(me.Document):
     store = me.ReferenceField("Store")
 
 
-class UserView(ModelView, document=User):
-    pass
-
-
-class StoreView(ModelView, document=Store):
-    pass
-
-
-class ProductView(ModelView, document=Product):
-    pass
-
-
 class TestMongoBasic:
     def setup(self):
         connect(host=MONGO_URL)
@@ -69,9 +57,9 @@ class TestMongoBasic:
     @pytest.fixture
     def admin(self):
         admin = Admin()
-        admin.add_view(StoreView)
-        admin.add_view(ProductView)
-        admin.add_view(UserView)
+        admin.add_view(ModelView(Store))
+        admin.add_view(ModelView(Product))
+        admin.add_view(ModelView(User))
         return admin
 
     @pytest.fixture
