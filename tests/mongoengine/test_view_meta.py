@@ -132,6 +132,7 @@ def test_invalid_field_list():
 
         class CustomDocumentView(ModelView):
             fields = [1]
+
         CustomDocumentView(MyDocument)
 
 
@@ -142,4 +143,5 @@ def test_invalid_exclude_list():
 
         class CustomDocumentView(ModelView):
             exclude_fields_from_create = [1]
+
         CustomDocumentView(MyDocument)

@@ -23,7 +23,6 @@ class Post(me.Document):
     comments = me.EmbeddedDocumentListField(Comment)
 
 
-
 class TestEmbeddedDocument:
     def setup(self):
         connect(host=MONGO_URL)
