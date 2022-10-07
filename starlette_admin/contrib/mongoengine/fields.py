@@ -13,7 +13,7 @@ class FileField(BaseFileField):
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
-        return serialize_file_field(request, value, action)
+        return _serialize_file_field(request, value, action)
 
 
 @dataclass
@@ -21,10 +21,10 @@ class ImageField(BaseImageField):
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
-        return serialize_file_field(request, value, action)
+        return _serialize_file_field(request, value, action)
 
 
-def serialize_file_field(
+def _serialize_file_field(
     request: Request, value: GridFSProxy, action: RequestAction
 ) -> Optional[Dict[str, str]]:
     if value.grid_id:

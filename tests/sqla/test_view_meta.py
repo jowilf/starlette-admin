@@ -25,10 +25,8 @@ from starlette_admin import (
     DateTimeField,
     DecimalField,
     EnumField,
-    FileField,
     HasMany,
     HasOne,
-    ImageField,
     IntegerField,
     JSONField,
     StringField,
@@ -40,6 +38,7 @@ from starlette_admin.contrib.sqla.exceptions import (
     InvalidModelError,
     NotSupportedColumn,
 )
+from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.contrib.sqla.view import ModelView
 
 Base = declarative_base()

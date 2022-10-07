@@ -9,6 +9,7 @@ from sqlalchemy.orm import (
     RelationshipProperty,
 )
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
+from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.fields import (
     BaseField,
     BooleanField,
@@ -16,10 +17,8 @@ from starlette_admin.fields import (
     DateTimeField,
     DecimalField,
     EnumField,
-    FileField,
     HasMany,
     HasOne,
-    ImageField,
     IntegerField,
     JSONField,
     StringField,
@@ -124,7 +123,7 @@ converters = {
     "dialects.postgresql.base.MACADDR": StringField,
     "dialects.postgresql.base.UUID": StringField,
     "sqlalchemy_file.types.FileField": FileField,  # support for sqlalchemy-file
-    "sqlalchemy_file.types.ImageField": ImageField,  # support sqlalchemy-file
+    "sqlalchemy_file.types.ImageField": ImageField,  # support for sqlalchemy-file
 }
 
 
@@ -204,7 +203,7 @@ def normalize_fields(fields: List[Any], mapper: Mapper) -> List[BaseField]:
                     field = EnumField.from_enum(attr.key, column.type.enum_class)
                 else:
                     field = field(attr.key)
-                    if isinstance(field, FileField) and getattr(
+                    if isinstance(field, (FileField, ImageField)) and getattr(
                         column.type, "multiple", False
                     ):
                         field.multiple = True

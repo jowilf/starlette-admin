@@ -268,36 +268,3 @@ class ModelView(BaseModelView):
         except ImportError:  # pragma: no cover
             pass
         raise exc  # pragma: no cover
-
-    async def serialize_field_value(
-        self, value: Any, field: BaseField, action: RequestAction, request: Request
-    ) -> Any:
-        try:
-            """to automatically serve sqlalchemy_file"""
-            __import__("sqlalchemy_file")
-            if isinstance(field, FileField) and value is not None:
-                data = []
-                for item in value if field.multiple else [value]:
-                    path = item["path"]
-                    if (
-                        action == RequestAction.LIST
-                        and getattr(item, "thumbnail", None) is not None
-                    ):
-                        """Use thumbnail on list page if available"""
-                        path = item["thumbnail"]["path"]
-                    storage, file_id = path.split("/")
-                    data.append(
-                        {
-                            "content_type": item["content_type"],
-                            "filename": item["filename"],
-                            "url": request.url_for(
-                                request.app.state.ROUTE_NAME + ":api:file",
-                                storage=storage,
-                                file_id=file_id,
-                            ),
-                        }
-                    )
-                return data if field.multiple else data[0]
-        except ImportError:  # pragma: no cover
-            pass
-        return await super().serialize_field_value(value, field, action, request)
