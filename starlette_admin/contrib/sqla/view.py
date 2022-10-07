@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional, Type, Union
 
+import anyio.to_thread
 from sqlalchemy import Column, func, inspect, select
 from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -99,11 +100,11 @@ class ModelView(BaseModelView):
             if isinstance(where, dict):
                 where = build_query(where, self.model)
             else:
-                where = self.build_full_text_search_query(request, where, self.model)
+                where = await self.build_full_text_search_query(request, where, self.model)
             stmt = stmt.where(where)
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalar_one()
-        return session.execute(stmt).scalar_one()
+        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalar_one()
 
     async def find_all(
         self,
@@ -121,7 +122,7 @@ class ModelView(BaseModelView):
             if isinstance(where, dict):
                 where = build_query(where, self.model)
             else:
-                where = self.build_full_text_search_query(request, where, self.model)
+                where = await self.build_full_text_search_query(request, where, self.model)
             stmt = stmt.where(where)
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
         for field in self.fields:
@@ -129,7 +130,7 @@ class ModelView(BaseModelView):
                 stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
-        return session.execute(stmt).scalars().unique().all()
+        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalars().unique().all()
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: Union[Session, AsyncSession] = request.state.session
@@ -139,7 +140,7 @@ class ModelView(BaseModelView):
                 stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().one_or_none()
-        return session.execute(stmt).scalars().unique().one_or_none()
+        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalars().unique().one_or_none()
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
         session: Union[Session, AsyncSession] = request.state.session
@@ -149,7 +150,7 @@ class ModelView(BaseModelView):
                 stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
-        return session.execute(stmt).scalars().unique().all()
+        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalars().unique().all()
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
         """
@@ -168,8 +169,8 @@ class ModelView(BaseModelView):
                 await session.commit()
                 await session.refresh(obj)
             else:
-                session.commit()
-                session.refresh(obj)
+                await anyio.to_thread.run_sync(session.commit)
+                await anyio.to_thread.run_sync(session.refresh, obj)
             return obj
         except Exception as e:
             return self.handle_exception(e)
@@ -184,8 +185,8 @@ class ModelView(BaseModelView):
                 await session.commit()
                 await session.refresh(obj)
             else:
-                session.commit()
-                session.refresh(obj)
+                await anyio.to_thread.run_sync(session.commit)
+                await anyio.to_thread.run_sync(session.refresh, obj)
             return obj
         except Exception as e:
             self.handle_exception(e)
@@ -238,11 +239,11 @@ class ModelView(BaseModelView):
             await session.commit()
         else:
             for obj in objs:
-                session.delete(obj)
-            session.commit()
+                await anyio.to_thread.run_sync(session.delete, obj)
+            await anyio.to_thread.run_sync(session.commit)
         return len(objs)
 
-    def build_full_text_search_query(
+    async def build_full_text_search_query(
         self, request: Request, term: str, model: Any
     ) -> Dict[str, Any]:
         query: Dict[str, Any] = {"or": []}
