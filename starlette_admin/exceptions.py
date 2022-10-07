@@ -1,11 +1,11 @@
 from typing import Dict, Optional
 
 
-class SFAdminException(Exception):
+class StarletteAdminException(Exception):
     pass
 
 
-class FormValidationError(SFAdminException):
+class FormValidationError(StarletteAdminException):
     def __init__(self, errors: Dict[str, str]) -> None:
         self.errors = errors
 
@@ -16,7 +16,7 @@ class FormValidationError(SFAdminException):
         return self.errors.get(name, None)
 
 
-class LoginFailed(SFAdminException):
+class LoginFailed(StarletteAdminException):
     def __init__(self, msg: str) -> None:
         super().__init__(msg)
         self.msg = msg
