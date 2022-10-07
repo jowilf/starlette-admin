@@ -15,7 +15,6 @@ from starlette_admin import (
     TextAreaField,
     URLField,
 )
-from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
@@ -25,7 +24,7 @@ from starlette_admin.contrib.sqla.helpers import (
     normalize_list,
 )
 from starlette_admin.exceptions import FormValidationError
-from starlette_admin.fields import BaseField, FileField
+from starlette_admin.fields import FileField
 from starlette_admin.helpers import prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
@@ -100,7 +99,9 @@ class ModelView(BaseModelView):
             if isinstance(where, dict):
                 where = build_query(where, self.model)
             else:
-                where = await self.build_full_text_search_query(request, where, self.model)
+                where = await self.build_full_text_search_query(
+                    request, where, self.model
+                )
             stmt = stmt.where(where)
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalar_one()
@@ -122,7 +123,9 @@ class ModelView(BaseModelView):
             if isinstance(where, dict):
                 where = build_query(where, self.model)
             else:
-                where = await self.build_full_text_search_query(request, where, self.model)
+                where = await self.build_full_text_search_query(
+                    request, where, self.model
+                )
             stmt = stmt.where(where)
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
         for field in self.fields:
@@ -130,7 +133,12 @@ class ModelView(BaseModelView):
                 stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
-        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalars().unique().all()
+        return (
+            (await anyio.to_thread.run_sync(session.execute, stmt))
+            .scalars()
+            .unique()
+            .all()
+        )
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: Union[Session, AsyncSession] = request.state.session
@@ -140,7 +148,12 @@ class ModelView(BaseModelView):
                 stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().one_or_none()
-        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalars().unique().one_or_none()
+        return (
+            (await anyio.to_thread.run_sync(session.execute, stmt))
+            .scalars()
+            .unique()
+            .one_or_none()
+        )
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
         session: Union[Session, AsyncSession] = request.state.session
@@ -150,7 +163,12 @@ class ModelView(BaseModelView):
                 stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
-        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalars().unique().all()
+        return (
+            (await anyio.to_thread.run_sync(session.execute, stmt))
+            .scalars()
+            .unique()
+            .all()
+        )
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
         """
