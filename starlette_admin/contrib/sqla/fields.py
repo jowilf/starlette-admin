@@ -76,4 +76,4 @@ def _serialize_sqlalchemy_file_library(
                 }
             )
         return data if is_multiple else data[0]
-    raise NotSupportedValue
+    raise NotSupportedValue # pragma: no cover
