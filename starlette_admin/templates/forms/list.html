@@ -1,4 +1,4 @@
-<div id="{{field.id}}" class="field-list">
+<div id="{{field.id}}" class="field-list {%if error | is_str %}is-invalid{%endif%}">
     <input id="{{field.id}}-next-index" value="{{(data or []) | length +1}}" hidden>
     <div class="template d-none">
         {% filter forceescape %}
@@ -23,7 +23,7 @@
         <div class="mb-3 field-list-item">
             <div class="d-flex">
                 <div class="flex-grow-1">
-                    {% with data=value, error=False, field=field._field_at(loop.index) %}
+                    {% with data=value, field=field._field_at(loop.index), error=error.get(loop.index0, None) if (error | is_dict) else None %}
                     {% include field.form_template%}
                     {% endwith %}
                 </div>
@@ -41,3 +41,6 @@
         Add item
     </button>
 </div>
+{%if error | is_str %}
+{% include "forms/_error.html" %}
+{%endif%}

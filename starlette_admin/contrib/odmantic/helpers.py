@@ -3,7 +3,7 @@ import decimal
 import inspect
 import typing as t
 from enum import Enum
-from typing import Dict, Optional, get_origin
+from typing import Any, Dict, List, Optional, Union, get_origin
 
 import bson
 import pydantic as pyd
@@ -28,13 +28,15 @@ from starlette_admin import (
     EmailField,
     EnumField,
     FloatField,
+    HasOne,
     IntegerField,
     JSONField,
     ListField,
     StringField,
     TimeField,
-    URLField, HasOne,
+    URLField,
 )
+from starlette_admin.contrib.odmantic.exceptions import NotSupportedAnnotation
 from starlette_admin.exceptions import FormValidationError
 from starlette_admin.helpers import slugify_class_name
 
@@ -55,11 +57,10 @@ annotation_map = {
     datetime.date: DateField,
     datetime.time: TimeField,
     datetime.timedelta: IntegerField,
-    t.Dict: JSONField,
+    dict: JSONField,
     pyd.EmailStr: EmailField,
     pyd.NameEmail: StringField,
     Color: ColorField,
-    pyd.Json: JSONField,
     pyd.AnyUrl: URLField,
 }
 
@@ -74,6 +75,8 @@ def convert_odm_field_to_admin_field(
         return convert_odm_field_to_admin_field(
             field, field_name, get_args(annotation)[0]
         )
+    elif _origin in annotation_map:
+        admin_field = annotation_map.get(_origin)(field_name)
     elif _origin in (list, set) and not isinstance(field, ODMEmbeddedGeneric):
         child_field = convert_odm_field_to_admin_field(
             field, field_name, get_args(annotation)[0]
@@ -99,7 +102,7 @@ def convert_odm_field_to_admin_field(
             admin_field = ListField(admin_field)
     elif isinstance(field, ODMReference):
         return HasOne(field_name, identity=slugify_class_name(field.model.__name__))
-    else:
+    elif hasattr(annotation, "__mro__"):
         types = inspect.getmro(annotation)
         for _type in types:
             if issubclass(_type, Enum):
@@ -109,7 +112,7 @@ def convert_odm_field_to_admin_field(
                 admin_field = annotation_map.get(_type)(field_name)
                 break
     if admin_field is None:
-        raise ValueError()
+        raise NotSupportedAnnotation(f"{annotation} is not supported")
     admin_field.required = field.is_required_in_doc()
     return admin_field
 
@@ -171,7 +174,14 @@ def build_raw_query(dt_query: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
 
 
 def pydantic_error_to_form_validation_errors(exc: ValidationError):
-    errors: Dict[str, str] = dict()
+    errors: Dict[str, Any] = dict()
     for pydantic_error in exc.errors():
-        errors[str(pydantic_error["loc"][-1])] = pydantic_error["msg"]
+        loc: List[Union[int, str], ...] = list(pydantic_error["loc"])
+        _d = errors
+        for i in range(len(loc)):
+            if i == len(loc) - 1:
+                _d[loc[i]] = pydantic_error["msg"]
+            elif loc[i] not in _d:
+                _d[loc[i]] = dict()
+            _d = _d[loc[i]]
     return FormValidationError(errors)

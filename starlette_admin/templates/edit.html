@@ -32,7 +32,7 @@
                     <div class="card-body border-bottom py-3">
                          {%for field in model._extract_fields('EDIT') %}
                         <div class="mb-3">
-                            {% with action='EDIT',data=obj[field.name], error=(errors.msg(field.name) if(errors and errors.has(field.name)) else False)%}
+                            {% with action='EDIT',data=obj[field.name], error=errors.get(field.name, None) if errors else None%}
                             {% include field.label_template %}
                             {% include field.form_template %}
                             {% endwith %}

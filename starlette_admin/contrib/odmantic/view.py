@@ -6,8 +6,7 @@ from odmantic import AIOEngine, Model, Reference, SyncEngine
 from odmantic.field import FieldProxy
 from pydantic import ValidationError
 from starlette.requests import Request
-
-from starlette_admin import BaseField, CollectionField, ListField, HasOne, HasMany
+from starlette_admin import BaseField, CollectionField, HasMany, HasOne, ListField
 from starlette_admin.contrib.odmantic.helpers import (
     build_raw_query,
     convert_odm_field_to_admin_field,
@@ -20,12 +19,12 @@ from starlette_admin.views import BaseModelView
 
 class ModelView(BaseModelView):
     def __init__(
-            self,
-            model: Type[Model],
-            icon: Optional[str] = None,
-            name: Optional[str] = None,
-            label: Optional[str] = None,
-            identity: Optional[str] = None,
+        self,
+        model: Type[Model],
+        icon: Optional[str] = None,
+        name: Optional[str] = None,
+        label: Optional[str] = None,
+        identity: Optional[str] = None,
     ):
         self.model = model
         self.identity = identity or slugify_class_name(self.model.__name__)
@@ -65,12 +64,12 @@ class ModelView(BaseModelView):
         super().__init__()
 
     async def find_all(
-            self,
-            request: Request,
-            skip: int = 0,
-            limit: int = 100,
-            where: Union[Dict[str, Any], str, None] = None,
-            order_by: Optional[List[str]] = None,
+        self,
+        request: Request,
+        skip: int = 0,
+        limit: int = 100,
+        where: Union[Dict[str, Any], str, None] = None,
+        order_by: Optional[List[str]] = None,
     ) -> Iterable[Any]:
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
         if isinstance(engine, AIOEngine):
@@ -91,7 +90,7 @@ class ModelView(BaseModelView):
         )
 
     async def count(
-            self, request: Request, where: Union[Dict[str, Any], str, None] = None
+        self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> int:
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
         if isinstance(engine, AIOEngine):
@@ -114,14 +113,14 @@ class ModelView(BaseModelView):
         pks = map(ObjectId, pks)
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
         if isinstance(engine, AIOEngine):
-            return await engine.find(self.model,self.model.id.in_(pks))
-        return await anyio.to_thread.run_sync(engine.find, self.model,self.model.id.in_(pks))
+            return await engine.find(self.model, self.model.id.in_(pks))
+        return await anyio.to_thread.run_sync(
+            engine.find, self.model, self.model.id.in_(pks)
+        )
 
     async def create(self, request: Request, data: Dict) -> Any:
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
-        print("before",data)
         data = await self._arrange_data(request, data)
-        print(data)
         try:
             if isinstance(engine, AIOEngine):
                 return await engine.save(self.model(**data))
@@ -153,23 +152,39 @@ class ModelView(BaseModelView):
             raise pydantic_error_to_form_validation_errors(exc)
         raise exc  # pragma: no cover
 
-    async def _arrange_data(self, request: Request, data: Dict[str, Any], is_edit: bool = False,
-                            fields: Optional[List[BaseField]] = None):
+    async def _arrange_data(
+        self,
+        request: Request,
+        data: Dict[str, Any],
+        is_edit: bool = False,
+        fields: Optional[List[BaseField]] = None,
+    ):
         arranged_data = dict()
         if fields is None:
             fields = self.fields
         for field in fields:
             if (is_edit and field.exclude_from_edit) or (
-                    not is_edit and field.exclude_from_create
+                not is_edit and field.exclude_from_create
             ):
                 continue
             name, value = field.name, data.get(field.name, None)
             if isinstance(field, CollectionField) and value is not None:
-                arranged_data[name] = await self._arrange_data(request, value, is_edit, field.fields)
-            elif isinstance(field, ListField) and isinstance(field.field, CollectionField) and value is not None:
-                arranged_data[name] = [await self._arrange_data(request, v, is_edit, field.field.fields) for v in value]
+                arranged_data[name] = await self._arrange_data(
+                    request, value, is_edit, field.fields
+                )
+            elif (
+                isinstance(field, ListField)
+                and isinstance(field.field, CollectionField)
+                and value is not None
+            ):
+                arranged_data[name] = [
+                    await self._arrange_data(request, v, is_edit, field.field.fields)
+                    for v in value
+                ]
             elif isinstance(field, HasOne) and value is not None:
-                arranged_data[name] = await self._find_foreign_model(field.identity).find_by_pk(request, value)
+                arranged_data[name] = await self._find_foreign_model(
+                    field.identity
+                ).find_by_pk(request, value)
             elif isinstance(field, HasMany) and value is not None:
                 arranged_data[name] = [ObjectId(v) for v in value]
             else:
@@ -177,7 +192,7 @@ class ModelView(BaseModelView):
         return arranged_data
 
     async def _build_query(
-            self, request: Request, where: Union[Dict[str, Any], str, None] = None
+        self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> Any:
         if where is None:
             return {}
@@ -195,7 +210,7 @@ class ModelView(BaseModelView):
         return tuple(clauses) if len(clauses) > 0 else None
 
     async def build_full_text_search_query(
-            self, request: Request, term: str
+        self, request: Request, term: str
     ) -> Dict[str, Any]:
         query: Dict[str, Any] = {"$or": []}
         for field in self.fields:
@@ -207,17 +222,16 @@ class ModelView(BaseModelView):
 
 
 if __name__ == "__main__":
+
     class Publisher(Model):
         name: str
         founded: int
         location: str
 
-
     class Book(Model):
         title: str
         pages: int
         publisher: Publisher = Reference()
-
 
     print(Book.__annotations__)
     print(ModelView(Book).fields)

@@ -5,7 +5,7 @@
                for="{{field.id}}">{{field.label}}</label>
         <div class="col">
             {%set item_data= (data[field.name] if data else None)%}
-            {% with data=item_data, error=False %}
+            {% with data=item_data, error=error.get(field.name, None) if error else None %}
             {% include field.form_template %}
             {% endwith %}
         </div>

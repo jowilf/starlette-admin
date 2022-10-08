@@ -180,6 +180,8 @@ class BaseAdmin:
             "to_model"
         ] = lambda identity: self._find_model_from_identity(identity)
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
+        templates.env.filters["is_str"] = lambda v: isinstance(v, str)
+        templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:
@@ -364,13 +366,13 @@ class BaseAdmin:
             )
             try:
                 obj = await model.create(request, dict_obj)
-            except FormValidationError as errors:
+            except FormValidationError as exc:
                 return self.templates.TemplateResponse(
                     model.create_template,
                     {
                         "request": request,
                         "model": model,
-                        "errors": errors,
+                        "errors": exc.errors,
                         "obj": dict_obj,
                     },
                 )
@@ -408,13 +410,13 @@ class BaseAdmin:
             dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
             try:
                 obj = await model.edit(request, pk, dict_obj)
-            except FormValidationError as errors:
+            except FormValidationError as exc:
                 return self.templates.TemplateResponse(
                     model.edit_template,
                     {
                         "request": request,
                         "model": model,
-                        "errors": errors,
+                        "errors": exc.errors,
                         "obj": dict_obj,
                     },
                 )

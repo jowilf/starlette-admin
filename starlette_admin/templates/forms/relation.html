@@ -6,3 +6,4 @@
         {%if data %}data-initial="{{(data if field.multiple else [data]) |join(',') }}"{%endif%}
         {%if field.multiple%}multiple{%endif%}>
 </select>
+{% include "forms/_error.html" %}
