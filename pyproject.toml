@@ -51,7 +51,7 @@ psycopg2-binary = "^2.9.3"
 mkdocs-material = "^8.5.5"
 mkdocstrings = { extras = ["python"], version = "^0.19.0" }
 itsdangerous = "^2.1.2"
-autoflake = "^1.6.1"
+autoflake = "^1.7.0"
 SQLAlchemy = { extras = ["asyncio"], version = "^1.4.41" }
 aiosqlite = "^0.17.0"
 asyncpg = "^0.26.0"

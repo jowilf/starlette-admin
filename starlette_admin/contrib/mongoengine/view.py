@@ -37,13 +37,10 @@ class ModelView(BaseModelView):
         self.name = name or prettify_class_name(self.document.__name__)
         self.icon = icon
         self.pk_attr = "id"
-        fields = (
-            document._fields_ordered
-            if (self.fields is None or len(self.fields) == 0)
-            else self.fields
-        )
+        if self.fields is None or len(self.fields) == 0:
+            self.fields = document._fields_ordered
         converted_fields = []
-        for value in fields:
+        for value in self.fields:
             if isinstance(value, sa.BaseField):
                 converted_fields.append(value)
             else:

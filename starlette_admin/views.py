@@ -437,9 +437,9 @@ class BaseModelView(BaseView):
                 )
         if include_select2:
             obj_serialized["_select2_selection"] = await self.select2_selection(
-                obj, request
+                obj_serialized, request
             )
-            obj_serialized["_select2_result"] = await self.select2_result(obj, request)
+            obj_serialized["_select2_result"] = await self.select2_result(obj_serialized, request)
         obj_serialized["_repr"] = await self.repr(obj, request)
         assert self.pk_attr is not None
         pk = getattr(obj, self.pk_attr)

@@ -3,7 +3,7 @@ import json
 from dataclasses import asdict, dataclass
 from dataclasses import field as dc_field
 from datetime import date, datetime, time
-from enum import Enum
+from enum import Enum, IntEnum
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
@@ -380,7 +380,7 @@ class EnumField(StringField):
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
         labels = [
-            (self._get_label(v) if action != "EDIT" else v)
+            (self._get_label(v) if action != RequestAction.EDIT else v)
             for v in (value if self.multiple else [value])
         ]
         return labels if self.multiple else labels[0]
@@ -409,7 +409,8 @@ class EnumField(StringField):
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
         choices = list(map(lambda e: (e.value, e.name), enum_type))  # type: ignore
-        return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
+        coerce = int if issubclass(enum_type, IntEnum) else str
+        return cls(name, choices=choices, multiple=multiple, coerce=coerce, **kwargs)  # type: ignore
 
     @classmethod
     def from_choices(
@@ -467,7 +468,7 @@ class DateTimeField(NumberField):
         assert isinstance(
             value, (datetime, date, time)
         ), f"Expect datetime, got  {type(value)}"
-        if action != "EDIT":
+        if action != RequestAction.EDIT:
             return value.strftime(self.output_format)
         return value.isoformat()
 

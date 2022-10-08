@@ -56,16 +56,13 @@ class ModelView(BaseModelView):
         self._pk_column: Column = mapper.primary_key[0]
         self.pk_attr = self._pk_column.key
         self._pk_coerce = extract_column_python_type(self._pk_column)
-        self.fields = normalize_fields(
-            [
+        if self.fields is None or len(self.fields) == 0:
+            self.fields = [
                 self.model.__dict__[f].key
                 for f in self.model.__dict__
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
-            if (self.fields is None or len(self.fields) == 0)
-            else self.fields,
-            mapper,
-        )
+        self.fields = normalize_fields(self.fields, mapper)
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
         self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
         self.exclude_fields_from_create = normalize_list(self.exclude_fields_from_create)  # type: ignore

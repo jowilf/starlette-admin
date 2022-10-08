@@ -1,17 +1,18 @@
+import datetime
 from typing import Any, Dict, List, Optional, Union
 
 from bson import ObjectId
-from odmantic import AIOEngine, Field, Model
+from odmantic import AIOEngine, Field, Model, Reference
 from pydantic import ValidationError
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
-from starlette_admin import BaseAdmin as Admin
-from starlette_admin import BaseModelView, EnumField, IntegerField, StringField
-from starlette_admin.exceptions import FormValidationError
 
 from examples.odmantic.helpers import build_raw_query
+from starlette_admin import BaseModelView, EnumField, IntegerField, StringField
+from starlette_admin.contrib.odmantic import ModelView, Admin
+from starlette_admin.exceptions import FormValidationError
 
 engine = AIOEngine()
 app = Starlette(
@@ -25,9 +26,17 @@ app = Starlette(
 
 
 class Author(Model):
-    name: str = Field(min_length=3, max_length=100)
+    name: str = Field(min_length=3, max_length=100, key_name="db_name")
     age: int = Field(ge=5, lt=150)
     sex: Optional[str]
+    tags: Optional[List[str]]
+    dts: Optional[List[datetime.datetime]]
+
+
+class Book(Model):
+    title: str
+    pages: int
+    publisher: Author = Reference()
 
 
 def build_query(where: Union[Dict[str, Any], str, None] = None) -> Any:
@@ -68,19 +77,19 @@ class AuthorView(BaseModelView):
     ]
 
     async def count(
-        self,
-        request: Request,
-        where: Union[Dict[str, Any], str, None] = None,
+            self,
+            request: Request,
+            where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
         return await engine.count(Author, build_query(where))
 
     async def find_all(
-        self,
-        request: Request,
-        skip: int = 0,
-        limit: int = 100,
-        where: Union[Dict[str, Any], str, None] = None,
-        order_by: Optional[List[str]] = None,
+            self,
+            request: Request,
+            skip: int = 0,
+            limit: int = 100,
+            where: Union[Dict[str, Any], str, None] = None,
+            order_by: Optional[List[str]] = None,
     ) -> List[Any]:
         return await engine.find(
             Author,
@@ -111,6 +120,8 @@ class AuthorView(BaseModelView):
             raise pydantic_error_to_form_validation_errors(exc)
 
 
-admin = Admin()
-admin.add_view(AuthorView)
+admin = Admin(AIOEngine())
+admin.add_view(ModelView(Author))
+admin.add_view(ModelView(Book))
+# admin.add_view(AuthorView)
 admin.mount_to(app)

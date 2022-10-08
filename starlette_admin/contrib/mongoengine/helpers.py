@@ -34,13 +34,6 @@ reference_fields = (
     me.LazyReferenceField,
 )
 
-json_like_fields = (
-    me.DictField,
-    me.MapField,
-    me.GenericEmbeddedDocumentField,
-    me.EmbeddedDocumentField,
-)
-
 
 def convert_mongoengine_field_to_admin_field(
     field: MongoBaseField,
