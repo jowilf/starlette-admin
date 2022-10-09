@@ -2,7 +2,7 @@ from typing import Any, Dict, Union
 
 from odmantic import AIOEngine, SyncEngine
 from starlette.middleware import Middleware
-from starlette_admin import BaseAdmin
+from starlette_admin.base import BaseAdmin
 from starlette_admin.contrib.odmantic.middleware import EngineMiddleware
 
 

@@ -1,12 +1,10 @@
-import asyncio
-import datetime
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from odmantic import AIOEngine, EmbeddedModel, Field, Model, Reference, SyncEngine
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
-
 from starlette_admin.contrib.odmantic import Admin, ModelView
 
 app = Starlette(
@@ -24,12 +22,12 @@ class Author(Model):
     age: int = Field(ge=5, lt=150)
     sex: Optional[str]
     tags: Optional[List[str]]
-    dts: Optional[List[datetime.datetime]]
+    dts: Optional[List[datetime]]
     float: Optional[float]
     byt: Optional[bytes]
     dic: Optional[dict]
     dict2: Optional[Dict[str, Any]]
-    dt: datetime.datetime
+    dt: datetime
 
 
 class Book(Model):
@@ -46,20 +44,23 @@ class CapitalCity(EmbeddedModel):
 class Country(Model):
     name: str
     currency: str
-    # tags: List[str] = Field(min_items=1, min_length=3)
+    tags: Optional[List[str]]
+    party: datetime
     capital_city: CapitalCity
 
 
-admin = Admin(AIOEngine())
+class CountryView(ModelView):
+    pass
+
+
+admin = Admin(SyncEngine())
 admin.add_view(ModelView(Author))
 admin.add_view(ModelView(Book))
-admin.add_view(ModelView(Country))
+admin.add_view(CountryView(Country))
 # admin.add_view(AuthorView)
 admin.mount_to(app)
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     from faker import Faker
 
     fake = Faker()
@@ -67,7 +68,13 @@ if __name__ == '__main__':
     engine.remove(Country)
     countries = []
     for i in range(30):
-        c = Country(name=fake.country(), currency=fake.country_code(),
-                    capital_city=CapitalCity(name=fake.city(), population=fake.pyint(100, 100000)))
+        c = Country(
+            name=fake.country(),
+            currency=fake.country_code(),
+            party=fake.date_time_this_year(),
+            capital_city=CapitalCity(
+                name=fake.city(), population=fake.pyint(100, 100000)
+            ),
+        )
         countries.append(c)
     engine.save_all(countries)

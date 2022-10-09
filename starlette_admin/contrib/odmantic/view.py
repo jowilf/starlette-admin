@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 import anyio
 from bson import ObjectId
@@ -7,12 +7,19 @@ from odmantic.field import FieldProxy
 from odmantic.query import QueryExpression
 from pydantic import ValidationError
 from starlette.requests import Request
-from starlette_admin import BaseField, CollectionField, HasMany, HasOne, ListField, StringField, TextAreaField, \
-    EmailField, RelationField
+from starlette_admin import (
+    BaseField,
+    CollectionField,
+    HasMany,
+    HasOne,
+    ListField,
+    RelationField,
+)
 from starlette_admin.contrib.odmantic.helpers import (
     convert_odm_field_to_admin_field,
     normalize_list,
-    resolve_query,
+    resolve_deep_query,
+    resolve_proxy,
 )
 from starlette_admin.helpers import (
     prettify_class_name,
@@ -39,7 +46,9 @@ class ModelView(BaseModelView):
         self.pk_attr = "id"
         if self.fields is None or len(self.fields) == 0:
             _all_list = list(model.__odm_fields__.keys())
-            self.fields = _all_list[-1:] + _all_list[:-1]  # Move 'id' to start
+            self.fields = (
+                _all_list[-1:] + _all_list[:-1]  # type: ignore
+            )  # Move 'id' to first position.
         converted_fields = []
         for value in self.fields:
             if isinstance(value, BaseField):
@@ -75,11 +84,10 @@ class ModelView(BaseModelView):
         limit: int = 100,
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
-    ) -> Iterable[Any]:
+    ) -> List[Any]:
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
         q = await self._build_query(request, where)
-        o = await self._build_order_clauses(order_by)
-        print(q)
+        o = await self._build_order_clauses([] if order_by is None else order_by)
         if isinstance(engine, AIOEngine):
             return await engine.find(
                 self.model,
@@ -88,27 +96,26 @@ class ModelView(BaseModelView):
                 skip=skip,
                 limit=limit,
             )
-        return await anyio.to_thread.run_sync(
-            lambda: engine.find(
+
+        def func() -> List[Any]:
+            return engine.find(
                 self.model,
                 q,
-                sort=self._build_order_clauses(order_by),
+                sort=o,
                 skip=skip,
                 limit=limit,
-            )
-        )
+            )  # type: ignore
+
+        return await anyio.to_thread.run_sync(func)
 
     async def count(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> int:
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
+        q = await self._build_query(request, where)
         if isinstance(engine, AIOEngine):
-            return await engine.count(
-                self.model, await self._build_query(request, where)
-            )
-        return await anyio.to_thread.run_sync(
-            engine.count, self.model, self._build_query(request, where)
-        )
+            return await engine.count(self.model, q)
+        return await anyio.to_thread.run_sync(engine.count, self.model, q)
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
@@ -118,14 +125,12 @@ class ModelView(BaseModelView):
             engine.find_one, self.model, self.model.id == ObjectId(pk)
         )
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> Iterable[Any]:
-        pks = map(ObjectId, pks)
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
+        pks = list(map(ObjectId, pks))
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
         if isinstance(engine, AIOEngine):
-            return await engine.find(self.model, self.model.id.in_(pks))
-        return await anyio.to_thread.run_sync(
-            engine.find, self.model, self.model.id.in_(pks)
-        )
+            return await engine.find(self.model, self.model.id.in_(pks))  # type: ignore
+        return await anyio.to_thread.run_sync(engine.find, self.model, self.model.id.in_(pks))  # type: ignore
 
     async def create(self, request: Request, data: Dict) -> Any:
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
@@ -150,11 +155,11 @@ class ModelView(BaseModelView):
             self.handle_exception(e)
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
-        pks = map(ObjectId, pks)
+        pks = list(map(ObjectId, pks))
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
         if isinstance(engine, AIOEngine):
-            return await engine.remove(self.model, self.model.id.in_(pks))
-        return await anyio.to_thread.run_sync(engine.remove, self.model.id.in_(pks))
+            return await engine.remove(self.model, self.model.id.in_(pks))  # type: ignore
+        return await anyio.to_thread.run_sync(engine.remove,self.model, self.model.id.in_(pks))  # type: ignore
 
     def handle_exception(self, exc: Exception) -> None:
         if isinstance(exc, ValidationError):
@@ -167,8 +172,8 @@ class ModelView(BaseModelView):
         data: Dict[str, Any],
         is_edit: bool = False,
         fields: Optional[List[BaseField]] = None,
-    ):
-        arranged_data = dict()
+    ) -> Dict[str, Any]:
+        arranged_data: Dict[str, Any] = dict()
         if fields is None:
             fields = self.fields
         for field in fields:
@@ -191,9 +196,8 @@ class ModelView(BaseModelView):
                     for v in value
                 ]
             elif isinstance(field, HasOne) and value is not None:
-                arranged_data[name] = await self._find_foreign_model(
-                    field.identity
-                ).find_by_pk(request, value)
+                foreign_model = self._find_foreign_model(field.identity)  # type: ignore
+                arranged_data[name] = await foreign_model.find_by_pk(request, value)
             elif isinstance(field, HasMany) and value is not None:
                 arranged_data[name] = [ObjectId(v) for v in value]
             else:
@@ -203,20 +207,20 @@ class ModelView(BaseModelView):
     async def _build_query(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> Any:
-        print(where)
         if where is None:
             return {}
         if isinstance(where, dict):
-            return resolve_query(where, self.model)
+            return resolve_deep_query(where, self.model)
         else:
             return await self.build_full_text_search_query(request, where)
 
-    async def _build_order_clauses(self, order_list: List[str]):
+    async def _build_order_clauses(self, order_list: List[str]) -> Any:
         clauses = []
         for value in order_list:
             key, order = value.strip().split(maxsplit=1)
-            clause = getattr(self.model, key)
-            clauses.append(clause.desc() if order.lower() == "desc" else clause)
+            clause = resolve_proxy(self.model, key)
+            if clause is not None:
+                clauses.append(clause.desc() if order.lower() == "desc" else clause)
         return tuple(clauses) if len(clauses) > 0 else None
 
     async def build_full_text_search_query(
@@ -224,9 +228,18 @@ class ModelView(BaseModelView):
     ) -> QueryExpression:
         _list = []
         for field in self.fields:
-            if field.searchable and field.name != "id" and not issubclass(type(field), (ListField, CollectionField, RelationField)) :
-                _list.append(getattr(self.model, field.name).match(term))
-        print(query.or_(*_list))
+            if (
+                field.searchable
+                and field.name != "id"
+                and not issubclass(
+                    type(field), (ListField, CollectionField, RelationField)
+                )
+            ):
+                _list.append(
+                    getattr(self.model, field.name).match(
+                        {"$regex": r"%s" % term, "$options": "mi"}
+                    )
+                )
         return query.or_(*_list) if len(_list) > 0 else QueryExpression({})
 
 

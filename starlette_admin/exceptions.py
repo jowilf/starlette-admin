@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Any, Dict, Union
 
 
 class StarletteAdminException(Exception):
@@ -6,13 +6,13 @@ class StarletteAdminException(Exception):
 
 
 class FormValidationError(StarletteAdminException):
-    def __init__(self, errors: Dict[str, str]) -> None:
+    def __init__(self, errors: Dict[Union[str, int], Any]) -> None:
         self.errors = errors
 
     def has(self, name: str) -> bool:
         return self.errors.get(name, None) is not None
 
-    def msg(self, name: str) -> Optional[str]:
+    def msg(self, name: str) -> Any:
         return self.errors.get(name, None)
 
 
