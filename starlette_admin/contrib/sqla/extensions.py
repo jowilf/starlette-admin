@@ -5,8 +5,8 @@ from sqlmodel import SQLModel
 from starlette.requests import Request
 from starlette_admin import FileField
 from starlette_admin.contrib.sqla.view import ModelView
-from starlette_admin.exceptions import FormValidationError
 from starlette_admin.fields import RelationField
+from starlette_admin.helpers import pydantic_error_to_form_validation_errors
 
 
 class SQLModelView(ModelView):
@@ -23,9 +23,5 @@ class SQLModelView(ModelView):
 
     def handle_exception(self, exc: Exception) -> None:
         if isinstance(exc, ValidationError):
-            """Convert Pydantic Error to FormValidationError"""
-            errors: Dict[str, str] = dict()
-            for pydantic_error in exc.errors():
-                errors[str(pydantic_error["loc"][-1])] = pydantic_error["msg"]
-            raise FormValidationError(errors)
+            raise pydantic_error_to_form_validation_errors(exc)
         return super().handle_exception(exc)  # pragma: no cover

@@ -1,9 +1,10 @@
 import os
 import re
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from markupsafe import escape
 from starlette_admin._types import RequestAction
+from starlette_admin.exceptions import FormValidationError
 
 if TYPE_CHECKING:
     from starlette_admin import BaseField
@@ -85,3 +86,21 @@ def extract_fields(
             continue
         arr.append(field)
     return arr
+
+
+def pydantic_error_to_form_validation_errors(exc: Any) -> FormValidationError:
+    """Convert Pydantic Error to FormValidationError"""
+    from pydantic import ValidationError
+
+    assert isinstance(exc, ValidationError)
+    errors: Dict[str, Any] = dict()
+    for pydantic_error in exc.errors():
+        loc: List[Union[int, str], ...] = list(pydantic_error["loc"])
+        _d = errors
+        for i in range(len(loc)):
+            if i == len(loc) - 1:
+                _d[loc[i]] = pydantic_error["msg"]
+            elif loc[i] not in _d:
+                _d[loc[i]] = dict()
+            _d = _d[loc[i]]
+    return FormValidationError(errors)

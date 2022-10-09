@@ -1,12 +1,14 @@
+import asyncio
 import datetime
 import decimal
 import inspect
 import typing as t
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union, get_origin
+from typing import Any, Callable, Dict, List, Optional, Type, get_origin
 
 import bson
 import pydantic as pyd
+from odmantic import EmbeddedModel, Model, SyncEngine, query
 from odmantic.field import (
     FieldProxy,
     ODMBaseField,
@@ -14,7 +16,7 @@ from odmantic.field import (
     ODMEmbeddedGeneric,
     ODMReference,
 )
-from pydantic import ValidationError
+from odmantic.query import QueryExpression
 from pydantic.color import Color
 from pydantic.typing import get_args
 from starlette_admin import (
@@ -37,8 +39,8 @@ from starlette_admin import (
     URLField,
 )
 from starlette_admin.contrib.odmantic.exceptions import NotSupportedAnnotation
-from starlette_admin.exceptions import FormValidationError
 from starlette_admin.helpers import slugify_class_name
+from wtforms.validators import Optional
 
 annotation_map = {
     bson.ObjectId: StringField,
@@ -133,55 +135,81 @@ def normalize_list(arr: t.Optional[t.List[t.Any]]) -> t.Optional[t.List[str]]:
     return _new_list
 
 
-comparison_map = {
-    "eq": "$eq",
-    "neq": "$ne",
-    "ge": "$gte",
-    "gt": "$gt",
-    "le": "$lte",
-    "lt": "$lt",
-    "in": "$in",
-    "not_in": "$nin",
+OPERATORS: Dict[str, Callable[[FieldProxy, Any], QueryExpression]] = {
+    "eq": lambda f, v: f == v,
+    "neq": lambda f, v: f != v,
+    "lt": lambda f, v: f < v,
+    "gt": lambda f, v: f > v,
+    "le": lambda f, v: f <= v,
+    "ge": lambda f, v: f >= v,
+    "in": lambda f, v: f.in_(v),
+    "not_in": lambda f, v: f.not_in(v),
+    "startswith": lambda f, v: f.match(r"^%s" % v),
+    "not_startswith": lambda f, v: query.nor_(f.match(r"^%s" % v)),
+    "endswith": lambda f, v: f.match(r"%s$" % v),
+    "not_endswith": lambda f, v: query.nor_(f.match(r"%s$" % v)),
+    "contains": lambda f, v: f.match(r"%s" % v),
+    "not_contains": lambda f, v: query.nor_(f.match(r"%s" % v)),
+    "is_null": lambda f, v: f == None,  # noqa E711
+    "is_not_null": lambda f, v: f != None,  # noqa E711
+    "between": lambda f, v: query.and_(f >= v[0] , f <= v[1]),
+    "not_between": lambda f, v: query.or_(f <= v[0] , f >= v[1])
 }
 
 
-def build_raw_query(dt_query: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
-    raw_query: t.Dict[str, t.Any] = dict()
+def resolve_proxy(model: Type[Model], proxy_name: str) -> FieldProxy:
+    _list = proxy_name.split(".")
+    m, p = model, None
+    for v in _list:
+        if m is not None:
+            m = getattr(m, v, None)
+    return m
+
+
+def resolve_query(
+    dt_query: t.Dict[str, t.Any],
+    model: t.Type[Model],
+    field_proxy: t.Optional[FieldProxy] = None,
+) -> t.Optional[QueryExpression]:
+    _all_queries = []
     for key in dt_query:
         if key == "or":
-            raw_query["$or"] = [build_raw_query(q) for q in dt_query[key]]
+            _all_queries.append(
+                query.or_(
+                    *[(resolve_query(q, model, field_proxy)) for q in dt_query[key]]
+                )
+            )
         elif key == "and":
-            raw_query["$and"] = [build_raw_query(q) for q in dt_query[key]]
-        elif key == "not":
-            raw_query["$not"] = build_raw_query(dt_query[key])
-        elif key == "between":
-            values = dt_query[key]
-            raw_query = {"$gte": values[0], "$lte": values[1]}
-        elif key == "not_between":
-            values = dt_query[key]
-            raw_query = {"$not": {"$gte": values[0], "$lte": values[1]}}
-        elif key == "contains":
-            raw_query = {"$regex": dt_query[key], "$options": "mi"}
-        elif key == "startsWith":
-            raw_query = {"$regex": "^%s" % dt_query[key], "$options": "mi"}
-        elif key == "endsWith":
-            raw_query = {"$regex": "%s$" % dt_query[key], "$options": "mi"}
-        elif key in comparison_map:
-            raw_query[comparison_map[key]] = dt_query[key]
+            _all_queries.append(
+                query.and_(
+                    *[resolve_query(q, model, field_proxy) for q in dt_query[key]]
+                )
+            )
+        elif key in OPERATORS:
+            _all_queries.append(OPERATORS[key](field_proxy, dt_query[key]))
         else:
-            raw_query[key] = build_raw_query(dt_query[key])
-    return raw_query
+            proxy = resolve_proxy(model, key)
+            if proxy is not None:
+                _all_queries.append(resolve_query(dt_query[key], model, proxy))
+    if len(_all_queries) == 1:
+        return _all_queries[0]
+    return query.and_(*_all_queries) if _all_queries else QueryExpression({})
 
+if __name__ == "__main__":
 
-def pydantic_error_to_form_validation_errors(exc: ValidationError):
-    errors: Dict[str, Any] = dict()
-    for pydantic_error in exc.errors():
-        loc: List[Union[int, str], ...] = list(pydantic_error["loc"])
-        _d = errors
-        for i in range(len(loc)):
-            if i == len(loc) - 1:
-                _d[loc[i]] = pydantic_error["msg"]
-            elif loc[i] not in _d:
-                _d[loc[i]] = dict()
-            _d = _d[loc[i]]
-    return FormValidationError(errors)
+    class CapitalCity(EmbeddedModel):
+        name: str
+        population: int
+
+    class Country(Model):
+        name: str
+        currency: str
+        capital_city: List[CapitalCity]
+
+    engine = SyncEngine()
+    q = resolve_query(
+        {"and": [{"id": {"lt": 50}}, {"capital_city.name": {"startswith": "b"}}]},
+        Country,
+    )
+    print(q)
+    print(list(engine.find(Country, asyncio.run(q))))

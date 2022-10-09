@@ -2,18 +2,23 @@ from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
 import anyio
 from bson import ObjectId
-from odmantic import AIOEngine, Model, Reference, SyncEngine
+from odmantic import AIOEngine, Model, Reference, SyncEngine, query
 from odmantic.field import FieldProxy
+from odmantic.query import QueryExpression
 from pydantic import ValidationError
 from starlette.requests import Request
-from starlette_admin import BaseField, CollectionField, HasMany, HasOne, ListField
+from starlette_admin import BaseField, CollectionField, HasMany, HasOne, ListField, StringField, TextAreaField, \
+    EmailField, RelationField
 from starlette_admin.contrib.odmantic.helpers import (
-    build_raw_query,
     convert_odm_field_to_admin_field,
     normalize_list,
-    pydantic_error_to_form_validation_errors,
+    resolve_query,
 )
-from starlette_admin.helpers import prettify_class_name, slugify_class_name
+from starlette_admin.helpers import (
+    prettify_class_name,
+    pydantic_error_to_form_validation_errors,
+    slugify_class_name,
+)
 from starlette_admin.views import BaseModelView
 
 
@@ -72,21 +77,25 @@ class ModelView(BaseModelView):
         order_by: Optional[List[str]] = None,
     ) -> Iterable[Any]:
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
+        q = await self._build_query(request, where)
+        o = await self._build_order_clauses(order_by)
+        print(q)
         if isinstance(engine, AIOEngine):
             return await engine.find(
                 self.model,
-                await self._build_query(request, where),
-                sort=self._build_order_clauses(order_by),
+                q,
+                sort=o,
                 skip=skip,
                 limit=limit,
             )
         return await anyio.to_thread.run_sync(
-            engine.find,
-            self.model,
-            await self._build_query(request, where),
-            self._build_order_clauses(order_by),
-            skip,
-            limit,
+            lambda: engine.find(
+                self.model,
+                q,
+                sort=self._build_order_clauses(order_by),
+                skip=skip,
+                limit=limit,
+            )
         )
 
     async def count(
@@ -194,14 +203,15 @@ class ModelView(BaseModelView):
     async def _build_query(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> Any:
+        print(where)
         if where is None:
             return {}
         if isinstance(where, dict):
-            return build_raw_query(where)
+            return resolve_query(where, self.model)
         else:
             return await self.build_full_text_search_query(request, where)
 
-    def _build_order_clauses(self, order_list: List[str]):
+    async def _build_order_clauses(self, order_list: List[str]):
         clauses = []
         for value in order_list:
             key, order = value.strip().split(maxsplit=1)
@@ -211,14 +221,13 @@ class ModelView(BaseModelView):
 
     async def build_full_text_search_query(
         self, request: Request, term: str
-    ) -> Dict[str, Any]:
-        query: Dict[str, Any] = {"$or": []}
+    ) -> QueryExpression:
+        _list = []
         for field in self.fields:
-            if field.searchable and field.name != "id":
-                query["$or"].append(
-                    {field.name: {"$regex": str(term), "$options": "mi"}}
-                )
-        return query
+            if field.searchable and field.name != "id" and not issubclass(type(field), (ListField, CollectionField, RelationField)) :
+                _list.append(getattr(self.model, field.name).match(term))
+        print(query.or_(*_list))
+        return query.or_(*_list) if len(_list) > 0 else QueryExpression({})
 
 
 if __name__ == "__main__":

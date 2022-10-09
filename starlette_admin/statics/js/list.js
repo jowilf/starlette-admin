@@ -190,27 +190,20 @@ $(function () {
         "<": "lt",
         "<=": "le",
         contains: "contains",
-        starts: "startsWith",
-        ends: "endsWith",
+        starts: "startswith",
+        ends: "endswith",
+        "!contains": "not_contains",
+        "!starts": "not_startswith",
+        "!ends": "not_endswith",
+        "null": "is_null",
+        "!null": "is_not_null",
+        "false": "is_false",
+        "true": "is_true",
       };
       if (c.condition == "between") {
         cnd["between"] = c.value;
       } else if (c.condition == "!between") {
         cnd["not_between"] = c.value;
-      } else if (c.condition == "!starts") {
-        cnd["not"] = { startsWith: c.value1 };
-      } else if (c.condition == "!ends") {
-        cnd["not"] = { endsWith: c.value1 };
-      } else if (c.condition == "!contains") {
-        cnd["not"] = { contains: c.value1 };
-      } else if (c.condition == "null") {
-        cnd["eq"] = null;
-      } else if (c.condition == "!null") {
-        cnd["neq"] = null;
-      } else if (c.condition == "false") {
-        cnd["eq"] = false;
-      } else if (c.condition == "true") {
-        cnd["eq"] = true;
       } else if (c_map[c.condition]) {
         cnd[c_map[c.condition]] = c.value1;
       }
