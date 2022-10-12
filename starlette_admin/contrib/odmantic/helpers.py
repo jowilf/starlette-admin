@@ -23,7 +23,6 @@ from starlette_admin import (
     BooleanField,
     CollectionField,
     ColorField,
-    DateField,
     DateTimeField,
     DecimalField,
     EmailField,
@@ -34,7 +33,6 @@ from starlette_admin import (
     JSONField,
     ListField,
     StringField,
-    TimeField,
     URLField,
 )
 from starlette_admin.contrib.odmantic.exceptions import NotSupportedAnnotation
@@ -54,8 +52,6 @@ annotation_map = {
     bytes: StringField,
     bson.Binary: StringField,
     datetime.datetime: DateTimeField,
-    datetime.date: DateField,
-    datetime.time: TimeField,
     datetime.timedelta: IntegerField,
     dict: JSONField,
     pyd.EmailStr: EmailField,
@@ -113,7 +109,7 @@ def convert_odm_field_to_admin_field(
                 break
     if admin_field is None:
         raise NotSupportedAnnotation(f"{annotation} is not supported")
-    admin_field.required = field.is_required_in_doc()
+    admin_field.required = field.is_required_in_doc() and not field.primary_field
     return admin_field
 
 
@@ -152,8 +148,10 @@ OPERATORS: t.Dict[str, t.Callable[[FieldProxy, t.Any], QueryExpression]] = {
     "not_contains": lambda f, v: query.nor_(
         f.match({"$regex": r"%s" % v, "$options": "mi"})  # type: ignore
     ),
-    "is_null": lambda f, v: f == None,  # noqa E711
-    "is_not_null": lambda f, v: f != None,  # noqa E711
+    "is_false": lambda f, v: f.eq(False),
+    "is_true": lambda f, v: f.eq(True),
+    "is_null": lambda f, v: f.eq(None),
+    "is_not_null": lambda f, v: f.ne(None),
     "between": lambda f, v: query.and_(f >= v[0], f <= v[1]),
     "not_between": lambda f, v: query.or_(f <= v[0], f >= v[1]),
 }

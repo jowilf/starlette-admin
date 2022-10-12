@@ -128,7 +128,7 @@ def test_fields_customisation():
 
 
 def test_invalid_field_list():
-    with pytest.raises(ValueError, match="Can't find column with key 1"):
+    with pytest.raises(ValueError, match="Can't find field with key 1"):
 
         class CustomDocumentView(ModelView):
             fields = [1]

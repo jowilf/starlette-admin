@@ -49,7 +49,7 @@ class ModelView(BaseModelView):
                 elif isinstance(value, str) and hasattr(document, value):
                     field = getattr(document, value)
                 else:
-                    raise ValueError(f"Can't find column with key {value}")
+                    raise ValueError(f"Can't find field with key {value}")
                 converted_fields.append(convert_mongoengine_field_to_admin_field(field))
         self.fields = converted_fields
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore

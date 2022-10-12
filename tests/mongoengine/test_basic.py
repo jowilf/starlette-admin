@@ -29,7 +29,7 @@ class Product(me.Document):
     brand = me.EnumField(Brand)
     manual = me.FileField()
     image = me.ImageField(thumbnail_size=(128, 128))
-    created_at = me.DateTimeField(default=datetime.datetime.now())
+    created_at = me.DateTimeField(default_factory=datetime.datetime.utcnow)
 
 
 class Store(me.Document):

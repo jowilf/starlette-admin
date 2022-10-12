@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 import anyio
 from bson import ObjectId
-from odmantic import AIOEngine, Model, Reference, SyncEngine, query
+from odmantic import AIOEngine, Model, SyncEngine, query
 from odmantic.field import FieldProxy
 from odmantic.query import QueryExpression
 from pydantic import ValidationError
@@ -59,7 +59,7 @@ class ModelView(BaseModelView):
                 elif isinstance(value, str) and hasattr(model, value):
                     field_name = value
                 else:
-                    raise ValueError(f"Can't find column with key {value}")
+                    raise ValueError(f"Can't find attribute with key {value}")
                 converted_fields.append(
                     convert_odm_field_to_admin_field(
                         model.__odm_fields__[field_name],
@@ -130,7 +130,7 @@ class ModelView(BaseModelView):
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
         if isinstance(engine, AIOEngine):
             return await engine.find(self.model, self.model.id.in_(pks))  # type: ignore
-        return await anyio.to_thread.run_sync(engine.find, self.model, self.model.id.in_(pks))  # type: ignore
+        return list(await anyio.to_thread.run_sync(engine.find, self.model, self.model.id.in_(pks)))  # type: ignore
 
     async def create(self, request: Request, data: Dict) -> Any:
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
@@ -159,7 +159,7 @@ class ModelView(BaseModelView):
         engine: Union[AIOEngine, SyncEngine] = request.state.engine
         if isinstance(engine, AIOEngine):
             return await engine.remove(self.model, self.model.id.in_(pks))  # type: ignore
-        return await anyio.to_thread.run_sync(engine.remove,self.model, self.model.id.in_(pks))  # type: ignore
+        return await anyio.to_thread.run_sync(engine.remove, self.model, self.model.id.in_(pks))  # type: ignore
 
     def handle_exception(self, exc: Exception) -> None:
         if isinstance(exc, ValidationError):
@@ -198,7 +198,11 @@ class ModelView(BaseModelView):
             elif isinstance(field, HasOne) and value is not None:
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
                 arranged_data[name] = await foreign_model.find_by_pk(request, value)
-            elif isinstance(field, HasMany) and value is not None:
+            elif isinstance(field, HasMany) and value is not None:  # pragma: no cover
+                """
+                Note: Currently, ODMantic does not support mapped multi-references yet.
+                Read more at https://art049.github.io/odmantic/modeling/#referenced-models
+                """
                 arranged_data[name] = [ObjectId(v) for v in value]
             else:
                 arranged_data[name] = value
@@ -241,37 +245,3 @@ class ModelView(BaseModelView):
                     )
                 )
         return query.or_(*_list) if len(_list) > 0 else QueryExpression({})
-
-
-if __name__ == "__main__":
-
-    class Publisher(Model):
-        name: str
-        founded: int
-        location: str
-
-    class Book(Model):
-        title: str
-        pages: int
-        publisher: Publisher = Reference()
-
-    print(Book.__annotations__)
-    print(ModelView(Book).fields)
-
-    exit()
-
-    engine = SyncEngine()
-    engine.remove(Book)
-    engine.remove(Publisher)
-
-    hachette = Publisher(name="Hachette Livre", founded=1826, location="FR")
-    harper = Publisher(name="HarperCollins", founded=1989, location="US")
-    engine.save(hachette)
-    books = [
-        Book(title="They Didn't See Us Coming", pages=304, publisher=hachette),
-        Book(title="This Isn't Happening", pages=256, publisher=hachette),
-        Book(title="Prodigal Summer", pages=464, publisher=harper),
-    ]
-
-    # engine.save_all(books)
-    print(list(engine.find_one(Book, Book.pages == 304)))

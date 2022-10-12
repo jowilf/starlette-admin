@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from odmantic import AIOEngine, EmbeddedModel, Field, Model, Reference, SyncEngine
+from odmantic import EmbeddedModel, Field, Model, Reference, SyncEngine
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
@@ -39,6 +39,7 @@ class Book(Model):
 class CapitalCity(EmbeddedModel):
     name: str = Field(min_length=3)
     population: int = Field(gt=8)
+    another: Optional[bool]
 
 
 class Country(Model):

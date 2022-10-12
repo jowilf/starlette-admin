@@ -205,7 +205,7 @@ $(function () {
       } else if (c.condition == "!between") {
         cnd["not_between"] = c.value;
       } else if (c_map[c.condition]) {
-        cnd[c_map[c.condition]] = c.value1;
+        cnd[c_map[c.condition]] = c.value1 || true;
       }
       d[c.origData] = cnd;
     }
@@ -260,7 +260,8 @@ $(function () {
       where = null;
       if (data.searchBuilder && !jQuery.isEmptyObject(data.searchBuilder)) {
         where = extractCriteria(data.searchBuilder);
-        //console.log(where);
+        console.log(where);
+        console.log(JSON.stringify(where));
       }
       query = {
         skip: settings._iDisplayStart,

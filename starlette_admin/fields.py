@@ -677,9 +677,12 @@ class CollectionField(BaseField):
     form_template: str = "forms/collection.html"
     display_template: str = "displays/collection.html"
 
-    def __init__(self, name: str, fields: List[BaseField]) -> None:
+    def __init__(
+        self, name: str, fields: List[BaseField], required: bool = False
+    ) -> None:
         self.name = name
         self.fields = fields
+        self.required = required
         super().__post_init__()
         self._propagate_id()
 
@@ -744,9 +747,10 @@ class ListField(BaseField):
     search_builder_type: str = "array"
     field: BaseField = BaseField("")
 
-    def __init__(self, field: BaseField) -> None:
+    def __init__(self, field: BaseField, required: bool = False) -> None:
         self.field = field
         self.name = field.name
+        self.required = required
         self.__post_init__()
 
     def __post_init__(self) -> None:
