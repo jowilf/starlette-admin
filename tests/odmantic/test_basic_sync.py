@@ -93,7 +93,7 @@ async def test_detail(client: AsyncClient, sync_engine: SyncEngine):
 async def test_create(client: AsyncClient, sync_engine: SyncEngine):
     kevin = sync_engine.save(Author(name="Kevin Kruse"))
     response = await client.post(
-        f"/admin/quote/create",
+        "/admin/quote/create",
         data={
             "quote": "Life isn’t about getting and having, it’s about giving and being.",
             "author": kevin.id,

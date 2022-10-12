@@ -5,9 +5,8 @@ from typing import List, Optional
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
-from odmantic import AIOEngine, EmbeddedModel, Model, Field
+from odmantic import AIOEngine, EmbeddedModel, Field, Model
 from starlette.applications import Starlette
-
 from starlette_admin.contrib.odmantic import Admin, ModelView
 
 pytestmark = pytest.mark.asyncio
@@ -168,9 +167,9 @@ async def test_create_validation_error(client: AsyncClient, aio_engine: AIOEngin
         follow_redirects=False,
     )
     assert response.text.count('<div class="invalid-feedback">') == 3
-    assert response.text.count('ensure this value has at least 3 characters') == 1
-    assert response.text.count('ensure this value has at least 5 characters') == 1
-    assert response.text.count('ensure this value has at most 10 characters') == 1
+    assert response.text.count("ensure this value has at least 3 characters") == 1
+    assert response.text.count("ensure this value has at least 5 characters") == 1
+    assert response.text.count("ensure this value has at most 10 characters") == 1
     assert response.status_code == 200
     assert (await aio_engine.find_one(User, User.name == "Jo")) is None
 
@@ -226,9 +225,9 @@ async def test_edit_validation_error(client: AsyncClient, aio_engine: AIOEngine)
         follow_redirects=False,
     )
     assert response.text.count('<div class="invalid-feedback">') == 3
-    assert response.text.count('ensure this value has at least 3 characters') == 1
-    assert response.text.count('ensure this value has at least 5 characters') == 1
-    assert response.text.count('ensure this value has at most 10 characters') == 1
+    assert response.text.count("ensure this value has at least 3 characters") == 1
+    assert response.text.count("ensure this value has at least 5 characters") == 1
+    assert response.text.count("ensure this value has at most 10 characters") == 1
     assert response.status_code == 200
     assert (await aio_engine.find_one(User, User.name == "Hills Terrill")) is not None
     assert (await aio_engine.find_one(User, User.name == "Jo")) is None
@@ -243,10 +242,10 @@ async def test_delete(client: AsyncClient, aio_engine: AIOEngine):
     )
     assert response.status_code == 204
     assert (
-            len(
-                await aio_engine.find(
-                    User, User.name.in_(["Hills Terrill", "Sheldon Cole"])
-                )
+        len(
+            await aio_engine.find(
+                User, User.name.in_(["Hills Terrill", "Sheldon Cole"])
             )
-            == 0
+        )
+        == 0
     )

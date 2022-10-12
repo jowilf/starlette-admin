@@ -109,7 +109,7 @@ def convert_odm_field_to_admin_field(
                 break
     if admin_field is None:
         raise NotSupportedAnnotation(f"{annotation} is not supported")
-    admin_field.required = field.is_required_in_doc() and not field.primary_field
+    admin_field.required = field.is_required_in_doc() and not field.primary_field  # type: ignore
     return admin_field
 
 
