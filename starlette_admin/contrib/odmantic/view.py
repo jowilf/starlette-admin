@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Any, Dict, List, Optional, Type, Union
 
 import anyio
@@ -96,17 +97,16 @@ class ModelView(BaseModelView):
                 skip=skip,
                 limit=limit,
             )
-
-        def func() -> List[Any]:
-            return engine.find(
+        return await anyio.to_thread.run_sync(
+            partial(  # type: ignore
+                engine.find,
                 self.model,
                 q,
                 sort=o,
                 skip=skip,
                 limit=limit,
-            )  # type: ignore
-
-        return await anyio.to_thread.run_sync(func)
+            )
+        )
 
     async def count(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None

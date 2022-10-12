@@ -11,14 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 def get_test_engine() -> Engine:
     return create_engine(
-        os.environ.get("ENGINE", "sqlite:////tmp/test.db?check_same_thread=False")
+        os.environ.get("SQLA_ENGINE", "sqlite:////tmp/test.db?check_same_thread=False")
     )
 
 
 def get_async_test_engine() -> AsyncEngine:
     return create_async_engine(
         os.environ.get(
-            "ASYNC_ENGINE", "sqlite+aiosqlite:////tmp/test.db?check_same_thread=False"
+            "SQLA_ASYNC_ENGINE",
+            "sqlite+aiosqlite:////tmp/test.db?check_same_thread=False",
         )
     )
 

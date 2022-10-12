@@ -17,7 +17,7 @@ from odmantic.field import (
 )
 from odmantic.query import QueryExpression
 from pydantic.color import Color
-from pydantic.typing import get_args
+from pydantic.typing import get_args, get_origin
 from starlette_admin import (
     BaseField,
     BooleanField,
@@ -65,8 +65,8 @@ def convert_odm_field_to_admin_field(
     field: ODMBaseField, field_name: str, annotation: t.Type[t.Any]
 ) -> BaseField:
     admin_field: t.Optional[BaseField] = None
-    _origin = t.get_origin(annotation)
-    if _origin is t.Union:
+    _origin = get_origin(annotation)
+    if _origin is t.Union:  # type: ignore
         """Support for Optional"""
         return convert_odm_field_to_admin_field(
             field, field_name, get_args(annotation)[0]
