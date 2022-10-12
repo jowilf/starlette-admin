@@ -175,29 +175,26 @@ def _check_value(v: t.Any, proxy: t.Optional[FieldProxy]) -> t.Any:
 
 
 def resolve_deep_query(
-    dt_query: t.Dict[str, t.Any],
+    where: t.Dict[str, t.Any],
     model: t.Type[Model],
     field_proxy: t.Optional[FieldProxy] = None,
 ) -> QueryExpression:
     _all_queries = []
-    for key in dt_query:
+    for key in where:
         if key == "or":
             _all_queries.append(
                 query.or_(
-                    *[
-                        (resolve_deep_query(q, model, field_proxy))
-                        for q in dt_query[key]
-                    ]
+                    *[(resolve_deep_query(q, model, field_proxy)) for q in where[key]]
                 )
             )
         elif key == "and":
             _all_queries.append(
                 query.and_(
-                    *[resolve_deep_query(q, model, field_proxy) for q in dt_query[key]]
+                    *[resolve_deep_query(q, model, field_proxy) for q in where[key]]
                 )
             )
         elif key in OPERATORS:
-            v = dt_query[key]
+            v = where[key]
             v = (
                 list(map(lambda it: _check_value(it, field_proxy), v))
                 if isinstance(v, list)
@@ -207,7 +204,7 @@ def resolve_deep_query(
         else:
             proxy = resolve_proxy(model, key)
             if proxy is not None:
-                _all_queries.append(resolve_deep_query(dt_query[key], model, proxy))
+                _all_queries.append(resolve_deep_query(where[key], model, proxy))
     if len(_all_queries) == 1:
         return _all_queries[0]
     return query.and_(*_all_queries) if _all_queries else QueryExpression({})

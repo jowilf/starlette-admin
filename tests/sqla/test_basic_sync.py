@@ -161,7 +161,7 @@ class TestSQLABasic:
 
     def test_api_query1(self, client):
         where = (
-            '{"or": [{"in_stock": {"neq": true}},{"in_stock": {"eq": false}}, {"title":'
+            '{"or": [{"in_stock": {"is_true": {}}},{"in_stock": {"is_false": {}}}, {"title":'
             ' {"eq": "IPhone 9"}}, {"price": {"between": [200, 500]}}]}'
         )
         response = client.get(f"/admin/api/product?where={where}&order_by=price asc")
@@ -183,8 +183,8 @@ class TestSQLABasic:
 
     def test_api_query3(self, client):
         where = (
-            '{"and": [{"description": {"not": {"endsWith": "Universe"}}}, {"title":'
-            ' {"not": {"startsWith":"IPhone"}}}]}'
+            '{"and": [{"description": {"not_endswith": "Universe"}}, {"title":'
+            ' {"not_startswith":"IPhone"}}]}'
         )
         response = client.get(f"/admin/api/product?where={where}&order_by=price asc")
         data = response.json()
@@ -199,8 +199,8 @@ class TestSQLABasic:
 
     def test_api_query5(self, client):
         where = (
-            '{"and":[{"id":{"neq":5}}],"or":[{"id":{"neq":null,"in":[0,10],"not_in":[0,10],"lt":0,'
-            '"le":-1,"gt":5,"ge":6}},{"in_stock":{"eq":null}}]} '
+            '{"and":[{"id":{"neq":5}}],"or":[{"id":{"is_not_null":{},"in":[0,10],"not_in":[0,10],"lt":0,'
+            '"le":-1,"gt":5,"ge":6}},{"in_stock":{"is_null": {}}}]} '
         )
         response = client.get(f"/admin/api/product?where={where}&order_by=price asc")
         data = response.json()

@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from sqlalchemy import ARRAY, Boolean, Column, and_, false, not_, or_, true
 from sqlalchemy.orm import (
@@ -8,6 +8,7 @@ from sqlalchemy.orm import (
     Mapper,
     RelationshipProperty,
 )
+from sqlalchemy.sql import ClauseElement
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
 from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.fields import (
@@ -28,68 +29,64 @@ from starlette_admin.fields import (
 )
 from starlette_admin.helpers import slugify_class_name
 
-
-def expression(where: Dict[str, Any], p: InstrumentedAttribute) -> Any:
-    filters: List[Any] = []
-    for key in where:
-        if key == "eq":
-            if where[key] is None:
-                filters.append(p.is_(None))
-            elif isinstance(where[key], bool):
-                filters.append((p == true()) if where[key] else (p == false()))
-            else:
-                filters.append(p == where[key])
-        elif key == "ge":
-            filters.append(p >= where[key])
-        elif key == "gt":
-            filters.append(p > where[key])
-        elif key == "between":
-            filters.append(p.between(*where[key]))
-        elif key == "not_between":
-            filters.append(not_(p.between(*where[key])))
-        elif key == "le":
-            filters.append(p <= where[key])
-        elif key == "lt":
-            filters.append(p < where[key])
-        elif key == "in":
-            filters.append(p.in_(where[key]))
-        elif key == "not_in":
-            filters.append(p.not_in(where[key]))
-        elif key == "contains":
-            filters.append(p.contains(where[key]))
-        elif key == "startsWith":
-            filters.append(p.startswith(where[key]))
-        elif key == "endsWith":
-            filters.append(p.endswith(where[key]))
-        elif key == "not":
-            filters.append(not_(expression(where[key], p)))
-        elif key == "neq":
-            if where[key] is None:
-                filters.append(p.is_not(None))
-            elif isinstance(where[key], bool):
-                filters.append((p == true()) if not where[key] else (p == false()))
-            else:
-                filters.append(p != where[key])
-    if len(filters) == 1:
-        return filters[0]
-    return and_(*filters)
+OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
+    "eq": lambda f, v: f == v,
+    "neq": lambda f, v: f != v,
+    "lt": lambda f, v: f < v,
+    "gt": lambda f, v: f > v,
+    "le": lambda f, v: f <= v,
+    "ge": lambda f, v: f >= v,
+    "in": lambda f, v: f.in_(v),
+    "not_in": lambda f, v: f.not_in(v),
+    "startswith": lambda f, v: f.startswith(v),
+    "not_startswith": lambda f, v: not_(f.startswith(v)),
+    "endswith": lambda f, v: f.endswith(v),
+    "not_endswith": lambda f, v: not_(f.endswith(v)),
+    "contains": lambda f, v: f.contains(v),
+    "not_contains": lambda f, v: not_(f.contains(v)),
+    "is_false": lambda f, v: f == false(),
+    "is_true": lambda f, v: f == true(),
+    "is_null": lambda f, v: f.is_(None),
+    "is_not_null": lambda f, v: f.is_not(None),
+    "between": lambda f, v: f.between(*v),
+    "not_between": lambda f, v: not_(f.between(*v)),
+}
 
 
-def build_query(where: Dict[str, Any], model: Any) -> Any:
+def build_query(
+    where: Dict[str, Any],
+    model: Any,
+    latest_attr: Optional[InstrumentedAttribute] = None,
+) -> Any:
     filters = []
     for key in where:
         if key == "or":
-            filters.append(or_(*[build_query(v, model) for v in where[key]]))
+            filters.append(
+                or_(*[build_query(v, model, latest_attr) for v in where[key]])
+            )
         elif key == "and":
-            filters.append(and_(*[build_query(v, model) for v in where[key]]))
+            filters.append(
+                and_(*[build_query(v, model, latest_attr) for v in where[key]])
+            )
+        elif key in OPERATORS:
+            v = where[key]
+            coerce = extract_column_python_type(latest_attr.property.columns[0])  # type: ignore
+            if key not in ["is_false", "is_true", "is_null", "is_not_null"]:
+                v = list(map(coerce, v)) if isinstance(v, list) else coerce(v)
+            filters.append(OPERATORS[key](latest_attr, v))  # type: ignore
         else:
-            attr = where[key]
-            p: Optional[InstrumentedAttribute] = getattr(model, key, None)
-            if p is not None:
-                filters.append(expression(attr, p))
+            attr: Optional[InstrumentedAttribute] = getattr(model, key, None)
+            if attr is not None:
+                filters.append(build_query(where[key], model, attr))
     if len(filters) == 1:
         return filters[0]
-    return and_(*filters)
+    return (
+        and_(*filters)
+        if filters
+        else and_(
+            True,
+        )
+    )
 
 
 def build_order_clauses(order_list: List[str], model: Any) -> Any:
