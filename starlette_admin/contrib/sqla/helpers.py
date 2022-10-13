@@ -69,24 +69,16 @@ def build_query(
                 and_(*[build_query(v, model, latest_attr) for v in where[key]])
             )
         elif key in OPERATORS:
-            v = where[key]
-            coerce = extract_column_python_type(latest_attr.property.columns[0])  # type: ignore
-            if key not in ["is_false", "is_true", "is_null", "is_not_null"]:
-                v = list(map(coerce, v)) if isinstance(v, list) else coerce(v)
-            filters.append(OPERATORS[key](latest_attr, v))  # type: ignore
+            filters.append(OPERATORS[key](latest_attr, where[key]))  # type: ignore
         else:
             attr: Optional[InstrumentedAttribute] = getattr(model, key, None)
             if attr is not None:
                 filters.append(build_query(where[key], model, attr))
     if len(filters) == 1:
         return filters[0]
-    return (
-        and_(*filters)
-        if filters
-        else and_(
-            True,
-        )
-    )
+    if filters:
+        return and_(*filters)
+    return and_(True)
 
 
 def build_order_clauses(order_list: List[str], model: Any) -> Any:

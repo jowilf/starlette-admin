@@ -46,7 +46,7 @@ class ModelView(BaseModelView):
             )
         assert len(mapper.primary_key) == 1, (
             "Multiple PK columns not supported, A possible solution is to override "
-            "BaseAdminModel class and put your own logic "
+            "BaseModelView class and put your own logic "
         )
         self.model = model
         self.identity = identity or slugify_class_name(self.model.__name__)
@@ -176,6 +176,7 @@ class ModelView(BaseModelView):
 
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
         try:
+            data = await self._arrange_data(request, data)
             await self.validate(request, data)
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self._populate_obj(request, self.model(), data)
@@ -192,6 +193,7 @@ class ModelView(BaseModelView):
 
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
+            data = await self._arrange_data(request, data, True)
             await self.validate(request, data)
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self.find_by_pk(request, pk)
@@ -205,6 +207,36 @@ class ModelView(BaseModelView):
             return obj
         except Exception as e:
             self.handle_exception(e)
+
+    async def _arrange_data(
+        self,
+        request: Request,
+        data: Dict[str, Any],
+        is_edit: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        This function will return a new dict with relationships loaded from
+        database.
+        """
+        arranged_data: Dict[str, Any] = dict()
+        for field in self.fields:
+            if (is_edit and field.exclude_from_edit) or (
+                not is_edit and field.exclude_from_create
+            ):
+                continue
+            if isinstance(field, RelationField) and data[field.name] is not None:
+                foreign_model = self._find_foreign_model(field.identity)  # type: ignore
+                if not field.multiple:
+                    arranged_data[field.name] = await foreign_model.find_by_pk(
+                        request, data[field.name]
+                    )
+                else:
+                    arranged_data[field.name] = await foreign_model.find_by_pks(
+                        request, data[field.name]
+                    )
+            else:
+                arranged_data[field.name] = data[field.name]
+        return arranged_data
 
     async def _populate_obj(
         self,
@@ -227,20 +259,6 @@ class ModelView(BaseModelView):
                     field.multiple and isinstance(value, list) and len(value) > 0
                 ):
                     setattr(obj, name, value)
-            elif isinstance(field, RelationField) and value is not None:
-                foreign_model = self._find_foreign_model(field.identity)  # type: ignore
-                if not field.multiple:
-                    setattr(
-                        obj,
-                        name,
-                        await foreign_model.find_by_pk(request, value),
-                    )
-                else:
-                    setattr(
-                        obj,
-                        name,
-                        await foreign_model.find_by_pks(request, value),
-                    )
             else:
                 setattr(obj, name, value)
         return obj
