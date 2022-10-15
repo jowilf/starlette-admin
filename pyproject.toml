@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "starlette-admin"
-version = "0.2.2"
+version = "0.3.0.dev2"
 description = "Simple and extensible admin interface framework for Starlette/FastApi"
 authors = ["Jocelin Hounon <hounonj@gmail.com>"]
 license = "MIT"
