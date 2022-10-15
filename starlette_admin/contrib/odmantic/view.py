@@ -1,3 +1,4 @@
+import re
 from functools import partial
 from typing import Any, Dict, List, Optional, Type, Union
 
@@ -11,10 +12,15 @@ from starlette.requests import Request
 from starlette_admin import (
     BaseField,
     CollectionField,
+    ColorField,
+    EmailField,
     HasMany,
     HasOne,
     ListField,
-    RelationField,
+    PhoneField,
+    StringField,
+    TextAreaField,
+    URLField,
 )
 from starlette_admin.contrib.odmantic.helpers import (
     convert_odm_field_to_admin_field,
@@ -235,13 +241,19 @@ class ModelView(BaseModelView):
             if (
                 field.searchable
                 and field.name != "id"
-                and not issubclass(
-                    type(field), (ListField, CollectionField, RelationField)
-                )
+                and type(field)
+                in [
+                    StringField,
+                    TextAreaField,
+                    EmailField,
+                    URLField,
+                    PhoneField,
+                    ColorField,
+                ]
             ):
                 _list.append(
                     getattr(self.model, field.name).match(
-                        {"$regex": r"%s" % term, "$options": "mi"}
+                        re.compile(r"%s" % re.escape(term), re.IGNORECASE)
                     )
                 )
         return query.or_(*_list) if len(_list) > 0 else QueryExpression({})

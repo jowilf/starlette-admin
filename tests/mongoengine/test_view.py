@@ -97,7 +97,9 @@ class TestMongoBasic:
         assert response.status_code == 404
 
     def test_api(self, client):
-        response = client.get("/admin/api/product?skip=1&limit=2&order_by=title desc")
+        response = client.get(
+            "/admin/api/product?skip=1&where={}&limit=2&order_by=title desc"
+        )
         data = response.json()
         assert data["total"] == 5
         assert len(data["items"]) == 2
@@ -131,7 +133,7 @@ class TestMongoBasic:
 
     def test_api_query2(self, client):
         where = (
-            '{"and": [{"brand": {"contains": "App"}}, {"price": {"not_between": [500,'
+            '{"and": [{"brand": {"eq": "Apple"}}, {"price": {"not_between": [500,'
             " 600]}}]}"
         )
         response = client.get(f"/admin/api/product?where={where}")
@@ -140,14 +142,10 @@ class TestMongoBasic:
         assert ["IPhone X"] == [x["title"] for x in data["items"]]
 
     def test_api_query3(self, client):
-        where = (
-            '{"and": [{"description": {"not": {"endsWith": "Universe"}}}, {"brand":'
-            ' {"not": {"startsWith":"App"}}}]}'
-        )
-        response = client.get(f"/admin/api/product?where={where}&order_by=price asc")
+        response = client.get(f"/admin/api/product?order_by=price desc&limit=2")
         data = response.json()
-        assert data["total"] == 2
-        assert ["OPPOF19", "Huawei P30"] == [x["title"] for x in data["items"]]
+        assert data["total"] == 5
+        assert ["Samsung Universe 9", "IPhone X"] == [x["title"] for x in data["items"]]
 
     def test_detail(self, client):
         id = Product.objects(title="IPhone 9").get().id

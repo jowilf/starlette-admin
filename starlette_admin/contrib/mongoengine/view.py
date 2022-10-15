@@ -1,3 +1,4 @@
+import functools
 from typing import Any, Dict, List, Optional, Type, Union
 
 import mongoengine as me
@@ -7,15 +8,17 @@ from mongoengine.base import BaseDocument
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.errors import DoesNotExist, ValidationError
 from mongoengine.fields import GridFSProxy
+from mongoengine.queryset import QNode
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
 from starlette_admin import CollectionField
 from starlette_admin.contrib.mongoengine.fields import FileField, ImageField
 from starlette_admin.contrib.mongoengine.helpers import (
+    Q,
     build_order_clauses,
-    build_raw_query,
     convert_mongoengine_field_to_admin_field,
     normalize_list,
+    resolve_deep_query,
 )
 from starlette_admin.exceptions import FormValidationError
 from starlette_admin.helpers import prettify_class_name, slugify_class_name
@@ -66,13 +69,8 @@ class ModelView(BaseModelView):
         request: Request,
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
-        if where is None:
-            where = {}
-        elif isinstance(where, dict):
-            where = build_raw_query(where)
-        else:
-            where = self.build_full_text_search_query(request, where)
-        return self.document.objects(__raw__=where).count()
+        q = await self._build_query(request, where)
+        return self.document.objects(q).count()
 
     async def find_all(
         self,
@@ -82,15 +80,8 @@ class ModelView(BaseModelView):
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
     ) -> List[Any]:
-        if where is None:
-            where = {}
-        elif isinstance(where, dict):
-            where = build_raw_query(where)
-        else:
-            where = self.build_full_text_search_query(request, where)
-        objs = self.document.objects(__raw__=where).order_by(
-            *build_order_clauses(order_by or [])
-        )
+        q = await self._build_query(request, where)
+        objs = self.document.objects(q).order_by(*build_order_clauses(order_by or []))
         if limit > 0:
             return objs[skip : skip + limit]
         return objs[skip:]
@@ -220,13 +211,33 @@ class ModelView(BaseModelView):
             raise FormValidationError(exc.errors)
         raise exc  # pragma: no cover
 
-    def build_full_text_search_query(
-        self, request: Request, term: str
-    ) -> Dict[str, Any]:
-        query: Dict[str, Any] = {"$or": []}
+    async def _build_query(
+        self, request: Request, where: Union[Dict[str, Any], str, None] = None
+    ) -> QNode:
+        if where is None:
+            return Q.empty()
+        if isinstance(where, dict):
+            return resolve_deep_query(where, self.document)
+        else:
+            return await self.build_full_text_search_query(request, where)
+
+    async def build_full_text_search_query(self, request: Request, term: str) -> QNode:
+        queries = []
         for field in self.fields:
-            if field.searchable:
-                query["$or"].append(
-                    {field.name: {"$regex": str(term), "$options": "mi"}}
-                )
-        return query
+            if (
+                field.searchable
+                and field.name != "id"
+                and type(field)
+                in [
+                    sa.StringField,
+                    sa.TextAreaField,
+                    sa.EmailField,
+                    sa.URLField,
+                    sa.PhoneField,
+                    sa.ColorField,
+                ]
+            ):
+                queries.append(Q(field.name, term, "icontains"))
+        return (
+            functools.reduce(lambda q1, q2: q1 | q2, queries) if queries else Q.empty()
+        )

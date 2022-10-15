@@ -31,6 +31,7 @@ class User(Model):
 
 @pytest_asyncio.fixture()
 async def prepare_database(aio_engine: AIOEngine):
+    await aio_engine.remove(User)
     await aio_engine.save_all(
         [
             User(

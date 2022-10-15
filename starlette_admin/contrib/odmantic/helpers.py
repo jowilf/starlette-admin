@@ -1,6 +1,7 @@
 import datetime
 import decimal
 import inspect
+import re
 import typing as t
 from enum import Enum
 
@@ -127,6 +128,10 @@ def normalize_list(arr: t.Optional[t.List[t.Any]]) -> t.Optional[t.List[str]]:
     return _new_list
 
 
+def _rec(value: t.Any, regex: str) -> t.Pattern:
+    return re.compile(regex % re.escape(value), re.IGNORECASE)
+
+
 OPERATORS: t.Dict[str, t.Callable[[FieldProxy, t.Any], QueryExpression]] = {
     "eq": lambda f, v: f == v,
     "neq": lambda f, v: f != v,
@@ -136,24 +141,18 @@ OPERATORS: t.Dict[str, t.Callable[[FieldProxy, t.Any], QueryExpression]] = {
     "ge": lambda f, v: f >= v,
     "in": lambda f, v: f.in_(v),
     "not_in": lambda f, v: f.not_in(v),
-    "startswith": lambda f, v: f.match({"$regex": r"^%s" % v, "$options": "mi"}),  # type: ignore
-    "not_startswith": lambda f, v: query.nor_(
-        f.match({"$regex": r"^%s" % v, "$options": "mi"})  # type: ignore
-    ),
-    "endswith": lambda f, v: f.match({"$regex": r"%s$" % v, "$options": "mi"}),  # type: ignore
-    "not_endswith": lambda f, v: query.nor_(
-        f.match({"$regex": r"%s$" % v, "$options": "mi"})  # type: ignore
-    ),
-    "contains": lambda f, v: f.match({"$regex": r"%s" % v, "$options": "mi"}),  # type: ignore
-    "not_contains": lambda f, v: query.nor_(
-        f.match({"$regex": r"%s" % v, "$options": "mi"})  # type: ignore
-    ),
+    "startswith": lambda f, v: f.match(_rec(v, r"^%s")),
+    "not_startswith": lambda f, v: query.nor_(f.match(_rec(v, r"^%s"))),
+    "endswith": lambda f, v: f.match(_rec(v, r"%s$")),
+    "not_endswith": lambda f, v: query.nor_(f.match(_rec(v, r"%s$"))),
+    "contains": lambda f, v: f.match(_rec(v, r"%s")),
+    "not_contains": lambda f, v: query.nor_(f.match(_rec(v, r"%s"))),
     "is_false": lambda f, v: f.eq(False),
     "is_true": lambda f, v: f.eq(True),
     "is_null": lambda f, v: f.eq(None),
     "is_not_null": lambda f, v: f.ne(None),
     "between": lambda f, v: query.and_(f >= v[0], f <= v[1]),
-    "not_between": lambda f, v: query.or_(f <= v[0], f >= v[1]),
+    "not_between": lambda f, v: query.or_(f < v[0], f > v[1]),
 }
 
 
@@ -167,6 +166,10 @@ def resolve_proxy(model: t.Type[Model], proxy_name: str) -> t.Optional[FieldProx
 
 
 def _check_value(v: t.Any, proxy: t.Optional[FieldProxy]) -> t.Any:
+    """
+    The purpose of this function is to detect datetime string, or ObjectId
+    and convert them into the appropriate python type.
+    """
     if isinstance(v, str) and pyd.datetime_parse.datetime_re.match(v):
         return datetime.datetime.fromisoformat(v)
     elif proxy is not None and +proxy == "_id" and bson.ObjectId.is_valid(v):

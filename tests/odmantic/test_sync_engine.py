@@ -21,6 +21,8 @@ class Quote(Model):
 
 @pytest.fixture()
 def prepare_database(sync_engine: SyncEngine):
+    sync_engine.remove(Author)
+    sync_engine.remove(Quote)
     sync_engine.save_all(
         [
             Quote(
