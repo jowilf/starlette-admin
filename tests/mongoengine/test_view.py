@@ -142,7 +142,7 @@ class TestMongoBasic:
         assert ["IPhone X"] == [x["title"] for x in data["items"]]
 
     def test_api_query3(self, client):
-        response = client.get(f"/admin/api/product?order_by=price desc&limit=2")
+        response = client.get("/admin/api/product?order_by=price desc&limit=2")
         data = response.json()
         assert data["total"] == 5
         assert ["Samsung Universe 9", "IPhone X"] == [x["title"] for x in data["items"]]
