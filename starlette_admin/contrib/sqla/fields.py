@@ -55,7 +55,7 @@ def _serialize_sqlalchemy_file_library(
         isinstance(value, list) and all([isinstance(f, File) for f in value])
     ):
         data = []
-        for item in value if is_multiple else [value]:
+        for item in value if isinstance(value, list) else [value]:
             path = item["path"]
             if (
                 action == RequestAction.LIST

@@ -80,11 +80,11 @@ def _serve_file(request: Request) -> Response:
             """If file is stored in local storage, just return a
             FileResponse with the fill full path."""
             return FileResponse(
-                file.get_cdn_url(), media_type=file.content_type, filename=file.filename
+                file.get_cdn_url(), media_type=file.content_type, filename=file.filename  # type: ignore
             )
         elif file.get_cdn_url() is not None:  # pragma: no cover
             """If file has public url, redirect to this url"""
-            return RedirectResponse(file.get_cdn_url())
+            return RedirectResponse(file.get_cdn_url())  # type: ignore
         else:
             """Otherwise, return a streaming response"""
             return StreamingResponse(
