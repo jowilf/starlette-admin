@@ -4,9 +4,10 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 import anyio
 from bson import ObjectId
-from odmantic import AIOEngine, Model, SyncEngine, query
+from odmantic import Model, query
 from odmantic.field import FieldProxy
 from odmantic.query import QueryExpression
+from odmantic.session import AIOSession, SyncSession
 from pydantic import ValidationError
 from starlette.requests import Request
 from starlette_admin import (
@@ -92,11 +93,11 @@ class ModelView(BaseModelView):
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
     ) -> List[Any]:
-        engine: Union[AIOEngine, SyncEngine] = request.state.engine
+        session: Union[AIOSession, SyncSession] = request.state.session
         q = await self._build_query(request, where)
         o = await self._build_order_clauses([] if order_by is None else order_by)
-        if isinstance(engine, AIOEngine):
-            return await engine.find(
+        if isinstance(session, AIOSession):
+            return await session.find(
                 self.model,
                 q,
                 sort=o,
@@ -105,7 +106,7 @@ class ModelView(BaseModelView):
             )
         return await anyio.to_thread.run_sync(
             partial(  # type: ignore
-                engine.find,
+                session.find,
                 self.model,
                 q,
                 sort=o,
@@ -117,55 +118,55 @@ class ModelView(BaseModelView):
     async def count(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> int:
-        engine: Union[AIOEngine, SyncEngine] = request.state.engine
+        session: Union[AIOSession, SyncSession] = request.state.session
         q = await self._build_query(request, where)
-        if isinstance(engine, AIOEngine):
-            return await engine.count(self.model, q)
-        return await anyio.to_thread.run_sync(engine.count, self.model, q)
+        if isinstance(session, AIOSession):
+            return await session.count(self.model, q)
+        return await anyio.to_thread.run_sync(session.count, self.model, q)
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
-        engine: Union[AIOEngine, SyncEngine] = request.state.engine
-        if isinstance(engine, AIOEngine):
-            return await engine.find_one(self.model, self.model.id == ObjectId(pk))
+        session: Union[AIOSession, SyncSession] = request.state.session
+        if isinstance(session, AIOSession):
+            return await session.find_one(self.model, self.model.id == ObjectId(pk))
         return await anyio.to_thread.run_sync(
-            engine.find_one, self.model, self.model.id == ObjectId(pk)
+            session.find_one, self.model, self.model.id == ObjectId(pk)
         )
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
         pks = list(map(ObjectId, pks))
-        engine: Union[AIOEngine, SyncEngine] = request.state.engine
-        if isinstance(engine, AIOEngine):
-            return await engine.find(self.model, self.model.id.in_(pks))  # type: ignore
-        return list(await anyio.to_thread.run_sync(engine.find, self.model, self.model.id.in_(pks)))  # type: ignore
+        session: Union[AIOSession, SyncSession] = request.state.session
+        if isinstance(session, AIOSession):
+            return await session.find(self.model, self.model.id.in_(pks))  # type: ignore
+        return list(await anyio.to_thread.run_sync(session.find, self.model, self.model.id.in_(pks)))  # type: ignore
 
     async def create(self, request: Request, data: Dict) -> Any:
-        engine: Union[AIOEngine, SyncEngine] = request.state.engine
+        session: Union[AIOSession, SyncSession] = request.state.session
         data = await self._arrange_data(request, data)
         try:
-            if isinstance(engine, AIOEngine):
-                return await engine.save(self.model(**data))
-            return await anyio.to_thread.run_sync(engine.save, self.model(**data))
+            if isinstance(session, AIOSession):
+                return await session.save(self.model(**data))
+            return await anyio.to_thread.run_sync(session.save, self.model(**data))
         except Exception as e:
             self.handle_exception(e)
 
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
-        engine: Union[AIOEngine, SyncEngine] = request.state.engine
+        session: Union[AIOSession, SyncSession] = request.state.session
         data = await self._arrange_data(request, data, is_edit=True)
         try:
             instance = await self.find_by_pk(request, pk)
             instance.update(data)
-            if isinstance(engine, AIOEngine):
-                return await engine.save(instance)
-            return await anyio.to_thread.run_sync(engine.save, instance)
+            if isinstance(session, AIOSession):
+                return await session.save(instance)
+            return await anyio.to_thread.run_sync(session.save, instance)
         except Exception as e:
             self.handle_exception(e)
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
         pks = list(map(ObjectId, pks))
-        engine: Union[AIOEngine, SyncEngine] = request.state.engine
-        if isinstance(engine, AIOEngine):
-            return await engine.remove(self.model, self.model.id.in_(pks))  # type: ignore
-        return await anyio.to_thread.run_sync(engine.remove, self.model, self.model.id.in_(pks))  # type: ignore
+        session: Union[AIOSession, SyncSession] = request.state.session
+        if isinstance(session, AIOSession):
+            return await session.remove(self.model, self.model.id.in_(pks))  # type: ignore
+        return await anyio.to_thread.run_sync(session.remove, self.model, self.model.id.in_(pks))  # type: ignore
 
     def handle_exception(self, exc: Exception) -> None:
         if isinstance(exc, ValidationError):

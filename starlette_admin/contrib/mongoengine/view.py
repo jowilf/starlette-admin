@@ -208,7 +208,7 @@ class ModelView(BaseModelView):
 
     def handle_exception(self, exc: Exception) -> None:
         if isinstance(exc, ValidationError):
-            raise FormValidationError(exc.errors)
+            raise FormValidationError(exc.to_dict())
         raise exc  # pragma: no cover
 
     async def _build_query(

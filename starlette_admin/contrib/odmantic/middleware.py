@@ -15,6 +15,13 @@ class EngineMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        request.state.engine = self.engine
-        response = await call_next(request)
-        return response
+        if isinstance(self.engine, AIOEngine):
+            async with self.engine.session() as session:
+                request.state.session = session
+                response = await call_next(request)
+                return response
+        else:
+            with self.engine.session() as session:
+                request.state.session = session
+                response = await call_next(request)
+                return response
