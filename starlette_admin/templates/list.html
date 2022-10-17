@@ -87,18 +87,25 @@
 <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/dt.min.css') }}">
 <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/dt.checkboxes.css') }}">
 <style>
-    div.dataTables_wrapper div.dataTables_info {
+      div.dataTables_wrapper div.dataTables_info {
         padding-top: 0;
-    }
-    table.dataTable span.highlight {
-      background-color: #FFFF88;
-      border-radius: 0.28571429rem;
-    }
+      }
+      table.dataTable span.highlight {
+        background-color: #ffff88;
+        border-radius: 0.28571429rem;
+      }
 
-    table.dataTable span.column_highlight {
-      background-color: #ffcc99;
-      border-radius: 0.28571429rem;
-    }
+      table.dataTable span.column_highlight {
+        background-color: #ffcc99;
+        border-radius: 0.28571429rem;
+      }
+      table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before,
+      table.dataTable.dtr-inline.collapsed
+        > tbody
+        > tr
+        > th.dtr-control:before {
+        background-color: #206bc4;
+      }
 </style>
 {% endblock %}
 {% block script %}

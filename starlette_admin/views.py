@@ -187,6 +187,7 @@ class BaseModelView(BaseView):
             Default value is set to `10`.
         page_size_options: Pagination choices displayed in List page.
             Default value is set to `[10, 25, 50, 100]`. Use `-1`to display All
+        responsive: Activate responsive design https://datatables.net/extensions/responsive/
         list_template: List view template. Default is `list.html`.
         detail_template: Details view template. Default is `details.html`.
         create_template: Edit view template. Default is `edit.html`.
@@ -209,8 +210,9 @@ class BaseModelView(BaseView):
     export_fields: Optional[List[str]] = None
     column_visibility: bool = True
     search_builder: bool = True
-    page_size = 10
-    page_size_options = [10, 25, 50, 100]
+    page_size: int = 10
+    page_size_options: List[int] = [10, 25, 50, 100]
+    responsive_table: bool = False
     list_template: str = "list.html"
     detail_template: str = "detail.html"
     create_template: str = "create.html"
@@ -555,6 +557,7 @@ class BaseModelView(BaseView):
             "exportTypes": self.export_types,
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,
+            "responsiveTable": self.responsive_table,
             "fields": list(map(lambda f: f.dict(), self._extract_fields())),
             "pk": self.pk_attr,
             "apiUrl": request.url_for(

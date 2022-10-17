@@ -7,14 +7,14 @@ $(function () {
     while (fringe.length > 0) {
       let field = fringe.shift(0);
       if (field.type === "CollectionField")
-        fringe = fringe.concat(
-          field.fields.map((f) => {
+        fringe = field.fields
+          .map((f) => {
             // Produce nested name (ex: category.name)
             f.name = field.name + "." + f.name;
             f.label = field.label + "." + f.label;
             return f;
           })
-        );
+          .concat(fringe);
       else if (field.type === "ListField") {
         // To reduce complexity, List of CollectionField will render as json
         if (field.field.type == "CollectionField") {
@@ -34,7 +34,11 @@ $(function () {
               );
             },
           });
-        } else fringe.push(field.field);
+        } else {
+          field.field.name = field.name;
+          field.field.label = field.label;
+          fringe.unshift(field.field);
+        }
       } else if (!field.exclude_from_list) {
         $("#table-header").append(`<th>${field.label}</th>`);
         dt_columns.push({
@@ -195,17 +199,17 @@ $(function () {
         "!contains": "not_contains",
         "!starts": "not_startswith",
         "!ends": "not_endswith",
-        "null": "is_null",
+        null: "is_null",
         "!null": "is_not_null",
-        "false": "is_false",
-        "true": "is_true",
+        false: "is_false",
+        true: "is_true",
       };
       if (c.condition == "between") {
         cnd["between"] = c.value;
       } else if (c.condition == "!between") {
         cnd["not_between"] = c.value;
       } else if (c_map[c.condition]) {
-        cnd[c_map[c.condition]] = c.value1 || '';
+        cnd[c_map[c.condition]] = c.value1 || "";
       }
       d[c.origData] = cnd;
     }
@@ -222,7 +226,7 @@ $(function () {
     info: true,
     colReorder: true,
     searchHighlight: true,
-    // responsive: true,
+    responsive: model.responsiveTable,
     serverSide: true,
     scrollX: false,
     lengthMenu: model.lengthMenu,

@@ -51,7 +51,7 @@ class Country(Model):
 
 
 class CountryView(ModelView):
-    pass
+    responsive_table = True
 
 
 admin = Admin(SyncEngine())
