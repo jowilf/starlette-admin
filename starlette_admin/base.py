@@ -59,7 +59,7 @@ class BaseAdmin:
         self.statics_dir = statics_dir
         self.auth_provider = auth_provider
         self.middlewares = middlewares
-        self.index_view: CustomView = (
+        self.index_view = (
             index_view
             if (index_view is not None)
             else CustomView("", add_to_menu=False)

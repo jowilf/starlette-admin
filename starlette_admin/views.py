@@ -206,7 +206,11 @@ class BaseModelView(BaseView):
     exclude_fields_from_edit: Sequence[str] = []
     searchable_fields: Optional[Sequence[str]] = None
     sortable_fields: Optional[Sequence[str]] = None
-    export_types: Sequence[ExportType] = list(ExportType)
+    export_types: Sequence[ExportType] = [
+        ExportType.CSV,
+        ExportType.EXCEL,
+        ExportType.PRINT,
+    ]
     export_fields: Optional[Sequence[str]] = None
     column_visibility: bool = True
     search_builder: bool = True
