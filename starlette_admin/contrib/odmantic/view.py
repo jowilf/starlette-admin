@@ -1,6 +1,6 @@
 import re
 from functools import partial
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 import anyio
 from bson import ObjectId
@@ -92,7 +92,7 @@ class ModelView(BaseModelView):
         limit: int = 100,
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
-    ) -> List[Any]:
+    ) -> Sequence[Any]:
         session: Union[AIOSession, SyncSession] = request.state.session
         q = await self._build_query(request, where)
         o = await self._build_order_clauses([] if order_by is None else order_by)
@@ -132,7 +132,7 @@ class ModelView(BaseModelView):
             session.find_one, self.model, self.model.id == ObjectId(pk)
         )
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
         pks = list(map(ObjectId, pks))
         session: Union[AIOSession, SyncSession] = request.state.session
         if isinstance(session, AIOSession):
@@ -178,7 +178,7 @@ class ModelView(BaseModelView):
         request: Request,
         data: Dict[str, Any],
         is_edit: bool = False,
-        fields: Optional[List[BaseField]] = None,
+        fields: Optional[Sequence[BaseField]] = None,
     ) -> Dict[str, Any]:
         arranged_data: Dict[str, Any] = dict()
         if fields is None:

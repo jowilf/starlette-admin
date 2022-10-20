@@ -1,5 +1,5 @@
 import functools
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Sequence, Type
 
 import mongoengine.fields as me
 import starlette_admin as sa
@@ -176,7 +176,7 @@ def build_order_clauses(order_list: List[str]) -> List[str]:
     return clauses
 
 
-def normalize_list(arr: Optional[List[Any]]) -> Optional[List[str]]:
+def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
     if arr is None:
         return None
     _new_list = []

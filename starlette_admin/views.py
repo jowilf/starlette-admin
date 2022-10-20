@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Set, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Type, Union
 
 from jinja2 import Template
 from starlette.requests import Request
@@ -197,21 +197,21 @@ class BaseModelView(BaseView):
 
     identity: Optional[str] = None
     name: Optional[str] = None
-    fields: List[BaseField] = []
+    fields: Sequence[BaseField] = []
     pk_attr: Optional[str] = None
     form_include_pk: bool = False
-    exclude_fields_from_list: List[str] = []
-    exclude_fields_from_detail: List[str] = []
-    exclude_fields_from_create: List[str] = []
-    exclude_fields_from_edit: List[str] = []
-    searchable_fields: Optional[List[str]] = None
-    sortable_fields: Optional[List[str]] = None
-    export_types: List[ExportType] = list(ExportType)
-    export_fields: Optional[List[str]] = None
+    exclude_fields_from_list: Sequence[str] = []
+    exclude_fields_from_detail: Sequence[str] = []
+    exclude_fields_from_create: Sequence[str] = []
+    exclude_fields_from_edit: Sequence[str] = []
+    searchable_fields: Optional[Sequence[str]] = None
+    sortable_fields: Optional[Sequence[str]] = None
+    export_types: Sequence[ExportType] = list(ExportType)
+    export_fields: Optional[Sequence[str]] = None
     column_visibility: bool = True
     search_builder: bool = True
     page_size: int = 10
-    page_size_options: List[int] = [10, 25, 50, 100]
+    page_size_options: Sequence[int] = [10, 25, 50, 100]
     responsive_table: bool = False
     list_template: str = "list.html"
     detail_template: str = "detail.html"
@@ -269,7 +269,7 @@ class BaseModelView(BaseView):
         limit: int = 100,
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
-    ) -> List[Any]:
+    ) -> Sequence[Any]:
         """
         Find all items
         Parameters:
@@ -324,7 +324,7 @@ class BaseModelView(BaseView):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
         """
         Find many items
         Parameters:
@@ -522,7 +522,7 @@ class BaseModelView(BaseView):
 
     def _extract_fields(
         self, action: RequestAction = RequestAction.LIST
-    ) -> List[BaseField]:
+    ) -> Sequence[BaseField]:
         return extract_fields(self.fields, action)
 
     def _additional_css_links(

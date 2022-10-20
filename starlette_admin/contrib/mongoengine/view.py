@@ -1,5 +1,5 @@
 import functools
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 import mongoengine as me
 import starlette_admin as sa
@@ -79,7 +79,7 @@ class ModelView(BaseModelView):
         limit: int = 100,
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
-    ) -> List[Any]:
+    ) -> Sequence[Any]:
         q = await self._build_query(request, where)
         objs = self.document.objects(q).order_by(*build_order_clauses(order_by or []))
         if limit > 0:
@@ -92,7 +92,9 @@ class ModelView(BaseModelView):
         except (DoesNotExist, ValidationError):
             return None
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[me.Document]:
+    async def find_by_pks(
+        self, request: Request, pks: List[Any]
+    ) -> Sequence[me.Document]:
         return self.document.objects(id__in=pks)
 
     async def create(self, request: Request, data: Dict[str, Any]) -> None:
@@ -115,7 +117,7 @@ class ModelView(BaseModelView):
         data: Dict[str, Any],
         is_edit: bool = False,
         document: Optional[BaseDocument] = None,
-        fields: Optional[List[sa.BaseField]] = None,
+        fields: Optional[Sequence[sa.BaseField]] = None,
     ) -> me.Document:
         if document is None:
             document = self.document

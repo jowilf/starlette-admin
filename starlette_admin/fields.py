@@ -5,7 +5,7 @@ from dataclasses import field as dc_field
 from datetime import date, datetime, time
 from enum import Enum, IntEnum
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Type, Union
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
@@ -688,7 +688,7 @@ class CollectionField(BaseField):
 
     def _extract_fields(
         self, action: RequestAction = RequestAction.LIST
-    ) -> List[BaseField]:
+    ) -> Sequence[BaseField]:
         return extract_fields(self.fields, action)
 
     def _propagate_id(self) -> None:

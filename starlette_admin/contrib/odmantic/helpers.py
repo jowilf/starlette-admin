@@ -114,7 +114,7 @@ def convert_odm_field_to_admin_field(
     return admin_field
 
 
-def normalize_list(arr: t.Optional[t.List[t.Any]]) -> t.Optional[t.List[str]]:
+def normalize_list(arr: t.Optional[t.Sequence[t.Any]]) -> t.Optional[t.Sequence[str]]:
     if arr is None:
         return None
     _new_list = []

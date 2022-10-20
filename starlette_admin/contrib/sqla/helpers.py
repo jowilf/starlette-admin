@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Sequence, Type
 
 from sqlalchemy import ARRAY, Boolean, Column, and_, false, not_, or_, true
 from sqlalchemy.orm import (
@@ -151,7 +151,7 @@ def convert_to_field(column: Column) -> Type[BaseField]:
     )
 
 
-def normalize_fields(fields: List[Any], mapper: Mapper) -> List[BaseField]:
+def normalize_fields(fields: Sequence[Any], mapper: Mapper) -> List[BaseField]:
     converted_fields = []
     for field in fields:
         if isinstance(field, BaseField):
@@ -202,7 +202,7 @@ def normalize_fields(fields: List[Any], mapper: Mapper) -> List[BaseField]:
     return converted_fields
 
 
-def normalize_list(arr: Optional[List[Any]]) -> Optional[List[str]]:
+def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
     if arr is None:
         return None
     _new_list = []
