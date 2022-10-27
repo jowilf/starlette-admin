@@ -264,8 +264,7 @@ $(function () {
       where = null;
       if (data.searchBuilder && !jQuery.isEmptyObject(data.searchBuilder)) {
         where = extractCriteria(data.searchBuilder);
-        console.log(where);
-        console.log(JSON.stringify(where));
+        //console.log(where);
       }
       query = {
         skip: settings._iDisplayStart,

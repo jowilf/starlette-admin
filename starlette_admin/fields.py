@@ -408,7 +408,7 @@ class EnumField(StringField):
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
-        choices = list(map(lambda e: (e.value, e.name), enum_type))  # type: ignore
+        choices = list(map(lambda e: (e.value, e.name.replace("_", " ")), enum_type))  # type: ignore
         coerce = int if issubclass(enum_type, IntEnum) else str
         return cls(name, choices=choices, multiple=multiple, coerce=coerce, **kwargs)  # type: ignore
 
