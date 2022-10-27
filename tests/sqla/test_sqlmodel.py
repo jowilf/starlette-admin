@@ -6,8 +6,7 @@ import pytest_asyncio
 from httpx import AsyncClient
 from sqlmodel import Field, Session, SQLModel
 from starlette.applications import Starlette
-from starlette_admin.contrib.sqla import Admin
-from starlette_admin.contrib.sqla.extensions import SQLModelView
+from starlette_admin.contrib.sqlmodel import Admin, ModelView
 
 from tests.sqla.utils import get_test_engine
 
@@ -33,7 +32,7 @@ class TestSQLModel:
     @pytest.fixture
     def admin(self):
         admin = Admin(engine)
-        admin.add_view(SQLModelView(Todo))
+        admin.add_view(ModelView(Todo))
         return admin
 
     @pytest.fixture

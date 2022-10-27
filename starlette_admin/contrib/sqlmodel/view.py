@@ -3,12 +3,12 @@ from typing import Any, Dict, Optional, Type
 from pydantic import ValidationError
 from sqlmodel import SQLModel
 from starlette.requests import Request
-from starlette_admin.contrib.sqla.view import ModelView
+from starlette_admin.contrib.sqla.view import ModelView as BaseModelView
 from starlette_admin.fields import FileField
 from starlette_admin.helpers import pydantic_error_to_form_validation_errors
 
 
-class SQLModelView(ModelView):
+class ModelView(BaseModelView):
     def __init__(
         self,
         model: Type[SQLModel],
