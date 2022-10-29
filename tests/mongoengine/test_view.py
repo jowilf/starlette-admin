@@ -43,12 +43,12 @@ class User(me.Document):
 
 
 class TestMongoBasic:
-    def setup(self):
+    def setup_method(self, method):
         connect(host=MONGO_URL)
         for product in json.load(open("./tests/data/products.json")):
             Product(**product).save()
 
-    def teardown(self):
+    def teardown_method(self, method):
         Product.drop_collection()
         Store.drop_collection()
         User.drop_collection()

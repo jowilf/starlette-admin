@@ -24,7 +24,7 @@ class Post(me.Document):
 
 
 class TestEmbeddedDocument:
-    def setup(self):
+    def setup_method(self, method):
         connect(host=MONGO_URL)
         Post(
             name="Dummy post",
@@ -33,7 +33,7 @@ class TestEmbeddedDocument:
             comments=[Comment(content="Nice")],
         ).save()
 
-    def teardown(self):
+    def teardown_method(self, method):
         Post.drop_collection()
         disconnect()
 

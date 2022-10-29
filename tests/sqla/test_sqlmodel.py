@@ -23,10 +23,10 @@ class Todo(SQLModel, table=True):
 
 
 class TestSQLModel:
-    def setup(self) -> None:
+    def setup_method(self, method):
         SQLModel.metadata.create_all(engine)
 
-    def teardown(self):
+    def teardown_method(self, method):
         SQLModel.metadata.drop_all(engine)
 
     @pytest.fixture

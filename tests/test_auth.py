@@ -193,7 +193,7 @@ class TestAuth:
 
 
 class TestAccess:
-    def setup(self):
+    def setup_method(self, method):
         PostView.db.clear()
         for post in json.load(open("./tests/data/posts.json")):
             del post["tags"]

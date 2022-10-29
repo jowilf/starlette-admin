@@ -90,7 +90,7 @@ def section_dropdown(report_view, link_to_google) -> DropDown:
 
 
 class TestViews:
-    def setup(self):
+    def setup_method(self, method):
         UserView.db.clear()
         UserView.db[1] = User(id=1, name="John Doe")
         UserView.db[2] = User(id=2, name="Terry Smitham")
