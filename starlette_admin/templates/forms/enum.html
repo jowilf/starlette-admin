@@ -1,8 +1,15 @@
-<select id="{{field.id}}" name="{{field.id}}" data-allow-clear="true" data-placeholder="Select a {{field.label}}"
-    class="{{field.class_}} {%if error%}{{field.error_class}}{%endif%}" {%if field.multiple%}multiple{%endif%}>
-    {%if not field.multiple%}<option></option>{%endif%}
-    {%for value, label in field.choices%}
-    <option value="{{value}}" {{'selected="selected"' if (data and (value in (data if field.multiple else [data]))) else ''}}>{{label}}</option>
-    {%endfor%}
-</select>
+<div class="{%if error%}{{field.error_class}}{%endif%}">
+    <select id="{{field.id}}" name="{{field.id}}" data-allow-clear="true" data-placeholder="Select a {{field.label}}"
+            class="{{field.class_}} {%if error%}{{field.error_class}}{%endif%}" {%if field.multiple%}multiple{%endif%}>
+        {%if not field.multiple%}
+        <option></option>
+        {%endif%}
+        {%for value, label in field.choices%}
+        <option value="{{value}}" {{'selected="selected"' if (data and (value in (data if field.multiple else [data]))) else ''}}>{{label}}</option>
+        {%endfor%}
+    </select>
+    {% if field.help_text %}
+    <small class="form-hint mt-2">{{field.help_text}}</small>
+    {%endif%}
+</div>
 {% include "forms/_error.html" %}

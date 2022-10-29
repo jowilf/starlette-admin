@@ -62,6 +62,11 @@
 {%for link in model._additional_css_links(request, "CREATE")%}
 <link rel="stylesheet" href="{{ link }}">
 {%endfor%}
+<style>
+.is-invalid .select2-selection {
+    border-color: #d63939 !important;
+}
+</style>
 {%endblock%}
 {%block script%}
 {%for link in model._additional_js_links(request, "CREATE")%}

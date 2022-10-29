@@ -20,6 +20,7 @@ class BaseField:
     Parameters:
         name: Field name, same as attribute name in your model
         label: Field label
+        help_text: Hint message to display in forms
         type: Field type, unique key used to define the field
         id: Unique id, used to represent field instance
         search_builder_type: datatable columns.searchBuilderType, For more information
@@ -39,6 +40,7 @@ class BaseField:
     name: str
     label: Optional[str] = None
     type: Optional[str] = None
+    help_text: Optional[str] = None
     id: str = ""
     search_builder_type: Optional[str] = "default"
     required: Optional[bool] = False
@@ -109,7 +111,6 @@ class StringField(BaseField):
     input_type: str = "text"
     class_: str = "field-string form-control"
     placeholder: Optional[str] = None
-    help_text: Optional[str] = None
 
     def input_params(self) -> str:
         return html_params(

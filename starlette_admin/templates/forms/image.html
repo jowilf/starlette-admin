@@ -1,9 +1,14 @@
-<input type="file" class="form-control {%if error%}is-invalid{%endif%}" id="{{field.id}}" name="{{field.id}}" {%if
+<div class="{%if error%}{{field.error_class}}{%endif%}">
+    <input type="file" class="form-control {%if error%}is-invalid{%endif%}" id="{{field.id}}" name="{{field.id}}" {%if
        field.multiple%}multiple{%endif%} accept="image/*"/>
+    {% if field.help_text %}
+    <small class="form-hint">{{field.help_text}}</small>
+    {%endif%}
+</div>
+{% include "forms/_error.html" %}
 {%if action=='EDIT' and field._isvalid_value(data) %}
 <div class="mt-2 border p-2">
     {% include "displays/image.html" %}
     {% include "forms/_delete.html" %}
 </div>
 {%endif%}
-{% include "forms/_error.html" %}
