@@ -83,6 +83,17 @@ class BaseAdmin:
         self._views.append(view_instance)
         self.setup_view(view_instance)
 
+    def custom_render_js(self, request: Request) -> Optional[str]:
+        """
+        Override this function to provide a link to custom js to override the
+        global `render` object in javascript which is use to render fields in
+        list page.
+
+        Args:
+            request: Starlette Request
+        """
+        return None
+
     def init_auth(self) -> None:
         if self.auth_provider is not None:
             self.middlewares = (
@@ -168,6 +179,7 @@ class BaseAdmin:
         templates.env.globals["__name__"] = self.route_name
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["login_logo_url"] = self.login_logo_url
+        templates.env.globals["custom_render_js"] = lambda r: self.custom_render_js(r)
         templates.env.filters["is_custom_view"] = lambda res: isinstance(
             res, CustomView
         )

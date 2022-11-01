@@ -138,5 +138,8 @@
 var model = {{model._configs(request) | tojson | safe}};
 </script>
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/render.js') }}"></script>
+{% if custom_render_js(request) %}
+<script type="text/javascript" src="{{ custom_render_js(request) }}"></script>
+{% endif %}
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/list.js') }}"></script>
 {% endblock %}
