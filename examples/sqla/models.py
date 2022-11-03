@@ -25,7 +25,7 @@ class User(Base):
     # use a regular string field, for which we can specify a list of available choices later on
     type = Column(String(50))
 
-    posts = relationship("Post", back_populates="user")
+    posts = relationship("Post", back_populates="publisher")
 
 
 post_tags_table = Table(
@@ -40,13 +40,13 @@ class Post(Base):
     __tablename__ = "post"
 
     id = Column(Integer, primary_key=True)
-    title = Column(String(100))
+    title = Column(String(100), nullable=False)
     text = Column(Text, nullable=False)
     date = Column(Date)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    user_id = Column(Integer, ForeignKey(User.id))
-    user = relationship(User, back_populates="posts")
+    publisher_id = Column(Integer, ForeignKey(User.id))
+    publisher = relationship(User, back_populates="posts")
 
     tags = relationship("Tag", secondary=post_tags_table)
 

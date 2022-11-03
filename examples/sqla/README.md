@@ -1,4 +1,4 @@
-SQLAlchemy model backend integration examples.
+SQLAlchemy model integration examples.
 
 To run this example:
 

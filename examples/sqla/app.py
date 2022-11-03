@@ -2,10 +2,10 @@ from sqlalchemy import create_engine
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
+
 from starlette_admin import DropDown
 from starlette_admin.contrib.sqla import Admin, ModelView
 from starlette_admin.views import Link
-
 from .config import ENGINE_URI
 from .models import Base, Post, Tag, Tree, User
 from .views import PostView, TagView, UserView
@@ -13,7 +13,7 @@ from .views import PostView, TagView, UserView
 engine = create_engine(ENGINE_URI, connect_args={"check_same_thread": False}, echo=True)
 
 
-def init_database():
+def init_database() -> None:
     Base.metadata.create_all(engine)
 
 

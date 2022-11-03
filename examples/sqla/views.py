@@ -1,3 +1,7 @@
+from datetime import date, timedelta
+from typing import Dict, Any
+
+from requests import Request
 from sqlalchemy.exc import IntegrityError
 
 from examples.sqla.models import Post
@@ -27,6 +31,28 @@ class PostView(ModelView):
     exclude_fields_from_list = ["text"]
     exclude_fields_from_create = [Post.created_at]
     exclude_fields_from_edit = ["created_at"]
+
+    async def validate(self, request: Request, data: Dict[str, Any]) -> None:
+        """By default, starlette-admin doesn't validate your data, you need
+        to override this function and write your own validation, or you can
+        use sqlmodel to autovalidate your data with pydantic.
+
+        Raise FormValidationError to display error in forms"""
+        errors: Dict[str, str] = dict()
+        _2day_from_today = date.today() + timedelta(days=2)
+        if data["title"] is None or len(data["title"]) < 3:
+            errors["title"] = "Ensure this value has at least 03 characters"
+        if data["text"] is None or len(data["text"]) < 10:
+            errors["text"] = "Ensure this value has at least 10 characters"
+        if data["date"] is None or data["date"] < _2day_from_today:
+            errors["date"] = "We need at least 2 days to verify your post"
+        if data["publisher"] is None:
+            errors["publisher"] = "Publisher is required"
+        if data["tags"] is None or len(data["tags"]) < 1:
+            errors["tags"] = "At least one tag is required"
+        if len(errors) > 0:
+            raise FormValidationError(errors)
+        return await super().validate(request, data)
 
 
 class TagView(ModelView):
