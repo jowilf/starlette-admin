@@ -1,9 +1,11 @@
+import enum
 from datetime import datetime
 
 from sqlalchemy import (
     Column,
     Date,
     DateTime,
+    Enum,
     ForeignKey,
     Integer,
     String,
@@ -23,6 +25,7 @@ class User(Base):
     last_name = Column(String(100))
     first_name = Column(String(100))
     # use a regular string field, for which we can specify a list of available choices later on
+    # >>> EnumField.from_choices("type", AVAILABLE_USER_TYPES)
     type = Column(String(50))
 
     posts = relationship("Post", back_populates="publisher")
@@ -36,6 +39,12 @@ post_tags_table = Table(
 )
 
 
+class Status(str, enum.Enum):
+    PENDING = "pending"
+    REJECTED = "rejected"
+    APPROVED = "approved"
+
+
 class Post(Base):
     __tablename__ = "post"
 
@@ -43,6 +52,7 @@ class Post(Base):
     title = Column(String(100), nullable=False)
     text = Column(Text, nullable=False)
     date = Column(Date)
+    status = Column(Enum(Status))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     publisher_id = Column(Integer, ForeignKey(User.id))

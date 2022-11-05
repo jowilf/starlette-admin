@@ -7,7 +7,7 @@ from starlette_admin import EnumField, ExportType, StringField
 from starlette_admin.contrib.sqla import ModelView
 from starlette_admin.exceptions import FormValidationError
 
-from examples.sqla.models import Post
+from .models import Post
 
 AVAILABLE_USER_TYPES = [
     ("admin", "Admin"),
@@ -45,7 +45,7 @@ class PostView(ModelView):
         if data["text"] is None or len(data["text"]) < 10:
             errors["text"] = "Ensure this value has at least 10 characters"
         if data["date"] is None or data["date"] < _2day_from_today:
-            errors["date"] = "We need at least 2 days to verify your post"
+            errors["date"] = "We need at least one day to verify your post"
         if data["publisher"] is None:
             errors["publisher"] = "Publisher is required"
         if data["tags"] is None or len(data["tags"]) < 1:
