@@ -1,4 +1,5 @@
 starlette-admin
+uvicorn
 sqlalchemy-file
 fasteners
-uvicorn
+pillow

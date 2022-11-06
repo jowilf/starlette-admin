@@ -673,13 +673,13 @@ class HasMany(RelationField):
 
 @dataclass(init=False)
 class CollectionField(BaseField):
-    fields: List[BaseField] = dc_field(default_factory=list)
+    fields: Sequence[BaseField] = dc_field(default_factory=list)
     render_function_key: str = "json"
     form_template: str = "forms/collection.html"
     display_template: str = "displays/collection.html"
 
     def __init__(
-        self, name: str, fields: List[BaseField], required: bool = False
+        self, name: str, fields: Sequence[BaseField], required: bool = False
     ) -> None:
         self.name = name
         self.fields = fields
