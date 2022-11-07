@@ -1,5 +1,4 @@
-This example shows how you can easily extend BaseModelView to use *Starlette-Admin*
-with [odmantic](https://github.com/art049/odmantic)
+Odmantic models integration examples.
 
 To run this example:
 

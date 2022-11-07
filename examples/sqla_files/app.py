@@ -33,5 +33,5 @@ admin.add_view(ModelView(Author, icon="fa fa-users"))
 admin.add_view(ModelView(Book, icon="fa fa-book"))
 admin.add_view(ModelView(Dump, icon="fa fa-dumpster"))
 
-# Mount to admin to app
+# Mount admin
 admin.mount_to(app)

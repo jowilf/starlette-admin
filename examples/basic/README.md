@@ -6,14 +6,14 @@ The SearchBuilder is disabled for this example, only full text search is availab
 
 To run this example:
 
-1. Clone the repository::
+1. Clone the repository:
 
 ```shell
 git clone https://github.com/jowilf/starlette-admin.git
 cd starlette-admin
 ```
 
-2. Create and activate a virtual environment::
+2. Create and activate a virtual environment:
 
 ```shell
 python3 -m venv env

@@ -47,5 +47,5 @@ admin.add_view(
     )
 )
 
-# Mount admin to app
+# Mount admin
 admin.mount_to(app)
