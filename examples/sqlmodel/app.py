@@ -3,8 +3,8 @@ from sqlmodel import SQLModel
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
-
 from starlette_admin.contrib.sqlmodel import Admin, ModelView
+
 from .config import ENGINE_URI
 from .models import Comment, Dump, Post, User
 from .views import CommentView, DumpView, PostView

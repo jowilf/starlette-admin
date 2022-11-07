@@ -65,7 +65,7 @@ class TagView(ModelView):
     def handle_exception(self, exc: Exception) -> None:
         """
         As `tag.name` is unique, sqlalchemy will raise IntegrityError
-        when trying to save duplicate values. We can catch this error to
+        when trying to save duplicate values. We can catch this error and
         display comprehensible error to users.
         """
         if isinstance(exc, IntegrityError):
