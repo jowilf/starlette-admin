@@ -1,6 +1,4 @@
-This example shows how you can easily extend BaseModelView to write you custom logic.
-
-It used in memory database represented by a simple python dict object and which will be reset when you restart the server.
+This example shows how you can easily extend BaseModelView with your custom database backend, here [tinydb](https://github.com/msiemens/tinydb). 
 
 The SearchBuilder is disabled for this example, only full text search is available.
 
@@ -23,11 +21,11 @@ source env/bin/activate
 3. Install requirements
 
 ```shell
-pip install -r 'examples/basic/requirements.txt'
+pip install -r 'examples/custom-backend/requirements.txt'
 ```
 
 4. Run the application:
 
 ```shell
-uvicorn examples.basic.app:app
+uvicorn examples.custom-backend.app:app
 ```

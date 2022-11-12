@@ -24,11 +24,11 @@ source env/bin/activate
 3. Install requirements
 
 ```shell
-pip install -r 'examples/sqla_files/requirements.txt'
+pip install -r 'examples/sqla-file/requirements.txt'
 ```
 
 4. Run the application:
 
 ```shell
-uvicorn examples.sqla_files.app:app
+uvicorn examples.sqla-file.app:app
 ```
