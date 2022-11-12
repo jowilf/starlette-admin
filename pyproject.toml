@@ -1,13 +1,15 @@
 [tool.poetry]
 name = "starlette-admin"
 version = "0.3.0.dev4"
-description = "Simple and extensible admin interface framework for Starlette/FastApi"
+description = "Fast, beautiful and extensible administrative interface framework for Starlette/FastApi."
 authors = ["Jocelin Hounon <hounonj@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://jowilf.github.io/starlette-admin"
+homepage = "https://github.com/jowilf/starlette-admin"
 repository = "https://github.com/jowilf/starlette-admin"
-keywords = ["sqlalchemy", "mongoengine", "starlette", "fastapi", "admin", "datatables"]
+documentation = "https://jowilf.github.io/starlette-admin"
+keywords = ["sqlalchemy", "mongoengine", "odmantic", "starlette", "fastapi", "admin", "dashboard", "datatables"]
+
 classifiers = [
     'Development Status :: 4 - Beta',
     "Framework :: AsyncIO",
@@ -23,15 +25,16 @@ classifiers = [
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
 ]
+include = ["CHANGELOG.md"]
 
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.7,<4.0"
 starlette = "*"
 Jinja2 = "*"
 python-multipart = "*"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
 sqlmodel = "^0.0.8"
 uvicorn = "^0.19.0"
@@ -41,13 +44,13 @@ fasteners = "^0.18"
 mongoengine = "^0.24.2"
 black = "^22.6.0"
 isort = "^5.10.1"
-mypy = "^0.982"
-sqlalchemy-file = "^0.1.4"
+mypy = "^0.990"
+sqlalchemy-file = "^0.1.5"
 coverage = "^6.5.0"
 flake8 = "^3.9.2"
-pytest-asyncio = "^0.20.1"
+pytest-asyncio = "^0.20.2"
 psycopg2-binary = "^2.9.3"
-mkdocs-material = "^8.5.5"
+mkdocs-material = "^8.5.10"
 mkdocstrings = { extras = ["python"], version = "^0.19.0" }
 itsdangerous = "^2.1.2"
 autoflake = "^1.7.4"
