@@ -139,10 +139,10 @@ def convert_to_field(column: Column) -> Type[BaseField]:
 
         # Support for custom types like SQLModel which inherit TypeDecorator
         if hasattr(col_type, "impl"):
-            if callable(col_type.impl):  # type: ignore
-                impl = col_type.impl  # type: ignore
+            if callable(col_type.impl):
+                impl = col_type.impl
             else:
-                impl = col_type.impl.__class__  # type: ignore
+                impl = col_type.impl.__class__
 
             if impl.__name__ in converters:
                 return converters[impl.__name__]
