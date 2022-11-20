@@ -68,7 +68,7 @@ admin = Admin(auth_provider=MyAuthProvider())
 ```
 
 ??? note
-    Refer to demo app for full example with starlette SessionMiddleware
+    Refer to [demo app](https://github.com/jowilf/starlette-admin-demo) for full example with starlette SessionMiddleware
 
 ## Authorization
 
@@ -82,17 +82,12 @@ from starlette_admin import CustomView
 from starlette.requests import Request
 
 class ReportView(CustomView):
-    label = "Report"
-    icon = "fa fa-report"
-    path = "/report"
-    template_path = "report.html"
-    name = "report"
-
+    
     def is_accessible(self, request: Request) -> bool:
         return "admin" in request.state.user_roles
 ```
 !!! important
-    When view is inaccessible, it will not appear in menu structure
+    When view is inaccessible, it does not appear in menu structure
 
 ### For [ModelView][starlette_admin.views.BaseModelView]
 In [ModelView][starlette_admin.views.BaseModelView], there is four additional methods you can override
@@ -107,8 +102,7 @@ to restrict access to current user.
 from starlette_admin.contrib.sqla import ModelView
 from starlette.requests import Request
 
-class PostView(ModelView, model=Post):
-    pass
+class PostView(ModelView):
 
     def is_accessible(self, request: Request) -> bool:
         return (

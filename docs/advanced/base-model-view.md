@@ -80,17 +80,17 @@ from starlette_admin import BaseModelView
 from starlette_admin import IntegerField, StringField, TagsField, TextAreaField
 
 class PostView(BaseModelView):
-    fields = (
+    fields = [
         IntegerField("id"),
         StringField("title"),
         TextAreaField("content"),
         TagsField("tags"),
-    )
+    ]
 ```
 
 ## CRUD methods
 
-Finally, you need to implement CRUD methods
+Finally, you need to implement these CRUD methods:
 
 * [count()][starlette_admin.BaseModelView.count]
 * [find_all()][starlette_admin.BaseModelView.find_all]
@@ -147,12 +147,12 @@ class PostView(BaseModelView):
     label = "Blog Posts"
     icon = "fa fa-blog"
     pk_attr = "id"
-    fields = (
+    fields = [
         IntegerField("id"),
         StringField("title"),
         TextAreaField("content"),
         TagsField("tags"),
-    )
+    ]
     sortable_fields = ("id", "title", "content")
     search_builder = False
 

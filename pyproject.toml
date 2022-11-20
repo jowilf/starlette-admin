@@ -1,14 +1,14 @@
 [tool.poetry]
 name = "starlette-admin"
 version = "0.3.0.dev4"
-description = "Fast, beautiful and extensible administrative interface framework for Starlette/FastApi."
+description = "Fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications"
 authors = ["Jocelin Hounon <hounonj@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/jowilf/starlette-admin"
 repository = "https://github.com/jowilf/starlette-admin"
 documentation = "https://jowilf.github.io/starlette-admin"
-keywords = ["sqlalchemy", "mongoengine", "odmantic", "starlette", "fastapi", "admin", "dashboard", "datatables"]
+keywords = ["sqlalchemy", "sqlmodel", "mongoengine", "odmantic", "starlette", "fastapi", "admin", "dashboard", "datatables"]
 
 classifiers = [
     'Development Status :: 4 - Beta',

@@ -46,10 +46,17 @@ class DropDown(BaseView):
 
     Example:
         ```Python
-        class Blog(DropDown):
-            label = "Blog"
-            icon = "fa fa-blog"
-            views = [ModelView(User), ModelView(Post), CommentView]
+        admin.add_view(
+            DropDown(
+                "Resources",
+                icon="fa fa-list",
+                views=[
+                    ModelView(User),
+                    Link(label="Home Page", url="/"),
+                    CustomView(label="Dashboard", path="/dashboard", template_path="dashboard.html"),
+                ],
+            )
+        )
         ```
     """
 
@@ -76,14 +83,11 @@ class DropDown(BaseView):
 
 class Link(BaseView):
     """
-    Display a menu with a link.
+    Add arbitrary hyperlinks to the menu
 
     Example:
         ```Python
-        class GoToStarletteAdminDocs(Link):
-            label = "StarletteAdmin Docs"
-            url = "https://github.com/jowilf/starlette-admin"
-            target = "_blank"
+        admin.add_view(Link(label="Home Page", icon="fa fa-link", url="/"))
         ```
     """
 
@@ -102,7 +106,8 @@ class Link(BaseView):
 
 class CustomView(BaseView):
     """
-    Use this to add custom view to the Admin interface
+    Add your own views (not tied to any particular model). For example,
+    a custom home page that displays some analytics data.
 
     Attributes:
         path: Route path
@@ -113,12 +118,7 @@ class CustomView(BaseView):
 
     Example:
         ```Python
-        class HomeView(CustomView):
-            label = "Home"
-            icon = "fa fa-home"
-            path = "/home"
-            template_path = "home.html"
-            name = "home"
+        admin.add_view(CustomView(label="Home", icon="fa fa-home", path="/home", template_path="home.html"))
         ```
     """
 
@@ -146,16 +146,6 @@ class CustomView(BaseView):
 
     def is_active(self, request: Request) -> bool:
         return request.scope["path"] == self.path
-
-
-class DefaultAdminIndexView(CustomView):
-    """
-    Default Index View for admin interface
-    """
-
-    path = "/"
-    template_path = "index.html"
-    add_to_menu: bool = False
 
 
 class BaseModelView(BaseView):
