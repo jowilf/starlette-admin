@@ -20,8 +20,6 @@
 </a>
 </p>
 
-![Starlette-Admin Promo Image](https://github.com/jowilf/starlette-admin/raw/main/docs/images/promo.png)
-
 ## Getting started
 
 * Check out [the documentation](https://jowilf.github.io/starlette-admin).
@@ -39,7 +37,7 @@
 - Export data to CSV/EXCEL/PDF and Browser Print
 - Authentication
 - Authorization
-- File Support
+- Manage Files
 - Custom views
 - Supported ORMs
     * [SQLAlchemy](https://www.sqlalchemy.org/)
@@ -100,9 +98,9 @@ admin.mount_to(app)
 ```
 Access your admin interface in your browser at [http://localhost:8000/admin](http://localhost:8000/admin)
 
-## 3rd party stuff
+## Third party
 
-*starlette-admin* depends on following open source packages:
+*starlette-admin* is built with other open source projects:
 
 - [Tabler](https://tabler.io/)
 - [Datatables](https://datatables.net/)

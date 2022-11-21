@@ -15,11 +15,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Add `ListField`
 * Add support for [Odmantic](https://art049.github.io/odmantic/) 
 * Add support for datatables [responsive extensions](https://datatables.net/extensions/responsive/)
-!!! usage
-    ```python
-    class MyModelView(ModelView):
-        responsive_table = True
-    ```
   
 ### Changed
 
