@@ -1,15 +1,10 @@
-from typing import Any, Dict, List, Optional, Type, Union, no_type_check
+from typing import Any, Dict, List, Optional, Type, Union
 
-from sqlalchemy import Boolean, Column, func, inspect, select
+import anyio.to_thread
+from sqlalchemy import Column, func, inspect, select
 from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import (
-    ColumnProperty,
-    InstrumentedAttribute,
-    RelationshipProperty,
-    Session,
-    joinedload,
-)
+from sqlalchemy.orm import InstrumentedAttribute, Session, joinedload
 from starlette.requests import Request
 from starlette_admin import (
     ColorField,
@@ -24,23 +19,25 @@ from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
     build_query,
-    convert_to_field,
     extract_column_python_type,
+    normalize_fields,
     normalize_list,
 )
 from starlette_admin.exceptions import FormValidationError
-from starlette_admin.fields import BaseField, EnumField, FileField, HasMany, HasOne
+from starlette_admin.fields import FileField
 from starlette_admin.helpers import prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
 
-class ModelViewMeta(type):
-    @no_type_check
-    def __new__(mcs, name, bases, attrs: dict, **kwargs: Any):
-        cls: Type["ModelView"] = super().__new__(mcs, name, bases, attrs)
-        model = kwargs.get("model")
-        if model is None:
-            return cls
+class ModelView(BaseModelView):
+    def __init__(
+        self,
+        model: Type[Any],
+        icon: Optional[str] = None,
+        name: Optional[str] = None,
+        label: Optional[str] = None,
+        identity: Optional[str] = None,
+    ):
         try:
             mapper = inspect(model)
         except NoInspectionAvailable:
@@ -49,105 +46,44 @@ class ModelViewMeta(type):
             )
         assert len(mapper.primary_key) == 1, (
             "Multiple PK columns not supported, A possible solution is to override "
-            "BaseAdminModel class and put your own logic "
+            "BaseModelView class and put your own logic "
         )
-        cls._pk_column = mapper.primary_key[0]
-        cls.pk_attr = cls._pk_column.key
-        cls._pk_coerce = extract_column_python_type(cls._pk_column)
-        cls.model = model
-        cls.identity = attrs.get("identity", slugify_class_name(cls.model.__name__))
-        cls.label = attrs.get("label", prettify_class_name(cls.model.__name__) + "s")
-        cls.name = attrs.get("name", prettify_class_name(cls.model.__name__))
-        fields = attrs.get(
-            "fields",
-            [
-                cls.model.__dict__[f].key
-                for f in cls.model.__dict__
-                if type(cls.model.__dict__[f]) is InstrumentedAttribute
-            ],
-        )
-        converted_fields = []
-        for field in fields:
-            if isinstance(field, BaseField):
-                converted_fields.append(field)
-            else:
-                if isinstance(field, InstrumentedAttribute):
-                    attr = mapper.attrs.get(field.key)
-                else:
-                    attr = mapper.attrs.get(field)
-                if attr is None:
-                    raise ValueError(f"Can't find column with key {field}")
-                if isinstance(attr, RelationshipProperty):
-                    identity = slugify_class_name(attr.entity.class_.__name__)
-                    if attr.direction.name == "MANYTOONE" or (
-                        attr.direction.name == "ONETOMANY" and not attr.uselist
-                    ):
-                        converted_fields.append(HasOne(attr.key, identity=identity))
-                    else:
-                        converted_fields.append(HasMany(attr.key, identity=identity))
-                elif isinstance(attr, ColumnProperty):
-                    assert (
-                        len(attr.columns) == 1
-                    ), "Multiple-column properties are not supported"
-                    column = attr.columns[0]
-                    required = False
-                    if column.foreign_keys:
-                        continue
-                    if (
-                        not column.nullable
-                        and not isinstance(column.type, (Boolean,))
-                        and not column.default
-                        and not column.server_default
-                    ):
-                        required = True
-
-                    field = convert_to_field(column)
-                    if field is EnumField:
-                        field = EnumField.from_enum(attr.key, column.type.enum_class)
-                    else:
-                        field = field(attr.key)
-                        if isinstance(field, FileField) and getattr(
-                            column.type, "multiple", False
-                        ):
-                            field.multiple = True
-
-                    field.required = required
-                    converted_fields.append(field)
-        cls.fields = converted_fields
-        cls.exclude_fields_from_list = normalize_list(
-            attrs.get("exclude_fields_from_list", [])
-        )
-        cls.exclude_fields_from_detail = normalize_list(
-            attrs.get("exclude_fields_from_detail", [])
-        )
-        cls.exclude_fields_from_create = normalize_list(
-            attrs.get("exclude_fields_from_create", [])
-        )
-        cls.exclude_fields_from_edit = normalize_list(
-            attrs.get("exclude_fields_from_edit", [])
-        )
+        self.model = model
+        self.identity = identity or slugify_class_name(self.model.__name__)
+        self.label = label or prettify_class_name(self.model.__name__) + "s"
+        self.name = name or prettify_class_name(self.model.__name__)
+        self.icon = icon
+        self._pk_column: Column = mapper.primary_key[0]
+        self.pk_attr = self._pk_column.key
+        self._pk_coerce = extract_column_python_type(self._pk_column)
+        if self.fields is None or len(self.fields) == 0:
+            self.fields = [
+                self.model.__dict__[f].key
+                for f in self.model.__dict__
+                if type(self.model.__dict__[f]) is InstrumentedAttribute
+            ]
+        self.fields = normalize_fields(self.fields, mapper)
+        self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
+        self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
+        self.exclude_fields_from_create = normalize_list(self.exclude_fields_from_create)  # type: ignore
+        self.exclude_fields_from_edit = normalize_list(self.exclude_fields_from_edit)  # type: ignore
         _default_list = [
             field.name
-            for field in cls.fields
+            for field in self.fields
             if not isinstance(field, (RelationField, FileField))
         ]
-        cls.searchable_fields = normalize_list(
-            attrs.get("searchable_fields", _default_list)
+        self.searchable_fields = normalize_list(
+            self.searchable_fields
+            if (self.searchable_fields is not None)
+            else _default_list
         )
-        cls.sortable_fields = normalize_list(
-            attrs.get("sortable_fields", _default_list)
+        self.sortable_fields = normalize_list(
+            self.sortable_fields
+            if (self.sortable_fields is not None)
+            else _default_list
         )
-        cls.export_fields = normalize_list(attrs.get("export_fields", None))
-        return cls
-
-
-class ModelView(BaseModelView, metaclass=ModelViewMeta):
-    model: Type[Any]
-    identity: Optional[str] = None
-    pk_attr: Optional[str] = None
-    _pk_column: Column
-    _pk_coerce: type
-    fields: List[BaseField] = []
+        self.export_fields = normalize_list(self.export_fields)
+        super().__init__()
 
     async def count(
         self,
@@ -160,11 +96,13 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             if isinstance(where, dict):
                 where = build_query(where, self.model)
             else:
-                where = self.build_full_text_search_query(request, where, self.model)
+                where = await self.build_full_text_search_query(
+                    request, where, self.model
+                )
             stmt = stmt.where(where)
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalar_one()
-        return session.execute(stmt).scalar_one()
+        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalar_one()
 
     async def find_all(
         self,
@@ -182,7 +120,9 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             if isinstance(where, dict):
                 where = build_query(where, self.model)
             else:
-                where = self.build_full_text_search_query(request, where, self.model)
+                where = await self.build_full_text_search_query(
+                    request, where, self.model
+                )
             stmt = stmt.where(where)
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
         for field in self.fields:
@@ -190,7 +130,12 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
-        return session.execute(stmt).scalars().unique().all()
+        return (
+            (await anyio.to_thread.run_sync(session.execute, stmt))
+            .scalars()
+            .unique()
+            .all()
+        )
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: Union[Session, AsyncSession] = request.state.session
@@ -200,7 +145,12 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().one_or_none()
-        return session.execute(stmt).scalars().unique().one_or_none()
+        return (
+            (await anyio.to_thread.run_sync(session.execute, stmt))
+            .scalars()
+            .unique()
+            .one_or_none()
+        )
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
         session: Union[Session, AsyncSession] = request.state.session
@@ -210,7 +160,12 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 stmt = stmt.options(joinedload(field.name))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
-        return session.execute(stmt).scalars().unique().all()
+        return (
+            (await anyio.to_thread.run_sync(session.execute, stmt))
+            .scalars()
+            .unique()
+            .all()
+        )
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
         """
@@ -221,6 +176,7 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
 
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
         try:
+            data = await self._arrange_data(request, data)
             await self.validate(request, data)
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self._populate_obj(request, self.model(), data)
@@ -229,14 +185,15 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 await session.commit()
                 await session.refresh(obj)
             else:
-                session.commit()
-                session.refresh(obj)
+                await anyio.to_thread.run_sync(session.commit)
+                await anyio.to_thread.run_sync(session.refresh, obj)
             return obj
         except Exception as e:
             return self.handle_exception(e)
 
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
+            data = await self._arrange_data(request, data, True)
             await self.validate(request, data)
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self.find_by_pk(request, pk)
@@ -245,11 +202,41 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 await session.commit()
                 await session.refresh(obj)
             else:
-                session.commit()
-                session.refresh(obj)
+                await anyio.to_thread.run_sync(session.commit)
+                await anyio.to_thread.run_sync(session.refresh, obj)
             return obj
         except Exception as e:
             self.handle_exception(e)
+
+    async def _arrange_data(
+        self,
+        request: Request,
+        data: Dict[str, Any],
+        is_edit: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        This function will return a new dict with relationships loaded from
+        database.
+        """
+        arranged_data: Dict[str, Any] = dict()
+        for field in self.fields:
+            if (is_edit and field.exclude_from_edit) or (
+                not is_edit and field.exclude_from_create
+            ):
+                continue
+            if isinstance(field, RelationField) and data[field.name] is not None:
+                foreign_model = self._find_foreign_model(field.identity)  # type: ignore
+                if not field.multiple:
+                    arranged_data[field.name] = await foreign_model.find_by_pk(
+                        request, data[field.name]
+                    )
+                else:
+                    arranged_data[field.name] = await foreign_model.find_by_pks(
+                        request, data[field.name]
+                    )
+            else:
+                arranged_data[field.name] = data[field.name]
+        return arranged_data
 
     async def _populate_obj(
         self,
@@ -265,26 +252,13 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
                 continue
             name, value = field.name, data.get(field.name, None)
             if isinstance(field, FileField):
-                if data.get(f"_{name}-delete", False):
+                value, should_be_deleted = value
+                if should_be_deleted:
                     setattr(obj, name, None)
                 elif (not field.multiple and value is not None) or (
                     field.multiple and isinstance(value, list) and len(value) > 0
                 ):
                     setattr(obj, name, value)
-            elif isinstance(field, RelationField) and value is not None:
-                foreign_model = self._find_foreign_model(field.identity)  # type: ignore
-                if not field.multiple:
-                    setattr(
-                        obj,
-                        name,
-                        await foreign_model.find_by_pk(request, value),
-                    )
-                else:
-                    setattr(
-                        obj,
-                        name,
-                        await foreign_model.find_by_pks(request, value),
-                    )
             else:
                 setattr(obj, name, value)
         return obj
@@ -298,11 +272,11 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
             await session.commit()
         else:
             for obj in objs:
-                session.delete(obj)
-            session.commit()
+                await anyio.to_thread.run_sync(session.delete, obj)
+            await anyio.to_thread.run_sync(session.commit)
         return len(objs)
 
-    def build_full_text_search_query(
+    async def build_full_text_search_query(
         self, request: Request, term: str, model: Any
     ) -> Dict[str, Any]:
         query: Dict[str, Any] = {"or": []}
@@ -327,32 +301,3 @@ class ModelView(BaseModelView, metaclass=ModelViewMeta):
         except ImportError:  # pragma: no cover
             pass
         raise exc  # pragma: no cover
-
-    async def serialize_field_value(
-        self, value: Any, field: BaseField, action: str, request: Request
-    ) -> Any:
-        try:
-            """to automatically serve sqlalchemy_file"""
-            __import__("sqlalchemy_file")
-            if isinstance(field, FileField) and value is not None:
-                data = []
-                for item in value if field.multiple else [value]:
-                    path = item["path"]
-                    if action == "API" and getattr(item, "thumbnail", None) is not None:
-                        path = item["thumbnail"]["path"]
-                    storage, file_id = path.split("/")
-                    data.append(
-                        {
-                            "content_type": item["content_type"],
-                            "filename": item["filename"],
-                            "url": request.url_for(
-                                request.app.state.ROUTE_NAME + ":api:file",
-                                storage=storage,
-                                file_id=file_id,
-                            ),
-                        }
-                    )
-                return data if field.multiple else data[0]
-        except ImportError:  # pragma: no cover
-            pass
-        return await super().serialize_field_value(value, field, action, request)

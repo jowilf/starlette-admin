@@ -1,10 +1,14 @@
-from typing import Any, Dict, List, Optional
+import functools
+from typing import Any, Callable, Dict, List, Optional, Sequence, Type
 
 import mongoengine.fields as me
 import starlette_admin as sa
+from mongoengine import EmbeddedDocument
 from mongoengine.base.fields import BaseField as MongoBaseField
-from starlette_admin import TagsField
+from mongoengine.queryset import Q as BaseQ
+from mongoengine.queryset import QNode
 from starlette_admin.contrib.mongoengine.exceptions import NotSupportedField
+from starlette_admin.contrib.mongoengine.fields import FileField, ImageField
 from starlette_admin.helpers import slugify_class_name
 
 mongoengine_to_admin_map = {
@@ -23,23 +27,14 @@ mongoengine_to_admin_map = {
     me.URLField: sa.URLField,
     me.MapField: sa.JSONField,
     me.DictField: sa.JSONField,
-    me.FileField: sa.FileField,
-    me.ImageField: sa.ImageField,
-    me.GenericEmbeddedDocumentField: sa.JSONField,
-    me.EmbeddedDocumentField: sa.JSONField,
+    me.FileField: FileField,
+    me.ImageField: ImageField,
 }
 
 reference_fields = (
     me.ReferenceField,
     me.CachedReferenceField,
     me.LazyReferenceField,
-)
-
-json_like_fields = (
-    me.DictField,
-    me.MapField,
-    me.GenericEmbeddedDocumentField,
-    me.EmbeddedDocumentField,
 )
 
 
@@ -58,21 +53,33 @@ def convert_mongoengine_field_to_admin_field(
                 dtype if isinstance(dtype, str) else dtype.__name__
             )
             admin_field = sa.HasMany(name, identity=identity)
+        elif isinstance(field.field, (me.DictField, me.MapField)):
+            admin_field = sa.JSONField(name)
+        elif isinstance(field.field, me.EnumField):
+            admin_field = sa.EnumField.from_enum(
+                name, enum_type=field.field._enum_cls, multiple=True
+            )
         else:
-            if isinstance(field.field, json_like_fields):
-                admin_field = sa.JSONField(name)
-            elif isinstance(field.field, me.EnumField):
-                admin_field = sa.EnumField.from_enum(
-                    name, enum_type=field.field._enum_cls, multiple=True
-                )
-            else:
-                admin_field = TagsField(name)
+            field.field.name = name
+            admin_field = sa.ListField(
+                convert_mongoengine_field_to_admin_field(field.field)
+            )
     elif isinstance(field, me.ReferenceField):
         dtype = field.document_type_obj
         identity = slugify_class_name(
             dtype if isinstance(dtype, str) else dtype.__name__
         )
         admin_field = sa.HasOne(name, identity=identity)
+    elif isinstance(field, me.EmbeddedDocumentField):
+        document_type_obj: EmbeddedDocument = field.document_type
+        _fields = []
+        for _field in document_type_obj._fields_ordered:
+            _fields.append(
+                convert_mongoengine_field_to_admin_field(
+                    getattr(document_type_obj, _field)
+                )
+            )
+        admin_field = sa.CollectionField(name, fields=_fields)
     elif isinstance(field, me.EnumField):
         admin_field = sa.EnumField.from_enum(name, enum_type=field._enum_cls)
     else:
@@ -86,44 +93,79 @@ def convert_mongoengine_field_to_admin_field(
     return admin_field
 
 
-comparison_map = {
-    "eq": "$eq",
-    "neq": "$ne",
-    "ge": "$gte",
-    "gt": "$gt",
-    "le": "$lte",
-    "lt": "$lt",
-    "in": "$in",
-    "not_in": "$nin",
+class Q(BaseQ):
+    """
+    Override mongoengine.Q class to support expression like this:
+    >>> Q('name', 'Jo', 'istartswith') # same as Q(name__istartswith = 'Jo')
+    or
+    >>> Q('name', 'John') # same as Q(name = 'John')
+    """
+
+    def __init__(self, field: str, value: Any, op: Optional[str] = None) -> None:
+        field = f'{field.replace(".", "__")}__'
+        if op is not None:
+            field = f"{field}{op}"
+        super().__init__(**{field: value})
+
+    @classmethod
+    def empty(cls) -> BaseQ:
+        return BaseQ()
+
+
+OPERATORS: Dict[str, Callable[[str, Any], Q]] = {
+    "eq": lambda f, v: Q(f, v),
+    "neq": lambda f, v: Q(f, v, "ne"),
+    "lt": lambda f, v: Q(f, v, "lt"),
+    "gt": lambda f, v: Q(f, v, "gt"),
+    "le": lambda f, v: Q(f, v, "lte"),
+    "ge": lambda f, v: Q(f, v, "gte"),
+    "in": lambda f, v: Q(f, v, "in"),
+    "not_in": lambda f, v: Q(f, v, "nin"),
+    "startswith": lambda f, v: Q(f, v, "istartswith"),
+    "not_startswith": lambda f, v: Q(f, v, "not__istartswith"),
+    "endswith": lambda f, v: Q(f, v, "iendswith"),
+    "not_endswith": lambda f, v: Q(f, v, "not__iendswith"),
+    "contains": lambda f, v: Q(f, v, "icontains"),
+    "not_contains": lambda f, v: Q(f, v, "not__icontains"),
+    "is_false": lambda f, v: Q(f, False),
+    "is_true": lambda f, v: Q(f, True),
+    "is_null": lambda f, v: Q(f, None),
+    "is_not_null": lambda f, v: Q(f, None, "ne"),
+    "between": lambda f, v: Q(f, v[0], "gte") & Q(f, v[1], "lte"),
+    "not_between": lambda f, v: Q(f, v[0], "lt") | Q(f, v[1], "gt"),
 }
 
 
-def build_raw_query(dt_query: Dict[str, Any]) -> Dict[str, Any]:
-    raw_query: Dict[str, Any] = dict()
-    for key in dt_query:
-        if key == "or":
-            raw_query["$or"] = [build_raw_query(q) for q in dt_query[key]]
-        elif key == "and":
-            raw_query["$and"] = [build_raw_query(q) for q in dt_query[key]]
-        elif key == "not":
-            raw_query["$not"] = build_raw_query(dt_query[key])
-        elif key == "between":
-            values = dt_query[key]
-            raw_query = {"$gte": values[0], "$lte": values[1]}
-        elif key == "not_between":
-            values = dt_query[key]
-            raw_query = {"$not": {"$gte": values[0], "$lte": values[1]}}
-        elif key == "contains":
-            raw_query = {"$regex": dt_query[key], "$options": "mi"}
-        elif key == "startsWith":
-            raw_query = {"$regex": "^%s" % dt_query[key], "$options": "mi"}
-        elif key == "endsWith":
-            raw_query = {"$regex": "%s$" % dt_query[key], "$options": "mi"}
-        elif key in comparison_map:
-            raw_query[comparison_map[key]] = dt_query[key]
-        else:
-            raw_query[key] = build_raw_query(dt_query[key])
-    return raw_query
+def isvalid_field(document: Type[me.Document], field: str) -> bool:
+    """
+    Check if field is valid field for document. nested field is separate with '.'
+    """
+    try:
+        document._lookup_field(field.split("."))
+    except Exception:  # pragma: no cover
+        return False
+    return True
+
+
+def resolve_deep_query(
+    where: Dict[str, Any],
+    document: Type[me.Document],
+    latest_field: Optional[str] = None,
+) -> QNode:
+    _all_queries = []
+    for key in where:
+        if key in ["or", "and"]:
+            _arr = [(resolve_deep_query(q, document, latest_field)) for q in where[key]]
+            if len(_arr) > 0:
+                funcs = {"or": lambda q1, q2: q1 | q2, "and": lambda q1, q2: q1 & q2}
+                _all_queries.append(functools.reduce(funcs[key], _arr))
+        elif key in OPERATORS:
+            _all_queries.append(OPERATORS[key](latest_field, where[key]))  # type: ignore
+        elif isvalid_field(document, key):
+            _all_queries.append(resolve_deep_query(where[key], document, key))
+    if _all_queries:
+        return functools.reduce(lambda q1, q2: q1 & q2, _all_queries)
+    return Q.empty()
 
 
 def build_order_clauses(order_list: List[str]) -> List[str]:
@@ -134,7 +176,7 @@ def build_order_clauses(order_list: List[str]) -> List[str]:
     return clauses
 
 
-def normalize_list(arr: Optional[List[Any]]) -> Optional[List[str]]:
+def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
     if arr is None:
         return None
     _new_list = []

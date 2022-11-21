@@ -1,13 +1,17 @@
-from starlette_admin.exceptions import SFAdminException
+from starlette_admin.exceptions import StarletteAdminException
 
 
-class InvalidModelError(SFAdminException):
+class InvalidModelError(StarletteAdminException):
     pass
 
 
-class InvalidQuery(SFAdminException):
+class InvalidQuery(StarletteAdminException):
     pass
 
 
-class NotSupportedColumn(SFAdminException):
+class NotSupportedColumn(StarletteAdminException):
+    pass
+
+
+class NotSupportedValue(StarletteAdminException):
     pass

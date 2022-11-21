@@ -11,6 +11,7 @@ htmlcov
 coverage.xml
 site
 *.db
+*.sqlite
 .cache
 __pycache__/
 .pytest_cache/

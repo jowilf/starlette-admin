@@ -1,0 +1,4 @@
+starlette-admin
+uvicorn
+sqlmodel
+pydantic[email]

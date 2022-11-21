@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.7" , "3.8", "3.9", "3.10" ]
+        python-version: [ "3.7" , "3.8", "3.9", "3.10"]
 
     services:
       mongodb:
@@ -69,31 +69,34 @@ jobs:
         run: poetry run bash scripts/lint.sh
       - name: Test Local Storage provider & postgresql
         env:
-          ENGINE: 'postgresql+psycopg2://username:password@localhost:5432/test_db'
-          ASYNC_ENGINE: 'postgresql+asyncpg://username:password@localhost:5432/test_db'
+          SQLA_ENGINE: 'postgresql+psycopg2://username:password@localhost:5432/test_db'
+          SQLA_ASYNC_ENGINE: 'postgresql+asyncpg://username:password@localhost:5432/test_db'
           STORAGE_PROVIDER: 'LOCAL'
           LOCAL_PATH: '/tmp/storage'
-          MONGO_URL: 'mongodb://localhost:27017/test_db'
+          MONGO_URI: 'mongodb://localhost:27017/'
+          MONGO_DATABASE: 'test_db'
         run: poetry run coverage run -m pytest tests
       - name: Test Local Storage provider & mysql
         env:
-          ENGINE: 'mysql+pymysql://username:password@localhost:3306/test_db'
-          ASYNC_ENGINE: 'mysql+aiomysql://username:password@localhost:3306/test_db'
+          SQLA_ENGINE: 'mysql+pymysql://username:password@localhost:3306/test_db'
+          SQLA_ASYNC_ENGINE: 'mysql+aiomysql://username:password@localhost:3306/test_db'
           STORAGE_PROVIDER: 'LOCAL'
           LOCAL_PATH: '/tmp/storage'
-          MONGO_URL: 'mongodb://localhost:27017/test_db'
+          MONGO_URI: 'mongodb://localhost:27017/'
+          MONGO_DATABASE: 'test_db'
         run: poetry run coverage run -m pytest tests
       - name: Test Minio Storage provider & sqlite memory
         env:
-          ENGINE: 'sqlite:///test.db?check_same_thread=False'
-          ASYNC_ENGINE: 'sqlite+aiosqlite:///test.db?check_same_thread=False'
+          SQLA_ENGINE: 'sqlite:///test.db?check_same_thread=False'
+          SQLA_ASYNC_ENGINE: 'sqlite+aiosqlite:///test.db?check_same_thread=False'
           STORAGE_PROVIDER: 'MINIO'
           MINIO_KEY: 'minioadmin'
           MINIO_SECRET: 'minioadmin'
           MINIO_HOST: 'localhost'
           MINIO_PORT: 9000
           MINIO_SECURE: false
-          MONGO_URL: 'mongodb://localhost:27017/test_db'
+          MONGO_URI: 'mongodb://localhost:27017/'
+          MONGO_DATABASE: 'test_db'
         run: poetry run coverage run -m pytest tests
       - name: Coverage Report
         run: poetry run bash scripts/coverage.sh

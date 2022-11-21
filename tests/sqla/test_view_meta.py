@@ -25,10 +25,8 @@ from starlette_admin import (
     DateTimeField,
     DecimalField,
     EnumField,
-    FileField,
     HasMany,
     HasOne,
-    ImageField,
     IntegerField,
     JSONField,
     StringField,
@@ -40,6 +38,7 @@ from starlette_admin.contrib.sqla.exceptions import (
     InvalidModelError,
     NotSupportedColumn,
 )
+from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.contrib.sqla.view import ModelView
 
 Base = declarative_base()
@@ -88,28 +87,17 @@ class Document(Base):
     attachments = relationship("Attachment", back_populates="document")
 
 
-class UserView(ModelView, model=User):
+class UserView(ModelView):
     form_include_pk = True
 
 
-class AttachmentView(ModelView, model=Attachment):
-    pass
-
-
-class DocumentView(ModelView, model=Document):
-    pass
-
-
 def test_fields_conversion():
-    assert UserView.identity == "user"
-    assert AttachmentView.identity == "attachment"
-    assert DocumentView.identity == "document"
-    assert UserView().fields == [
+    assert UserView(User).fields == [
         StringField("name", required=True),
         TextAreaField("bio"),
         HasOne("document", identity="document", orderable=False, searchable=False),
     ]
-    assert AttachmentView().fields == [
+    assert ModelView(Attachment).fields == [
         IntegerField(
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
@@ -119,7 +107,7 @@ def test_fields_conversion():
         FileField("files", multiple=True, orderable=False, searchable=False),
         HasOne("document", identity="document", orderable=False, searchable=False),
     ]
-    assert DocumentView().fields == [
+    assert ModelView(Document).fields == [
         IntegerField(
             "int", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
@@ -148,12 +136,11 @@ def test_not_supported_array_columns():
             id = Column(Integer, primary_key=True)
             field = Column(ARRAY(String, dimensions=2))
 
-        class DocView(ModelView, model=Doc):
-            pass
+        ModelView(Doc)
 
 
 def test_fields_customisation():
-    class CustomDocumentView(ModelView, model=Document):
+    class CustomDocumentView(ModelView):
         fields = [
             "int",
             Document.bool,
@@ -164,7 +151,7 @@ def test_fields_customisation():
         exclude_fields_from_detail = ["bool"]
         exclude_fields_from_edit = ["float"]
 
-    assert CustomDocumentView().fields == [
+    assert CustomDocumentView(Document).fields == [
         IntegerField(
             "int", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
@@ -177,8 +164,10 @@ def test_fields_customisation():
 def test_invalid_field_list():
     with pytest.raises(ValueError, match="Can't find column with key 1"):
 
-        class CustomDocumentView(ModelView, model=Document):
+        class CustomDocumentView(ModelView):
             fields = [1]
+
+        CustomDocumentView(Document)
 
 
 def test_invalid_exclude_list():
@@ -186,8 +175,10 @@ def test_invalid_exclude_list():
         ValueError, match="Expected str or InstrumentedAttribute, got int"
     ):
 
-        class CustomDocumentView(ModelView, model=Document):
+        class CustomDocumentView(ModelView):
             exclude_fields_from_create = [1]
+
+        CustomDocumentView(Document)
 
 
 def test_invalid_model():
@@ -198,8 +189,7 @@ def test_invalid_model():
         class CustomModel:
             id = Column(Integer, primary_key=True)
 
-        class CustomModelView(ModelView, model=CustomModel):
-            pass
+        ModelView(CustomModel)
 
 
 def test_conversion_when_impl_callable() -> None:
@@ -212,10 +202,7 @@ def test_conversion_when_impl_callable() -> None:
         id = Column(Integer, primary_key=True)
         name = Column(CustomString)
 
-    class CustomModelView(ModelView, model=CustomModel):
-        pass
-
-    assert CustomModelView().fields == [
+    assert ModelView(CustomModel).fields == [
         IntegerField(
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
@@ -233,10 +220,7 @@ def test_conversion_when_impl_not_callable() -> None:
         id = Column(Integer, primary_key=True)
         name = Column(CustomString)
 
-    class CustomModelView(ModelView, model=CustomModel2):
-        pass
-
-    assert CustomModelView().fields == [
+    assert ModelView(CustomModel2).fields == [
         IntegerField(
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
         ),

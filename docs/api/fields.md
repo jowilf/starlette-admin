@@ -20,3 +20,5 @@
 :::starlette_admin.fields.ImageField
 :::starlette_admin.fields.HasOne
 :::starlette_admin.fields.HasMany
+:::starlette_admin.fields.ListField
+:::starlette_admin.fields.CollectionField

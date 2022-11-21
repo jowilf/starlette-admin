@@ -1,8 +1,64 @@
 $(function () {
   var selectedRows = [];
-  model.fields.map((f) => {
-    $("#table-header").append(`<th>${f.label}</th>`);
-  });
+  var dt_columns = [];
+
+  (function () {
+    let fringe = model.fields;
+    while (fringe.length > 0) {
+      let field = fringe.shift(0);
+      if (field.type === "CollectionField")
+        fringe = field.fields
+          .map((f) => {
+            // Produce nested name (ex: category.name)
+            f.name = field.name + "." + f.name;
+            f.label = field.label + "." + f.label;
+            return f;
+          })
+          .concat(fringe);
+      else if (field.type === "ListField") {
+        // To reduce complexity, List of CollectionField will render as json
+        if (field.field.type == "CollectionField") {
+          $("#table-header").append(`<th>${field.label}</th>`);
+          dt_columns.push({
+            name: field.name,
+            data: field.name,
+            orderable: field.field.orderable,
+            searchBuilderType: field.search_builder_type,
+            render: function (data, type, full, meta) {
+              return render[field.field.render_function_key](
+                data,
+                type,
+                full,
+                meta,
+                field
+              );
+            },
+          });
+        } else {
+          field.field.name = field.name;
+          field.field.label = field.label;
+          fringe.unshift(field.field);
+        }
+      } else if (!field.exclude_from_list) {
+        $("#table-header").append(`<th>${field.label}</th>`);
+        dt_columns.push({
+          name: field.name,
+          data: field.name,
+          orderable: field.orderable,
+          searchBuilderType: field.search_builder_type,
+          render: function (data, type, full, meta) {
+            return render[field.render_function_key](
+              data,
+              type,
+              full,
+              meta,
+              field
+            );
+          },
+        });
+      }
+    }
+  })();
 
   // Buttons declarations
 
@@ -138,29 +194,22 @@ $(function () {
         "<": "lt",
         "<=": "le",
         contains: "contains",
-        starts: "startsWith",
-        ends: "endsWith",
+        starts: "startswith",
+        ends: "endswith",
+        "!contains": "not_contains",
+        "!starts": "not_startswith",
+        "!ends": "not_endswith",
+        null: "is_null",
+        "!null": "is_not_null",
+        false: "is_false",
+        true: "is_true",
       };
       if (c.condition == "between") {
         cnd["between"] = c.value;
       } else if (c.condition == "!between") {
         cnd["not_between"] = c.value;
-      } else if (c.condition == "!starts") {
-        cnd["not"] = { startsWith: c.value1 };
-      } else if (c.condition == "!ends") {
-        cnd["not"] = { endsWith: c.value1 };
-      } else if (c.condition == "!contains") {
-        cnd["not"] = { contains: c.value1 };
-      } else if (c.condition == "null") {
-        cnd["eq"] = null;
-      } else if (c.condition == "!null") {
-        cnd["neq"] = null;
-      } else if (c.condition == "false") {
-        cnd["eq"] = false;
-      } else if (c.condition == "true") {
-        cnd["eq"] = true;
       } else if (c_map[c.condition]) {
-        cnd[c_map[c.condition]] = c.value1;
+        cnd[c_map[c.condition]] = c.value1 || "";
       }
       d[c.origData] = cnd;
     }
@@ -177,7 +226,7 @@ $(function () {
     info: true,
     colReorder: true,
     searchHighlight: true,
-    // responsive: true,
+    responsive: model.responsiveTable,
     serverSide: true,
     scrollX: false,
     lengthMenu: model.lengthMenu,
@@ -259,17 +308,7 @@ $(function () {
         orderable: false,
         render: render.col_1,
       },
-      ...model.fields.map((f) => {
-        return {
-          name: f.name,
-          data: f.name,
-          orderable: f.orderable,
-          searchBuilderType: f.search_builder_type,
-          render: function (data, type, full, meta) {
-            return render[f.render_function_key](data, type, full, meta, f);
-          },
-        };
-      }),
+      ...dt_columns,
     ],
     order: [],
   });

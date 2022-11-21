@@ -1,11 +1,10 @@
-# Handling files
+# Managing files
 
-With *Starlette-Admin* you can attach files directly to your model.
+*Starlette-Admin* has out-of-the-box support for [SQLAlchemy-file](https://github.com/jowilf/sqlalchemy-file) and Gridfs through Mongoengine FileField & ImageField
 
-## SQLAlchemy
+## SQLAlchemy & SQLModel
 
-*Starlette-Admin* supports [SQLAlchemy-file](https://github.com/jowilf/sqlalchemy-file) by default for 
-files handling. All you need is to add ImageField or FileField to your model
+All you need is to add ImageField or FileField from [SQLAlchemy-file](https://github.com/jowilf/sqlalchemy-file) to your model
 
 ```python
 from sqlalchemy import Column, Integer, String
@@ -25,10 +24,10 @@ class Book(Base):
     content = Column(FileField)
 
 
-class BookView(ModelView, model=Book):
+class BookView(ModelView):
     pass
 
-admin.add_view(BookView)
+admin.add_view(BookView(Book))
 ```
 !!! note
     You can also use `multiple=True` to save multiple files.
@@ -49,9 +48,8 @@ class Book(Document):
     content = FileField()
 
 
-class BookView(ModelView, document=Book):
+class BookView(ModelView):
     pass
 
-admin.add_view(BookView)
-
+admin.add_view(BookView(Book))
 ```

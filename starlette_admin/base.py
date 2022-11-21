@@ -13,18 +13,11 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_303_SEE_OTHER, HTTP_403_FORBIDDEN
 from starlette.templating import Jinja2Templates
+from starlette_admin._types import RequestAction
 from starlette_admin.auth import AuthMiddleware, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
-from starlette_admin.fields import BooleanField, FileField
 from starlette_admin.helpers import get_file_icon
-from starlette_admin.views import (
-    BaseModelView,
-    BaseView,
-    CustomView,
-    DefaultAdminIndexView,
-    DropDown,
-    Link,
-)
+from starlette_admin.views import BaseModelView, BaseView, CustomView, DropDown, Link
 
 
 class BaseAdmin:
@@ -38,8 +31,8 @@ class BaseAdmin:
         logo_url: Optional[str] = None,
         login_logo_url: Optional[str] = None,
         templates_dir: str = "templates",
-        statics_dir: str = "statics",
-        index_view: Type[CustomView] = DefaultAdminIndexView,
+        statics_dir: Optional[str] = None,
+        index_view: Optional[CustomView] = None,
         auth_provider: Optional[AuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
@@ -66,7 +59,11 @@ class BaseAdmin:
         self.statics_dir = statics_dir
         self.auth_provider = auth_provider
         self.middlewares = middlewares
-        self.index_view: Type[CustomView] = index_view
+        self.index_view = (
+            index_view
+            if (index_view is not None)
+            else CustomView("", add_to_menu=False)
+        )
         self._views: List[BaseView] = []
         self._models: List[BaseModelView] = []
         self.routes: List[Union[Route, Mount]] = []
@@ -75,13 +72,27 @@ class BaseAdmin:
         self.init_auth()
         self.init_routes()
 
-    def add_view(self, view: Type[BaseView]) -> None:
+    def add_view(self, view: Union[Type[BaseView], BaseView]) -> None:
         """
         Add View to the Admin interface.
         """
-        view_instance = view()
+        if isinstance(view, BaseView):
+            view_instance = view
+        else:
+            view_instance = view()
         self._views.append(view_instance)
         self.setup_view(view_instance)
+
+    def custom_render_js(self, request: Request) -> Optional[str]:
+        """
+        Override this function to provide a link to custom js to override the
+        global `render` object in javascript which is use to render fields in
+        list page.
+
+        Args:
+            request: Starlette Request
+        """
+        return None
 
     def init_auth(self) -> None:
         if self.auth_provider is not None:
@@ -109,17 +120,13 @@ class BaseAdmin:
             )
 
     def init_routes(self) -> None:
-        statics = StaticFiles(
-            directory=self.statics_dir, packages=["starlette_admin"], check_dir=False
-        )
-        # Avoid raising error where statics directory is not Found
-        statics.config_checked = True
+        statics = StaticFiles(directory=self.statics_dir, packages=["starlette_admin"])
         self.routes.extend(
             [
                 Mount("/statics", app=statics, name="statics"),
                 Route(
                     self.index_view.path,
-                    self._render_custom_view(self.index_view()),
+                    self._render_custom_view(self.index_view),
                     methods=self.index_view.methods,
                     name="index",
                 ),
@@ -156,7 +163,7 @@ class BaseAdmin:
             ]
         )
         if self.index_view.add_to_menu:
-            self._views.append(self.index_view())
+            self._views.append(self.index_view)
 
     def _setup_templates(self) -> None:
         templates = Jinja2Templates(self.templates_dir)
@@ -172,6 +179,7 @@ class BaseAdmin:
         templates.env.globals["__name__"] = self.route_name
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["login_logo_url"] = self.login_logo_url
+        templates.env.globals["custom_render_js"] = lambda r: self.custom_render_js(r)
         templates.env.filters["is_custom_view"] = lambda res: isinstance(
             res, CustomView
         )
@@ -184,11 +192,13 @@ class BaseAdmin:
             "to_model"
         ] = lambda identity: self._find_model_from_identity(identity)
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
+        templates.env.filters["is_str"] = lambda v: isinstance(v, str)
+        templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:
         if isinstance(view, DropDown):
-            for sub_view in view._views_instance:
+            for sub_view in view.views:
                 self.setup_view(sub_view)
         elif isinstance(view, CustomView):
             self.routes.insert(
@@ -201,7 +211,7 @@ class BaseAdmin:
                 ),
             )
         elif isinstance(view, BaseModelView):
-            view._find_foreign_model = lambda i: self._find_model_from_identity(i)  # type: ignore
+            view._find_foreign_model = lambda i: self._find_model_from_identity(i)
             self._models.append(view)
 
     def _find_model_from_identity(self, identity: Optional[str]) -> BaseModelView:
@@ -257,7 +267,7 @@ class BaseAdmin:
                             await model.serialize(
                                 item,
                                 request,
-                                "API",
+                                RequestAction.API if select2 else RequestAction.LIST,
                                 include_relationships=not select2,
                                 include_select2=select2,
                             )
@@ -347,7 +357,7 @@ class BaseAdmin:
                 "request": request,
                 "model": model,
                 "raw_obj": obj,
-                "obj": await model.serialize(obj, request, "VIEW"),
+                "obj": await model.serialize(obj, request, RequestAction.DETAIL),
             },
         )
 
@@ -363,16 +373,18 @@ class BaseAdmin:
             )
         else:
             form = await request.form()
-            dict_obj = await self.form_to_dict(request, form, model, "CREATE")
+            dict_obj = await self.form_to_dict(
+                request, form, model, RequestAction.CREATE
+            )
             try:
                 obj = await model.create(request, dict_obj)
-            except FormValidationError as errors:
+            except FormValidationError as exc:
                 return self.templates.TemplateResponse(
                     model.create_template,
                     {
                         "request": request,
                         "model": model,
-                        "errors": errors,
+                        "errors": exc.errors,
                         "obj": dict_obj,
                     },
                 )
@@ -402,21 +414,21 @@ class BaseAdmin:
                     "request": request,
                     "model": model,
                     "raw_obj": obj,
-                    "obj": await model.serialize(obj, request, "EDIT"),
+                    "obj": await model.serialize(obj, request, RequestAction.EDIT),
                 },
             )
         else:
             form = await request.form()
-            dict_obj = await self.form_to_dict(request, form, model, "EDIT")
+            dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
             try:
                 obj = await model.edit(request, pk, dict_obj)
-            except FormValidationError as errors:
+            except FormValidationError as exc:
                 return self.templates.TemplateResponse(
                     model.edit_template,
                     {
                         "request": request,
                         "model": model,
-                        "errors": errors,
+                        "errors": exc.errors,
                         "obj": dict_obj,
                     },
                 )
@@ -449,19 +461,15 @@ class BaseAdmin:
         request: Request,
         form_data: FormData,
         model: BaseModelView,
-        action: str,
+        action: RequestAction,
     ) -> Dict[str, Any]:
         data = dict()
         for field in model.fields:
-            if (action == "EDIT" and field.exclude_from_edit) or (
-                action == "CREATE" and field.exclude_from_create
+            if (action == RequestAction.EDIT and field.exclude_from_edit) or (
+                action == RequestAction.CREATE and field.exclude_from_create
             ):
                 continue
-            if isinstance(field, FileField) and action == "EDIT":
-                data[f"_{field.name}-delete"] = await BooleanField(
-                    f"_{field.name}-delete"
-                ).parse_form_data(request, form_data)
-            data[field.name] = await field.parse_form_data(request, form_data)
+            data[field.name] = await field.parse_form_data(request, form_data, action)
         return data
 
     def mount_to(self, app: Starlette) -> None:

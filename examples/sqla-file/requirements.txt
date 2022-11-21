@@ -1,0 +1,5 @@
+starlette-admin
+uvicorn
+sqlalchemy-file
+fasteners
+pillow

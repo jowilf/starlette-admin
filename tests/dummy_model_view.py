@@ -1,13 +1,13 @@
-from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
+from pydantic import BaseModel
 from requests import Request
 from starlette_admin import HasMany, HasOne
+from starlette_admin.helpers import prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
 
-@dataclass
-class DummyBaseModel:
+class DummyBaseModel(BaseModel):
     id: int
 
     def is_valid_for_term(self, term, searchable_fields):
@@ -24,10 +24,18 @@ class DummyBaseModel:
 
 
 class DummyModelView(BaseModelView):
+    """Custom ModelView which store data in memory only for testing purpose"""
+
     pk_attr = "id"
     model: Optional[Type[DummyBaseModel]] = None
     db: Dict[int, DummyBaseModel] = dict()
     seq = 1
+
+    def __init__(self):
+        self.identity = slugify_class_name(self.model.__name__)
+        self.name = prettify_class_name(self.model.__name__)
+        self.label = prettify_class_name(self.model.__name__) + "s"
+        super().__init__()
 
     def filter_values(self, values: Iterable[DummyBaseModel], term):
         filtered_values = []

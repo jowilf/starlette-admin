@@ -33,25 +33,23 @@
                     <div class="card-body border-bottom py-3">
                         {%for field in model._extract_fields('CREATE') %}
                         <div class="mb-3">
-                            {% with action='CREATE',data=(None if not obj else obj[field.name]), error=(errors and errors.has(field.name))%}
+                            {% with action='CREATE',data=(None if not obj else obj[field.name]), error=errors.get(field.name, None) if errors else None%}
+                            {% include field.label_template %}
                             {% include field.form_template %}
                             {% endwith %}
-                            {%if errors and errors.has(field.name)%}
-                            <div class="invalid-feedback">{{errors.msg(field.name)}}</div>
-                            {%endif%}
                         </div>
                         {%endfor%}
                     </div>
                     <div class="card-footer text-black">
                         <div class="btn-list ms-auto justify-content-end">
                             <a href="{{url_for(__name__ ~ ':list', identity=model.identity)}}" class="btn btn-danger">Cancel</a>
-                            <button type="submit" name="_add_another" class="btn btn-outline-secondary">Save and add
+                            <button type="submit" name="_add_another" class="btn">Save and add
                                 another
                             </button>
-                            <button type="submit" name="_continue_editing" class="btn btn-outline-secondary">Save and
+                            <button type="submit" name="_continue_editing" class="btn">Save and
                                 continue editing
                             </button>
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-success">Save</button>
                         </div>
                     </div>
                 </form>
@@ -64,6 +62,11 @@
 {%for link in model._additional_css_links(request, "CREATE")%}
 <link rel="stylesheet" href="{{ link }}">
 {%endfor%}
+<style>
+.is-invalid .select2-selection {
+    border-color: #d63939 !important;
+}
+</style>
 {%endblock%}
 {%block script%}
 {%for link in model._additional_js_links(request, "CREATE")%}

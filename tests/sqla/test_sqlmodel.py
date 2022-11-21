@@ -2,11 +2,11 @@ from datetime import date, datetime, time
 from typing import Optional
 
 import pytest
-from async_asgi_testclient import TestClient as AsyncTestClient
+import pytest_asyncio
+from httpx import AsyncClient
 from sqlmodel import Field, Session, SQLModel
 from starlette.applications import Starlette
-from starlette_admin.contrib.sqla import Admin
-from starlette_admin.contrib.sqla.extensions import SQLModelView
+from starlette_admin.contrib.sqlmodel import Admin, ModelView
 
 from tests.sqla.utils import get_test_engine
 
@@ -22,21 +22,17 @@ class Todo(SQLModel, table=True):
     completed_time: Optional[time]
 
 
-class TodoView(SQLModelView, model=Todo):
-    pass
-
-
 class TestSQLModel:
-    def setup(self) -> None:
+    def setup_method(self, method):
         SQLModel.metadata.create_all(engine)
 
-    def teardown(self):
+    def teardown_method(self, method):
         SQLModel.metadata.drop_all(engine)
 
     @pytest.fixture
     def admin(self):
         admin = Admin(engine)
-        admin.add_view(TodoView)
+        admin.add_view(ModelView(Todo))
         return admin
 
     @pytest.fixture
@@ -45,31 +41,32 @@ class TestSQLModel:
         admin.mount_to(app)
         return app
 
-    @pytest.fixture
-    def async_client(self, app):
-        return AsyncTestClient(app)
+    @pytest_asyncio.fixture
+    async def client(self, app):
+        async with AsyncClient(app=app, base_url="http://testserver") as c:
+            yield c
 
     @pytest.mark.asyncio
-    async def test_create(self, async_client):
+    async def test_create(self, client: AsyncClient):
         with Session(engine) as session:
-            response = await async_client.post(
+            response = await client.post(
                 "/admin/todo/create",
-                form={
+                data={
                     "todo": "Do something nice for someone I care about",
                     "deadline": datetime.now().isoformat(),
                     "completed": "on",
                 },
-                allow_redirects=False,
+                follow_redirects=False,
             )
             assert response.status_code == 303
             assert session.get(Todo, 1) is not None
 
     @pytest.mark.asyncio
-    async def test_validation_error(self, async_client):
+    async def test_validation_error(self, client: AsyncClient):
         with Session(engine) as session:
-            response = await async_client.post(
+            response = await client.post(
                 "/admin/todo/create",
-                form={
+                data={
                     "todo": "Do some",
                     "completed_date": date.today().isoformat(),
                     "completed_time": datetime.now().strftime("%H:%M:%S"),
@@ -89,12 +86,12 @@ class TestSQLModel:
             session.commit()
             session.refresh(todo)
 
-            response = await async_client.get(f"/admin/todo/edit/{todo.id}")
+            response = await client.get(f"/admin/todo/edit/{todo.id}")
             assert response.status_code == 200
 
-            response = await async_client.post(
+            response = await client.post(
                 f"/admin/todo/edit/{todo.id}",
-                form={
+                data={
                     "todo": "Do some",
                     "completed_date": date.today().isoformat(),
                     "completed_time": datetime.now().strftime("%H:%M:%S"),

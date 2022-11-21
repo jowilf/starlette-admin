@@ -1,8 +1,13 @@
 import os
 import re
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Sequence, Tuple, Union
 
 from markupsafe import escape
+from starlette_admin._types import RequestAction
+from starlette_admin.exceptions import FormValidationError
+
+if TYPE_CHECKING:
+    from starlette_admin import BaseField
 
 
 def prettify_class_name(name: str) -> str:
@@ -65,3 +70,37 @@ def html_params(kwargs: Dict[str, Any]) -> str:
         else:
             params.append('{}="{}"'.format(str(k).replace("_", "-"), escape(v)))
     return " ".join(params)
+
+
+def extract_fields(
+    fields: Sequence["BaseField"], action: RequestAction = RequestAction.LIST
+) -> Sequence["BaseField"]:
+    arr = []
+    for field in fields:
+        if (
+            (action == RequestAction.LIST and field.exclude_from_list)
+            or (action == RequestAction.DETAIL and field.exclude_from_detail)
+            or (action == RequestAction.CREATE and field.exclude_from_create)
+            or (action == RequestAction.EDIT and field.exclude_from_edit)
+        ):
+            continue
+        arr.append(field)
+    return arr
+
+
+def pydantic_error_to_form_validation_errors(exc: Any) -> FormValidationError:
+    """Convert Pydantic Error to FormValidationError"""
+    from pydantic import ValidationError
+
+    assert isinstance(exc, ValidationError)
+    errors: Dict[Union[str, int], Any] = dict()
+    for pydantic_error in exc.errors():
+        loc: Tuple[Union[int, str], ...] = pydantic_error["loc"]
+        _d = errors
+        for i in range(len(loc)):
+            if i == len(loc) - 1:
+                _d[loc[i]] = pydantic_error["msg"]
+            elif loc[i] not in _d:
+                _d[loc[i]] = dict()
+            _d = _d[loc[i]]
+    return FormValidationError(errors)

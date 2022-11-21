@@ -9,19 +9,18 @@ from starlette_admin import (
     DecimalField,
     EmailField,
     EnumField,
-    FileField,
     FloatField,
     HasMany,
     HasOne,
-    ImageField,
     IntegerField,
     JSONField,
+    ListField,
     StringField,
-    TagsField,
     URLField,
 )
 from starlette_admin.contrib.mongoengine import ModelView
 from starlette_admin.contrib.mongoengine.exceptions import NotSupportedField
+from starlette_admin.contrib.mongoengine.fields import FileField, ImageField
 
 
 class Status(str, Enum):
@@ -60,33 +59,18 @@ class User(me.Document):
     documents = me.ListField(me.ReferenceField(MyDocument))
 
 
-class UserView(ModelView, document=User):
-    pass
-
-
-class AttachmentView(ModelView, document=Attachment):
-    pass
-
-
-class MyDocumentView(ModelView, document=MyDocument):
-    pass
-
-
 def test_fields_conversion():
-    assert UserView.identity == "user"
-    assert AttachmentView.identity == "attachment"
-    assert MyDocumentView.identity == "my-document"
-    assert UserView().fields == [
+    assert ModelView(User).fields == [
         StringField("id", exclude_from_create=True, exclude_from_edit=True),
         StringField("name", required=True),
         HasMany("documents", identity="my-document"),
     ]
-    assert AttachmentView().fields == [
+    assert ModelView(Attachment).fields == [
         StringField("id", exclude_from_create=True, exclude_from_edit=True),
         ImageField("image"),
         FileField("file"),
     ]
-    assert MyDocumentView().fields == [
+    assert ModelView(MyDocument).fields == [
         StringField("id", exclude_from_create=True, exclude_from_edit=True),
         IntegerField("int"),
         IntegerField("long"),
@@ -102,7 +86,7 @@ def test_fields_conversion():
         JSONField("dict_field"),
         JSONField("map_field"),
         EnumField.from_enum("list_enum", Status, multiple=True),
-        TagsField("tags"),
+        ListField(StringField("tags")),
         JSONField("json_array"),
         HasOne("attachment", identity="attachment"),
     ]
@@ -116,8 +100,7 @@ def test_invalid_list_field():
         class Doc(me.Document):
             invalid_list = me.ListField()
 
-        class DocView(ModelView, document=Doc):
-            pass
+        ModelView(Doc)
 
 
 def test_not_supported_field():
@@ -126,18 +109,17 @@ def test_not_supported_field():
         class Doc(me.Document):
             field = me.GeoPointField()
 
-        class DocView(ModelView, document=Doc):
-            pass
+        ModelView(Doc)
 
 
 def test_fields_customisation():
-    class CustomDocumentView(ModelView, document=MyDocument):
+    class CustomDocumentView(ModelView):
         fields = ["id", "int", MyDocument.long, DecimalField("float", required=True)]
         exclude_fields_from_create = ["long"]
         exclude_fields_from_detail = [MyDocument.int]
         exclude_fields_from_edit = ["float"]
 
-    assert CustomDocumentView().fields == [
+    assert CustomDocumentView(MyDocument).fields == [
         StringField("id", exclude_from_create=True, exclude_from_edit=True),
         IntegerField("int", exclude_from_detail=True),
         IntegerField("long", exclude_from_create=True),
@@ -146,10 +128,12 @@ def test_fields_customisation():
 
 
 def test_invalid_field_list():
-    with pytest.raises(ValueError, match="Can't find column with key 1"):
+    with pytest.raises(ValueError, match="Can't find field with key 1"):
 
-        class CustomDocumentView(ModelView, document=MyDocument):
+        class CustomDocumentView(ModelView):
             fields = [1]
+
+        CustomDocumentView(MyDocument)
 
 
 def test_invalid_exclude_list():
@@ -157,5 +141,7 @@ def test_invalid_exclude_list():
         ValueError, match="Expected str or monogoengine.BaseField, got int"
     ):
 
-        class CustomDocumentView(ModelView, document=MyDocument):
+        class CustomDocumentView(ModelView):
             exclude_fields_from_create = [1]
+
+        CustomDocumentView(MyDocument)

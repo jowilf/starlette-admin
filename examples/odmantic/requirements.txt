@@ -1,3 +1,4 @@
 starlette-admin
-odmantic
 uvicorn
+odmantic
+pydantic[email]

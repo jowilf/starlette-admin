@@ -1,8 +1,8 @@
 import json
-from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 import pytest
+from pydantic import Field
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
@@ -24,24 +24,20 @@ from starlette_admin.views import CustomView, DropDown, Link
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
 
-@dataclass
 class Post(DummyBaseModel):
     title: str
     content: str
-    views: int
+    views: Optional[int] = 0
     tags: List[str]
 
 
-@dataclass
 class User(DummyBaseModel):
     name: str
-    posts: List[Post] = field(default_factory=list)
+    posts: List[Post] = Field(default_factory=list)
     reviewer: Optional["User"] = None
 
 
 class UserView(DummyModelView):
-    identity = "user"
-    label = "User"
     model = User
     fields = [
         IntegerField("id"),
@@ -56,8 +52,6 @@ class UserView(DummyModelView):
 
 
 class PostView(DummyModelView):
-    identity = "post"
-    label = "Post"
     model = Post
     fields = (
         IntegerField("id"),
@@ -72,28 +66,31 @@ class PostView(DummyModelView):
     seq = 1
 
 
-class ReportView(CustomView):
-    label = "Report"
-    icon = "fa fa-report"
-    path = "/report"
-    template_path = "report.html"
-    name = "report"
+@pytest.fixture()
+def report_view() -> CustomView:
+    return CustomView(
+        "Report",
+        icon="fa fa-report",
+        path="/report",
+        template_path="report.html",
+        name="report",
+    )
 
 
-class LinkToGoogle(Link):
-    label = "LinkToGoogle"
-    icon = "fa fa-link"
-    url = "https://google.com"
+@pytest.fixture()
+def link_to_google() -> Link:
+    return Link("LinkToGoogle", icon="fa fa-link", url="https://google.com")
 
 
-class Section(DropDown):
-    label = "Models"
-    icon = "fa fa-models"
-    views = [UserView, ReportView, LinkToGoogle]
+@pytest.fixture()
+def section_dropdown(report_view, link_to_google) -> DropDown:
+    return DropDown(
+        "Models", icon="fa fa-models", views=[UserView, report_view, link_to_google]
+    )
 
 
 class TestViews:
-    def setup(self):
+    def setup_method(self, method):
         UserView.db.clear()
         UserView.db[1] = User(id=1, name="John Doe")
         UserView.db[2] = User(id=2, name="Terry Smitham")
@@ -104,10 +101,10 @@ class TestViews:
             PostView.db[post["id"]] = Post(**post)
         PostView.seq = len(PostView.db.keys()) + 1
 
-    def test_add_custom_view(self):
+    def test_add_custom_view(self, report_view):
         admin = BaseAdmin(templates_dir="tests/templates")
         app = Starlette()
-        admin.add_view(ReportView)
+        admin.add_view(report_view)
         admin.mount_to(app)
         assert len(admin._views) == 1
         assert app.url_path_for("admin:report") == "/admin/report"
@@ -124,7 +121,7 @@ class TestViews:
         admin.add_view(PostView)
         admin.mount_to(app)
         assert len(admin._views) == 1
-        identity = PostView.identity
+        identity = "post"
         assert admin._find_model_from_identity(identity) is not None
         with pytest.raises(
             HTTPException, match="Model with identity unknown not found"
@@ -189,20 +186,26 @@ class TestViews:
             "views": 10,
             "tags": ["tag1", "tag2"],
         }
-        response = client.post("/admin/post/create", data=dummy_data)
+        response = client.post(
+            "/admin/post/create", data=dummy_data, follow_redirects=False
+        )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/list"
         assert len(PostView.db) == 6
         assert PostView.db[6] == Post(id=6, **dummy_data)
 
         response = client.post(
-            "/admin/post/create", data=dict(**dummy_data, _continue_editing=True)
+            "/admin/post/create",
+            data=dict(**dummy_data, _continue_editing=True),
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/edit/7"
 
         response = client.post(
-            "/admin/post/create", data=dict(**dummy_data, _add_another=True)
+            "/admin/post/create",
+            data=dict(**dummy_data, _add_another=True),
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/create"
@@ -219,20 +222,26 @@ class TestViews:
             "views": 10,
             "tags": ["tag1", "tag2"],
         }
-        response = client.post("/admin/post/edit/5", data=dummy_data)
+        response = client.post(
+            "/admin/post/edit/5", data=dummy_data, follow_redirects=False
+        )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/list"
         assert len(PostView.db) == 5
         assert PostView.db[5] == Post(id=5, **dummy_data)
 
         response = client.post(
-            "/admin/post/edit/5", data=dict(**dummy_data, _continue_editing=True)
+            "/admin/post/edit/5",
+            data=dict(**dummy_data, _continue_editing=True),
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/edit/5"
 
         response = client.post(
-            "/admin/post/edit/5", data=dict(**dummy_data, _add_another=True)
+            "/admin/post/edit/5",
+            data=dict(**dummy_data, _add_another=True),
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert response.headers.get("location") == "http://testserver/admin/post/create"
@@ -275,7 +284,6 @@ class TestViews:
         assert [x for x in PostView.db.keys()] == [2, 4]
 
     def test_other_fields(self):
-        @dataclass
         class MyModel(DummyBaseModel):
             score: Optional[float]
             gender: str
@@ -294,7 +302,6 @@ class TestViews:
                 ),
                 JSONField("json_field"),
             ]
-            identity = "mymodel"
             model = MyModel
             db = {}
             seq = 1
@@ -306,30 +313,32 @@ class TestViews:
         client = TestClient(app)
 
         response = client.post(
-            "/admin/mymodel/create",
+            "/admin/my-model/create",
             data={"score": 3.4, "gender": "male", "json_field": '{"key":"value"}'},
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(
             id=1, score=3.4, gender="male", json_field=dict(key="value")
         )
         # Test Api
-        response = client.get("/admin/api/mymodel?pks=1")
+        response = client.get("/admin/api/my-model?pks=1")
         assert response.status_code == 200
         assert [1] == [x["id"] for x in response.json()["items"]]
 
         # Test edit page load
-        response = client.get("/admin/mymodel/edit/1")
+        response = client.get("/admin/my-model/edit/1")
         assert response.status_code == 200
 
         # Test edition
         response = client.post(
-            "/admin/mymodel/edit/1",
+            "/admin/my-model/edit/1",
             data={
                 "score": 5.6,
                 "gender": "female",
                 "json_field": '{"new_key":"new_value"}',
             },
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(
@@ -337,8 +346,9 @@ class TestViews:
         )
         # Test None for float and invalid json
         response = client.post(
-            "/admin/mymodel/edit/1",
+            "/admin/my-model/edit/1",
             data={"score": "", "gender": "male", "json_field": "}"},
+            follow_redirects=False,
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(
@@ -350,7 +360,7 @@ class TestViews:
             id=2, score=4.5, gender="unknown", json_field=dict()
         )
         with pytest.raises(ValueError, match="Invalid choice value: unknown"):
-            response = client.get("/admin/api/mymodel?pks=2")
+            response = client.get("/admin/api/my-model?pks=2")
 
     def test_has_one_relationships(self):
         admin = BaseAdmin()
@@ -369,7 +379,7 @@ class TestViews:
         client.post("/admin/user/edit/3", data=dummy_data)
         assert len(UserView.db) == 3
         assert UserView.db[3].reviewer == UserView.db[2]
-        dummy_data.update({"reviewer": None})
+        del dummy_data["reviewer"]
         assert client.get("/admin/user/edit/3").status_code == 200
         client.post("/admin/user/edit/3", data=dummy_data)
         assert len(UserView.db) == 3
@@ -394,10 +404,10 @@ class TestViews:
         assert len(UserView.db) == 3
         assert UserView.db[3].posts == [PostView.db[x] for x in [2, 5]]
 
-    def test_add_link(self):
+    def test_add_link(self, link_to_google):
         admin = BaseAdmin()
         app = Starlette()
-        admin.add_view(LinkToGoogle)
+        admin.add_view(link_to_google)
         admin.mount_to(app)
         assert len(admin._views) == 1
         client = TestClient(app, base_url="http://testserver")
@@ -412,11 +422,11 @@ class TestViews:
             == 1
         )
 
-    def test_add_dropdown(self):
+    def test_add_dropdown(self, section_dropdown):
         admin = BaseAdmin()
         app = Starlette()
         admin.add_view(PostView)
-        admin.add_view(Section)
+        admin.add_view(section_dropdown)
         admin.mount_to(app)
         assert len(admin._views) == 2
         assert admin._find_model_from_identity("user") is not None
@@ -428,7 +438,7 @@ class TestViews:
         assert (
             response.text.count(
                 '<a href="http://testserver/admin/user/list"'
-                ' class="dropdown-item">User</a>'
+                ' class="dropdown-item">Users</a>'
             )
             == 1
         )

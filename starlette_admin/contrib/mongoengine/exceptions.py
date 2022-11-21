@@ -1,5 +1,5 @@
-from starlette_admin.exceptions import SFAdminException
+from starlette_admin.exceptions import StarletteAdminException
 
 
-class NotSupportedField(SFAdminException):
+class NotSupportedField(StarletteAdminException):
     pass

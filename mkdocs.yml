@@ -1,5 +1,5 @@
 site_name: Starlette Admin
-site_description: Simple and extensible admin interface framework for Starlette/FastApi. Design to work with any ORM
+site_description: Fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications
 site_url: https://jowilf.github.io/starlette-admin
 repo_name: jowilf/starlette-admin
 repo_url: https://github.com/jowilf/starlette-admin
@@ -51,16 +51,18 @@ extra_css:
 nav:
   - Overview: 'index.md'
   - Tutorial - User Guide:
+      - Getting Started: 'tutorial/getting-started.md'
       - Configurations:
           - Admin: 'tutorial/configurations/admin.md'
           - ModelView: 'tutorial/configurations/modelview.md'
-          - CustomView, Link, Dropdown: 'tutorial/configurations/other-views.md'
-      - Handling Files: 'tutorial/files.md'
+      - Forms Validations: 'tutorial/validations.md'
       - Authentication: 'tutorial/authentication.md'
+      - Managing Files: 'tutorial/files.md'
       - Multiple Admin: 'tutorial/multiple-admin.md'
   - Advanced User Guide:
       - Custom Field: 'advanced/custom-field.md'
       - Extending BaseModelView: 'advanced/base-model-view.md'
+  - Alternatives, Inspiration and Comparisons: 'alternatives.md'
   - API Reference:
       - Fields: 'api/fields.md'
       - Views: 'api/views.md'

@@ -1,7 +1,6 @@
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 from starlette_admin import BaseAdmin
-from starlette_admin.base import DefaultAdminIndexView
 from starlette_admin.views import CustomView
 
 
@@ -13,7 +12,7 @@ class TestAdminBasic:
         assert admin.logo_url is None
         assert admin.login_logo_url is None
         assert admin.middlewares is None
-        assert admin.index_view == DefaultAdminIndexView
+        assert isinstance(admin.index_view, CustomView)
         assert not admin.debug
         app = Starlette()
         admin.mount_to(app)
@@ -28,13 +27,13 @@ class TestAdminBasic:
         assert response.status_code == 404
 
     def test_custom_index_view(self):
-        class CustomIndexView(CustomView):
-            label = "Home"
-            path = "/home"
-            template_path = "custom_index.html"
-
         app = Starlette()
-        admin = BaseAdmin(index_view=CustomIndexView, templates_dir="tests/templates")
+        admin = BaseAdmin(
+            index_view=CustomView(
+                "Home", path="/home", template_path="custom_index.html"
+            ),
+            templates_dir="tests/templates",
+        )
         admin.mount_to(app)
         assert len(admin._views) == 1
         client = TestClient(app)

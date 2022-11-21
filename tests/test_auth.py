@@ -1,8 +1,8 @@
 import json
-from dataclasses import dataclass
+from typing import Optional
 
 import pytest
-from async_asgi_testclient import TestClient
+from httpx import AsyncClient
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
@@ -21,28 +21,30 @@ users = {
 }
 
 
-@dataclass
 class Post(DummyBaseModel):
     title: str
     content: str
-    views: int
+    views: Optional[int] = 0
 
 
 class ReportView(CustomView):
-    label = "Report"
-    icon = "fa fa-report"
-    path = "/report"
-    template_path = "report.html"
-    name = "report"
-
     def is_accessible(self, request: Request) -> bool:
         return "admin" in request.state.user_roles
 
 
+@pytest.fixture()
+def report_view() -> ReportView:
+    return ReportView(
+        "Report",
+        icon="fa fa-report",
+        path="/report",
+        template_path="report.html",
+        name="report",
+    )
+
+
 class PostView(DummyModelView):
     page_size = 2
-    identity = "post"
-    label = "Post"
     model = Post
     fields = (
         IntegerField("id"),
@@ -115,14 +117,15 @@ class TestAuth:
         admin.mount_to(app)
         assert app.url_path_for("admin:login") == "/admin/login"
         assert app.url_path_for("admin:logout") == "/admin/logout"
-        client = TestClient(app)
+        client = AsyncClient(app=app, base_url="http://testserver")
         response = await client.get("/admin/login")
         assert response.status_code == 200
-        response = await client.get("/admin/", allow_redirects=False)
+        response = await client.get("/admin/", follow_redirects=False)
         assert response.status_code == 303
+        print(response.headers.get("location"))
         assert (
             response.headers.get("location")
-            == "http://localhost/admin/login?next=http%3A%2F%2Flocalhost%2Fadmin%2F"
+            == "http://testserver/admin/login?next=http%3A%2F%2Ftestserver%2Fadmin%2F"
         )
 
     @pytest.mark.asyncio
@@ -130,11 +133,11 @@ class TestAuth:
         admin = BaseAdmin(auth_provider=AuthProvider())
         app = Starlette()
         admin.mount_to(app)
-        client = TestClient(app)
+        client = AsyncClient(app=app, base_url="http://testserver")
         response = await client.post(
             "/admin/login",
-            allow_redirects=False,
-            form={"username": "admin", "password": "password", "remember_me": "on"},
+            follow_redirects=False,
+            data={"username": "admin", "password": "password", "remember_me": "on"},
         )
         assert "Not Implemented" in response.text
 
@@ -144,12 +147,12 @@ class TestAuth:
         app = Starlette()
         admin.mount_to(app)
         assert app.url_path_for("admin:login") == "/admin/custom-login"
-        client = TestClient(app)
-        response = await client.get("/admin/", allow_redirects=False)
+        client = AsyncClient(app=app, base_url="http://testserver")
+        response = await client.get("/admin/", follow_redirects=False)
         assert response.status_code == 303
         assert (
             response.headers.get("location")
-            == "http://localhost/admin/custom-login?next=http%3A%2F%2Flocalhost%2Fadmin%2F"
+            == "http://testserver/admin/custom-login?next=http%3A%2F%2Ftestserver%2Fadmin%2F"
         )
 
     @pytest.mark.asyncio
@@ -158,12 +161,12 @@ class TestAuth:
         app = Starlette()
         admin.mount_to(app)
         assert app.url_path_for("admin:login") == "/admin/login"
-        client = TestClient(app)
-        form = {"username": "ad", "password": "invalid-password", "remember_me": "on"}
-        response = await client.post("/admin/login", allow_redirects=False, form=form)
+        client = AsyncClient(app=app, base_url="http://testserver")
+        data = {"username": "ad", "password": "invalid-password", "remember_me": "on"}
+        response = await client.post("/admin/login", follow_redirects=False, data=data)
         assert "Ensure username has at least 03 characters" in response.text
-        form["username"] = "admin"
-        response = await client.post("/admin/login", allow_redirects=False, form=form)
+        data["username"] = "admin"
+        response = await client.post("/admin/login", follow_redirects=False, data=data)
         assert "Invalid username or password" in response.text
 
     @pytest.mark.asyncio
@@ -172,25 +175,25 @@ class TestAuth:
         app = Starlette()
         admin.mount_to(app)
         assert app.url_path_for("admin:login") == "/admin/login"
-        client = TestClient(app)
+        client = AsyncClient(app=app, base_url="http://testserver")
         response = await client.post(
             "/admin/login",
-            form={"username": "admin", "password": "password", "remember_me": "on"},
-            allow_redirects=False,
+            data={"username": "admin", "password": "password", "remember_me": "on"},
+            follow_redirects=False,
         )
         assert response.status_code == 303
-        assert response.headers.get("location") == "http://localhost/admin/"
+        assert response.headers.get("location") == "http://testserver/admin/"
         assert "session" in response.cookies
         assert response.cookies.get("session") == "admin"
         response = await client.get(
-            "/admin/logout", allow_redirects=False, cookies={"session": "admin"}
+            "/admin/logout", follow_redirects=False, cookies={"session": "admin"}
         )
         assert response.status_code == 303
         assert "session" not in response.cookies
 
 
 class TestAccess:
-    def setup(self):
+    def setup_method(self, method):
         PostView.db.clear()
         for post in json.load(open("./tests/data/posts.json")):
             del post["tags"]
@@ -198,25 +201,25 @@ class TestAccess:
         PostView.seq = len(PostView.db.keys()) + 1
 
     @pytest.fixture
-    def client(self):
+    def client(self, report_view):
         admin = BaseAdmin(
             auth_provider=MyAuthProvider(), templates_dir="tests/templates"
         )
         app = Starlette()
-        admin.add_view(ReportView)
+        admin.add_view(report_view)
         admin.add_view(PostView)
         admin.mount_to(app)
-        return TestClient(app)
+        return AsyncClient(app=app, base_url="http://testserver")
 
     @pytest.mark.asyncio
-    async def test_access_custom_view(self, client):
+    async def test_access_custom_view(self, client: AsyncClient):
         response = await client.get("/admin/report", cookies={"session": "john"})
         assert response.status_code == 403
         response = await client.get("/admin/report", cookies={"session": "admin"})
         assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_access_model_view_list(self, client):
+    async def test_access_model_view_list(self, client: AsyncClient):
         response = await client.get("/admin/post/list", cookies={"session": "doe"})
         assert response.status_code == 403
         response = await client.get("/admin/api/post", cookies={"session": "doe"})
@@ -228,7 +231,7 @@ class TestAccess:
         assert '<span class="nav-link-title">Report</span>' not in response.text
 
     @pytest.mark.asyncio
-    async def test_access_model_view_detail(self, client):
+    async def test_access_model_view_detail(self, client: AsyncClient):
         response = await client.get("/admin/post/detail/1", cookies={"session": "john"})
         assert response.status_code == 200
         response = await client.get(
@@ -237,25 +240,33 @@ class TestAccess:
         assert response.status_code == 403
 
     @pytest.mark.asyncio
-    async def test_access_model_view_create(self, client):
+    async def test_access_model_view_create(self, client: AsyncClient):
         response = await client.get("/admin/post/create", cookies={"session": "john"})
         assert response.status_code == 403
         response = await client.post("/admin/post/create", cookies={"session": "john"})
         assert response.status_code == 403
         response = await client.get("/admin/post/create", cookies={"session": "terry"})
         assert response.status_code == 200
-        response = await client.post("/admin/post/create", cookies={"session": "terry"})
+        data = {"title": "title", "content": "content"}
+        response = await client.post(
+            "/admin/post/create",
+            data=data,
+            cookies={"session": "terry"},
+            follow_redirects=True,
+        )
         assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_access_model_view_edit(self, client):
+    async def test_access_model_view_edit(self, client: AsyncClient):
         response = await client.get("/admin/post/edit/1", cookies={"session": "john"})
         assert response.status_code == 403
         response = await client.post("/admin/post/edit/1", cookies={"session": "john"})
         assert response.status_code == 403
         response = await client.get("/admin/post/edit/1", cookies={"session": "terry"})
         assert response.status_code == 200
-        response = await client.post("/admin/post/edit/1", cookies={"session": "terry"})
+        response = await client.post(
+            "/admin/post/edit/1", cookies={"session": "terry"}, follow_redirects=True
+        )
         assert response.status_code == 200
 
     @pytest.mark.asyncio
@@ -274,7 +285,7 @@ class TestAccess:
         assert response.status_code == 403
         response = await client.delete(
             "/admin/api/post",
-            query_string={"pks": [1, 2]},
+            params={"pks": [1, 2]},
             cookies={"session": "admin"},
         )
         assert response.status_code == 204

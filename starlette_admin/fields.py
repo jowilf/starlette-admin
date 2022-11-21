@@ -1,14 +1,16 @@
 import decimal
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
+from dataclasses import field as dc_field
 from datetime import date, datetime, time
-from enum import Enum
+from enum import Enum, IntEnum
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Type, Union
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
-from starlette_admin.helpers import html_params, is_empty_file
+from starlette_admin._types import RequestAction
+from starlette_admin.helpers import extract_fields, html_params, is_empty_file
 
 
 @dataclass
@@ -18,7 +20,9 @@ class BaseField:
     Parameters:
         name: Field name, same as attribute name in your model
         label: Field label
+        help_text: Hint message to display in forms
         type: Field type, unique key used to define the field
+        id: Unique id, used to represent field instance
         search_builder_type: datatable columns.searchBuilderType, For more information
             [click here](https://datatables.net/reference/option/columns.searchBuilderType)
         required: Indicate if the fields is required
@@ -36,6 +40,8 @@ class BaseField:
     name: str
     label: Optional[str] = None
     type: Optional[str] = None
+    help_text: Optional[str] = None
+    id: str = ""
     search_builder_type: Optional[str] = "default"
     required: Optional[bool] = False
     exclude_from_list: Optional[bool] = False
@@ -46,18 +52,25 @@ class BaseField:
     orderable: Optional[bool] = True
     render_function_key: str = "text"
     form_template: str = "forms/input.html"
+    label_template: str = "forms/_label.html"
     display_template: str = "displays/text.html"
+    error_class = "is-invalid"
 
     def __post_init__(self) -> None:
         if self.label is None:
             self.label = self.name.replace("_", " ").capitalize()
         if self.type is None:
             self.type = type(self).__name__
+        self.id = self.name
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
-        return form_data.get(self.name)
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
+        return form_data.get(self.id)
 
-    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
         return value
 
     def additional_css_links(self, request: Request) -> List[str]:
@@ -79,10 +92,14 @@ class BooleanField(BaseField):
     form_template: str = "forms/boolean.html"
     display_template: str = "displays/boolean.html"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> bool:
-        return form_data.get(self.name) == "on"
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> bool:
+        return form_data.get(self.id) == "on"
 
-    async def serialize_value(self, request: Request, value: Any, action: str) -> bool:
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> bool:
         return bool(value)
 
 
@@ -93,9 +110,7 @@ class StringField(BaseField):
     search_builder_type: Optional[str] = "string"
     input_type: str = "text"
     class_: str = "field-string form-control"
-    error_class = "is-invalid"
     placeholder: Optional[str] = None
-    help_text: Optional[str] = None
 
     def input_params(self) -> str:
         return html_params(
@@ -106,7 +121,9 @@ class StringField(BaseField):
             )
         )
 
-    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
         return str(value)
 
 
@@ -119,7 +136,6 @@ class TextAreaField(StringField):
     maxlength: Optional[int] = None
     minlength: Optional[int] = None
     class_: str = "field-textarea form-control"
-
     form_template: str = "forms/textarea.html"
 
     def input_params(self) -> str:
@@ -170,14 +186,16 @@ class IntegerField(NumberField):
     class_: str = "field-integer form-control"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData, action: RequestAction
     ) -> Optional[int]:
         try:
-            return int(form_data.get(self.name))  # type: ignore
+            return int(form_data.get(self.id))  # type: ignore
         except (ValueError, TypeError):
             return None
 
-    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
         return int(value)
 
 
@@ -192,14 +210,16 @@ class DecimalField(NumberField):
     class_: str = "field-decimal form-control"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData, action: RequestAction
     ) -> Optional[decimal.Decimal]:
         try:
-            return decimal.Decimal(form_data.get(self.name))  # type: ignore
+            return decimal.Decimal(form_data.get(self.id))  # type: ignore
         except (decimal.InvalidOperation, ValueError):
             return None
 
-    async def serialize_value(self, request: Request, value: Any, action: str) -> str:
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> str:
         return str(value)
 
 
@@ -213,14 +233,16 @@ class FloatField(StringField):
     class_: str = "field-float form-control"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData, action: RequestAction
     ) -> Optional[float]:
         try:
-            return float(form_data.get(self.name))  # type: ignore
+            return float(form_data.get(self.id))  # type: ignore
         except ValueError:
             return None
 
-    async def serialize_value(self, request: Request, value: Any, action: str) -> float:
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> float:
         return float(value)
 
 
@@ -232,10 +254,13 @@ class TagsField(BaseField):
     """
 
     form_template: str = "forms/tags.html"
-    form_js = "js/field/forms/tags.js"
+    form_js: str = "js/field/forms/tags.js"
+    class_: str = "field-tags form-control form-select"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> List[str]:
-        return form_data.getlist(self.name)  # type: ignore
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> List[str]:
+        return form_data.getlist(self.id)  # type: ignore
 
     def additional_css_links(self, request: Request) -> List[str]:
         return [
@@ -328,18 +353,19 @@ class EnumField(StringField):
     """
 
     multiple: bool = False
-    choices: Iterable[Tuple[str, str]] = field(default_factory=dict)
+    choices: Iterable[Tuple[str, str]] = dc_field(default_factory=dict)
     form_template: str = "forms/enum.html"
+    class_: str = "field-enum form-control form-select"
     coerce: type = str
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
         return (
-            list(map(self.coerce, form_data.getlist(self.name)))
+            list(map(self.coerce, form_data.getlist(self.id)))
             if self.multiple
             else (
-                self.coerce(form_data.get(self.name))
-                if form_data.get(self.name)
-                else None
+                self.coerce(form_data.get(self.id)) if form_data.get(self.id) else None
             )
         )
 
@@ -351,9 +377,11 @@ class EnumField(StringField):
                 return l
         raise ValueError(f"Invalid choice value: {value}")
 
-    async def serialize_value(self, request: Request, value: Any, action: str) -> Any:
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
         labels = [
-            (self._get_label(v) if action != "EDIT" else v)
+            (self._get_label(v) if action != RequestAction.EDIT else v)
             for v in (value if self.multiple else [value])
         ]
         return labels if self.multiple else labels[0]
@@ -381,8 +409,9 @@ class EnumField(StringField):
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
-        choices = list(map(lambda e: (e.value, e.name), enum_type))  # type: ignore
-        return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
+        choices = list(map(lambda e: (e.value, e.name.replace("_", " ")), enum_type))  # type: ignore
+        coerce = int if issubclass(enum_type, IntEnum) else str
+        return cls(name, choices=choices, multiple=multiple, coerce=coerce, **kwargs)  # type: ignore
 
     @classmethod
     def from_choices(
@@ -426,17 +455,21 @@ class DateTimeField(NumberField):
             )
         )
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
         try:
-            return datetime.fromisoformat(form_data.get(self.name))  # type: ignore
+            return datetime.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
 
-    async def serialize_value(self, request: Request, value: Any, action: str) -> str:
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> str:
         assert isinstance(
             value, (datetime, date, time)
         ), f"Expect datetime, got  {type(value)}"
-        if action != "EDIT":
+        if action != RequestAction.EDIT:
             return value.strftime(self.output_format)
         return value.isoformat()
 
@@ -472,9 +505,11 @@ class DateField(DateTimeField):
     search_builder_type: str = "moment-MMMM D, YYYY"
     form_alt_format: Optional[str] = "F j, Y"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
         try:
-            return date.fromisoformat(form_data.get(self.name))  # type: ignore
+            return date.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
 
@@ -495,9 +530,11 @@ class TimeField(DateTimeField):
     search_format: str = "HH:mm:ss"
     form_alt_format: Optional[str] = "H:i:S"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
         try:
-            return time.fromisoformat(form_data.get(self.name))  # type: ignore
+            return time.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
 
@@ -513,10 +550,10 @@ class JSONField(BaseField):
     display_template: str = "displays/json.html"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
+        self, request: Request, form_data: FormData, action: RequestAction
     ) -> Optional[Dict[str, Any]]:
         try:
-            value = form_data.get(self.name)
+            value = form_data.get(self.id)
             return json.loads(value) if value is not None else None  # type: ignore
         except JSONDecodeError:
             return None
@@ -544,6 +581,7 @@ class FileField(BaseField):
     This field is used to represent a value that stores starlette UploadFile object.
     For displaying value, this field wait for three properties which is `filename`,
     `content-type` and `url`. Use `multiple=True` for multiple file upload
+    When user ask for delete on editing page, the second part of the returned tuple is True.
     """
 
     multiple: bool = False
@@ -552,13 +590,14 @@ class FileField(BaseField):
     display_template: str = "displays/file.html"
 
     async def parse_form_data(
-        self, request: Request, form_data: FormData
-    ) -> Union[UploadFile, List[UploadFile], None]:
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Tuple[Union[UploadFile, List[UploadFile], None], bool]:
+        should_be_deleted = form_data.get(f"_{self.id}-delete") == "on"
         if self.multiple:
-            files = form_data.getlist(self.name)
-            return [f for f in files if not is_empty_file(f.file)]  # type: ignore
-        file = form_data.get(self.name)
-        return None if (file and is_empty_file(file.file)) else file  # type: ignore
+            files = form_data.getlist(self.id)
+            return [f for f in files if not is_empty_file(f.file)], should_be_deleted  # type: ignore
+        file = form_data.get(self.id)
+        return (None if (file and is_empty_file(file.file)) else file), should_be_deleted  # type: ignore
 
     def _isvalid_value(self, value: Any) -> bool:
         return value is not None and all(
@@ -591,10 +630,12 @@ class RelationField(BaseField):
     form_template: str = "forms/relation.html"
     display_template: str = "displays/relation.html"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
         if self.multiple:
-            return form_data.getlist(self.name)
-        return form_data.get(self.name)
+            return form_data.getlist(self.id)
+        return form_data.get(self.id)
 
     def additional_css_links(self, request: Request) -> List[str]:
         return [
@@ -628,3 +669,172 @@ class HasMany(RelationField):
     """
 
     multiple: bool = True
+
+
+@dataclass(init=False)
+class CollectionField(BaseField):
+    """
+    This field represents a collection of others fields. Can be used to represent embedded mongodb document.
+    !!!usage
+    ```python
+     CollectionField("config", fields=[StringField("key"), IntegerField("value", help_text="multiple of 5")]),
+    ```
+    """
+
+    fields: Sequence[BaseField] = dc_field(default_factory=list)
+    render_function_key: str = "json"
+    form_template: str = "forms/collection.html"
+    display_template: str = "displays/collection.html"
+
+    def __init__(
+        self, name: str, fields: Sequence[BaseField], required: bool = False
+    ) -> None:
+        self.name = name
+        self.fields = fields
+        self.required = required
+        super().__post_init__()
+        self._propagate_id()
+
+    def _extract_fields(
+        self, action: RequestAction = RequestAction.LIST
+    ) -> Sequence[BaseField]:
+        return extract_fields(self.fields, action)
+
+    def _propagate_id(self) -> None:
+        """Will update fields id by adding his id as prefix (ex: category.name)"""
+        for field in self.fields:
+            field.id = self.id + ("." if self.id else "") + field.name
+            if isinstance(field, type(self)):
+                field._propagate_id()
+
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
+        value = dict()
+        for field in self.fields:
+            if (action == RequestAction.EDIT and field.exclude_from_edit) or (
+                action == RequestAction.CREATE and field.exclude_from_create
+            ):
+                continue
+            value[field.name] = await field.parse_form_data(request, form_data, action)
+        return value
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
+        serialized_value: Dict[str, Any] = dict()
+        for field in self.fields:
+            name = field.name
+            serialized_value[name] = None
+            if hasattr(value, name) or (isinstance(value, dict) and name in value):
+                field_value = (
+                    getattr(value, name) if hasattr(value, name) else value[name]
+                )
+                if field_value is not None:
+                    serialized_value[name] = await field.serialize_value(
+                        request, field_value, action
+                    )
+        return serialized_value
+
+    def additional_css_links(self, request: Request) -> List[str]:
+        _links = []
+        for f in self.fields:
+            _links.extend(f.additional_css_links(request))
+        return _links
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        _links = []
+        for f in self.fields:
+            _links.extend(f.additional_js_links(request))
+        return _links
+
+
+@dataclass(init=False)
+class ListField(BaseField):
+    """
+    Encapsulate an ordered list of multiple instances of the same field type,
+    keeping data as a list.
+
+    !!!usage
+        ```python
+        class MyModel:
+            id: Optional[int]
+            values: List[str]
+
+        class ModelView(BaseModelView):
+            fields = [IntegerField("id"), ListField(StringField("values")]
+        ```
+    """
+
+    form_template: str = "forms/list.html"
+    display_template: str = "displays/list.html"
+    search_builder_type: str = "array"
+    field: BaseField = BaseField("")
+
+    def __init__(self, field: BaseField, required: bool = False) -> None:
+        self.field = field
+        self.name = field.name
+        self.required = required
+        self.__post_init__()
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        self.field.id = ""
+        if isinstance(self.field, CollectionField):
+            self.field._propagate_id()
+
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
+        indices = self._extra_indices(form_data)
+        value = []
+        for index in indices:
+            self.field.id = "{}.{}".format(self.id, index)
+            if isinstance(self.field, CollectionField):
+                self.field._propagate_id()
+            value.append(await self.field.parse_form_data(request, form_data, action))
+        return value
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
+        serialized_value = []
+        for item in value:
+            serialized_item_value = None
+            if item is not None:
+                serialized_item_value = await self.field.serialize_value(
+                    request, item, action
+                )
+            serialized_value.append(serialized_item_value)
+        return serialized_value
+
+    def _extra_indices(self, form_data: FormData) -> List[int]:
+        """
+        Return list of all indices.  For example, if field id is `foo` and
+        form_data contains following keys ['foo.0.bar', 'foo.1.baz'], then the indices are [0,1].
+        Note that some numbers can be skipped. For example, you may have [0,1,3,8]
+        as indices.
+        """
+        indices = set()
+        for k in form_data:
+            if k.startswith(self.id):
+                k = k[len(self.id) + 1 :].split(".", maxsplit=1)[0]
+                if k.isdigit():
+                    indices.add(int(k))
+        return sorted(indices)
+
+    def _field_at(self, idx: Optional[int] = None) -> BaseField:
+        if idx is not None:
+            self.field.id = self.id + "." + str(idx)
+        else:
+            """To generate template string to be used in javascript"""
+            self.field.id = ""
+        if isinstance(self.field, CollectionField):
+            self.field._propagate_id()
+        return self.field
+
+    def additional_css_links(self, request: Request) -> List[str]:
+        return self.field.additional_css_links(request)
+
+    def additional_js_links(self, request: Request) -> List[str]:
+        return self.field.additional_js_links(request)

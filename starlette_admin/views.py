@@ -1,11 +1,19 @@
 from abc import abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Set, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Type, Union
 
 from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
-from starlette_admin.fields import BaseField, FileField, HasOne, RelationField
+from starlette_admin._types import ExportType, RequestAction
+from starlette_admin.fields import (
+    BaseField,
+    CollectionField,
+    FileField,
+    HasOne,
+    RelationField,
+)
+from starlette_admin.helpers import extract_fields
 
 
 class BaseView:
@@ -38,46 +46,68 @@ class DropDown(BaseView):
 
     Example:
         ```Python
-        class Blog(DropDown):
-            label = "Blog"
-            icon = "fa fa-blog"
-            views = [UserView, PostView, CommentView]
+        admin.add_view(
+            DropDown(
+                "Resources",
+                icon="fa fa-list",
+                views=[
+                    ModelView(User),
+                    Link(label="Home Page", url="/"),
+                    CustomView(label="Dashboard", path="/dashboard", template_path="dashboard.html"),
+                ],
+            )
+        )
         ```
     """
 
-    always_open: bool = True
-    views: List[Type[BaseView]] = []
-
-    def __init__(self) -> None:
-        self._views_instance = [v() for v in self.views]
+    def __init__(
+        self,
+        label: str,
+        views: List[Union[Type[BaseView], BaseView]],
+        icon: Optional[str] = None,
+        always_open: bool = True,
+    ) -> None:
+        self.label = label
+        self.icon = icon
+        self.always_open = always_open
+        self.views: List[BaseView] = [
+            (v if isinstance(v, BaseView) else v()) for v in views
+        ]
 
     def is_active(self, request: Request) -> bool:
-        return any([v.is_active(request) for v in self._views_instance])
+        return any([v.is_active(request) for v in self.views])
 
     def is_accessible(self, request: Request) -> bool:
-        return any([v.is_accessible(request) for v in self._views_instance])
+        return any([v.is_accessible(request) for v in self.views])
 
 
 class Link(BaseView):
     """
-    Display a menu with a link.
+    Add arbitrary hyperlinks to the menu
 
     Example:
         ```Python
-        class GoToStarletteAdminDocs(Link):
-            label = "StarletteAdmin Docs"
-            url = "https://github.com/jowilf/starlette-admin"
-            target = "_blank"
+        admin.add_view(Link(label="Home Page", icon="fa fa-link", url="/"))
         ```
     """
 
-    url: str = ""
-    target: str = "_self"
+    def __init__(
+        self,
+        label: str = "",
+        icon: Optional[str] = None,
+        url: str = "/",
+        target: Optional[str] = "_self",
+    ):
+        self.label = label
+        self.icon = icon
+        self.url = url
+        self.target = target
 
 
 class CustomView(BaseView):
     """
-    Use this to add custom view to the Admin interface
+    Add your own views (not tied to any particular model). For example,
+    a custom home page that displays some analytics data.
 
     Attributes:
         path: Route path
@@ -88,20 +118,27 @@ class CustomView(BaseView):
 
     Example:
         ```Python
-        class HomeView(CustomView):
-            label = "Home"
-            icon = "fa fa-home"
-            path = "/home"
-            template_path = "home.html"
-            name = "home"
+        admin.add_view(CustomView(label="Home", icon="fa fa-home", path="/home", template_path="home.html"))
         ```
     """
 
-    path: str = "/"
-    template_path: str = "index.html"
-    methods: List[str] = ["GET"]
-    name: Optional[str] = None
-    add_to_menu: bool = True
+    def __init__(
+        self,
+        label: str,
+        icon: Optional[str] = None,
+        path: str = "/",
+        template_path: str = "index.html",
+        name: Optional[str] = None,
+        methods: Optional[List[str]] = None,
+        add_to_menu: bool = True,
+    ):
+        self.label = label
+        self.icon = icon
+        self.path = path
+        self.template_path = template_path
+        self.name = name
+        self.methods = methods
+        self.add_to_menu = add_to_menu
 
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
         """Default methods to render view. Override this methods to add your custom logic."""
@@ -109,16 +146,6 @@ class CustomView(BaseView):
 
     def is_active(self, request: Request) -> bool:
         return request.scope["path"] == self.path
-
-
-class DefaultAdminIndexView(CustomView):
-    """
-    Default Index View for admin interface
-    """
-
-    path = "/"
-    template_path = "index.html"
-    add_to_menu: bool = False
 
 
 class BaseModelView(BaseView):
@@ -130,7 +157,7 @@ class BaseModelView(BaseView):
         identity: Unique identity to identify the model associated to this view.
             Will be used for URL of the endpoints.
         name: Name of the view to be displayed
-        fields: List[BaseField] = []
+        fields: List of fields
         pk_attr: Primary key field name
         form_include_pk: Indicate if the primary key should be excluded from create and
             edit. Default to True
@@ -150,6 +177,7 @@ class BaseModelView(BaseView):
             Default value is set to `10`.
         page_size_options: Pagination choices displayed in List page.
             Default value is set to `[10, 25, 50, 100]`. Use `-1`to display All
+        responsive: Activate responsive design https://datatables.net/extensions/responsive/
         list_template: List view template. Default is `list.html`.
         detail_template: Details view template. Default is `details.html`.
         create_template: Edit view template. Default is `edit.html`.
@@ -159,21 +187,26 @@ class BaseModelView(BaseView):
 
     identity: Optional[str] = None
     name: Optional[str] = None
-    fields: List[BaseField] = []
+    fields: Sequence[BaseField] = []
     pk_attr: Optional[str] = None
     form_include_pk: bool = False
-    exclude_fields_from_list: List[str] = []
-    exclude_fields_from_detail: List[str] = []
-    exclude_fields_from_create: List[str] = []
-    exclude_fields_from_edit: List[str] = []
-    searchable_fields: Optional[List[str]] = None
-    sortable_fields: Optional[List[str]] = None
-    export_types: List[str] = ["csv", "excel", "pdf", "print"]
-    export_fields: List[str] = []
+    exclude_fields_from_list: Sequence[str] = []
+    exclude_fields_from_detail: Sequence[str] = []
+    exclude_fields_from_create: Sequence[str] = []
+    exclude_fields_from_edit: Sequence[str] = []
+    searchable_fields: Optional[Sequence[str]] = None
+    sortable_fields: Optional[Sequence[str]] = None
+    export_types: Sequence[ExportType] = [
+        ExportType.CSV,
+        ExportType.EXCEL,
+        ExportType.PRINT,
+    ]
+    export_fields: Optional[Sequence[str]] = None
     column_visibility: bool = True
     search_builder: bool = True
-    page_size = 10
-    page_size_options = [10, 25, 50, 100]
+    page_size: int = 10
+    page_size_options: Sequence[int] = [10, 25, 50, 100]
+    responsive_table: bool = False
     list_template: str = "list.html"
     detail_template: str = "detail.html"
     create_template: str = "create.html"
@@ -182,26 +215,42 @@ class BaseModelView(BaseView):
     _find_foreign_model: Callable[[str], "BaseModelView"]
 
     def __init__(self) -> None:
-        if self.searchable_fields is None:
-            self.searchable_fields = [f.name for f in self.fields]
-        if self.sortable_fields is None:
-            self.sortable_fields = [f.name for f in self.fields]
-        if self.export_fields is None:
-            self.export_fields = [f.name for f in self.fields]
-        for field in self.fields:
-            if field.name == self.pk_attr and not self.form_include_pk:
+        fringe = list(self.fields)
+        all_field_names = []
+        while len(fringe) > 0:
+            field = fringe.pop(0)
+            if not hasattr(field, "_name"):
+                field._name = field.name  # type: ignore
+            if isinstance(field, CollectionField):
+                for f in field.fields:
+                    f._name = "{}.{}".format(field._name, f.name)  # type: ignore
+                fringe.extend(field.fields)
+            name = field._name  # type: ignore
+            if name == self.pk_attr and not self.form_include_pk:
                 field.exclude_from_create = True
                 field.exclude_from_edit = True
-            if field.name in self.exclude_fields_from_list:
+            if name in self.exclude_fields_from_list:
                 field.exclude_from_list = True
-            if field.name in self.exclude_fields_from_detail:
+            if name in self.exclude_fields_from_detail:
                 field.exclude_from_detail = True
-            if field.name in self.exclude_fields_from_create:
+            if name in self.exclude_fields_from_create:
                 field.exclude_from_create = True
-            if field.name in self.exclude_fields_from_edit:
+            if name in self.exclude_fields_from_edit:
                 field.exclude_from_edit = True
-            field.searchable = field.name in self.searchable_fields
-            field.orderable = field.name in self.sortable_fields
+            if not isinstance(field, CollectionField):
+                all_field_names.append(name)
+                field.searchable = (self.searchable_fields is None) or (
+                    name in self.searchable_fields
+                )
+                field.orderable = (self.sortable_fields is None) or (
+                    name in self.sortable_fields
+                )
+        if self.searchable_fields is None:
+            self.searchable_fields = all_field_names[:]
+        if self.sortable_fields is None:
+            self.sortable_fields = all_field_names[:]
+        if self.export_fields is None:
+            self.export_fields = all_field_names[:]
 
     def is_active(self, request: Request) -> bool:
         return request.path_params.get("identity", None) == self.identity
@@ -214,7 +263,7 @@ class BaseModelView(BaseView):
         limit: int = 100,
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
-    ) -> List[Any]:
+    ) -> Sequence[Any]:
         """
         Find all items
         Parameters:
@@ -269,7 +318,7 @@ class BaseModelView(BaseView):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
         """
         Find many items
         Parameters:
@@ -320,7 +369,7 @@ class BaseModelView(BaseView):
         return True
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, action: str, request: Request
+        self, value: Any, field: BaseField, action: RequestAction, request: Request
     ) -> Any:
         """
         Format output value for each field.
@@ -344,7 +393,7 @@ class BaseModelView(BaseView):
         self,
         obj: Any,
         request: Request,
-        action: str,
+        action: RequestAction,
         include_relationships: bool = True,
         include_select2: bool = False,
     ) -> Dict[str, Any]:
@@ -357,7 +406,7 @@ class BaseModelView(BaseView):
                 if value is None:
                     obj_serialized[field.name] = None
                 elif isinstance(field, HasOne):
-                    if action == "EDIT":
+                    if action == RequestAction.EDIT:
                         obj_serialized[field.name] = getattr(
                             value, foreign_model.pk_attr
                         )
@@ -366,7 +415,7 @@ class BaseModelView(BaseView):
                             value, request, action, include_relationships=False
                         )
                 else:
-                    if action == "EDIT":
+                    if action == RequestAction.EDIT:
                         obj_serialized[field.name] = [
                             getattr(v, foreign_model.pk_attr) for v in value
                         ]
@@ -458,39 +507,33 @@ class BaseModelView(BaseView):
         ]
 
     def _search_columns_selector(self) -> List[str]:
-        return ["%s:name" % field.name for field in self.fields if field.searchable]
+        return ["%s:name" % name for name in self.searchable_fields]  # type: ignore
 
     def _export_columns_selector(self) -> List[str]:
-        return ["%s:name" % name for name in self.export_fields]
+        return ["%s:name" % name for name in self.export_fields]  # type: ignore
 
-    def _extract_fields(self, action: str = "LIST") -> List[BaseField]:
-        arr = []
-        for field in self.fields:
-            if (
-                (action == "LIST" and field.exclude_from_list)
-                or (action == "DETAIL" and field.exclude_from_detail)
-                or (action == "CREATE" and field.exclude_from_create)
-                or (action == "EDIT" and field.exclude_from_edit)
-            ):
-                continue
-            arr.append(field)
-        return arr
+    def _extract_fields(
+        self, action: RequestAction = RequestAction.LIST
+    ) -> Sequence[BaseField]:
+        return extract_fields(self.fields, action)
 
-    def _additional_css_links(self, request: Request, action: str) -> Set[str]:
+    def _additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> Set[str]:
         links = set()
         for field in self.fields:
-            if (action == "CREATE" and field.exclude_from_create) or (
-                action == "EDIT" and field.exclude_from_edit
+            if (action == RequestAction.CREATE and field.exclude_from_create) or (
+                action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
             links.update(field.additional_css_links(request))
         return links
 
-    def _additional_js_links(self, request: Request, action: str) -> Set[str]:
+    def _additional_js_links(self, request: Request, action: RequestAction) -> Set[str]:
         links = set()
         for field in self.fields:
-            if (action == "CREATE" and field.exclude_from_create) or (
-                action == "EDIT" and field.exclude_from_edit
+            if (action == RequestAction.CREATE and field.exclude_from_create) or (
+                action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
             links.update(field.additional_js_links(request))
@@ -506,6 +549,7 @@ class BaseModelView(BaseView):
             "exportTypes": self.export_types,
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,
+            "responsiveTable": self.responsive_table,
             "fields": list(map(lambda f: f.dict(), self._extract_fields())),
             "pk": self.pk_attr,
             "apiUrl": request.url_for(
