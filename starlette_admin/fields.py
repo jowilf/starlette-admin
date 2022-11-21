@@ -679,7 +679,8 @@ class CollectionField(BaseField):
     ```python
      CollectionField("config", fields=[StringField("key"), IntegerField("value", help_text="multiple of 5")]),
     ```
-   """
+    """
+
     fields: Sequence[BaseField] = dc_field(default_factory=list)
     render_function_key: str = "json"
     form_template: str = "forms/collection.html"
