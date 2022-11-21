@@ -5,6 +5,93 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.3.0] - 2022-11-21
+
+---
+
+### Breaking Changes
+
+* Changes in `ModelView` definition
+
+=== "Now"
+    ```python
+    class Post:
+        id: int
+        title: str
+    
+    admin.add_view(ModelView(Post, icon="fa fa-blog", label = "Blog Posts"))
+    ```
+
+=== "Before"
+    ```python
+    class Post:
+        id: int
+        title: str
+          
+    
+    class PostView(ModelView, model=Post):
+        icon = "fa fa-blog"
+        label = "Blog Posts"
+    
+    admin.add_view(PostView)
+    ```
+
+* Changes in `CustomView` definition
+
+=== "Now"
+    ```python
+    admin.add_view(CustomView(label="Home", icon="fa fa-home", path="/home", template_path="home.html"))
+    ```
+=== "Before"
+    ```python
+    class HomeView(CustomView):
+        label = "Home"
+        icon = "fa fa-home"
+        path = "/home"
+        template_path = "home.html"
+    
+    admin.add_view(HomeView)
+    ```
+
+* Changes in `Link` definition
+=== "Now"
+    ```python
+    admin.add_view(Link(label="Back to Home", icon="fa fa-home", url="/", target = "_blank"))
+    ```
+
+=== "Before"
+    ```python
+    class BackToHome(Link):
+        label = "Back to Home"
+        icon = "fa fa-home"
+        url = "/"
+        target = "_blank"
+    ```
+
+These changes are inspired from *Flask-admin* and are introduced to help reduce code size and keep it simple.
+
+### Added
+
+* Add `CollectionField`
+* Add `ListField`
+* Add support for [Odmantic](https://art049.github.io/odmantic/) 
+* Add support for datatables [responsive extensions](https://datatables.net/extensions/responsive/)
+!!! usage
+    ```python
+    class MyModelView(ModelView):
+        responsive_table = True
+    ```
+  
+### Changed
+
+* Move `SQLModel` to it own contrib package
+* MongoEngine `EmbeddedDocumentField` is now converted into `CollectionField`
+
+### Removed
+
+* Remove PDF from default `export_types`
+
 ## [0.2.2] - 2022-09-20
 
 ---

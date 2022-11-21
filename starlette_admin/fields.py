@@ -673,6 +673,13 @@ class HasMany(RelationField):
 
 @dataclass(init=False)
 class CollectionField(BaseField):
+    """
+    This field represents a collection of others fields. Can be used to represent embedded mongodb document.
+    !!!usage
+    ```python
+     CollectionField("config", fields=[StringField("key"), IntegerField("value", help_text="multiple of 5")]),
+    ```
+   """
     fields: Sequence[BaseField] = dc_field(default_factory=list)
     render_function_key: str = "json"
     form_template: str = "forms/collection.html"
@@ -743,6 +750,21 @@ class CollectionField(BaseField):
 
 @dataclass(init=False)
 class ListField(BaseField):
+    """
+    Encapsulate an ordered list of multiple instances of the same field type,
+    keeping data as a list.
+
+    !!!usage
+        ```python
+        class MyModel:
+            id: Optional[int]
+            values: List[str]
+
+        class ModelView(BaseModelView):
+            fields = [IntegerField("id"), ListField(StringField("values")]
+        ```
+    """
+
     form_template: str = "forms/list.html"
     display_template: str = "displays/list.html"
     search_builder_type: str = "array"

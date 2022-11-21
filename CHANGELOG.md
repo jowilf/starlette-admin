@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2022-11-21
+
+---
+
+### Added
+
+* Add `CollectionField`
+* Add `ListField`
+* Add support for [Odmantic](https://art049.github.io/odmantic/) 
+* Add support for datatables [responsive extensions](https://datatables.net/extensions/responsive/)
+!!! usage
+    ```python
+    class MyModelView(ModelView):
+        responsive_table = True
+    ```
+  
+### Changed
+
+* Move `SQLModel` to it own contrib package
+* MongoEngine `EmbeddedDocumentField` is now converted into `CollectionField`
+
+### Removed
+
+* Remove PDF from default `export_types`
+
+**Full Changelog**: https://github.com/jowilf/starlette-admin/compare/0.2.2...0.3.0
+
 ## [0.2.2] - 2022-09-20
 
 ---
