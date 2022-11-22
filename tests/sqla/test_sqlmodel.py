@@ -107,11 +107,11 @@ async def test_edit(client: AsyncClient, session: Session):
     session.add(Todo(todo="Do some magic", deadline=datetime(2022, 1, 1)))
     session.commit()
 
-    response = await client.get(f"/admin/todo/edit/1")
+    response = await client.get("/admin/todo/edit/1")
     assert response.status_code == 200
 
     response = await client.post(
-        f"/admin/todo/edit/1",
+        "/admin/todo/edit/1",
         data={
             "todo": "End magic things",
             "deadline": datetime(2022, 2, 1).isoformat(),
@@ -131,7 +131,7 @@ async def test_edit_validation_error(client: AsyncClient, session: Session):
     session.commit()
 
     response = await client.post(
-        f"/admin/todo/edit/1",
+        "/admin/todo/edit/1",
         data={
             "todo": "Do some",
             "completed_date": date.today().isoformat(),
