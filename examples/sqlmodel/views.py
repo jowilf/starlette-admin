@@ -33,7 +33,6 @@ class PostView(MyModelView):
     exclude_fields_from_list = [Post.content]
     exclude_fields_from_create = [Post.published_at]
     exclude_fields_from_edit = ["published_at"]
-    detail_template = "post_detail.html"
 
 
 class CommentView(MyModelView):
