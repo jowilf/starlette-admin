@@ -11,7 +11,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-* Fix Regression on SQLModel backend: Duplicate instances on create & update with relationships in [#23](https://github.com/jowilf/starlette-admin/issues/23)
+* Fix Regression on SQLModel backend: Duplicate instances when creating or updating a model with relationships in [#23](https://github.com/jowilf/starlette-admin/issues/23)
 
 
 ## [0.3.0] - 2022-11-21
