@@ -72,7 +72,7 @@ def engine(fake_image) -> Engine:
     StorageManager.add_storage("test", get_test_container("test-sqla"))
     with Session(engine) as session:
         products = []
-        for i, product in enumerate(json.load(open("./tests/data/products.json"))):
+        for _i, product in enumerate(json.load(open("./tests/data/products.json"))):
             products.append(Product(**product))
         products[0].image = sf.File(fake_image, filename="image.png")
         session.add_all(products)

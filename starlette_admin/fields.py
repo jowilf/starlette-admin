@@ -114,11 +114,11 @@ class StringField(BaseField):
 
     def input_params(self) -> str:
         return html_params(
-            dict(
-                type=self.input_type,
-                placeholder=self.placeholder,
-                required=self.required,
-            )
+            {
+                "type": self.input_type,
+                "placeholder": self.placeholder,
+                "required": self.required,
+            }
         )
 
     async def serialize_value(
@@ -140,13 +140,13 @@ class TextAreaField(StringField):
 
     def input_params(self) -> str:
         return html_params(
-            dict(
-                rows=self.rows,
-                minlength=self.minlength,
-                maxlength=self.maxlength,
-                placeholder=self.placeholder,
-                required=self.required,
-            )
+            {
+                "rows": self.rows,
+                "minlength": self.minlength,
+                "maxlength": self.maxlength,
+                "placeholder": self.placeholder,
+                "required": self.required,
+            }
         )
 
 
@@ -166,14 +166,14 @@ class NumberField(StringField):
 
     def input_params(self) -> str:
         return html_params(
-            dict(
-                type=self.input_type,
-                min=self.min,
-                max=self.max,
-                step=self.step,
-                placeholder=self.placeholder,
-                required=self.required,
-            )
+            {
+                "type": self.input_type,
+                "min": self.min,
+                "max": self.max,
+                "step": self.step,
+                "placeholder": self.placeholder,
+                "required": self.required,
+            }
         )
 
 
@@ -372,9 +372,9 @@ class EnumField(StringField):
     def _get_label(self, value: Any) -> Any:
         if isinstance(value, Enum):
             return value.name
-        for v, l in self.choices:
+        for v, label in self.choices:
             if value == v:
-                return l
+                return label
         raise ValueError(f"Invalid choice value: {value}")
 
     async def serialize_value(
@@ -409,7 +409,7 @@ class EnumField(StringField):
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
-        choices = list(map(lambda e: (e.value, e.name.replace("_", " ")), enum_type))  # type: ignore
+        choices = [(e.value, e.name.replace("_", " ")) for e in enum_type]
         coerce = int if issubclass(enum_type, IntEnum) else str
         return cls(name, choices=choices, multiple=multiple, coerce=coerce, **kwargs)  # type: ignore
 
@@ -444,15 +444,15 @@ class DateTimeField(NumberField):
 
     def input_params(self) -> str:
         return html_params(
-            dict(
-                type=self.input_type,
-                min=self.min,
-                max=self.max,
-                step=self.step,
-                data_alt_format=self.form_alt_format,
-                placeholder=self.placeholder,
-                required=self.required,
-            )
+            {
+                "type": self.input_type,
+                "min": self.min,
+                "max": self.max,
+                "step": self.step,
+                "data_alt_format": self.form_alt_format,
+                "placeholder": self.placeholder,
+                "required": self.required,
+            }
         )
 
     async def parse_form_data(
@@ -710,7 +710,7 @@ class CollectionField(BaseField):
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
-        value = dict()
+        value = {}
         for field in self.fields:
             if (action == RequestAction.EDIT and field.exclude_from_edit) or (
                 action == RequestAction.CREATE and field.exclude_from_create
@@ -722,7 +722,7 @@ class CollectionField(BaseField):
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
-        serialized_value: Dict[str, Any] = dict()
+        serialized_value: Dict[str, Any] = {}
         for field in self.fields:
             name = field.name
             serialized_value[name] = None

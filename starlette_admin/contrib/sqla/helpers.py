@@ -151,7 +151,9 @@ def convert_to_field(column: Column) -> Type[BaseField]:
     )
 
 
-def normalize_fields(fields: Sequence[Any], mapper: Mapper) -> List[BaseField]:
+def normalize_fields(  # noqa: C901
+    fields: Sequence[Any], mapper: Mapper
+) -> List[BaseField]:
     converted_fields = []
     for field in fields:
         if isinstance(field, BaseField):

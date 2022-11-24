@@ -6,15 +6,6 @@ from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, Session, joinedload
 from starlette.requests import Request
-from starlette_admin import (
-    ColorField,
-    EmailField,
-    PhoneField,
-    RelationField,
-    StringField,
-    TextAreaField,
-    URLField,
-)
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
@@ -24,7 +15,16 @@ from starlette_admin.contrib.sqla.helpers import (
     normalize_list,
 )
 from starlette_admin.exceptions import FormValidationError
-from starlette_admin.fields import FileField
+from starlette_admin.fields import (
+    ColorField,
+    EmailField,
+    FileField,
+    PhoneField,
+    RelationField,
+    StringField,
+    TextAreaField,
+    URLField,
+)
 from starlette_admin.helpers import prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
@@ -218,7 +218,7 @@ class ModelView(BaseModelView):
         This function will return a new dict with relationships loaded from
         database.
         """
-        arranged_data: Dict[str, Any] = dict()
+        arranged_data: Dict[str, Any] = {}
         for field in self.fields:
             if (is_edit and field.exclude_from_edit) or (
                 not is_edit and field.exclude_from_create

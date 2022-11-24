@@ -261,8 +261,8 @@ class BaseAdmin:
                 )
                 total = await model.count(request=request, where=where)
             return JSONResponse(
-                dict(
-                    items=[
+                {
+                    "items": [
                         (
                             await model.serialize(
                                 item,
@@ -274,8 +274,8 @@ class BaseAdmin:
                         )
                         for item in items
                     ],
-                    total=total,
-                )
+                    "total": total,
+                }
             )
         else:  # "DELETE"
             if not model.can_delete(request):
@@ -447,7 +447,7 @@ class BaseAdmin:
     async def _render_error(
         self,
         request: Request,
-        exc: Exception = HTTPException(status_code=500),
+        exc: Exception = HTTPException(status_code=500),  # noqa: B008
     ) -> Response:
         assert isinstance(exc, HTTPException)
         return self.templates.TemplateResponse(
@@ -463,7 +463,7 @@ class BaseAdmin:
         model: BaseModelView,
         action: RequestAction,
     ) -> Dict[str, Any]:
-        data = dict()
+        data = {}
         for field in model.fields:
             if (action == RequestAction.EDIT and field.exclude_from_edit) or (
                 action == RequestAction.CREATE and field.exclude_from_create

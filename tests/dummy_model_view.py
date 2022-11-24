@@ -28,7 +28,7 @@ class DummyModelView(BaseModelView):
 
     pk_attr = "id"
     model: Optional[Type[DummyBaseModel]] = None
-    db: Dict[int, DummyBaseModel] = dict()
+    db: Dict[int, DummyBaseModel] = {}
     seq = 1
 
     def __init__(self):
