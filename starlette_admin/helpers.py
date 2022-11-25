@@ -7,7 +7,7 @@ from starlette_admin._types import RequestAction
 from starlette_admin.exceptions import FormValidationError
 
 if TYPE_CHECKING:
-    from starlette_admin import BaseField
+    from starlette_admin.fields import BaseField
 
 
 def prettify_class_name(name: str) -> str:
@@ -93,7 +93,7 @@ def pydantic_error_to_form_validation_errors(exc: Any) -> FormValidationError:
     from pydantic import ValidationError
 
     assert isinstance(exc, ValidationError)
-    errors: Dict[Union[str, int], Any] = dict()
+    errors: Dict[Union[str, int], Any] = {}
     for pydantic_error in exc.errors():
         loc: Tuple[Union[int, str], ...] = pydantic_error["loc"]
         _d = errors
@@ -101,6 +101,6 @@ def pydantic_error_to_form_validation_errors(exc: Any) -> FormValidationError:
             if i == len(loc) - 1:
                 _d[loc[i]] = pydantic_error["msg"]
             elif loc[i] not in _d:
-                _d[loc[i]] = dict()
+                _d[loc[i]] = {}
             _d = _d[loc[i]]
     return FormValidationError(errors)

@@ -10,7 +10,13 @@ from odmantic.query import QueryExpression
 from odmantic.session import AIOSession, SyncSession
 from pydantic import ValidationError
 from starlette.requests import Request
-from starlette_admin import (
+from starlette_admin.contrib.odmantic.helpers import (
+    convert_odm_field_to_admin_field,
+    normalize_list,
+    resolve_deep_query,
+    resolve_proxy,
+)
+from starlette_admin.fields import (
     BaseField,
     CollectionField,
     ColorField,
@@ -22,12 +28,6 @@ from starlette_admin import (
     StringField,
     TextAreaField,
     URLField,
-)
-from starlette_admin.contrib.odmantic.helpers import (
-    convert_odm_field_to_admin_field,
-    normalize_list,
-    resolve_deep_query,
-    resolve_proxy,
 )
 from starlette_admin.helpers import (
     prettify_class_name,
@@ -180,7 +180,7 @@ class ModelView(BaseModelView):
         is_edit: bool = False,
         fields: Optional[Sequence[BaseField]] = None,
     ) -> Dict[str, Any]:
-        arranged_data: Dict[str, Any] = dict()
+        arranged_data: Dict[str, Any] = {}
         if fields is None:
             fields = self.fields
         for field in fields:

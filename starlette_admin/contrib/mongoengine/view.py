@@ -2,7 +2,7 @@ import functools
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 import mongoengine as me
-import starlette_admin as sa
+import starlette_admin.fields as sa
 from bson import ObjectId
 from mongoengine.base import BaseDocument
 from mongoengine.base.fields import BaseField as MongoBaseField
@@ -11,7 +11,6 @@ from mongoengine.fields import GridFSProxy
 from mongoengine.queryset import QNode
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
-from starlette_admin import CollectionField
 from starlette_admin.contrib.mongoengine.fields import FileField, ImageField
 from starlette_admin.contrib.mongoengine.helpers import (
     Q,
@@ -110,7 +109,7 @@ class ModelView(BaseModelView):
         except Exception as e:
             self.handle_exception(e)
 
-    async def _populate_obj(
+    async def _populate_obj(  # noqa: C901
         self,
         request: Request,
         obj: me.Document,
@@ -150,7 +149,7 @@ class ModelView(BaseModelView):
                         )
 
             elif isinstance(me_field, me.EmbeddedDocumentField) and value is not None:
-                assert isinstance(field, CollectionField)
+                assert isinstance(field, sa.CollectionField)
                 old_value = getattr(obj, name, None)
                 if old_value is None:
                     old_value = me_field.document_type()

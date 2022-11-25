@@ -19,7 +19,8 @@ from odmantic.field import (
 from odmantic.query import QueryExpression
 from pydantic.color import Color
 from pydantic.typing import get_args, get_origin
-from starlette_admin import (
+from starlette_admin.contrib.odmantic.exceptions import NotSupportedAnnotation
+from starlette_admin.fields import (
     BaseField,
     BooleanField,
     CollectionField,
@@ -36,7 +37,6 @@ from starlette_admin import (
     StringField,
     URLField,
 )
-from starlette_admin.contrib.odmantic.exceptions import NotSupportedAnnotation
 from starlette_admin.helpers import slugify_class_name
 
 annotation_map = {
@@ -62,7 +62,7 @@ annotation_map = {
 }
 
 
-def convert_odm_field_to_admin_field(
+def convert_odm_field_to_admin_field(  # noqa: C901
     field: ODMBaseField, field_name: str, annotation: t.Type[t.Any]
 ) -> BaseField:
     admin_field: t.Optional[BaseField] = None
@@ -199,7 +199,7 @@ def resolve_deep_query(
         elif key in OPERATORS:
             v = where[key]
             v = (
-                list(map(lambda it: _check_value(it, field_proxy), v))
+                [_check_value(it, field_proxy) for it in v]
                 if isinstance(v, list)
                 else _check_value(v, field_proxy)
             )

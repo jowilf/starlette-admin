@@ -214,7 +214,7 @@ class BaseModelView(BaseView):
 
     _find_foreign_model: Callable[[str], "BaseModelView"]
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: C901
         fringe = list(self.fields)
         all_field_names = []
         while len(fringe) > 0:
@@ -397,7 +397,7 @@ class BaseModelView(BaseView):
         include_relationships: bool = True,
         include_select2: bool = False,
     ) -> Dict[str, Any]:
-        obj_serialized: Dict[str, Any] = dict()
+        obj_serialized: Dict[str, Any] = {}
         for field in self.fields:
             if isinstance(field, RelationField) and include_relationships:
                 value = getattr(obj, field.name, None)
@@ -503,7 +503,7 @@ class BaseModelView(BaseView):
     def _length_menu(self) -> Any:
         return [
             self.page_size_options,
-            list(map(lambda i: "All" if i < 0 else i, self.page_size_options)),
+            [("All" if i < 0 else i) for i in self.page_size_options],
         ]
 
     def _search_columns_selector(self) -> List[str]:
@@ -550,7 +550,7 @@ class BaseModelView(BaseView):
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,
             "responsiveTable": self.responsive_table,
-            "fields": list(map(lambda f: f.dict(), self._extract_fields())),
+            "fields": [f.dict() for f in self._extract_fields()],
             "pk": self.pk_attr,
             "apiUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:api", identity=self.identity

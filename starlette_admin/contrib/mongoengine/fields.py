@@ -34,7 +34,7 @@ def _serialize_file_field(
             and getattr(value, "thumbnail_id", None) is not None
         ):
             """Use thumbnail on list page if available"""
-            id = getattr(value, "thumbnail_id")
+            id = value.thumbnail_id
         return {
             "filename": getattr(value, "filename", "unamed"),
             "content_type": getattr(value, "content_type", "application/octet-stream"),

@@ -2,7 +2,7 @@ import functools
 from typing import Any, Callable, Dict, List, Optional, Sequence, Type
 
 import mongoengine.fields as me
-import starlette_admin as sa
+import starlette_admin.fields as sa
 from mongoengine import EmbeddedDocument
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.queryset import Q as BaseQ
@@ -38,7 +38,7 @@ reference_fields = (
 )
 
 
-def convert_mongoengine_field_to_admin_field(
+def convert_mongoengine_field_to_admin_field(  # noqa: C901
     field: MongoBaseField,
 ) -> sa.BaseField:
     name = field.name

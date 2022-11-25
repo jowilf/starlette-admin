@@ -281,7 +281,7 @@ class TestViews:
         response = client.delete("/admin/api/post", params={"pks": [1, 3, 5]})
         assert response.status_code == 204
         assert len(PostView.db) == 2
-        assert [x for x in PostView.db.keys()] == [2, 4]
+        assert list(PostView.db.keys()) == [2, 4]
 
     def test_other_fields(self):
         class MyModel(DummyBaseModel):
@@ -319,7 +319,7 @@ class TestViews:
         )
         assert response.status_code == 303
         assert MyModelView.db[1] == MyModel(
-            id=1, score=3.4, gender="male", json_field=dict(key="value")
+            id=1, score=3.4, gender="male", json_field={"key": "value"}
         )
         # Test Api
         response = client.get("/admin/api/my-model?pks=1")
@@ -356,9 +356,7 @@ class TestViews:
         )
 
         # Test enum value error
-        MyModelView.db[2] = MyModel(
-            id=2, score=4.5, gender="unknown", json_field=dict()
-        )
+        MyModelView.db[2] = MyModel(id=2, score=4.5, gender="unknown", json_field={})
         with pytest.raises(ValueError, match="Invalid choice value: unknown"):
             response = client.get("/admin/api/my-model?pks=2")
 
