@@ -6,8 +6,10 @@ build-backend = "hatchling.build"
 name = "starlette-admin"
 description = "Fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications"
 readme = "README.md"
-requires-python = ">=3.7"
 license = "MIT"
+requires-python = ">=3.7"
+keywords = ["sqlalchemy", "sqlmodel", "mongoengine", "odmantic", "starlette", "fastapi", "admin", "dashboard", "datatables"]
+
 authors = [
     { name = "Jocelin Hounon", email = "hounonj@gmail.com" },
 ]
