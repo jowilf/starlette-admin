@@ -1,15 +1,16 @@
-[tool.poetry]
-name = "starlette-admin"
-version = "0.3.1"
-description = "Fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications"
-authors = ["Jocelin Hounon <hounonj@gmail.com>"]
-license = "MIT"
-readme = "README.md"
-homepage = "https://github.com/jowilf/starlette-admin"
-repository = "https://github.com/jowilf/starlette-admin"
-documentation = "https://jowilf.github.io/starlette-admin"
-keywords = ["sqlalchemy", "sqlmodel", "mongoengine", "odmantic", "starlette", "fastapi", "admin", "dashboard", "datatables"]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
+[project]
+name = "starlette-admin"
+description = "Fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications"
+readme = "README.md"
+requires-python = ">=3.7"
+license = "MIT"
+authors = [
+    { name = "Jocelin Hounon", email = "hounonj@gmail.com" },
+]
 classifiers = [
     'Development Status :: 4 - Beta',
     "Framework :: AsyncIO",
@@ -25,44 +26,72 @@ classifiers = [
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
 ]
-include = ["CHANGELOG.md"]
+dependencies = [
+    "starlette",
+    "jinja2 >=3, <4",
+    "python-multipart",
+]
+dynamic = ["version"]
 
+[project.urls]
+Homepage = "https://github.com/jowilf/starlette-admin"
+Documentation = "https://jowilf.github.io/starlette-admin"
+Repository = "https://github.com/jowilf/starlette-admin"
+Changelog = "https://jowilf.github.io/starlette-admin/changelog/"
 
-[tool.poetry.dependencies]
-python = ">=3.7,<4.0"
-starlette = "*"
-Jinja2 = "*"
-python-multipart = "*"
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest >=7.2.0",
+    "pytest-asyncio >=0.20.2",
+    "httpx >=0.23.1",
+    "coverage >=6.5.0",
+    "mypy ==0.990",
+    "ruff ==0.0.135",
+    "black ==22.10.0",
+    "SQLAlchemy[asyncio] >=1.4, <1.5.0",
+    "sqlalchemy-file >=0.1.5",
+    "fasteners >=0.18",
+    "PyMySQL[rsa] >=1.0.2",
+    "psycopg2-binary >=2.9.5",
+    "aiosqlite >=0.17.0",
+    "asyncpg >=0.27.0",
+    "aiomysql >=0.1.1",
+    "mongoengine >=0.24.2",
+    "sqlmodel >=0.0.8",
+    "odmantic >=0.9.0",
+    "tinydb >=4.7.0",
+    "Pillow >=9.3.0",
+    "itsdangerous >=2.1.2",
+    "pydantic[email] >=1.10.2",
+    "uvicorn >=0.20.0",
+    # Docs
+    "mkdocs >=1.1.2, <2.0.0",
+    "mkdocs-material >=8.5.10, <9.0.0",
+    "mkdocstrings[python] >=0.19.0, <0.20.0"
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
-sqlmodel = "^0.0.8"
-uvicorn = "^0.20.0"
-PyMySQL = { extras = ["rsa"], version = "^1.0.2" }
-Pillow = "^9.2.0"
-fasteners = "^0.18"
-mongoengine = "^0.24.2"
-black = "^22.6.0"
-isort = "^5.10.1"
-mypy = "^0.990"
-sqlalchemy-file = "^0.1.5"
-coverage = "^6.5.0"
-flake8 = "^3.9.2"
-pytest-asyncio = "^0.20.2"
-psycopg2-binary = "^2.9.3"
-mkdocs-material = "^8.5.10"
-mkdocstrings = { extras = ["python"], version = "^0.19.0" }
-itsdangerous = "^2.1.2"
-autoflake = "^1.7.4"
-SQLAlchemy = { extras = ["asyncio"], version = "^1.4.41" }
-aiosqlite = "^0.17.0"
-asyncpg = "^0.27.0"
-aiomysql = "^0.1.1"
-odmantic = "^0.9.0"
-httpx = "^0.23.0"
-pydantic = {extras = ["email"], version = "^1.10.2"}
-tinydb = "^4.7.0"
-ruff = "0.0.135"
+[tool.hatch.envs.default.scripts]
+format = [
+    "ruff starlette_admin tests --fix",
+    "black ."
+]
+lint = [
+    "mypy starlette_admin",
+    "ruff starlette_admin tests",
+    "black . --check"
+]
+cov = [
+    "coverage combine",
+    "coverage report --show-missing",
+    "coverage xml"
+]
+docs = "mkdocs serve"
+docs_deploy = "mkdocs gh-deploy --force"
+test = "coverage run -m pytest tests"
+test_sqla = "coverage run -m pytest tests/sqla"
+
+[tool.hatch.version]
+path = "starlette_admin/__init__.py"
 
 [tool.coverage.report]
 fail_under = 99
@@ -76,21 +105,19 @@ exclude_lines = [
 
 [tool.coverage.run]
 parallel = true
-command_line = "-m pytest"
-concurrency = ["thread", "greenlet"]
 source = ["starlette_admin", "tests"]
 
 [tool.ruff]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-     "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
 ]
 ignore = [
-    "E501",  # line too long, handled by black
+    "E501", # line too long, handled by black
 ]
 
 [tool.ruff.isort]
@@ -100,7 +127,6 @@ known-third-party = ["starlette_admin"]
 "__init__.py" = ["F401"]
 
 [tool.mypy]
-disallow_untyped_calls = false
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
@@ -111,8 +137,8 @@ warn_unused_ignores = true
 implicit_reexport = false
 strict_equality = true
 ignore_missing_imports = true
-show_error_codes = true
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+
+[tool.hatch.build.targets.wheel]
+[tool.hatch.build.targets.sdist]
+include = ["starlette_admin"]

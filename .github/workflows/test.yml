@@ -57,17 +57,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install poetry
-        run: |
-          python -m pip install --upgrade pip
-          curl -sSL https://install.python-poetry.org | python3 -
-      - name: Configure poetry
-        run: poetry config virtualenvs.create false
-      - name: Install dependencies
-        run: poetry install
+          cache: "pip"
+      - name: Install Dependencies
+        run: pip install hatch
       - name: Lint
-        run: poetry run bash scripts/lint.sh
-      - name: Test Local Storage provider & postgresql
+        run: hatch run lint
+      - name: Test sqla(postgresql) with LocalStorage & mongodb
         env:
           SQLA_ENGINE: 'postgresql+psycopg2://username:password@localhost:5432/test_db'
           SQLA_ASYNC_ENGINE: 'postgresql+asyncpg://username:password@localhost:5432/test_db'
@@ -75,16 +70,14 @@ jobs:
           LOCAL_PATH: '/tmp/storage'
           MONGO_URI: 'mongodb://localhost:27017/'
           MONGO_DATABASE: 'test_db'
-        run: poetry run coverage run -m pytest tests
-      - name: Test Local Storage provider & mysql
+        run: hatch run test
+      - name: Test LocalStorage & mysql
         env:
           SQLA_ENGINE: 'mysql+pymysql://username:password@localhost:3306/test_db'
           SQLA_ASYNC_ENGINE: 'mysql+aiomysql://username:password@localhost:3306/test_db'
           STORAGE_PROVIDER: 'LOCAL'
           LOCAL_PATH: '/tmp/storage'
-          MONGO_URI: 'mongodb://localhost:27017/'
-          MONGO_DATABASE: 'test_db'
-        run: poetry run coverage run -m pytest tests
+        run: hatch run test_sqla
       - name: Test Minio Storage provider & sqlite memory
         env:
           SQLA_ENGINE: 'sqlite:///test.db?check_same_thread=False'
@@ -95,10 +88,8 @@ jobs:
           MINIO_HOST: 'localhost'
           MINIO_PORT: 9000
           MINIO_SECURE: false
-          MONGO_URI: 'mongodb://localhost:27017/'
-          MONGO_DATABASE: 'test_db'
-        run: poetry run coverage run -m pytest tests
+        run: hatch run test_sqla
       - name: Coverage Report
-        run: poetry run bash scripts/coverage.sh
+        run: hatch run cov
       - name: Upload coverage
         uses: codecov/codecov-action@v3

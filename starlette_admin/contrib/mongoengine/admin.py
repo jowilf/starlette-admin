@@ -35,4 +35,4 @@ def _serve_file(request: Request) -> Response:
             headers={"Content-Disposition": f"attachment;filename={file.filename}"},
         )
     except Exception:
-        raise HTTPException(404)
+        raise HTTPException(404)  # noqa B904
