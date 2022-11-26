@@ -38,7 +38,7 @@ class PostView(ModelView):
         use sqlmodel to autovalidate your data with pydantic.
 
         Raise FormValidationError to display error in forms"""
-        errors: Dict[str, str] = dict()
+        errors: Dict[str, str] = {}
         _2day_from_today = date.today() + timedelta(days=2)
         if data["title"] is None or len(data["title"]) < 3:
             errors["title"] = "Ensure this value has at least 03 characters"

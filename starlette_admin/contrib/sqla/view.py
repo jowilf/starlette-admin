@@ -41,7 +41,7 @@ class ModelView(BaseModelView):
         try:
             mapper = inspect(model)
         except NoInspectionAvailable:
-            raise InvalidModelError(
+            raise InvalidModelError(  # noqa B904
                 f"Class {model.__name__} is not a SQLAlchemy model."
             )
         assert len(mapper.primary_key) == 1, (

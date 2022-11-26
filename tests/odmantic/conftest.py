@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 import pytest_asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -9,16 +7,7 @@ from pymongo import MongoClient
 from tests.odmantic import MONGO_DATABASE, MONGO_URI
 
 
-@pytest_asyncio.fixture(scope="session")
-def event_loop():
-    asyncio.get_event_loop().close()
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    asyncio.set_event_loop(loop)
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture
 async def aio_engine(event_loop):
     client = AsyncIOMotorClient(MONGO_URI, io_loop=event_loop)
     sess = AIOEngine(client, MONGO_DATABASE)
@@ -27,7 +16,7 @@ async def aio_engine(event_loop):
     client.close()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def sync_engine():
     client = MongoClient(MONGO_URI)
     sess = SyncEngine(client, MONGO_DATABASE)
