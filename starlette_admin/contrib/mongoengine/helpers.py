@@ -172,7 +172,7 @@ def build_order_clauses(order_list: List[str]) -> List[str]:
     clauses = []
     for value in order_list:
         key, order = value.strip().split(maxsplit=1)
-        clauses.append("%s%s" % ("-" if order.lower() == "desc" else "+", key))
+        clauses.append("{}{}".format("-" if order.lower() == "desc" else "+", key))
     return clauses
 
 

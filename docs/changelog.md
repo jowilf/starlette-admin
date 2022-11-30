@@ -27,7 +27,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     class Post:
         id: int
         title: str
-    
+
     admin.add_view(ModelView(Post, icon="fa fa-blog", label = "Blog Posts"))
     ```
 
@@ -36,12 +36,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     class Post:
         id: int
         title: str
-          
-    
+
+
     class PostView(ModelView, model=Post):
         icon = "fa fa-blog"
         label = "Blog Posts"
-    
+
     admin.add_view(PostView)
     ```
 
@@ -58,7 +58,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
         icon = "fa fa-home"
         path = "/home"
         template_path = "home.html"
-    
+
     admin.add_view(HomeView)
     ```
 
@@ -83,14 +83,14 @@ These changes are inspired from *Flask-admin* and are introduced to help reduce 
 
 * Add `CollectionField`
 * Add `ListField`
-* Add support for [Odmantic](https://art049.github.io/odmantic/) 
+* Add support for [Odmantic](https://art049.github.io/odmantic/)
 * Add support for datatables [responsive extensions](https://datatables.net/extensions/responsive/)
 !!! usage
     ```python
     class MyModelView(ModelView):
         responsive_table = True
     ```
-  
+
 ### Changed
 
 * Move `SQLModel` to it own contrib package

@@ -71,7 +71,7 @@ class PostView(BaseModelView):
 
 ## Fields
 
-Internally, *Starlette-Admin*  uses custom fields all inherit from [BaseField][starlette_admin.fields.BaseField] to 
+Internally, *Starlette-Admin*  uses custom fields all inherit from [BaseField][starlette_admin.fields.BaseField] to
 represent each attribute. So, you need to choose the right field for each attribute or create a new field if needed.
 See [API Reference][starlette_admin.fields.BaseField] for full list of default fields.
 

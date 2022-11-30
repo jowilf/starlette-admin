@@ -31,11 +31,11 @@ the admin class
     This is simple example with SQLAlchemy backend
     ```python
     from starlette_admin.contrib.sqla import Admin as BaseAdmin
-    
+
     class Admin(BaseAdmin):
         def custom_render_js(self, request: Request) -> Optional[str]:
             return request.url_for("statics", path="js/custom_render.js")
-    
+
     admin = Admin(engine)
     admin.add_view(...)
     ```
@@ -50,7 +50,7 @@ the admin class
 !!! note
     `fieldOptions` is your field as javascript object. Your field attributes is serialized into
     javascript object by using dataclass `asdict` function.
-    
+
 * Then, set `render_function_key` value
 
 ```python
@@ -59,7 +59,7 @@ from dataclasses import dataclass
 
 @dataclass
 class CustomField(BaseField):
-    render_function_key: str = "mycustomkey" 
+    render_function_key: str = "mycustomkey"
 ```
 
 ## Form
@@ -91,8 +91,8 @@ from dataclasses import dataclass
 
 @dataclass
 class CustomField(BaseField):
-    render_function_key: str = "mycustomkey" 
-    form_template: str = "forms/custom.html" 
+    render_function_key: str = "mycustomkey"
+    form_template: str = "forms/custom.html"
 ```
 
 ## Detail Page
@@ -115,12 +115,12 @@ from dataclasses import dataclass
 
 @dataclass
 class CustomField(BaseField):
-    render_function_key: str = "mycustomkey" 
-    form_template: str = "forms/custom.html" 
+    render_function_key: str = "mycustomkey"
+    form_template: str = "forms/custom.html"
     display_template = "displays/custom.html"
 ```
 
-## Data processing 
+## Data processing
 
 For data processing you will need to override two functions:
 

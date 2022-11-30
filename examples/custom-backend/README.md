@@ -1,4 +1,4 @@
-This example shows how you can easily extend BaseModelView with your custom database backend, here [tinydb](https://github.com/msiemens/tinydb). 
+This example shows how you can easily extend BaseModelView with your custom database backend, here [tinydb](https://github.com/msiemens/tinydb).
 
 The SearchBuilder is disabled for this example, only full text search is available.
 

@@ -1,4 +1,4 @@
-# Admin Configurations 
+# Admin Configurations
 
 Multiple options are available to customize your admin interface
 

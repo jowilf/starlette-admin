@@ -73,13 +73,13 @@ Two options are available to specify which fields can be sorted or searched.
 You can export your data from list page. The export options can be set per model and includes the following options:
 
 * `export_fields`:  List of fields to include in exports.
-* `export_types`: A list of available export filetypes. Available 
+* `export_types`: A list of available export filetypes. Available
 exports are `['csv', 'excel', 'pdf', 'print']`. By default, All of them are activated by default.
 
 !!! Example
     ```Python
     from starlette_admin import ExportType
-    
+
     class PostView(ModelView):
         export_fields = [Post.id, Post.content, Post.tags]
         export_types = [ExportType.CSV, ExportType.EXCEL]
@@ -91,7 +91,7 @@ The pagination options in the list page can be configured. The available options
 
 * `page_size`: Default number of items to display in List page pagination.
             Default value is set to `10`.
-* `page_size_options`: Pagination choices displayed in List page.  Default value is set to `[10, 25, 50, 100]`. 
+* `page_size_options`: Pagination choices displayed in List page.  Default value is set to `[10, 25, 50, 100]`.
      Use `-1`to display All
 
 

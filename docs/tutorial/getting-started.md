@@ -8,18 +8,18 @@ The first step is to initialize an empty admin interface for your app:
     ```python
     from sqlalchemy import create_engine
     from starlette_admin.contrib.sqla import Admin
-    
+
     engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
-    
+
     admin = Admin(engine)
     ```
 === "SQLModel"
     ```python
     from sqlalchemy import create_engine
     from starlette_admin.contrib.sqlmodel import Admin
-    
+
     engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
-    
+
     admin = Admin(engine)
     ```
 === "MongoEngine"
@@ -32,9 +32,9 @@ The first step is to initialize an empty admin interface for your app:
     ```python
     from odmantic import AIOEngine
     from starlette_admin.contrib.odmantic import Admin
-    
+
     engine = AIOEngine()
-    
+
     admin = Admin(engine)
     ```
 
@@ -48,38 +48,38 @@ Model views allow you to add a dedicated set of admin pages for managing any mod
     ```python hl_lines="2 10-11"
     from sqlalchemy import create_engine
     from starlette_admin.contrib.sqla import Admin, ModelView
-    
+
     from .models import User, Post
-    
+
     engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
-    
+
     admin = Admin(engine)
-    
+
     admin.add_view(ModelView(User))
     admin.add_view(ModelView(Post))
-    
+
     ```
 === "SQLModel"
     ```python hl_lines="2 10-11"
     from sqlalchemy import create_engine
     from starlette_admin.contrib.sqlmodel import Admin, ModelView
-    
+
     from .models import User, Post
-    
+
     engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
-    
+
     admin = Admin(engine)
-    
+
     admin.add_view(ModelView(User))
     admin.add_view(ModelView(Post))
-    
+
     ```
 === "MongoEngine"
     ```python hl_lines="1 7-8"
     from starlette_admin.contrib.mongoengine import Admin, ModelView
 
     from .models import Post, User
-    
+
     admin = Admin()
 
     admin.add_view(ModelView(User))
@@ -90,18 +90,18 @@ Model views allow you to add a dedicated set of admin pages for managing any mod
     ```python hl_lines="2 10-11"
     from odmantic import AIOEngine
     from starlette_admin.contrib.odmantic import Admin, ModelView
-    
+
     from .models import Post, User
-    
+
     engine = AIOEngine()
-    
+
     admin = Admin(engine)
-    
+
     admin.add_view(ModelView(User))
     admin.add_view(ModelView(Post))
 
     ```
-This gives you a set of fully featured CRUD views for your model: 
+This gives you a set of fully featured CRUD views for your model:
 
 - A *list view*, with support for searching, sorting, filtering, and deleting records.
 - A *create view* for adding new records.
@@ -111,7 +111,7 @@ This gives you a set of fully featured CRUD views for your model:
 ### CustomView
 
 With [CustomView][starlette_admin.views.CustomView] you can add your own views (not tied to any particular model). For example,
-a custom home page that displays some analytics data. 
+a custom home page that displays some analytics data.
 
 ```python
 from starlette_admin import CustomView
@@ -184,38 +184,38 @@ The last step is to mount the admin interfaces to your app
     from sqlalchemy import create_engine
     from starlette.applications import Starlette
     from starlette_admin.contrib.sqla import Admin, ModelView
-    
+
     from .models import Post, User
-    
+
     engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
-    
+
     app = Starlette() # FastAPI()
-    
+
     admin = Admin(engine)
-    
+
     admin.add_view(ModelView(User))
     admin.add_view(ModelView(Post))
-    
+
     admin.mount_to(app)
-        
+
     ```
 === "SQLModel"
     ```python hl_lines="2 9 16"
     from sqlalchemy import create_engine
     from starlette.applications import Starlette
     from starlette_admin.contrib.sqlmodel import Admin, ModelView
-    
+
     from .models import Post, User
-    
+
     engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
-    
+
     app = Starlette()  # FastAPI()
-    
+
     admin = Admin(engine)
-    
+
     admin.add_view(ModelView(User))
     admin.add_view(ModelView(Post))
-    
+
     admin.mount_to(app)
 
     ```
@@ -223,16 +223,16 @@ The last step is to mount the admin interfaces to your app
     ```python hl_lines="1 6 13"
     from starlette.applications import Starlette
     from starlette_admin.contrib.mongoengine import Admin, ModelView
-    
+
     from .models import Post, User
-    
+
     app = Starlette()  # FastAPI()
-    
+
     admin = Admin()
-    
+
     admin.add_view(ModelView(User))
     admin.add_view(ModelView(Post))
-    
+
     admin.mount_to(app)
     ```
 === "ODMantic"
@@ -240,18 +240,18 @@ The last step is to mount the admin interfaces to your app
     from odmantic import AIOEngine
     from starlette.applications import Starlette
     from starlette_admin.contrib.odmantic import Admin, ModelView
-    
+
     from .models import Post, User
-    
+
     engine = AIOEngine()
-    
+
     app = Starlette()  # FastAPI()
-    
+
     admin = Admin(engine)
-    
+
     admin.add_view(ModelView(User))
     admin.add_view(ModelView(Post))
-    
+
     admin.mount_to(app)
     ```
 

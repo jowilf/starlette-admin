@@ -22,20 +22,20 @@ def configure_storage():
     driver = cls(UPLOAD_DIR)
     """
     You are free to use any storage providers supported by apache-libcloud
-    
-    
+
+
     Example with S3
     ```python
     cls = get_driver(Provider.S3)
     driver = cls("api key", "api secret key")
     ```
-    
+
     Example with minio
     ```python
     cls = get_driver(Provider.MINIO)
     driver = cls("minioadmin", "minioadmin", secure=False, host="127.0.0.1", port=9000)
     ```
-    
+
     See https://libcloud.readthedocs.io/en/stable/storage/supported_providers.html for more
     """
     StorageManager.add_storage("default", get_or_create_container(driver, "bin"))
