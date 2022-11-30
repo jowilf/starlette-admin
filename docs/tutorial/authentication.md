@@ -82,7 +82,7 @@ from starlette_admin import CustomView
 from starlette.requests import Request
 
 class ReportView(CustomView):
-    
+
     def is_accessible(self, request: Request) -> bool:
         return "admin" in request.state.user_roles
 ```
@@ -122,4 +122,3 @@ class PostView(ModelView):
     def can_delete(self, request: Request) -> bool:
         return "admin" in request.state.user_roles
 ```
-

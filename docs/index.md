@@ -45,7 +45,7 @@
     * [MongoEngine](http://mongoengine.org/)
     * [ODMantic](http://mongoengine.org/)
 - Custom backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
-  
+
 
 ## Installation
 
