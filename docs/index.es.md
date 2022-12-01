@@ -1,6 +1,6 @@
 # Visión General
 
-*Starlette-Admin* es un rapido, hermoso y extensible framework de interfaz administrativa para aplicaciones Starlette/FastAPI.
+*Starlette-Admin* es un rápido, hermoso y extensible framework de interfaz administrativa para aplicaciones Starlette/FastAPI.
 
 <p align="center">
 <a href="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml">
@@ -31,9 +31,9 @@
 - CRUD de cualquier dato con facilidad
 - Validación automática de formularios
 - Widget de tabla avanzado con [Datatables](https://datatables.net/)
-- Busqueda y filtrado
+- Búsqueda y filtrado
 - Resaltado de búsqueda
-- Ordenamiento multicolumna
+- Ordenamiento multi columna
 - Exportación de datos a CSV/EXCEL/PDF e impresión con navegador
 - Autenticación
 - Autorización

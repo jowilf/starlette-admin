@@ -53,6 +53,25 @@ plugins:
       nav_translations:
         es:
           Overview: Visión General
+          Tutorial - User Guide: Tutoriales - Guía de Usuario
+          Getting Started: Empezando
+          Configurations: Configuraciones
+          Admin: Admin
+          ModelView: ModelView
+          Forms Validations: Validación de Formularios
+          Authentication: Autenticación
+          Managing Files: Administrando Archivos
+          Multiple Admin: Multiples Admin
+          Advanced User Guide: Guía de Usuario Avanzada
+          Custom Field: Campos Personalizados
+          Extending BaseModelView: Extendiendo BaseModelView
+          Alternatives, Inspiration and Comparisons: Alternativas, Inspiración y Comparaciones
+          API Reference: Referencia de la API
+          Fields: Campos
+          Views: Vistas
+          BaseAdmin: BaseAdmin
+          AuthProvider: AuthProvider
+          Changelog: Registro de Cambios
 
 watch:
   - starlette_admin
@@ -93,10 +112,3 @@ extra:
       link: https://twitter.com/jowilf
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/jocelin-hounon-2008aa139
-  # alternate:
-  #   - name: en - English
-  #     link: /en/
-  #     lang: en
-  #   - name: es - Español
-  #     link: /es/
-  #     lang: es
