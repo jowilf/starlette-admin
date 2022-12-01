@@ -41,6 +41,18 @@ plugins:
           rendering:
             show_root_heading: true
             show_source: false
+  - i18n:
+      default_language: en
+      languages:
+        en:
+          name: English
+          build: true
+        es:
+          name: Español
+          build: true
+      nav_translations:
+        es:
+          Overview: Visión General
 
 watch:
   - starlette_admin
@@ -70,7 +82,6 @@ nav:
       - AuthProvider: 'api/auth-provider.md'
   - Changelog: 'changelog.md'
 
-
 extra:
   analytics:
     provider: google
@@ -82,3 +93,10 @@ extra:
       link: https://twitter.com/jowilf
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/jocelin-hounon-2008aa139
+  # alternate:
+  #   - name: en - English
+  #     link: /en/
+  #     lang: en
+  #   - name: es - Español
+  #     link: /es/
+  #     lang: es
