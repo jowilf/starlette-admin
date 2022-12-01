@@ -769,7 +769,7 @@ class ListField(BaseField):
     form_template: str = "forms/list.html"
     display_template: str = "displays/list.html"
     search_builder_type: str = "array"
-    field: BaseField = BaseField("")
+    field: BaseField = dc_field(default_factory=lambda: BaseField(""))
 
     def __init__(self, field: BaseField, required: bool = False) -> None:
         self.field = field
