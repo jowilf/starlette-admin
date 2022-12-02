@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2022-12-02
+
+---
+
+### Fixed
+
+* Fix Datatables warning when primary key is not included in `fields` by [@jowilf](https://github.com/jowilf) in [#23](https://github.com/jowilf/starlette-admin/issues/23)
+
+### Docs
+
+* Add spanish translation for `docs/index.md` by [@rafnixg](https://github.com/rafnixg) in [#35](https://github.com/jowilf/starlette-admin/pull/35)
+
+### Internals
+
+* Use Ruff for linting by [@jowilf](https://github.com/jowilf) in [#29](https://github.com/jowilf/starlette-admin/pull/29)
+* Migrate to Hatch by [@jowilf](https://github.com/jowilf) in [#30](https://github.com/jowilf/starlette-admin/pull/30)
+* Setup pre-commit by [@jowilf](https://github.com/jowilf) in [#33](https://github.com/jowilf/starlette-admin/pull/33)
+* Add support for Python 3.11 in test suite by [@jowilf](https://github.com/jowilf) in [#34](https://github.com/jowilf/starlette-admin/pull/34)
+
+
 ## [0.3.1] - 2022-11-22
 
 ---

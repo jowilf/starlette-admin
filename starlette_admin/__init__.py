@@ -1,4 +1,4 @@
-__version__ = "0.3.2.dev0"
+__version__ = "0.3.2"
 
 from ._types import ExportType, RequestAction
 from .base import BaseAdmin
