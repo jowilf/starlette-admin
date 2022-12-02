@@ -1,11 +1,25 @@
 from abc import abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Type, Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    Union,
+)
 
 from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
 from starlette_admin._types import ExportType, RequestAction
+from starlette_admin.actions import action
+from starlette_admin.exceptions import ActionFailed
 from starlette_admin.fields import (
     BaseField,
     CollectionField,
@@ -252,8 +266,70 @@ class BaseModelView(BaseView):
         if self.export_fields is None:
             self.export_fields = all_field_names[:]
 
+        # Actions
+        self._actions: List[Tuple[str, str, str, str]] = []
+        self._handlers: Dict[str, Callable[[Request, Sequence[Any]], Awaitable]] = {}
+        self._init_actions()
+
     def is_active(self, request: Request) -> bool:
         return request.path_params.get("identity", None) == self.identity
+
+    def _init_actions(self) -> None:
+        """
+        Initialize list of actions
+        """
+        for method_name in dir(self):
+            method = getattr(self, method_name)
+            if hasattr(method, "_action"):
+                name, text, confirmation, theme = method._action
+                self._actions.append((name, text, confirmation, theme))
+                self._handlers[name] = method
+
+    async def is_action_allowed(self, request: Request, name: str) -> bool:
+        """
+        Verify if action with `name` is allowed.
+        Override this method to allow or disallow actions based
+        on some condition.
+
+        Args:
+            name: Action name
+            request: Starlette request
+        """
+        if name == "delete":
+            return self.can_delete(request)
+        return True
+
+    async def get_all_actions(self, request: Request) -> List[Dict[str, Any]]:
+        actions = []
+        for action in self._actions:
+            name, text, confirmation, theme = action
+            if await self.is_action_allowed(request, name):
+                actions.append(
+                    {
+                        "name": name,
+                        "text": text,
+                        "confirmation": confirmation,
+                        "theme": theme,
+                    }
+                )
+        return actions
+
+    async def handle_action(self, request: Request, pks: List[Any], name: str) -> None:
+        """
+        Handle action with `name`.
+        Raises:
+            ActionFailed
+        """
+        handler = self._handlers.get(name, None)
+        if handler is None:
+            raise ActionFailed("Action not found")
+        return await handler(request, pks)
+
+    @action(
+        "delete", "Delete", "Are you sure you want to delete this items ?", "danger"
+    )
+    async def delete_action(self, request: Request, pks: List[Any]):
+        return await self.delete(request, pks)
 
     @abstractmethod
     async def find_all(
@@ -539,7 +615,7 @@ class BaseModelView(BaseView):
             links.update(field.additional_js_links(request))
         return links
 
-    def _configs(self, request: Request) -> Dict[str, Any]:
+    async def _configs(self, request: Request) -> Dict[str, Any]:
         return {
             "label": self.label,
             "pageSize": self.page_size,
@@ -551,6 +627,7 @@ class BaseModelView(BaseView):
             "searchBuilder": self.search_builder,
             "responsiveTable": self.responsive_table,
             "fields": [f.dict() for f in self._extract_fields()],
+            "actions": await self.get_all_actions(request),
             "pk": self.pk_attr,
             "apiUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:api", identity=self.identity

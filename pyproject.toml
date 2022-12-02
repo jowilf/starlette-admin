@@ -48,7 +48,7 @@ dependencies = [
     "httpx >=0.23.1",
     "coverage >=6.5.0",
     "mypy ==0.990",
-    "ruff ==0.0.135",
+    "ruff ==0.0.149",
     "black ==22.10.0",
     "SQLAlchemy[asyncio] >=1.4, <1.5.0",
     "sqlalchemy-file >=0.1.5",

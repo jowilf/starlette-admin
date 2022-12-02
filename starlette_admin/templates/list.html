@@ -1,16 +1,16 @@
 {% extends "layout.html" %} {% block header %}
 <div class="d-flex justify-content-between align-items-center">
-    <h1>{{ model.label }}</h1>
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-            <a href="{{ url_for(__name__ ~ ':index')}}">Admin</a>
-        </li>
-        <li class="breadcrumb-item active">{{ model.label }}</li>
-    </ol>
+  <h1>{{ model.label }}</h1>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="{{ url_for(__name__ ~ ':index')}}">Admin</a>
+    </li>
+    <li class="breadcrumb-item active">{{ model.label }}</li>
+  </ol>
 </div>
 {% endblock %} {% block modal %} {% include "modals/loading.html" %} {% include
-"modals/error.html" %} {% include "modals/delete.html" %} {% endblock %}
-{% block content %}
+"modals/error.html" %} {% include "modals/delete.html" %} {% endblock %} {%
+block content %}
 <div class="container-fluid">
   <div class="row">
     <div class="col-12">
@@ -19,16 +19,36 @@
           <div id="btn_container" class="card-title"></div>
           <div class="card-actions">
             <div class="btn-list">
-              {%if model.can_delete(request)%}
-              <button
-                id="multi-delete-btn"
-                class="btn btn-danger btn-block ms-2"
-                style="display: none"
-              >
-                <i class="fa-solid fa-trash me-2"></i>
-                (<span>0</span>)
-              </button>
-              {%endif%}
+              <div class="dropdown" id="actions-dropdown" style="display: none">
+                <button
+                  type="button"
+                  class="btn dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                  id="actionDropdownButton"
+                >
+                  With selected (<span class="actions-selected-counter">0</span
+                  >)
+                </button>
+                <div
+                  class="dropdown-menu"
+                  aria-labelledby="actionDropdownButton"
+                >
+                  {% for action in _actions %}
+                  <!-- prettier-ignore -->
+                  <a
+                    class="dropdown-item action-item"
+                    type="button"
+                    data-bs-toggle="modal" data-bs-target="#modal-delete"
+                    href="#"
+                    {% if action.confirmation %} data-confirmation="{{action.confirmation}}" {%endif%}
+                    data-name="{{action.name}}"
+                    data-theme="{{action.theme}}"
+                  >
+                    {{ action.text }}
+                  </a>
+                  {% endfor %}
+                </div>
+              </div>
               {%if model.can_create(request)%}
               <a
                 href="{{ url_for(__name__ ~ ':create', identity=model.identity)}}"
@@ -97,10 +117,15 @@
     </div>
   </div>
 </div>
-{% endblock %}
-{% block head_css %}
-<link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/dt.min.css') }}">
-<link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/dt.checkboxes.css') }}">
+{% endblock %} {% block head_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for(__name__ ~ ':statics', path='css/dt.min.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for(__name__ ~ ':statics', path='css/dt.checkboxes.css') }}"
+/>
 <style>
   div.dataTables_wrapper div.dataTables_info {
     padding-top: 0;
@@ -123,23 +148,49 @@
     margin-bottom: 0px !important;
   }
 </style>
-{% endblock %}
-{% block script %}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/moment.min.js') }}"></script>
+{% endblock %} {% block script %}
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='js/vendor/moment.min.js') }}"
+></script>
 {% if 'pdf' in model.export_types%}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/pdfmake.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/vfs_fonts.js') }}"></script>
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='js/vendor/pdfmake.min.js') }}"
+></script>
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='js/vendor/vfs_fonts.js') }}"
+></script>
 {% endif %}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/dt.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/dt.checkboxes.js') }}"></script>
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/dt.searchHighlight.js') }}"></script>
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='js/vendor/dt.min.js') }}"
+></script>
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='js/vendor/dt.checkboxes.js') }}"
+></script>
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='js/vendor/dt.searchHighlight.js') }}"
+></script>
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"
+></script>
 <script>
-var model = {{model._configs(request) | tojson | safe}};
+  var model = {{__js_model__ | tojson | safe}};
 </script>
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/render.js') }}"></script>
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='js/render.js') }}"
+></script>
 {% if custom_render_js(request) %}
 <script type="text/javascript" src="{{ custom_render_js(request) }}"></script>
 {% endif %}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/list.js') }}"></script>
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='js/list.js') }}"
+></script>
 {% endblock %}

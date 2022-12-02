@@ -350,9 +350,9 @@ $(function () {
   function onSelectChange() {
     selectedRows = table.rows({ selected: true }).ids().toArray();
     if (table.rows({ selected: true }).count() == 0)
-      $("#multi-delete-btn").hide();
-    else $("#multi-delete-btn").show();
-    $("#multi-delete-btn span").text(table.rows({ selected: true }).count());
+      $("#actions-dropdown").hide();
+    else $("#actions-dropdown").show();
+    $(".actions-selected-counter").text(table.rows({ selected: true }).count());
   }
 
   table

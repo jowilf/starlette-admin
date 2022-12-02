@@ -15,7 +15,7 @@ from starlette.status import HTTP_204_NO_CONTENT, HTTP_303_SEE_OTHER, HTTP_403_F
 from starlette.templating import Jinja2Templates
 from starlette_admin._types import RequestAction
 from starlette_admin.auth import AuthMiddleware, AuthProvider
-from starlette_admin.exceptions import FormValidationError, LoginFailed
+from starlette_admin.exceptions import ActionFailed, FormValidationError, LoginFailed
 from starlette_admin.helpers import get_file_icon
 from starlette_admin.views import BaseModelView, BaseView, CustomView, DropDown, Link
 
@@ -135,6 +135,12 @@ class BaseAdmin:
                     self._render_api,
                     methods=["GET", "DELETE"],
                     name="api",
+                ),
+                Route(
+                    "/api/{identity}/action",
+                    self.handle_action,
+                    methods=["POST"],
+                    name="api:action",
                 ),
                 Route(
                     "/{identity}/list",
@@ -284,6 +290,19 @@ class BaseAdmin:
             await model.delete(request, pks)
             return Response(status_code=HTTP_204_NO_CONTENT)
 
+    async def handle_action(self, request: Request):
+        identity = request.path_params.get("identity")
+        pks = request.query_params.getlist("pks")
+        name = request.query_params.get("name")
+        model = self._find_model_from_identity(identity)
+        if not model.is_accessible(request):
+            raise HTTPException(403)
+        try:
+            await model.handle_action(request, pks, name)
+        except ActionFailed as exc:
+            return JSONResponse({"msg": exc.msg}, status_code=403)
+        return Response(status_code=200)
+
     async def _render_login(self, request: Request) -> Response:
         if request.method == "GET":
             return self.templates.TemplateResponse(
@@ -339,7 +358,12 @@ class BaseAdmin:
             raise HTTPException(403)
         return self.templates.TemplateResponse(
             model.list_template,
-            {"request": request, "model": model},
+            {
+                "request": request,
+                "model": model,
+                "_actions": await model.get_all_actions(request),
+                "__js_model__": await model._configs(request),
+            },
         )
 
     async def _render_detail(self, request: Request) -> Response:
