@@ -43,7 +43,7 @@
     * [SQLAlchemy](https://www.sqlalchemy.org/)
     * [SQLModel](https://sqlmodel.tiangolo.com/)
     * [MongoEngine](http://mongoengine.org/)
-    * [ODMantic](http://mongoengine.org/)
+    * [ODMantic](https://github.com/art049/odmantic/)
 - Custom backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
 
 
