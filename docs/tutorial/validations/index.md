@@ -33,7 +33,7 @@ When working with sqlalchemy, you need to write your own validation logic to val
             return await super().validate(request, data)
     ```
 
-    ![SQLAlchemy Form Validations](../images/validations/sqla.png)
+    ![SQLAlchemy Form Validations](../../images/validations/sqla.png)
 
 ??? info
     Full example available [here](https://github.com/jowilf/starlette-admin/tree/main/examples/sqla)
@@ -62,7 +62,7 @@ For SQLModel, you just need to define your model and submitted data are automati
             return v.title()
     ```
 
-    ![SQLModel Form Validations](../images/validations/sqlmodel.png)
+    ![SQLModel Form Validations](../../images/validations/sqlmodel.png)
 
 ??? info
     Full example available [here](https://github.com/jowilf/starlette-admin/tree/main/examples/sqlmodel)
@@ -96,7 +96,7 @@ The submitted data will be automatically validated according to your model defin
 
     ```
 
-    ![SQLModel Form Validations](../images/validations/odmantic.png)
+    ![SQLModel Form Validations](../../images/validations/odmantic.png)
 
 
 ??? info
@@ -123,7 +123,7 @@ The submitted data will be automatically validated according to your model defin
         lols = db.ListField(db.StringField(max_length=20))
     ```
 
-    ![SQLModel Form Validations](../images/validations/mongoengine.png)
+    ![SQLModel Form Validations](../../images/validations/mongoengine.png)
 
 ??? info
     Full example available [here](https://github.com/jowilf/starlette-admin/tree/main/examples/mongoengine)
