@@ -439,7 +439,9 @@ class BaseModelView(BaseView):
         obj_serialized["_repr"] = await self.repr(obj, request)
         assert self.pk_attr is not None
         pk = getattr(obj, self.pk_attr)
-        obj_serialized[self.pk_attr] = pk  # Make sure the id is always available
+        obj_serialized[self.pk_attr] = obj_serialized.get(
+            self.pk_attr, str(pk)  # Make sure the primary key is always available
+        )
         route_name = request.app.state.ROUTE_NAME
         obj_serialized["_detail_url"] = request.url_for(
             route_name + ":detail", identity=self.identity, pk=pk
