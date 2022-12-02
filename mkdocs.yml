@@ -82,24 +82,24 @@ extra_css:
 nav:
   - Overview: 'index.md'
   - Tutorial - User Guide:
-      - Getting Started: 'tutorial/getting-started.md'
+      - Getting Started: 'tutorial/getting-started/index.md'
       - Configurations:
-          - Admin: 'tutorial/configurations/admin.md'
-          - ModelView: 'tutorial/configurations/modelview.md'
-      - Forms Validations: 'tutorial/validations.md'
-      - Authentication: 'tutorial/authentication.md'
-      - Managing Files: 'tutorial/files.md'
-      - Multiple Admin: 'tutorial/multiple-admin.md'
+          - Admin: 'tutorial/configurations/admin/index.md'
+          - ModelView: 'tutorial/configurations/modelview/index.md'
+      - Forms Validations: 'tutorial/validations/index.md'
+      - Authentication: 'tutorial/authentication/index.md'
+      - Managing Files: 'tutorial/files/index.md'
+      - Multiple Admin: 'tutorial/multiple-admin/index.md'
   - Advanced User Guide:
-      - Custom Field: 'advanced/custom-field.md'
-      - Extending BaseModelView: 'advanced/base-model-view.md'
-  - Alternatives, Inspiration and Comparisons: 'alternatives.md'
+      - Custom Field: 'advanced/custom-field/index.md'
+      - Extending BaseModelView: 'advanced/base-model-view/index.md'
+  - Alternatives, Inspiration and Comparisons: 'alternatives/index.md'
   - API Reference:
-      - Fields: 'api/fields.md'
-      - Views: 'api/views.md'
-      - BaseAdmin: 'api/base-admin.md'
-      - AuthProvider: 'api/auth-provider.md'
-  - Changelog: 'changelog.md'
+      - Fields: 'api/fields/index.md'
+      - Views: 'api/views/index.md'
+      - BaseAdmin: 'api/base-admin/index.md'
+      - AuthProvider: 'api/auth-provider/index.md'
+  - Changelog: 'changelog/index.md'
 
 extra:
   analytics:
