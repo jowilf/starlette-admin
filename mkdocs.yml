@@ -46,7 +46,7 @@ plugins:
       languages:
         en:
           name: English
-          build: true
+          build: false
         es:
           name: Español
           build: true
