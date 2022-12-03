@@ -1,17 +1,21 @@
-from typing import Any, Awaitable, Callable, Optional, Sequence, no_type_check
-
-from starlette.requests import Request
+from typing import Any, Callable, Optional
 
 
 def action(
     name: str,
     text: str,
     confirmation: Optional[str] = None,
-    theme: Optional[str] = "primary",
-) -> Callable[[Request, Sequence[Any]], Awaitable]:
-    @no_type_check
-    def wrap(f):
-        f._action = (name, text, confirmation, theme)
+    submit_btn_text: Optional[str] = "Proceed",
+    submit_btn_class: Optional[str] = "btn-primary",
+) -> Callable[[Callable], Any]:
+    def wrap(f: Callable) -> Callable:
+        f._action = {  # type: ignore
+            "name": name,
+            "text": text,
+            "confirmation": confirmation,
+            "submit_btn_text": submit_btn_text,
+            "submit_btn_class": submit_btn_class,
+        }
         return f
 
     return wrap

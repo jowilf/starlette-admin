@@ -9,7 +9,7 @@
   </ol>
 </div>
 {% endblock %} {% block modal %} {% include "modals/loading.html" %} {% include
-"modals/error.html" %} {% include "modals/delete.html" %} {% endblock %} {%
+"modals/error.html" %} {% include "modals/actions.html" %} {% endblock %} {%
 block content %}
 <div class="container-fluid">
   <div class="row">
@@ -38,11 +38,17 @@ block content %}
                   <a
                     class="dropdown-item action-item"
                     type="button"
-                    data-bs-toggle="modal" data-bs-target="#modal-delete"
                     href="#"
-                    {% if action.confirmation %} data-confirmation="{{action.confirmation}}" {%endif%}
+                    {% if action.confirmation %}
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal-action"
+                    data-confirmation="{{action.confirmation}}"
+                    {% else %}
+                    data-no-confirmation
+                    {%endif%}
                     data-name="{{action.name}}"
-                    data-theme="{{action.theme}}"
+                    data-submit-btn-text="{{action.submit_btn_text}}"
+                    data-submit-btn-class="{{action.submit_btn_class}}"
                   >
                     {{ action.text }}
                   </a>

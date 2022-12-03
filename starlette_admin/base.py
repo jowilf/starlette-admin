@@ -137,7 +137,7 @@ class BaseAdmin:
                     name="api",
                 ),
                 Route(
-                    "/api/{identity}/action",
+                    "/api/{identity}/actions",
                     self.handle_action,
                     methods=["POST"],
                     name="api:action",
@@ -290,17 +290,18 @@ class BaseAdmin:
             await model.delete(request, pks)
             return Response(status_code=HTTP_204_NO_CONTENT)
 
-    async def handle_action(self, request: Request):
+    async def handle_action(self, request: Request) -> Response:
         identity = request.path_params.get("identity")
         pks = request.query_params.getlist("pks")
         name = request.query_params.get("name")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request):
-            raise HTTPException(403)
+            raise ActionFailed("Forbidden")
         try:
+            assert name is not None
             await model.handle_action(request, pks, name)
         except ActionFailed as exc:
-            return JSONResponse({"msg": exc.msg}, status_code=403)
+            return JSONResponse({"msg": exc.msg}, status_code=400)
         return Response(status_code=200)
 
     async def _render_login(self, request: Request) -> Response:

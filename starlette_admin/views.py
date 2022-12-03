@@ -8,7 +8,6 @@ from typing import (
     Optional,
     Sequence,
     Set,
-    Tuple,
     Type,
     Union,
 )
@@ -267,7 +266,7 @@ class BaseModelView(BaseView):
             self.export_fields = all_field_names[:]
 
         # Actions
-        self._actions: List[Tuple[str, str, str, str]] = []
+        self._actions: List[Dict[str, str]] = []
         self._handlers: Dict[str, Callable[[Request, Sequence[Any]], Awaitable]] = {}
         self._init_actions()
 
@@ -281,9 +280,8 @@ class BaseModelView(BaseView):
         for method_name in dir(self):
             method = getattr(self, method_name)
             if hasattr(method, "_action"):
-                name, text, confirmation, theme = method._action
-                self._actions.append((name, text, confirmation, theme))
-                self._handlers[name] = method
+                self._actions.append(method._action)
+                self._handlers[method._action.get("name")] = method
 
     async def is_action_allowed(self, request: Request, name: str) -> bool:
         """
@@ -302,16 +300,9 @@ class BaseModelView(BaseView):
     async def get_all_actions(self, request: Request) -> List[Dict[str, Any]]:
         actions = []
         for action in self._actions:
-            name, text, confirmation, theme = action
-            if await self.is_action_allowed(request, name):
-                actions.append(
-                    {
-                        "name": name,
-                        "text": text,
-                        "confirmation": confirmation,
-                        "theme": theme,
-                    }
-                )
+            name = action.get("name", None)
+            if name is not None and await self.is_action_allowed(request, name):
+                actions.append(action)
         return actions
 
     async def handle_action(self, request: Request, pks: List[Any], name: str) -> None:
@@ -326,9 +317,13 @@ class BaseModelView(BaseView):
         return await handler(request, pks)
 
     @action(
-        "delete", "Delete", "Are you sure you want to delete this items ?", "danger"
+        name="delete",
+        text="Delete",
+        confirmation="Are you sure you want to delete this items ?",
+        submit_btn_text="Yes, delete them all",
+        submit_btn_class="btn-danger",
     )
-    async def delete_action(self, request: Request, pks: List[Any]):
+    async def delete_action(self, request: Request, pks: List[Any]) -> Optional[int]:
         return await self.delete(request, pks)
 
     @abstractmethod

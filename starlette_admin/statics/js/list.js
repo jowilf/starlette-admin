@@ -363,34 +363,55 @@ $(function () {
       onSelectChange();
     });
 
-  $("#modal-delete-btn").on("click", function () {
+  function submitAction(name) {
     $("#modal-delete").modal("hide");
     $("#modal-loading").modal("show");
-    query = new URLSearchParams(selectedRows.map((s) => ["pks", s])).toString();
-    fetch(model.apiUrl + "?" + query, {
-      method: "DELETE",
+    query = new URLSearchParams();
+    selectedRows.forEach((s) => {
+      query.append("pks", s);
+    });
+    query.append("name", name);
+    fetch(model.apiUrl + "/actions?" + query.toString(), {
+      method: "POST",
     })
       .then(async (response) => {
+        await new Promise((r) => setTimeout(r, 500));
         if (response.ok) {
-          await new Promise((r) => setTimeout(r, 500));
           $("#modal-loading").modal("hide");
           table.ajax.reload();
-          $("#select-all").prop("checked", false);
+          //$("#select-all").prop("checked", false);
           $("#multi-delete-btn").hide();
-        } else return Promise.reject();
+        } else {
+          if (response.status == 400) {
+            return Promise.reject((await response.json())["msg"]);
+          }
+          return Promise.reject("Something went wrong!");
+        }
       })
       .catch(async (error) => {
         await new Promise((r) => setTimeout(r, 500));
         $("#modal-loading").modal("hide");
-        $("#modal-error").modal("show");
+        var errorModal = $("#modal-error");
+        errorModal.find("#error-body").text(error);
+        errorModal.modal("show");
       });
-  });
+  }
 
-  $("#multi-delete-btn").on("click", function () {
-    $("#modal-delete-body span").text(
-      table.rows({ selected: true }).count() + ` ${model.label}`
-    );
-    $("#modal-delete").modal("show");
+  $("#modal-action").on("show.bs.modal", function (event) {
+    var button = $(event.relatedTarget); // Button that triggered the modal
+    var confirmation = button.data("confirmation");
+    var name = button.data("name");
+    var submit_btn_text = button.data("submit-btn-text");
+    var submit_btn_class = button.data("submit-btn-class");
+
+    var modal = $(this);
+    modal.find("#actionConfirmation").text(confirmation);
+    var actionSubmit = modal.find("#actionSubmit");
+    actionSubmit.text(submit_btn_text);
+    actionSubmit.removeClass().addClass(`btn ${submit_btn_class}`);
+    actionSubmit.on("click", function (event) {
+      submitAction(name);
+    });
   });
 
   $('[data-toggle="tooltip"]').tooltip();
