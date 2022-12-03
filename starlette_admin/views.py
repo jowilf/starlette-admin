@@ -195,6 +195,7 @@ class BaseModelView(BaseView):
         detail_template: Details view template. Default is `details.html`.
         create_template: Edit view template. Default is `edit.html`.
         edit_template: Edit view template. Default is `edit.html`.
+        actions: List of actions
 
     """
 
@@ -224,6 +225,7 @@ class BaseModelView(BaseView):
     detail_template: str = "detail.html"
     create_template: str = "create.html"
     edit_template: str = "edit.html"
+    actions: Optional[Sequence[str]] = None
 
     _find_foreign_model: Callable[[str], "BaseModelView"]
 
@@ -266,7 +268,7 @@ class BaseModelView(BaseView):
             self.export_fields = all_field_names[:]
 
         # Actions
-        self._actions: List[Dict[str, str]] = []
+        self._actions: Dict[str, Dict[str, str]] = {}
         self._handlers: Dict[str, Callable[[Request, Sequence[Any]], Awaitable]] = {}
         self._init_actions()
 
@@ -280,8 +282,14 @@ class BaseModelView(BaseView):
         for method_name in dir(self):
             method = getattr(self, method_name)
             if hasattr(method, "_action"):
-                self._actions.append(method._action)
-                self._handlers[method._action.get("name")] = method
+                name = method._action.get("name")
+                self._actions[name] = method._action
+                self._handlers[name] = method
+        if self.actions is None:
+            self.actions = list(self._handlers.keys())
+        for action_name in self.actions:
+            if action_name not in self._actions:
+                raise ValueError("Unknown action with name `{}`".format(action_name))
 
     async def is_action_allowed(self, request: Request, name: str) -> bool:
         """
@@ -299,10 +307,9 @@ class BaseModelView(BaseView):
 
     async def get_all_actions(self, request: Request) -> List[Dict[str, Any]]:
         actions = []
-        for action in self._actions:
-            name = action.get("name", None)
-            if name is not None and await self.is_action_allowed(request, name):
-                actions.append(action)
+        for action_name in self.actions:
+            if await self.is_action_allowed(request, action_name):
+                actions.append(self._actions.get(action_name))
         return actions
 
     async def handle_action(self, request: Request, pks: List[Any], name: str) -> None:

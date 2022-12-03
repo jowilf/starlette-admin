@@ -28,6 +28,7 @@ class Article(Base):
 
 class ArticleAdmin(ModelView):
     exclude_fields_from_list = [Article.body]
+    actions = ["make_published", "delete", "always_failed"]
 
     @action(
         name="delete",
