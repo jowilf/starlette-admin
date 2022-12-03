@@ -378,8 +378,8 @@ $(function () {
         await new Promise((r) => setTimeout(r, 500));
         if (response.ok) {
           $("#modal-loading").modal("hide");
+          table.rows().deselect();
           table.ajax.reload();
-          //$("#select-all").prop("checked", false);
           $("#multi-delete-btn").hide();
         } else {
           if (response.status == 400) {

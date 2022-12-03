@@ -1,6 +1,7 @@
 __version__ = "0.3.2"
 
 from ._types import ExportType, RequestAction
+from .actions import action
 from .base import BaseAdmin
 from .fields import (
     BaseField,
