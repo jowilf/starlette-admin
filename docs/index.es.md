@@ -1,6 +1,6 @@
-# Overview
+# Visión General
 
-*Starlette-Admin* is a fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications.
+*Starlette-Admin* es un rápido, hermoso y extensible framework de interfaz administrativa para aplicaciones Starlette/FastAPI.
 
 <p align="center">
 <a href="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml">
@@ -20,34 +20,34 @@
 </a>
 </p>
 
-## Getting started
+## Empezando
 
-* Check out [the documentation](https://jowilf.github.io/starlette-admin).
-* Try the [live demo](https://starlette-admin-demo.jowilf.com/). ([Source code](https://github.com/jowilf/starlette-admin-demo))
-* Try the several usage examples included in the [/examples](https://github.com/jowilf/starlette-admin/tree/main/examples) folder
+* Revisa [la documentación](https://jowilf.github.io/starlette-admin).
+* Prueba la [demostración en vivo](https://starlette-admin-demo.jowilf.com/). ([Código fuente](https://github.com/jowilf/starlette-admin-demo))
+* Pruebe los varios ejemplos de uso incluidos en la carpeta [/examples](https://github.com/jowilf/starlette-admin/tree/main/examples)
 
-## Features
+## Características
 
-- CRUD any data with ease
-- Automatic form validation
-- Advanced table widget with [Datatables](https://datatables.net/)
-- Search and filtering
-- Search highlighting
-- Multi-column ordering
-- Export data to CSV/EXCEL/PDF and Browser Print
-- Authentication
-- Authorization
-- Manage Files
-- Custom views
-- Supported ORMs
+- CRUD de cualquier dato con facilidad
+- Validación automática de formularios
+- Widget de tabla avanzado con [Datatables](https://datatables.net/)
+- Búsqueda y filtrado
+- Resaltado de búsqueda
+- Ordenamiento multi columna
+- Exportación de datos a CSV/EXCEL/PDF e impresión con navegador
+- Autenticación
+- Autorización
+- Administrar archivos
+- Vistas personalizadas
+- ORMs compatibles
     * [SQLAlchemy](https://www.sqlalchemy.org/)
     * [SQLModel](https://sqlmodel.tiangolo.com/)
     * [MongoEngine](http://mongoengine.org/)
     * [ODMantic](https://github.com/art049/odmantic/)
-- Custom backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
+- Backend personalizado ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
 
 
-## Installation
+## Instalación
 
 ### PIP
 
@@ -61,9 +61,9 @@ $ pip install starlette-admin
 $ poetry add starlette-admin
 ```
 
-## Example
+## Ejemplo
 
-This is a simple example with SQLAlchemy model
+Este es un ejemplo simple con el modelo SQLAlchemy
 
 ```python
 from sqlalchemy import Column, Integer, String, create_engine
@@ -75,7 +75,7 @@ Base = declarative_base()
 engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
 
 
-# Define your model
+# Define tu modelo
 class Post(Base):
     __tablename__ = "posts"
 
@@ -87,20 +87,20 @@ Base.metadata.create_all(engine)
 
 app = Starlette()  # FastAPI()
 
-# Create admin
-admin = Admin(engine, title="Example: SQLAlchemy")
+# Crear instancia de admin
+admin = Admin(engine, title="Ejemplo: SQLAlchemy")
 
-# Add view
+# Agregar vista
 admin.add_view(ModelView(Post))
 
-# Mount admin to your app
+# Montar admin a tu app
 admin.mount_to(app)
 ```
-Access your admin interface in your browser at [http://localhost:8000/admin](http://localhost:8000/admin)
+Acceda a su interfaz de administrador en su navegador en [http://localhost:8000/admin](http://localhost:8000/admin)
 
-## Third party
+## Terceros
 
-*starlette-admin* is built with other open source projects:
+*starlette-admin* está construido con otros proyectos de código abierto:
 
 - [Tabler](https://tabler.io/)
 - [Datatables](https://datatables.net/)
