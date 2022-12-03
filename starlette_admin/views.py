@@ -305,8 +305,9 @@ class BaseModelView(BaseView):
             return self.can_delete(request)
         return True
 
-    async def get_all_actions(self, request: Request) -> List[Dict[str, Any]]:
+    async def get_all_actions(self, request: Request) -> List[Optional[dict]]:
         actions = []
+        assert self.actions is not None
         for action_name in self.actions:
             if await self.is_action_allowed(request, action_name):
                 actions.append(self._actions.get(action_name))
@@ -330,8 +331,9 @@ class BaseModelView(BaseView):
         submit_btn_text="Yes, delete them all",
         submit_btn_class="btn-danger",
     )
-    async def delete_action(self, request: Request, pks: List[Any]) -> Optional[int]:
-        return await self.delete(request, pks)
+    async def delete_action(self, request: Request, pks: List[Any]) -> str:
+        affected_rows = await self.delete(request, pks)
+        return "{} items were successfully deleted".format(affected_rows)
 
     @abstractmethod
     async def find_all(

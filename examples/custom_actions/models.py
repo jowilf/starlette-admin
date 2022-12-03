@@ -1,5 +1,5 @@
 import enum
-from typing import Any, List, Optional
+from typing import Any, List
 
 from sqlalchemy import Column, Enum, Integer, String, Text
 from sqlalchemy.orm import Session
@@ -31,33 +31,19 @@ class ArticleAdmin(ModelView):
     actions = ["make_published", "delete", "always_failed"]
 
     @action(
-        name="delete",
-        text="Delete selected articles",
-        confirmation="Are you sure you want to delete this articles ?",
-        submit_btn_text="Yes, delete them all",
-        submit_btn_class="btn-danger",
-    )
-    async def delete_action(self, request: Request, pks: List[Any]) -> Optional[int]:
-        """
-        You can override the default delete action with your own logic or configuration.
-        To deactivate, just remove the action decorator
-        """
-        return await self.delete(request, pks)
-
-    @action(
         name="make_published",
         text="Mark selected articles as published",
         confirmation="Are you sure you want to mark selected articles as published ?",
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
     )
-    async def make_published(self, request: Request, pks: List[Any]) -> Optional[int]:
+    async def make_published(self, request: Request, pks: List[Any]) -> str:
         session: Session = request.state.session
         for article in await self.find_by_pks(request, pks):
             article.status = Status.Published
             session.add(article)
         session.commit()
-        return len(pks)
+        return "{} articles were successfully marked as published".format(len(pks))
 
     @action(
         name="always_failed",
@@ -66,5 +52,5 @@ class ArticleAdmin(ModelView):
         submit_btn_text="Continue",
         submit_btn_class="btn-outline-danger",
     )
-    async def always_failed(self, request: Request, pks: List[Any]) -> Optional[int]:
+    async def always_failed(self, request: Request, pks: List[Any]) -> str:
         raise ActionFailed("Your action just failed")

@@ -299,10 +299,10 @@ class BaseAdmin:
             raise ActionFailed("Forbidden")
         try:
             assert name is not None
-            await model.handle_action(request, pks, name)
+            msg = await model.handle_action(request, pks, name)
+            return JSONResponse({"msg": msg}, status_code=200)
         except ActionFailed as exc:
             return JSONResponse({"msg": exc.msg}, status_code=400)
-        return Response(status_code=200)
 
     async def _render_login(self, request: Request) -> Response:
         if request.method == "GET":
