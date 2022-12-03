@@ -38,8 +38,8 @@ class Post:
     def search_query(cls, term: str):
         q = Query()
         return (
-            q.title.matches(term, flags=re.IGNORECASE)
-            | q.body.matches(term, flags=re.IGNORECASE)
+            q.title.search(term, flags=re.IGNORECASE)
+            | q.body.search(term, flags=re.IGNORECASE)
             | q.tags.test(
                 lambda tags: any([re.match(term, tag, re.IGNORECASE) for tag in tags])
             )

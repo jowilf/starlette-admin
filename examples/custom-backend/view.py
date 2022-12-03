@@ -55,19 +55,21 @@ class PostView(BaseModelView):
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
     ) -> Sequence[Any]:
+        docs = []
         if where is not None:
             assert not isinstance(where, dict)  # search_builder is disabled
-            values = self.db.search(Post.search_query(where))
+            docs = self.db.search(Post.search_query(where))
         else:
-            values = self.db.all()
+            docs = self.db.all()
+        values = [Post.from_document(doc) for doc in docs]
         if order_by is not None:
             """Multiple sort"""
             for item in reversed(order_by):
                 key, dir = item.split(maxsplit=1)
                 values.sort(key=attrgetter(key), reverse=(dir == "desc"))
         if limit > 0:
-            return list(map(Post.from_document, values[skip : skip + limit]))
-        return list(map(Post.from_document, values[skip:]))
+            return values[skip : skip + limit]
+        return values[skip:]
 
     async def count(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
