@@ -284,13 +284,13 @@ class BaseAdmin:
         )
 
     async def handle_action(self, request: Request) -> Response:
-        identity = request.path_params.get("identity")
-        pks = request.query_params.getlist("pks")
-        name = request.query_params.get("name")
-        model = self._find_model_from_identity(identity)
-        if not model.is_accessible(request):
-            raise ActionFailed("Forbidden")
         try:
+            identity = request.path_params.get("identity")
+            pks = request.query_params.getlist("pks")
+            name = request.query_params.get("name")
+            model = self._find_model_from_identity(identity)
+            if not model.is_accessible(request):
+                raise ActionFailed("Forbidden")
             assert name is not None
             msg = await model.handle_action(request, pks, name)
             return JSONResponse({"msg": msg}, status_code=200)

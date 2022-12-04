@@ -321,7 +321,9 @@ class BaseModelView(BaseView):
         """
         handler = self._handlers.get(name, None)
         if handler is None:
-            raise ActionFailed("Action not found")
+            raise ActionFailed("Invalid action")
+        if not await self.is_action_allowed(request, name):
+            raise ActionFailed("Forbidden")
         return await handler(request, pks)
 
     @action(
