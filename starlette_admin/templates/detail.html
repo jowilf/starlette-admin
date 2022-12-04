@@ -101,8 +101,8 @@
     $("#modal-delete-btn").click(function () {
       $("#modal-delete").modal('hide');
       $("#modal-loading").modal('show');
-      fetch("{{ url_for(__name__ ~ ':api', identity=model.identity)  | safe}}?pks={{obj[pk]}}", {
-        method: "DELETE",
+      fetch("{{ url_for(__name__ ~ ':action', identity=model.identity)  | safe}}?name=delete&pks={{obj[pk]}}", {
+        method: "POST",
       }).then(async response => {
         if (response.ok) {
           await new Promise(r => setTimeout(r, 500));
