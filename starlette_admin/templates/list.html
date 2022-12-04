@@ -44,7 +44,7 @@ block content %}
                     data-bs-target="#modal-action"
                     data-confirmation="{{action.confirmation}}"
                     {% else %}
-                    data-no-confirmation
+                    data-no-confirmation-action="true"
                     {%endif%}
                     data-name="{{action.name}}"
                     data-submit-btn-text="{{action.submit_btn_text}}"

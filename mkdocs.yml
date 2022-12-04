@@ -99,6 +99,7 @@ nav:
       - Views: 'api/views/index.md'
       - BaseAdmin: 'api/base-admin/index.md'
       - AuthProvider: 'api/auth-provider/index.md'
+      - Actions: 'api/actions/index.md'
   - Changelog: 'changelog/index.md'
 
 extra:

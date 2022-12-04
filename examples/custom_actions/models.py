@@ -26,9 +26,9 @@ class Article(Base):
     status = Column(Enum(Status))
 
 
-class ArticleAdmin(ModelView):
+class ArticleView(ModelView):
     exclude_fields_from_list = [Article.body]
-    actions = ["make_published", "delete", "always_failed"]
+    actions = ["make_published", "delete", "always_failed", "no_confirmation"]
 
     @action(
         name="make_published",
@@ -37,7 +37,7 @@ class ArticleAdmin(ModelView):
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
     )
-    async def make_published(self, request: Request, pks: List[Any]) -> str:
+    async def make_published_action(self, request: Request, pks: List[Any]) -> str:
         session: Session = request.state.session
         for article in await self.find_by_pks(request, pks):
             article.status = Status.Published
@@ -52,5 +52,12 @@ class ArticleAdmin(ModelView):
         submit_btn_text="Continue",
         submit_btn_class="btn-outline-danger",
     )
-    async def always_failed(self, request: Request, pks: List[Any]) -> str:
-        raise ActionFailed("Your action just failed")
+    async def always_failed_action(self, request: Request, pks: List[Any]) -> str:
+        raise ActionFailed("Sorry, We can't proceed this action now.")
+
+    @action(
+        name="no_confirmation",
+        text="No confirmation action",
+    )
+    async def no_confirmation_action(self, request: Request, pks: List[Any]) -> str:
+        return "You have successfully executed an action without confirmation"

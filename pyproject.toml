@@ -9,7 +9,6 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.7"
 keywords = ["sqlalchemy", "sqlmodel", "mongoengine", "odmantic", "starlette", "fastapi", "admin", "dashboard", "datatables"]
-
 authors = [
     { name = "Jocelin Hounon", email = "hounonj@gmail.com" },
 ]
@@ -89,7 +88,7 @@ cov = [
     "coverage report --show-missing",
     "coverage xml"
 ]
-docs = "mkdocs serve"
+docs = "mkdocs serve -a localhost:8080"
 docs_deploy = "mkdocs gh-deploy --force"
 test = "coverage run -m pytest tests"
 test_sqla = "coverage run -m pytest tests/sqla"

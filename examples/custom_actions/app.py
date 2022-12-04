@@ -7,7 +7,7 @@ from starlette_admin.contrib.sqla import Admin
 
 from . import Base, engine
 from .config import DATABASE_FILE
-from .models import Article, ArticleAdmin
+from .models import Article, ArticleView
 from .seed import fill_db
 
 
@@ -32,7 +32,7 @@ app = Starlette(
 admin = Admin(engine, title="Example: SQLAlchemy")
 
 # Add views
-admin.add_view(ArticleAdmin(Article))
+admin.add_view(ArticleView(Article))
 
 # Mount admin
 admin.mount_to(app)

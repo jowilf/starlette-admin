@@ -428,6 +428,10 @@ $(function () {
       });
   }
 
+  $('a[data-no-confirmation-action="true"]').on("click", function (event) {
+    submitAction($(this).data("name"));
+  });
+
   $("#modal-action").on("show.bs.modal", function (event) {
     var button = $(event.relatedTarget); // Button that triggered the modal
     var confirmation = button.data("confirmation");
