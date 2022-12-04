@@ -313,7 +313,7 @@ class BaseModelView(BaseView):
                 actions.append(self._actions.get(action_name))
         return actions
 
-    async def handle_action(self, request: Request, pks: List[Any], name: str) -> None:
+    async def handle_action(self, request: Request, pks: List[Any], name: str) -> str:
         """
         Handle action with `name`.
         Raises:
