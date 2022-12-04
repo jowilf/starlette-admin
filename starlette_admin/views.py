@@ -639,4 +639,7 @@ class BaseModelView(BaseView):
             "apiUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:api", identity=self.identity
             ),
+            "actionUrl": request.url_for(
+                f"{request.app.state.ROUTE_NAME}:action", identity=self.identity
+            ),
         }

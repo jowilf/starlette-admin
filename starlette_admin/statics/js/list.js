@@ -366,7 +366,7 @@ $(function () {
   function successAlert(msg) {
     $("#alertContainer").empty();
     $(`<div
-    class="alert alert-success alert-dismissible  show fade m-0"
+    class="alert alert-success alert-dismissible m-0"
     role="alert"
   >
     <div class="d-flex">
@@ -383,7 +383,7 @@ $(function () {
   function dangerAlert(msg) {
     $("#alertContainer").empty();
     $(`<div
-    class="alert alert-danger alert-dismissible m-0 show fade"
+    class="alert alert-danger alert-dismissible m-0"
     role="alert"
   >
     <div class="d-flex">
@@ -405,7 +405,7 @@ $(function () {
       query.append("pks", s);
     });
     query.append("name", name);
-    fetch(model.apiUrl + "/actions?" + query.toString(), {
+    fetch(model.actionUrl + "?" + query.toString(), {
       method: "POST",
     })
       .then(async (response) => {
@@ -428,8 +428,10 @@ $(function () {
       });
   }
 
-  $('a[data-no-confirmation-action="true"]').on("click", function (event) {
-    submitAction($(this).data("name"));
+  $('a[data-no-confirmation-action="true"]').each(function () {
+    $(this).on("click", function (event) {
+      submitAction($(this).data("name"));
+    });
   });
 
   $("#modal-action").on("show.bs.modal", function (event) {
@@ -444,6 +446,7 @@ $(function () {
     var actionSubmit = modal.find("#actionSubmit");
     actionSubmit.text(submit_btn_text);
     actionSubmit.removeClass().addClass(`btn ${submit_btn_class}`);
+    actionSubmit.unbind();
     actionSubmit.on("click", function (event) {
       submitAction(name);
     });

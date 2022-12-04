@@ -268,24 +268,3 @@ class TestAccess:
             "/admin/post/edit/1", cookies={"session": "terry"}, follow_redirects=True
         )
         assert response.status_code == 200
-
-    @pytest.mark.asyncio
-    async def test_access_model_view_delete(self, client):
-        response = await client.delete(
-            "/admin/api/post?pks=[1,2]", cookies={"session": "doe"}
-        )
-        assert response.status_code == 403
-        response = await client.delete(
-            "/admin/api/post?pks=[1,2]", cookies={"session": "john"}
-        )
-        assert response.status_code == 403
-        response = await client.delete(
-            "/admin/api/post?pks=[1,2]", cookies={"session": "terry"}
-        )
-        assert response.status_code == 403
-        response = await client.delete(
-            "/admin/api/post",
-            params={"pks": [1, 2]},
-            cookies={"session": "admin"},
-        )
-        assert response.status_code == 204

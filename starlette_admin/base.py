@@ -11,7 +11,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse, Response
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
-from starlette.status import HTTP_204_NO_CONTENT, HTTP_303_SEE_OTHER, HTTP_403_FORBIDDEN
+from starlette.status import HTTP_303_SEE_OTHER, HTTP_403_FORBIDDEN
 from starlette.templating import Jinja2Templates
 from starlette_admin._types import RequestAction
 from starlette_admin.auth import AuthMiddleware, AuthProvider
@@ -133,14 +133,14 @@ class BaseAdmin:
                 Route(
                     "/api/{identity}",
                     self._render_api,
-                    methods=["GET", "DELETE"],
+                    methods=["GET"],
                     name="api",
                 ),
                 Route(
-                    "/api/{identity}/actions",
+                    "/api/{identity}/action",
                     self.handle_action,
                     methods=["POST"],
-                    name="api:action",
+                    name="action",
                 ),
                 Route(
                     "/{identity}/list",
@@ -240,55 +240,48 @@ class BaseAdmin:
     async def _render_api(self, request: Request) -> Response:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        if request.method == "GET":
-            if not model.is_accessible(request):
-                return JSONResponse(None, status_code=HTTP_403_FORBIDDEN)
-            skip = int(request.query_params.get("skip") or "0")
-            limit = int(request.query_params.get("limit") or "100")
-            order_by = request.query_params.getlist("order_by")
-            where = request.query_params.get("where")
-            pks = request.query_params.getlist("pks")
-            select2 = "select2" in request.query_params.keys()
-            if len(pks) > 0:
-                items = await model.find_by_pks(request, pks)
-                total = len(items)
-            else:
-                if where is not None:
-                    try:
-                        where = json.loads(where)
-                    except JSONDecodeError:
-                        where = str(where)
-                items = await model.find_all(
-                    request=request,
-                    skip=skip,
-                    limit=limit,
-                    where=where,
-                    order_by=order_by,
-                )
-                total = await model.count(request=request, where=where)
-            return JSONResponse(
-                {
-                    "items": [
-                        (
-                            await model.serialize(
-                                item,
-                                request,
-                                RequestAction.API if select2 else RequestAction.LIST,
-                                include_relationships=not select2,
-                                include_select2=select2,
-                            )
-                        )
-                        for item in items
-                    ],
-                    "total": total,
-                }
+        if not model.is_accessible(request):
+            return JSONResponse(None, status_code=HTTP_403_FORBIDDEN)
+        skip = int(request.query_params.get("skip") or "0")
+        limit = int(request.query_params.get("limit") or "100")
+        order_by = request.query_params.getlist("order_by")
+        where = request.query_params.get("where")
+        pks = request.query_params.getlist("pks")
+        select2 = "select2" in request.query_params.keys()
+        if len(pks) > 0:
+            items = await model.find_by_pks(request, pks)
+            total = len(items)
+        else:
+            if where is not None:
+                try:
+                    where = json.loads(where)
+                except JSONDecodeError:
+                    where = str(where)
+            items = await model.find_all(
+                request=request,
+                skip=skip,
+                limit=limit,
+                where=where,
+                order_by=order_by,
             )
-        else:  # "DELETE"
-            if not model.can_delete(request):
-                return JSONResponse(None, status_code=HTTP_403_FORBIDDEN)
-            pks = request.query_params.getlist("pks")
-            await model.delete(request, pks)
-            return Response(status_code=HTTP_204_NO_CONTENT)
+            total = await model.count(request=request, where=where)
+        return JSONResponse(
+            {
+                "items": [
+                    (
+                        await model.serialize(
+                            item,
+                            request,
+                            RequestAction.API if select2 else RequestAction.LIST,
+                            include_relationships=not select2,
+                            include_select2=select2,
+                        )
+                    )
+                    for item in items
+                ],
+                "total": total,
+            }
+        )
 
     async def handle_action(self, request: Request) -> Response:
         identity = request.path_params.get("identity")

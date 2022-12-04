@@ -87,8 +87,10 @@ async def test_edit(client: AsyncClient, session: AsyncSession):
 async def test_delete(client: AsyncClient, session: AsyncSession):
     session.add(Product(title="Infinix INBOOK"))
     await session.commit()
-    response = await client.delete("/admin/api/product", params={"pks": [1]})
-    assert response.status_code == 204
+    response = await client.post(
+        "/admin/api/product/action", params={"name": "delete", "pks": [1]}
+    )
+    assert response.status_code == 200
     stmt = select(Product).where(Product.id == 1)
     product = (await session.execute(stmt)).one_or_none()
     assert product is None
