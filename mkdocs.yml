@@ -40,7 +40,7 @@ plugins:
         python:
           rendering:
             show_root_heading: true
-            show_source: false
+            show_source: true
   - i18n:
       default_language: en
       languages:
@@ -67,10 +67,6 @@ plugins:
           Extending BaseModelView: Extendiendo BaseModelView
           Alternatives, Inspiration and Comparisons: Alternativas, Inspiración y Comparaciones
           API Reference: Referencia de la API
-          Fields: Campos
-          Views: Vistas
-          BaseAdmin: BaseAdmin
-          AuthProvider: AuthProvider
           Changelog: Registro de Cambios
 
 watch:
@@ -96,6 +92,9 @@ nav:
       - Extending BaseModelView: 'advanced/base-model-view/index.md'
   - Alternatives, Inspiration and Comparisons: 'alternatives/index.md'
   - API Reference:
+      - Contrib:
+          - SQLAlchemy:
+              - ModelView: 'api/contrib/sqlalchemy/modelview/index.md'
       - Fields: 'api/fields/index.md'
       - Views: 'api/views/index.md'
       - BaseAdmin: 'api/base-admin/index.md'
