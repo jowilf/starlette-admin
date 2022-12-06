@@ -153,8 +153,10 @@ async def test_delete(client: AsyncClient, session: Session):
     session.add(Todo(todo="Do some magic", deadline=datetime(2022, 1, 1)))
     session.commit()
 
-    response = await client.delete("/admin/api/todo", params={"pks": [1]})
-    assert response.status_code == 204
+    response = await client.post(
+        "/admin/api/todo/action", params={"name": "delete", "pks": [1]}
+    )
+    assert response.status_code == 200
     assert session.get(Todo, 1) is None
 
 

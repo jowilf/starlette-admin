@@ -9,7 +9,6 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.7"
 keywords = ["sqlalchemy", "sqlmodel", "mongoengine", "odmantic", "starlette", "fastapi", "admin", "dashboard", "datatables"]
-
 authors = [
     { name = "Jocelin Hounon", email = "hounonj@gmail.com" },
 ]
@@ -22,11 +21,11 @@ classifiers = [
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Topic :: Software Development :: Libraries :: Python Modules',
-    'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
 ]
 dependencies = [
     "starlette",
@@ -48,7 +47,7 @@ dependencies = [
     "httpx >=0.23.1",
     "coverage >=6.5.0",
     "mypy ==0.990",
-    "ruff ==0.0.135",
+    "ruff ==0.0.149",
     "black ==22.10.0",
     "SQLAlchemy[asyncio] >=1.4, <1.5.0",
     "sqlalchemy-file >=0.1.5",
@@ -89,7 +88,7 @@ cov = [
     "coverage report --show-missing",
     "coverage xml"
 ]
-docs = "mkdocs serve"
+docs = "mkdocs serve -a localhost:8080"
 docs_deploy = "mkdocs gh-deploy --force"
 test = "coverage run -m pytest tests"
 test_sqla = "coverage run -m pytest tests/sqla"

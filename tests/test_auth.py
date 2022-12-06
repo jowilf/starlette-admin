@@ -271,21 +271,27 @@ class TestAccess:
 
     @pytest.mark.asyncio
     async def test_access_model_view_delete(self, client):
-        response = await client.delete(
-            "/admin/api/post?pks=[1,2]", cookies={"session": "doe"}
+        response = await client.post(
+            "/admin/api/post/action",
+            params={"pks": [1, 2], "name": "delete"},
+            cookies={"session": "john"},
         )
-        assert response.status_code == 403
-        response = await client.delete(
-            "/admin/api/post?pks=[1,2]", cookies={"session": "john"}
+        assert response.status_code == 400
+        response = await client.post(
+            "/admin/api/post/action",
+            params={"pks": [1, 2], "name": "delete"},
+            cookies={"session": "doe"},
         )
-        assert response.status_code == 403
-        response = await client.delete(
-            "/admin/api/post?pks=[1,2]", cookies={"session": "terry"}
+        assert response.status_code == 400
+        response = await client.post(
+            "/admin/api/post/action",
+            params={"pks": [1, 2], "name": "delete"},
+            cookies={"session": "terry"},
         )
-        assert response.status_code == 403
-        response = await client.delete(
-            "/admin/api/post",
-            params={"pks": [1, 2]},
+        assert response.status_code == 400
+        response = await client.post(
+            "/admin/api/post/action",
+            params={"pks": [1, 2], "name": "delete"},
             cookies={"session": "admin"},
         )
-        assert response.status_code == 204
+        assert response.status_code == 200

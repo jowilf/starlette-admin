@@ -244,8 +244,10 @@ class TestMongoBasic:
             str(x.id)
             for x in Product.objects(title__in=["IPhone 9", "Huawei P30", "OPPOF19"])
         ]
-        response = client.delete("/admin/api/product", params={"pks": ids})
-        assert response.status_code == 204
+        response = client.post(
+            "/admin/api/product/action", params={"name": "delete", "pks": ids}
+        )
+        assert response.status_code == 200
         assert (
             Product.objects(title__in=["IPhone 9", "Huawei P30", "OPPOF19"]).count()
             == 0

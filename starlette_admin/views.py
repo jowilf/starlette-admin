@@ -1,11 +1,24 @@
 from abc import abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Type, Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Type,
+    Union,
+)
 
 from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
 from starlette_admin._types import ExportType, RequestAction
+from starlette_admin.actions import action
+from starlette_admin.exceptions import ActionFailed
 from starlette_admin.fields import (
     BaseField,
     CollectionField,
@@ -182,6 +195,7 @@ class BaseModelView(BaseView):
         detail_template: Details view template. Default is `details.html`.
         create_template: Edit view template. Default is `edit.html`.
         edit_template: Edit view template. Default is `edit.html`.
+        actions: List of actions
 
     """
 
@@ -211,6 +225,7 @@ class BaseModelView(BaseView):
     detail_template: str = "detail.html"
     create_template: str = "create.html"
     edit_template: str = "edit.html"
+    actions: Optional[Sequence[str]] = None
 
     _find_foreign_model: Callable[[str], "BaseModelView"]
 
@@ -252,8 +267,75 @@ class BaseModelView(BaseView):
         if self.export_fields is None:
             self.export_fields = all_field_names[:]
 
+        # Actions
+        self._actions: Dict[str, Dict[str, str]] = {}
+        self._handlers: Dict[str, Callable[[Request, Sequence[Any]], Awaitable]] = {}
+        self._init_actions()
+
     def is_active(self, request: Request) -> bool:
         return request.path_params.get("identity", None) == self.identity
+
+    def _init_actions(self) -> None:
+        """
+        Initialize list of actions
+        """
+        for method_name in dir(self):
+            method = getattr(self, method_name)
+            if hasattr(method, "_action"):
+                name = method._action.get("name")
+                self._actions[name] = method._action
+                self._handlers[name] = method
+        if self.actions is None:
+            self.actions = list(self._handlers.keys())
+        for action_name in self.actions:
+            if action_name not in self._actions:
+                raise ValueError("Unknown action with name `{}`".format(action_name))
+
+    async def is_action_allowed(self, request: Request, name: str) -> bool:
+        """
+        Verify if action with `name` is allowed.
+        Override this method to allow or disallow actions based
+        on some condition.
+
+        Args:
+            name: Action name
+            request: Starlette request
+        """
+        if name == "delete":
+            return self.can_delete(request)
+        return True
+
+    async def get_all_actions(self, request: Request) -> List[Optional[dict]]:
+        actions = []
+        assert self.actions is not None
+        for action_name in self.actions:
+            if await self.is_action_allowed(request, action_name):
+                actions.append(self._actions.get(action_name))
+        return actions
+
+    async def handle_action(self, request: Request, pks: List[Any], name: str) -> str:
+        """
+        Handle action with `name`.
+        Raises:
+            ActionFailed
+        """
+        handler = self._handlers.get(name, None)
+        if handler is None:
+            raise ActionFailed("Invalid action")
+        if not await self.is_action_allowed(request, name):
+            raise ActionFailed("Forbidden")
+        return await handler(request, pks)
+
+    @action(
+        name="delete",
+        text="Delete",
+        confirmation="Are you sure you want to delete this items ?",
+        submit_btn_text="Yes, delete them all",
+        submit_btn_class="btn-danger",
+    )
+    async def delete_action(self, request: Request, pks: List[Any]) -> str:
+        affected_rows = await self.delete(request, pks)
+        return "{} items were successfully deleted".format(affected_rows)
 
     @abstractmethod
     async def find_all(
@@ -542,7 +624,7 @@ class BaseModelView(BaseView):
             links.update(field.additional_js_links(request))
         return links
 
-    def _configs(self, request: Request) -> Dict[str, Any]:
+    async def _configs(self, request: Request) -> Dict[str, Any]:
         return {
             "label": self.label,
             "pageSize": self.page_size,
@@ -554,8 +636,12 @@ class BaseModelView(BaseView):
             "searchBuilder": self.search_builder,
             "responsiveTable": self.responsive_table,
             "fields": [f.dict() for f in self._extract_fields()],
+            "actions": await self.get_all_actions(request),
             "pk": self.pk_attr,
             "apiUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:api", identity=self.identity
+            ),
+            "actionUrl": request.url_for(
+                f"{request.app.state.ROUTE_NAME}:action", identity=self.identity
             ),
         }

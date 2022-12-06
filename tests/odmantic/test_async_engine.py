@@ -238,10 +238,11 @@ async def test_delete(client: AsyncClient, aio_engine: AIOEngine):
     users = await aio_engine.find(
         User, User.name.in_(["Hills Terrill", "Sheldon Cole"])
     )
-    response = await client.delete(
-        "/admin/api/user", params={"pks": [u.id for u in users]}
+    response = await client.post(
+        "/admin/api/user/action",
+        params={"name": "delete", "pks": [u.id for u in users]},
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
     assert (
         len(
             await aio_engine.find(

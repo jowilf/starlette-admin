@@ -237,15 +237,33 @@ $(function () {
       selector: "td:first-child .form-check-input",
       className: "row-selected",
     },
-    //  buttons: buttons,
     language: {
       info: "Showing <strong>_START_</strong> to <strong>_END_</strong> off <strong>_TOTAL_</strong> records",
       infoEmpty: "No matching records found",
       infoFiltered: "",
       searchBuilder: {
         button: {
+          0: '<i class="fa-solid fa-filter"></i> Filter',
           _: '<i class="fa-solid fa-filter"></i> Filter (%d)',
         },
+        add: "Add Condition",
+        condition: "Condition",
+        clearAll: "Reset",
+        delete: `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><line x1="4" y1="7" x2="20" y2="7"></line><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>`,
+        deleteTitle: "Delete",
+        data: "Column",
+        left: `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="15 6 9 12 15 18"></polyline></svg>`,
+        leftTitle: "Left",
+        logicAnd: "AND",
+        logicOr: "OR",
+        right: `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="9 6 15 12 9 18"></polyline></svg>`,
+        rightTitle: "Right",
+        title: {
+          0: "Filters",
+          _: "Filters (%d)",
+        },
+        value: "Value",
+        valueJoiner: "and",
       },
       buttons: {
         pageLength: {
@@ -350,9 +368,9 @@ $(function () {
   function onSelectChange() {
     selectedRows = table.rows({ selected: true }).ids().toArray();
     if (table.rows({ selected: true }).count() == 0)
-      $("#multi-delete-btn").hide();
-    else $("#multi-delete-btn").show();
-    $("#multi-delete-btn span").text(table.rows({ selected: true }).count());
+      $("#actions-dropdown").hide();
+    else $("#actions-dropdown").show();
+    $(".actions-selected-counter").text(table.rows({ selected: true }).count());
   }
 
   table
@@ -363,34 +381,93 @@ $(function () {
       onSelectChange();
     });
 
-  $("#modal-delete-btn").on("click", function () {
-    $("#modal-delete").modal("hide");
+  function successAlert(msg) {
+    $("#alertContainer").empty();
+    $(`<div
+    class="alert alert-success alert-dismissible m-0"
+    role="alert"
+  >
+    <div class="d-flex">
+      <div>
+        <!-- Download SVG icon from http://tabler-icons.io/i/check -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg>
+      </div>
+      <div>${msg}</div>
+    </div>
+    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+  </div>
+  `).appendTo("#alertContainer");
+  }
+  function dangerAlert(msg) {
+    $("#alertContainer").empty();
+    $(`<div
+    class="alert alert-danger alert-dismissible m-0"
+    role="alert"
+  >
+    <div class="d-flex">
+      <div>
+        <!-- Download SVG icon from http://tabler-icons.io/i/check -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9" /><line x1="12" y1="8" x2="12.01" y2="8" /><polyline points="11 12 12 12 12 16 13 16" /></svg>
+     </div>
+      <div>${msg}</div>
+    </div>
+    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+  </div>
+  `).appendTo("#alertContainer");
+  }
+
+  function submitAction(name) {
     $("#modal-loading").modal("show");
-    query = new URLSearchParams(selectedRows.map((s) => ["pks", s])).toString();
-    fetch(model.apiUrl + "?" + query, {
-      method: "DELETE",
+    query = new URLSearchParams();
+    selectedRows.forEach((s) => {
+      query.append("pks", s);
+    });
+    query.append("name", name);
+    fetch(model.actionUrl + "?" + query.toString(), {
+      method: "POST",
     })
       .then(async (response) => {
+        await new Promise((r) => setTimeout(r, 500));
+        $("#modal-loading").modal("hide");
         if (response.ok) {
-          await new Promise((r) => setTimeout(r, 500));
-          $("#modal-loading").modal("hide");
+          table.rows().deselect();
           table.ajax.reload();
-          $("#select-all").prop("checked", false);
-          $("#multi-delete-btn").hide();
-        } else return Promise.reject();
+          successAlert((await response.json())["msg"]);
+        } else {
+          if (response.status == 400) {
+            return Promise.reject((await response.json())["msg"]);
+          }
+          return Promise.reject("Something went wrong!");
+        }
       })
       .catch(async (error) => {
         await new Promise((r) => setTimeout(r, 500));
-        $("#modal-loading").modal("hide");
-        $("#modal-error").modal("show");
+        dangerAlert(error);
       });
+  }
+
+  $('a[data-no-confirmation-action="true"]').each(function () {
+    $(this).on("click", function (event) {
+      submitAction($(this).data("name"));
+    });
   });
 
-  $("#multi-delete-btn").on("click", function () {
-    $("#modal-delete-body span").text(
-      table.rows({ selected: true }).count() + ` ${model.label}`
-    );
-    $("#modal-delete").modal("show");
+  $("#modal-action").on("show.bs.modal", function (event) {
+    var button = $(event.relatedTarget); // Button that triggered the modal
+    var confirmation = button.data("confirmation");
+    var name = button.data("name");
+    var submit_btn_text = button.data("submit-btn-text");
+    var submit_btn_class = button.data("submit-btn-class");
+
+    var modal = $(this);
+    modal.find("#actionConfirmation").text(confirmation);
+    var actionSubmit = modal.find("#actionSubmit");
+    actionSubmit.text(submit_btn_text);
+    actionSubmit.removeClass().addClass(`btn ${submit_btn_class}`);
+    actionSubmit.unbind();
+    actionSubmit.on("click", function (event) {
+      submitAction(name);
+    });
   });
 
   $('[data-toggle="tooltip"]').tooltip();

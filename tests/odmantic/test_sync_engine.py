@@ -132,10 +132,11 @@ async def test_edit(client: AsyncClient, sync_engine: SyncEngine):
 
 async def test_delete(client: AsyncClient, sync_engine: SyncEngine):
     authors = sync_engine.find(Author, Author.name.in_(["Jim Rohn", "Albert Einstein"]))
-    response = await client.delete(
-        "/admin/api/author", params={"pks": [a.id for a in authors]}
+    response = await client.post(
+        "/admin/api/author/action",
+        params={"name": "delete", "pks": [a.id for a in authors]},
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
     assert (
         len(
             list(

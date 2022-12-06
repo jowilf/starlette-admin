@@ -81,7 +81,7 @@ class DummyModelView(BaseModelView):
     async def find_by_pk(self, request: Request, pk):
         return type(self).db.get(int(pk), None)
 
-    async def find_by_pks(self, request: Request, pks):
+    async def find_by_pks(self, request: Request, pks) -> List[Any]:
         return [type(self).db.get(int(pk)) for pk in pks]
 
     async def validate_data(self, data: Dict):

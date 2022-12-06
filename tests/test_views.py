@@ -278,8 +278,10 @@ class TestViews:
         admin.add_view(PostView)
         admin.mount_to(app)
         client = TestClient(app)
-        response = client.delete("/admin/api/post", params={"pks": [1, 3, 5]})
-        assert response.status_code == 204
+        response = client.post(
+            "/admin/api/post/action", params={"name": "delete", "pks": [1, 3, 5]}
+        )
+        assert response.status_code == 200
         assert len(PostView.db) == 2
         assert list(PostView.db.keys()) == [2, 4]
 

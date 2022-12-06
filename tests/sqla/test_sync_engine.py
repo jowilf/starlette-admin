@@ -254,8 +254,10 @@ async def test_edit(client: AsyncClient, session: Session):
 
 
 async def test_delete(client: AsyncClient, session: Session):
-    response = await client.delete("/admin/api/product", params={"pks": [1, 3, 5]})
-    assert response.status_code == 204
+    response = await client.post(
+        "/admin/api/product/action", params={"name": "delete", "pks": [1, 3, 5]}
+    )
+    assert response.status_code == 200
     stmt = select(func.count(Product.id)).where(Product.id.in_([1, 3, 5]))
     assert session.execute(stmt).scalars().unique().all()[0] == 0
 
