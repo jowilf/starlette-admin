@@ -1,10 +1,11 @@
 from typing import Any, Dict, List, Optional, Type, Union
 
 import anyio.to_thread
-from sqlalchemy import Column, func, inspect, select
+from sqlalchemy import Column, String, cast, func, inspect, or_, select
 from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, Session, joinedload
+from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
@@ -85,13 +86,83 @@ class ModelView(BaseModelView):
         self.export_fields = normalize_list(self.export_fields)
         super().__init__()
 
+    def get_list_query(self) -> Select:
+        """
+        Return a Select expression which is used as base statement for
+        [find_all][starlette_admin.views.BaseModelView.find_all] method.
+
+        Examples:
+            ```python  hl_lines="3-4"
+            class PostView(ModelView):
+
+                    def get_list_query(self):
+                        return super().get_list_query().where(Post.published == true())
+
+                    def get_count_query(self):
+                        return super().get_count_query().where(Post.published == true())
+            ```
+
+        If you override this method, don't forget to also override
+        [get_count_query][starlette_admin.contrib.sqla.ModelView.get_count_query],
+        for displaying the correct item count in the list view.
+        """
+        return select(self.model)
+
+    def get_count_query(self) -> Select:
+        """
+        Return a Select expression which is used as base statement for
+        [count][starlette_admin.views.BaseModelView.count] method.
+
+        Examples:
+            ```python hl_lines="6-7"
+            class PostView(ModelView):
+
+                    def get_list_query(self):
+                        return super().get_list_query().where(Post.published == true())
+
+                    def get_count_query(self):
+                        return super().get_count_query().where(Post.published == true())
+            ```
+        """
+        return select(func.count(self._pk_column))
+
+    def get_search_query(self, request: Request, term: str) -> Any:
+        """
+        Return SQLAlchemy whereclause to use for full text search
+
+        Args:
+           request: Starlette request
+           term: Filtering term
+
+        Examples:
+           ```python
+           class PostView(ModelView):
+
+                def get_search_query(self, request: Request, term: str):
+                    return Post.title.contains(term)
+           ```
+        """
+        clauses = []
+        for field in self.fields:
+            if field.searchable and type(field) in [
+                StringField,
+                TextAreaField,
+                EmailField,
+                URLField,
+                PhoneField,
+                ColorField,
+            ]:
+                attr = getattr(self.model, field.name)
+                clauses.append(cast(attr, String).ilike(f"%{term}%"))
+        return or_(*clauses)
+
     async def count(
         self,
         request: Request,
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
         session: Union[Session, AsyncSession] = request.state.session
-        stmt = select(func.count(self._pk_column))
+        stmt = self.get_count_query()
         if where is not None:
             if isinstance(where, dict):
                 where = build_query(where, self.model)
@@ -113,7 +184,7 @@ class ModelView(BaseModelView):
         order_by: Optional[List[str]] = None,
     ) -> List[Any]:
         session: Union[Session, AsyncSession] = request.state.session
-        stmt = select(self.model).offset(skip)
+        stmt = self.get_list_query().offset(skip)
         if limit > 0:
             stmt = stmt.limit(limit)
         if where is not None:
@@ -170,8 +241,45 @@ class ModelView(BaseModelView):
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
         """
         Inherit this method to validate your data.
-        Raise:
-            FormValidationError to display errors to users
+
+        Args:
+            request: Starlette request
+            data: Submitted data
+
+        Raises:
+            FormValidationError: to display errors to users
+
+        Examples:
+            ```python
+            from starlette_admin.contrib.sqla import ModelView
+            from starlette_admin.exceptions import FormValidationError
+
+
+            class Post(Base):
+                __tablename__ = "post"
+
+                id = Column(Integer, primary_key=True)
+                title = Column(String(100), nullable=False)
+                text = Column(Text, nullable=False)
+                date = Column(Date)
+
+
+            class PostView(ModelView):
+
+                async def validate(self, request: Request, data: Dict[str, Any]) -> None:
+                    errors: Dict[str, str] = dict()
+                    _2day_from_today = date.today() + timedelta(days=2)
+                    if data["title"] is None or len(data["title"]) < 3:
+                        errors["title"] = "Ensure this value has at least 03 characters"
+                    if data["text"] is None or len(data["text"]) < 10:
+                        errors["text"] = "Ensure this value has at least 10 characters"
+                    if data["date"] is None or data["date"] < _2day_from_today:
+                        errors["date"] = "We need at least one day to verify your post"
+                    if len(errors) > 0:
+                        raise FormValidationError(errors)
+                    return await super().validate(request, data)
+            ```
+
         """
 
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
@@ -278,19 +386,8 @@ class ModelView(BaseModelView):
 
     async def build_full_text_search_query(
         self, request: Request, term: str, model: Any
-    ) -> Dict[str, Any]:
-        query: Dict[str, Any] = {"or": []}
-        for field in self.fields:
-            if field.searchable and type(field) in [
-                StringField,
-                TextAreaField,
-                EmailField,
-                URLField,
-                PhoneField,
-                ColorField,
-            ]:
-                query["or"].append({field.name: {"contains": term}})
-        return build_query(query, model)
+    ) -> Any:
+        return self.get_search_query(request, term)
 
     def handle_exception(self, exc: Exception) -> None:
         try:
