@@ -39,6 +39,7 @@
 - Authorization
 - Manage Files
 - Custom views
+- Custom batch actions
 - Supported ORMs
     * [SQLAlchemy](https://www.sqlalchemy.org/)
     * [SQLModel](https://sqlmodel.tiangolo.com/)
