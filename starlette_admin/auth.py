@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Sequence
 from urllib.parse import urlencode
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -64,17 +64,30 @@ class AuthProvider:
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: ASGIApp, provider: AuthProvider) -> None:
+    def __init__(
+        self,
+        app: ASGIApp,
+        provider: AuthProvider,
+        allow_paths: Optional[Sequence[str]] = None,
+    ) -> None:
         super().__init__(app)
         self.provider = provider
+        self.allow_paths = list(allow_paths) if allow_paths is not None else []
+        self.allow_paths.extend(
+            [
+                self.provider.login_path,
+                "/statics/css/tabler.min.css",
+                "/statics/css/fontawesome.min.css",
+                "/statics/js/vendor/jquery.min.js",
+                "/statics/js/vendor/tabler.min.js",
+            ]
+        )  # Allow static files needed for the login page
 
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        if (
-            not request.scope["path"].startswith("/statics")
-            and request.scope["path"] != self.provider.login_path
-            and not (await self.provider.is_authenticated(request))
+        if request.scope["path"] not in self.allow_paths and not (
+            await self.provider.is_authenticated(request)
         ):
             return RedirectResponse(
                 "{url}?{query_params}".format(
