@@ -203,7 +203,6 @@ class BaseAdmin:
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
-        templates.env.filters["first_char_or_"] = lambda v: isinstance(v, dict)
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:
