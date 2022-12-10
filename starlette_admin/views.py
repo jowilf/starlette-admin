@@ -1,3 +1,4 @@
+import inspect
 from abc import abstractmethod
 from typing import (
     Any,
@@ -279,8 +280,9 @@ class BaseModelView(BaseView):
         """
         Initialize list of actions
         """
-        for method_name in dir(self):
-            method = getattr(self, method_name)
+        for _method_name, method in inspect.getmembers(
+            self, predicate=inspect.ismethod
+        ):
             if hasattr(method, "_action"):
                 name = method._action.get("name")
                 self._actions[name] = method._action

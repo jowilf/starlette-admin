@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from typing import Optional
 from urllib.parse import urlencode
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -6,6 +8,12 @@ from starlette.responses import RedirectResponse, Response
 from starlette.status import HTTP_303_SEE_OTHER
 from starlette.types import ASGIApp
 from starlette_admin.exceptions import LoginFailed
+
+
+@dataclass
+class AdminUser:
+    username: str = "admin"
+    photo_url: Optional[str] = None
 
 
 class AuthProvider:
@@ -43,6 +51,12 @@ class AuthProvider:
         to validate the session.
         """
         return False
+
+    def get_admin_user(self, request: Request) -> AdminUser:
+        """
+        Return the connected user info
+        """
+        return AdminUser()
 
     async def logout(self, request: Request, response: Response) -> Response:
         """Implement logout logic here and return the response back"""

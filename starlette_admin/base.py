@@ -192,6 +192,9 @@ class BaseAdmin:
         templates.env.filters["is_link"] = lambda res: isinstance(res, Link)
         templates.env.filters["is_model"] = lambda res: isinstance(res, BaseModelView)
         templates.env.filters["is_dropdown"] = lambda res: isinstance(res, DropDown)
+        templates.env.filters["get_admin_user"] = (
+            self.auth_provider.get_admin_user if self.auth_provider else None
+        )
         templates.env.filters["tojson"] = lambda data: json.dumps(data, default=str)
         templates.env.filters["file_icon"] = get_file_icon
         templates.env.filters[
@@ -200,6 +203,7 @@ class BaseAdmin:
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
+        templates.env.filters["first_char_or_"] = lambda v: isinstance(v, dict)
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:
@@ -301,7 +305,7 @@ class BaseAdmin:
         if request.method == "GET":
             return self.templates.TemplateResponse(
                 "login.html",
-                {"request": request},
+                {"request": request, "_is_login_path": True},
             )
         else:
             form = await request.form()

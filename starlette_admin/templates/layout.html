@@ -1,5 +1,8 @@
-{% extends "base.html" %} {% import "macros/views.html" as macros with context%} {%
-block body %}
+{% extends "base.html" %} {% import "macros/views.html" as macros with context%}
+{% if (not _is_login_path ) and is_auth_enabled %}
+{% set current_user = (request | get_admin_user) %}
+{% endif %}
+{% block body %}
 <div class="page">
   {% block sidebar %}
   <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark">
@@ -8,9 +11,9 @@ block body %}
         class="navbar-toggler"
         type="button"
         data-bs-toggle="collapse"
-        data-bs-target="#navbar-menu"
+        data-bs-target="#sidebar-menu"
         aria-expanded="false"
-        aria-controls="navbar-menu"
+        aria-controls="sidebar-menu"
       >
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -28,7 +31,34 @@ block body %}
           {% endif %}
         </a>
       </h1>
-      <div class="collapse navbar-collapse" id="navbar-menu">
+      {% if current_user %}
+      <div class="navbar-nav flex-row d-lg-none">
+        <div class="nav-item dropdown">
+          <a
+            href="#"
+            class="nav-link d-flex lh-1 text-reset p-0"
+            data-bs-toggle="dropdown"
+            aria-label="Open user menu"
+          >
+            <span
+              class="avatar avatar-sm"
+              {% if current_user.photo_url %}style="background-image: url({{current_user.photo_url}})" {%endif%}
+            >
+              {% if not current_user.photo_url %}
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><circle cx="12" cy="7" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path></svg>
+              {%endif%}
+            </span>
+            <div class="d-none d-xl-block ps-2">
+              <div>{{current_user.username}}</div>
+            </div>
+          </a>
+          <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+            <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="dropdown-item">Logout</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      <div class="collapse navbar-collapse" id="sidebar-menu">
         <ul class="navbar-nav pt-lg-3">
           {% for view in views if view.is_accessible(request) %}
           {%if (view| is_link)%}
@@ -37,17 +67,61 @@ block body %}
           {{macros.custom_link(view)}} {%elif (view| is_model)%}
           {{macros.model_link(view)}} {%elif (view | is_dropdown)%}
           {{macros.dropdown_link(view)}} {%endif%} {% endfor %}
-          {% if is_auth_enabled %}
-          <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="btn btn-light mx-1 mt-2">
-            <i class="fa fa-sign-out"></i>
-            <span class="ms-2">Logout</span>
-          </a>
-          {% endif %}
         </ul>
       </div>
     </div>
   </aside>
   {% endblock %}
+
+  {% block navbar %}
+  {% if current_user %}
+  <header
+    class="navbar navbar-expand-md navbar-light d-none d-lg-flex d-print-none"
+  >
+    <div class="container-xl">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbar-menu"
+        aria-controls="navbar-menu"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="navbar-nav flex-row order-md-last">
+        <div class="nav-item dropdown">
+          <a
+            href="#"
+            class="nav-link d-flex lh-1 text-reset p-0"
+            data-bs-toggle="dropdown"
+            aria-label="Open user menu"
+          >
+            <span
+              class="avatar avatar-sm"
+              {% if current_user.photo_url %}style="background-image: url({{current_user.photo_url}})" {%endif%}
+            >
+              {% if not current_user.photo_url %}
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><circle cx="12" cy="7" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path></svg>
+              {%endif%}
+            </span>
+            <div class="ps-2">
+              <div>{{current_user.username}}</div>
+            </div>
+          </a>
+          <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+            <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="dropdown-item">Logout</a>
+          </div>
+        </div>
+      </div>
+      <div class="collapse navbar-collapse" id="navbar-menu"></div>
+    </div>
+  </header>
+  {% endif %}
+
+  {% endblock %}
+
   <div class="page-wrapper">
     <div class="container-fluid">
       <div class="page-header d-print-none">
