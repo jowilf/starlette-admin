@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from typing import Optional, Sequence
 from urllib.parse import urlencode
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -6,6 +8,12 @@ from starlette.responses import RedirectResponse, Response
 from starlette.status import HTTP_303_SEE_OTHER
 from starlette.types import ASGIApp
 from starlette_admin.exceptions import LoginFailed
+
+
+@dataclass
+class AdminUser:
+    username: str = "admin"
+    photo_url: Optional[str] = None
 
 
 class AuthProvider:
@@ -44,23 +52,42 @@ class AuthProvider:
         """
         return False
 
+    def get_admin_user(self, request: Request) -> AdminUser:
+        """
+        Return the connected user info
+        """
+        return AdminUser()
+
     async def logout(self, request: Request, response: Response) -> Response:
         """Implement logout logic here and return the response back"""
         raise NotImplementedError()
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: ASGIApp, provider: AuthProvider) -> None:
+    def __init__(
+        self,
+        app: ASGIApp,
+        provider: AuthProvider,
+        allow_paths: Optional[Sequence[str]] = None,
+    ) -> None:
         super().__init__(app)
         self.provider = provider
+        self.allow_paths = list(allow_paths) if allow_paths is not None else []
+        self.allow_paths.extend(
+            [
+                self.provider.login_path,
+                "/statics/css/tabler.min.css",
+                "/statics/css/fontawesome.min.css",
+                "/statics/js/vendor/jquery.min.js",
+                "/statics/js/vendor/tabler.min.js",
+            ]
+        )  # Allow static files needed for the login page
 
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        if (
-            not request.scope["path"].startswith("/statics")
-            and request.scope["path"] != self.provider.login_path
-            and not (await self.provider.is_authenticated(request))
+        if request.scope["path"] not in self.allow_paths and not (
+            await self.provider.is_authenticated(request)
         ):
             return RedirectResponse(
                 "{url}?{query_params}".format(
