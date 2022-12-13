@@ -1,10 +1,10 @@
-# Managing files
+# Administrar archivos
 
-*Starlette-Admin* has out-of-the-box support for [SQLAlchemy-file](https://github.com/jowilf/sqlalchemy-file) and Gridfs through Mongoengine FileField & ImageField
+*Starlette-Admin* tiene soporte listo para usar para [SQLAlchemy-file](https://github.com/jowilf/sqlalchemy-file) y Gridfs a través de Mongoengine FileField & ImageField
 
-## SQLAlchemy & SQLModel
+## Alquimia SQL y Modelo SQL
 
-All you need is to add ImageField or FileField from [SQLAlchemy-file](https://github.com/jowilf/sqlalchemy-file) to your model
+Todo lo que necesita es agregar ImageField o FileField desde [SQLAlchemy-file](https://github.com/jowilf/sqlalchemy-file) a su modelo
 
 ```python
 from sqlalchemy import Column, Integer, String
@@ -29,13 +29,13 @@ class BookView(ModelView):
 
 admin.add_view(BookView(Book))
 ```
-!!! note
-    You can also use `multiple=True` to save multiple files.
+!!! nota
+    También puede usar `multiple=True` para guardar varios archivos.
 
 
-## MongoEngine
+## Motor Mongo
 
-*Starlette-Admin* support ImageField and FileField
+*Starlette-Admin* admite ImageField y FileField
 
 ```python
 from mongoengine import Document, FileField, ImageField, StringField
