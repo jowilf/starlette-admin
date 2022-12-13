@@ -1,19 +1,16 @@
-# Authentication & Authorization
+# Autorización de autenticación
 
-By default, *Starlette Admin* does not enforce any authentication to your application, but provides an
-optional [AuthProvider][starlette_admin.auth.AuthProvider] you can use.
+De forma predeterminada, *Starlette Admin* no impone ninguna autenticación a su aplicación, pero proporciona una [AuthProvider][starlette_admin.auth.AuthProvider] opcional que puede usar.
 
-## Authentication
+## Autenticación
 
-To enable authentication in your admin interface, inherit the [AuthProvider][starlette_admin.auth.AuthProvider] class
-and set `auth_provider` when declaring your admin app
+Para habilitar la autenticación en su interfaz de administración, herede la clase [AuthProvider][starlette_admin.auth.AuthProvider] y configure `auth_provider` al declarar su aplicación de administración
 
-The class [AuthProvider][starlette_admin.auth.AuthProvider] has three methods you need to override:
+La clase [AuthProvider][starlette_admin.auth.AuthProvider] tiene tres métodos que debe anular:
 
-* [is_authenticated][starlette_admin.auth.AuthProvider.is_authenticated] : Will be called for validating each incoming
-  request.
-* [login][starlette_admin.auth.AuthProvider.login]: Will be called in the login page to validate username/password.
-* [logout][starlette_admin.auth.AuthProvider.logout]: Will be called for the logout
+* [is_authenticated][starlette_admin.auth.AuthProvider.is_authenticated]: se llamará para validar cada solicitud entrante.
+* [login][starlette_admin.auth.AuthProvider.login]: se llamará en la página de inicio de sesión para validar el nombre de usuario/contraseña.
+* [logout][starlette_admin.auth.AuthProvider.logout]: se llamará para el cierre de sesión
 
 ```python
 from starlette.requests import Request
@@ -67,15 +64,14 @@ admin = Admin(auth_provider=MyAuthProvider())
 
 ```
 
-??? note
-    Refer to [demo app](https://github.com/jowilf/starlette-admin-demo) for full example with starlette SessionMiddleware
+??? Nota
+    Consulte [aplicación de demostración](https://github.com/jowilf/starlette-admin-demo) para ver un ejemplo completo con starlette SessionMiddleware
 
-## Authorization
+## Autorización
 
-### For all views
+### Para todas las vistas
 
-Each [view][starlette_admin.views.BaseView] implement [is_accessible][starlette_admin.views.BaseView.is_accessible] method which can be used to restrict access
-to current user.
+Cada [view][starlette_admin.views.BaseView] implementa el método [is_accessible][starlette_admin.views.BaseView.is_accessible] que se puede usar para restringir el acceso al usuario actual.
 
 ```python
 from starlette_admin import CustomView
@@ -86,17 +82,17 @@ class ReportView(CustomView):
     def is_accessible(self, request: Request) -> bool:
         return "admin" in request.state.user_roles
 ```
-!!! important
-    When view is inaccessible, it does not appear in menu structure
+!!! importante
+    Cuando la vista es inaccesible, no aparece en la estructura del menú
 
-### For [ModelView][starlette_admin.views.BaseModelView]
-In [ModelView][starlette_admin.views.BaseModelView], there is four additional methods you can override
-to restrict access to current user.
+### Para [ModelView][starlette_admin.views.BaseModelView]
+En [ModelView][starlette_admin.views.BaseModelView], hay cuatro métodos adicionales que puede anular
+para restringir el acceso al usuario actual.
 
-* `can_view_details`: Permission for viewing full details of Items
-* `can_create`: Permission for creating new Items
-* `can_edit`: Permission for editing Items
-* `can_delete`: Permission for deleting Items
+* `can_view_details`: Permiso para ver los detalles completos de los items
+* `can_create`: Permiso para crear nuevos elementos
+* `can_edit`: Permiso para editar elementos
+* `can_delete`: Permiso para eliminar elementos
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
