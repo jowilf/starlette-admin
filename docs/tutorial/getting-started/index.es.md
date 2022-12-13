@@ -1,8 +1,8 @@
-# Getting started
+# Empezando
 
-## Initialization
+## Inicialización
 
-The first step is to initialize an empty admin interface for your app:
+El primer paso es inicializar una interfaz de administración vacía para su aplicación:
 
 === "SQLAlchemy"
     ```python
@@ -38,11 +38,11 @@ The first step is to initialize an empty admin interface for your app:
     admin = Admin(engine)
     ```
 
-## Adding Views
+## Agregando Vistas
 
-### ModelView
+### ModelView(Vista de modelo)
 
-Model views allow you to add a dedicated set of admin pages for managing any model.
+Las vistas de modelo permiten agregar un conjunto dedicado de páginas de administración para gestionar cualquier modelo. 
 
 === "SQLAlchemy"
     ```python hl_lines="2 10-11"
@@ -101,17 +101,16 @@ Model views allow you to add a dedicated set of admin pages for managing any mod
     admin.add_view(ModelView(Post))
 
     ```
-This gives you a set of fully featured CRUD views for your model:
+Esto permite tener un conjunto de vistas CRUD completamente funcionales para el modelo:
 
-- A *list view*, with support for searching, sorting, filtering, and deleting records.
-- A *create view* for adding new records.
-- An *edit view* for updating existing records.
-- A read-only *details view*.
+- Una *vista de lista*, con soporte para búsqueda, ordenación, filtrado y eliminación de registros.
+- Una *vista de creación* para agregar nuevos registros.
+- Una *vista de edición* para actualizar registros existentes.
+- Una *vista de detalles* solo de lectura.
 
-### CustomView
+### CustomView(Vista personalizada)
 
-With [CustomView][starlette_admin.views.CustomView] you can add your own views (not tied to any particular model). For example,
-a custom home page that displays some analytics data.
+Con [CustomView][starlette_admin.views.CustomView] se pueden agregar vistas personalizadas (no vinculadas a ningún modelo en particular). Por ejemplo, una página de inicio personalizada que muestre algunos datos de análisis. 
 
 ```python
 from starlette_admin import CustomView
@@ -120,7 +119,7 @@ admin.add_view(CustomView(label="Home", icon="fa fa-home", path="/home", templat
 
 ```
 
-To have a full control of the rendering, override the `render` methods
+Para tener un control completo del proceso de renderizado, se puede sobrescribir el método `render`
 
 ```python
 from starlette.requests import Request
@@ -142,7 +141,7 @@ admin.add_view(HomeView(label="Home", icon="fa fa-home", path="/home"))
 
 ### Link
 
-Use [Link][starlette_admin.views.Link] to add arbitrary hyperlinks to the menu
+Se puede utilizar [Link][starlette_admin.views.Link] para agregar hipervínculos arbitrarios al menú de la interfaz de administración.
 
 ```python
 from starlette_admin.views import Link
@@ -152,7 +151,7 @@ admin.add_view(Link(label="Home Page", icon="fa fa-link", url="/"))
 
 ### DropDown
 
-Use [DropDown][starlette_admin.views.DropDown] to group views together in menu structure
+Se puede utilizar [DropDown][starlette_admin.views.DropDown] para agrupar vistas juntas en la estructura del menú.
 
 ```python
 from starlette_admin import CustomView, DropDown
@@ -175,9 +174,9 @@ admin.add_view(
 
 ```
 
-## Mount admin to your app
+## Monte el admin en su aplicación
 
-The last step is to mount the admin interfaces to your app
+El último paso es montar las interfaces de administración en su aplicación.
 
 === "SQLAlchemy"
     ```python hl_lines="2 9 16"
@@ -255,4 +254,4 @@ The last step is to mount the admin interfaces to your app
     admin.mount_to(app)
     ```
 
-You can now access your admin interfaces in your browser at [http://localhost:8000/admin](http://localhost:8000/admin)
+Ahora puede acceder a sus interfaces de administración en su navegador en [http://localhost:8000/admin](http://localhost:8000/admin)
