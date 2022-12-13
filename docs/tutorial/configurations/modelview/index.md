@@ -74,7 +74,7 @@ You can export your data from list page. The export options can be set per model
 
 * `export_fields`:  List of fields to include in exports.
 * `export_types`: A list of available export filetypes. Available
-exports are `['csv', 'excel', 'pdf', 'print']`. By default, All of them are activated by default.
+exports are `['csv', 'excel', 'pdf', 'print']`. Only `pdf` is disable by default.
 
 !!! Example
     ```Python
@@ -114,4 +114,21 @@ The template files are built using Jinja2 and can be completely overridden in th
     ```Python
     class PostView(ModelView):
         detail_template = "post_detail.html"
+    ```
+
+## Datatables Extensions
+
+*starlette-admin* includes some datatable extensions by default. You can disable any of these extensions
+in your `ModelView` by overridden following options:
+
+* `column_visibility`: Enable/Disable [column visibility](https://datatables.net/extensions/buttons/built-in#Column-visibility) extension
+* `search_builder`: Enable/Disable [search builder](https://datatables.net/extensions/searchbuilder/) extension
+* `responsive_table`: Enable/Disable [responsive](https://datatables.net/extensions/responsive/) extension
+
+!!! Example
+    ```python
+    class PostView(ModelView):
+        column_visibility = False
+        search_builder = False
+        responsive_table = True
     ```
