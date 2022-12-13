@@ -183,15 +183,19 @@ class BaseModelView(BaseView):
         sortable_fields: List of sortable fields.
         export_fields: List of fields to include in exports.
         export_types: A list of available export filetypes. Available
-            exports are `['csv', 'excel', 'pdf', 'print']`. All of them are activated
-            by default.
-        column_visibility: Control column visibility button
-        search_builder: Control search builder button
+            exports are `['csv', 'excel', 'pdf', 'print']`. Only `pdf` is
+            disable by default.
+        column_visibility: Enable/Disable
+            [column visibility](https://datatables.net/extensions/buttons/built-in#Column-visibility)
+            extension
+        search_builder: Enable/Disable [search builder](https://datatables.net/extensions/searchbuilder/)
+         extension
         page_size: Default number of items to display in List page pagination.
             Default value is set to `10`.
         page_size_options: Pagination choices displayed in List page.
             Default value is set to `[10, 25, 50, 100]`. Use `-1`to display All
-        responsive: Activate responsive design https://datatables.net/extensions/responsive/
+        responsive_table: Enable/Disable [responsive](https://datatables.net/extensions/responsive/)
+            extension
         list_template: List view template. Default is `list.html`.
         detail_template: Details view template. Default is `details.html`.
         create_template: Edit view template. Default is `edit.html`.
