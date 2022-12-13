@@ -73,8 +73,8 @@ Two options are available to specify which fields can be sorted or searched.
 You can export your data from list page. The export options can be set per model and includes the following options:
 
 * `export_fields`:  List of fields to include in exports.
-* `export_types`: A list of available export filetypes. Available
-exports are `['csv', 'excel', 'pdf', 'print']`. Only `pdf` is disable by default.
+* `export_types`: A list of available export filetypes. 
+Available exports are `['csv', 'excel', 'pdf', 'print']`. Only `pdf` is disable by default.
 
 !!! Example
     ```Python

@@ -1,11 +1,10 @@
-# ModelView Configurations
+# Configuraciones de ModelView
 
-Multiple options are available to customize your ModelView. For a complete list, have a look at the API documentation for
-[BaseModelView()][starlette_admin.views.BaseModelView]. Here are some of the most commonly used options:
+Hay múltiples opciones disponibles para personalizar su ModelView. Para obtener una lista completa, consulte la documentación de la API para [BaseModelView()][starlette_admin.views.BaseModelView]. Estas son algunas de las opciones más utilizadas:
 
-## Fields
+## Campos
 
-Use `fields` property to customize which fields to include in admin view.
+Use la propiedad `fields` para personalizar qué campos incluir en la vista de administración.
 
 ```Python hl_lines="21"
 from sqlalchemy import JSON, Column, Integer, String, Text, create_engine
@@ -38,45 +37,45 @@ admin.add_view(PostView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
 ```
 
-## Exclusions
+## Exclusiones
 
-There are several options to help you exclude some fields from certain part of admin interface.
+Hay varias opciones para ayudarlo a excluir algunos campos de cierta parte de la interfaz de administración.
 
-The options are:
+Las opciones son:
 
-* `exclude_fields_from_list`: List of fields to exclude in List page.
-* `exclude_fields_from_detail`: List of fields to exclude in Detail page.
-* `exclude_fields_from_create`: List of fields to exclude from creation page.
-* `exclude_fields_from_edit`: List of fields to exclude from editing page.
+* `exclude_fields_from_list`: Lista de campos para excluir en la página Lista.
+* `exclude_fields_from_detail`: Lista de campos para excluir en la página de Detalles.
+* `exclude_fields_from_create`: Lista de campos para excluir de la página de Creación.
+* `exclude_fields_from_edit`: Lista de campos para excluir de la página de Edición.
 
 ```Python
 class PostView(ModelView):
     exclude_fields_from_list = [Post.content, Post.tags]
 ```
 
-## Searching & Sorting
+## Búsqueda y clasificación
 
-Two options are available to specify which fields can be sorted or searched.
+Hay dos opciones disponibles para especificar qué campos se pueden ordenar o buscar.
 
-* `searchable_fields` for list of searchable fields
-* `sortable_fields` for list of orderable fields
+* `searchable_fields` para la lista de campos de búsqueda
+* `sortable_fields` para la lista de campos ordenables
 
-!!! Usage
+!!! Uso
     ```Python
     class PostView(ModelView):
         sortable_fields = [Post.id, "title"]
         searchable_fields = [Post.id, Post.title, "tags"]
     ```
 
-## Exporting
+## Exportando
 
-You can export your data from list page. The export options can be set per model and includes the following options:
+Puede exportar sus datos desde la página de lista. Las opciones de exportación se pueden configurar por modelo e incluyen las siguientes opciones:
 
-* `export_fields`:  List of fields to include in exports.
-* `export_types`: A list of available export filetypes. Available
-exports are `['csv', 'excel', 'pdf', 'print']`. By default, All of them are activated by default.
+* `export_fields`: Lista de campos a incluir en las exportaciones.
+* `export_types`: una lista de tipos de archivo de exportación disponibles.
+Las exportaciones disponibles son `['csv', 'excel', 'pdf', 'print']`. Por defecto, todos ellos están activos por defecto.
 
-!!! Example
+!!! Ejemplo
     ```Python
     from starlette_admin import ExportType
 
@@ -85,32 +84,32 @@ exports are `['csv', 'excel', 'pdf', 'print']`. By default, All of them are acti
         export_types = [ExportType.CSV, ExportType.EXCEL]
     ```
 
-## Pagination
+## Paginación
 
-The pagination options in the list page can be configured. The available options are:
+Las opciones de paginación en la página de lista se pueden configurar. Las opciones disponibles son:
 
-* `page_size`: Default number of items to display in List page pagination.
-            Default value is set to `10`.
-* `page_size_options`: Pagination choices displayed in List page.  Default value is set to `[10, 25, 50, 100]`.
-     Use `-1`to display All
+* `page_size`: número predeterminado de elementos para mostrar en la paginación de la página de lista.
+             El valor predeterminado se establece en `10`.
+* `page_size_options`: opciones de paginación que se muestran en la página de lista. El valor predeterminado se establece en `[10, 25, 50, 100]`.
+      Use `-1` para mostrar Todo
 
 
-!!! Example
+!!! Ejemplo
     ```Python
     class PostView(ModelView):
         page_size = 5
         page_size_options = [5, 10, 25, 50, -1]
     ```
 
-## Templates
-The template files are built using Jinja2 and can be completely overridden in the configurations. The pages available are:
+## Plantillas
+Los archivos de plantilla se crean con Jinja2 y se pueden reescribir por completo en las configuraciones. Las páginas disponibles son:
 
-* `list_template`: List view template. Default is `list.html`.
-* `detail_template`: Details view template. Default is `detail.html`.
-* `create_template`: Edit view template. Default is `create.html`.
-* `edit_template`: Edit view template. Default is `edit.html`.
+* `list_template`: plantilla de vista de lista. El valor predeterminado es `list.html`.
+* `detail_template`: Plantilla de vista de detalles. El valor predeterminado es `detail.html`.
+* `create_template`: Plantilla de vista de edición. El valor predeterminado es `create.html`.
+* `edit_template`: Plantilla de vista de edición. El valor predeterminado es `edit.html`.
 
-!!! Example
+!!! Ejemplo
     ```Python
     class PostView(ModelView):
         detail_template = "post_detail.html"
