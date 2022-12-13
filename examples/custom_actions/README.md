@@ -25,3 +25,5 @@ pip install -r 'examples/custom_actions/requirements.txt'
 ```shell
 uvicorn examples.custom_actions.app:app
 ```
+
+The first time you run this example, a sample sqlite database gets populated automatically

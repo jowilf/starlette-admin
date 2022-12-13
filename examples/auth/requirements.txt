@@ -1,0 +1,4 @@
+starlette-admin
+sqlalchemy
+itsdangerous
+uvicorn
