@@ -33,12 +33,16 @@ app = Starlette(
             lambda r: HTMLResponse('<a href="/admin/">Click me to get to Admin!</a>'),
         ),
     ],
-    middleware=[Middleware(SessionMiddleware, secret_key=SECRET)],
     on_startup=[init_database],
 )
 
 # Create admin
-admin = Admin(engine, title="Example: Auth", auth_provider=MyAuthProvider())
+admin = Admin(
+    engine,
+    title="Example: Auth",
+    auth_provider=MyAuthProvider(),
+    middlewares=[Middleware(SessionMiddleware, secret_key=SECRET)],
+)
 
 # Add views
 admin.add_view(ArticleView(Article))
