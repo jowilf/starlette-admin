@@ -5,9 +5,9 @@ on:
       - Test suite
     types:
       - completed
-    branches-ignore: [ "main" ]
 jobs:
   preview-docs:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
