@@ -52,11 +52,11 @@ class AuthProvider:
         """
         return False
 
-    def get_admin_user(self, request: Request) -> AdminUser:
+    def get_admin_user(self, request: Request) -> Optional[AdminUser]:
         """
         Return the connected user info
         """
-        return AdminUser()
+        return None
 
     async def logout(self, request: Request, response: Response) -> Response:
         """Implement logout logic here and return the response back"""

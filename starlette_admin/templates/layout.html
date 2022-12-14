@@ -67,6 +67,12 @@
           {{macros.custom_link(view)}} {%elif (view| is_model)%}
           {{macros.model_link(view)}} {%elif (view | is_dropdown)%}
           {{macros.dropdown_link(view)}} {%endif%} {% endfor %}
+          {% if is_auth_enabled and current_user is none %} {# Backward Compatibility #}
+          <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="btn btn-light mx-1 mt-2">
+            <i class="fa fa-sign-out"></i>
+            <span class="ms-2">Logout</span>
+          </a>
+          {% endif %}
         </ul>
       </div>
     </div>
