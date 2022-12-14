@@ -42,7 +42,7 @@ El primer paso es inicializar una interfaz de administración vacía para su apl
 
 ### ModelView(Vista de modelo)
 
-Las vistas de modelo permiten agregar un conjunto dedicado de páginas de administración para gestionar cualquier modelo. 
+Las vistas de modelo permiten agregar un conjunto dedicado de páginas de administración para gestionar cualquier modelo.
 
 === "SQLAlchemy"
     ```python hl_lines="2 10-11"
@@ -110,7 +110,7 @@ Esto permite tener un conjunto de vistas CRUD completamente funcionales para el 
 
 ### CustomView(Vista personalizada)
 
-Con [CustomView][starlette_admin.views.CustomView] se pueden agregar vistas personalizadas (no vinculadas a ningún modelo en particular). Por ejemplo, una página de inicio personalizada que muestre algunos datos de análisis. 
+Con [CustomView][starlette_admin.views.CustomView] se pueden agregar vistas personalizadas (no vinculadas a ningún modelo en particular). Por ejemplo, una página de inicio personalizada que muestre algunos datos de análisis.
 
 ```python
 from starlette_admin import CustomView
