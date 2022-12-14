@@ -1,9 +1,13 @@
 name: Preview Docs
 on:
-  pull_request:
-    branches: [ "main" ]
+  workflow_run:
+    workflows:
+      - Test suite
+    types:
+      - completed
+    branches-ignore: [ "main" ]
 jobs:
-  build:
+  preview-docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
