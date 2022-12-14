@@ -89,6 +89,7 @@ cov = [
     "coverage xml"
 ]
 docs = "mkdocs serve -a localhost:8080"
+docs_build = "mkdocs build"
 docs_deploy = "mkdocs gh-deploy --force"
 test = "coverage run -m pytest tests"
 test_sqla = "coverage run -m pytest tests/sqla"
