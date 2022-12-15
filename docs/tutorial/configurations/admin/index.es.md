@@ -1,6 +1,6 @@
-# Admin Configurations
+# Configuraciones de administrador
 
-Multiple options are available to customize your admin interface
+Hay múltiples opciones disponibles para personalizar su interfaz de administración
 
 ```python
 admin = Admin(
@@ -19,15 +19,15 @@ admin = Admin(
 ```
 
 
-## Parameters
+## Parámetros
 
-* `title`: Admin title.
-* `base_url`: Base URL for Admin interface.
-* `route_name`: Mounted Admin name
-* `logo_url`: URL of logo to be displayed instead of title.
-* `login_logo_url`: If set, it will be used for login interface instead of logo_url.
-* `statics_dir`: Templates dir for static files customisation
-* `templates_dir`: Templates dir for customisation
-* `index_view`: CustomView to use for index page.
-* `auth_provider`: Authentication Provider
-* `middlewares`: Starlette middlewares
+* `title`: Título del administrador.
+* `base_url`: URL base para la interfaz de administración.
+* `route_name`: Nombre de administrador montado
+* `logo_url`: URL del logotipo que se mostrará en lugar del título.
+* `login_logo_url`: si se establece, se usará para la interfaz de inicio de sesión en lugar de logo_url.
+* `statics_dir`: Directorio de plantillas para la personalización de archivos estáticos
+* `templates_dir`: Directorio de plantillas para personalización
+* `index_view`: CustomView(vista personalizada) para usar en la página de índice.
+* `auth_provider`: Proveedor de Autenticación
+* `middlewares`: Middlewares de Starlette

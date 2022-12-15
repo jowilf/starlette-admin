@@ -1,7 +1,6 @@
-# Multiple Admin
+# Administrador múltiple
 
-You can add multiple admin to your app with different or same views. To manage this, simply use different `base_url`
-and `route_name`
+Puede agregar múltiples administradores a su aplicación con vistas diferentes o iguales. Para administrar esto, simplemente use diferentes `base_url` y `nombre_ruta`
 
 ```python
 from starlette.applications import Starlette
