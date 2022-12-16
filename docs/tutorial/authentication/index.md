@@ -24,7 +24,7 @@ from starlette_admin.exceptions import FormValidationError, LoginFailed
 users = {
     "admin": {
         "name": "Admin",
-        "avatar": "avatar.png",
+        "avatar": "admin.png",
         "roles": ["read", "create", "edit", "delete", "action_make_published"],
     },
     "johndoe": {
@@ -87,9 +87,6 @@ class MyAuthProvider(AuthProvider):
 
 ```
 
-??? note
-    Refer to [demo app](https://github.com/jowilf/starlette-admin-demo) for full example with starlette SessionMiddleware
-
 ## Authorization
 
 ### For all views
@@ -104,7 +101,7 @@ from starlette.requests import Request
 class ReportView(CustomView):
 
     def is_accessible(self, request: Request) -> bool:
-        return "admin" in request.state.user_roles
+        return "admin" in request.state.user["roles"]
 ```
 !!! important
     When view is inaccessible, it does not appear in menu structure
@@ -122,6 +119,7 @@ to restrict access to current user.
 ```python
 from starlette_admin.contrib.sqla import ModelView
 from starlette.requests import Request
+from starlette_admin import action
 
 class ArticleView(ModelView):
     exclude_fields_from_list = [Article.body]
