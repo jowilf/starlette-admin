@@ -18,9 +18,7 @@ class AdminUser:
 
 class AuthProvider:
     """
-    Base class for implementing the Authentication into your admin interface.
-    You need to inherit this class and override the methods:
-    `login`, `logout` and `is_authenticated`.
+    Base class for implementing the Authentication into your admin interface
     """
 
     def __init__(
@@ -38,28 +36,95 @@ class AuthProvider:
         response: Response,
     ) -> Response:
         """
-        Implement login logic here and return the response back
+        This method will be called to validate user credentials
+
+        Returns:
+            response: return the response back
+
         Raises:
-            FormValidationError
-            LoginFailed
+            FormValidationError: when form values is not valid
+            LoginFailed: to display general error
+
+        Examples:
+            ```python
+            async def login(
+                self,
+                username: str,
+                password: str,
+                remember_me: bool,
+                request: Request,
+                response: Response,
+            ) -> Response:
+                if len(username) < 3:
+                    # Form data validation
+                    raise FormValidationError(
+                        {"username": "Ensure username has at least 03 characters"}
+                    )
+
+                if username in my_users_db and password == "password":
+                    # Save username in session
+                    request.session.update({"username": username})
+                    return response
+
+                raise LoginFailed("Invalid username or password")
+            ```
         """
         raise LoginFailed("Not Implemented")
 
     async def is_authenticated(self, request: Request) -> bool:
-        """Implement authentication logic here.
-        This method will be called for each incoming request
-        to validate the session.
+        """
+        This method will be called to validate each incoming request.
+        You can also save the connected user information into the
+        request state and use it later to restrict access to some part
+        of your admin interface
+
+        Returns:
+            True: to accept the request
+            False: to redirect to login page
+
+        Examples:
+            ```python
+            async def is_authenticated(self, request: Request) -> bool:
+                if request.session.get("username", None) in users:
+                    # Save user object in state
+                    request.state.user = my_users_db.get(request.session["username"])
+                    return True
+                return False
+            ```
         """
         return False
 
     def get_admin_user(self, request: Request) -> Optional[AdminUser]:
         """
-        Return the connected user info
+        Override this method to display connected user `name` and/or `profile`
+
+        Returns:
+            AdminUser: The connected user info
+
+        Examples:
+            ```python
+            def get_admin_user(self, request: Request) -> AdminUser:
+                user = request.state.user  # Retrieve current user (previously save in state)
+                return AdminUser(username=user["name"], photo_url=user["photo_url"])
+            ```
         """
         return None
 
     async def logout(self, request: Request, response: Response) -> Response:
-        """Implement logout logic here and return the response back"""
+        """
+        Implement logout logic (clear sessions, cookies, ...) here
+        and return the response back
+
+        Returns:
+            response: return the response back
+
+        Examples:
+            ```python
+            async def logout(self, request: Request, response: Response) -> Response:
+                request.session.clear()
+                return response
+            ```
+        """
         raise NotImplementedError()
 
 
