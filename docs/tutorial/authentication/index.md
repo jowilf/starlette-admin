@@ -155,4 +155,4 @@ class ArticleView(ModelView):
 
 ## Example
 
-For a working example, have a look at [https://github.com/jowilf/starlette-admin/tree/main/examples/auth](https://github.com/jowilf/starlette-admin/tree/main/examples/auth)
+For a working example, have a look at [`https://github.com/jowilf/starlette-admin/tree/main/examples/auth`](https://github.com/jowilf/starlette-admin/tree/main/examples/auth)
