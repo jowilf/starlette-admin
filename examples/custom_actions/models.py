@@ -47,7 +47,9 @@ class ArticleView(ModelView):
             article.status = Status.Published
             session.add(article)
         session.commit()
-        return "{} articles were successfully marked as published (tags: {})".format(len(pks), request.query_params["tags"])
+        return "{} articles were successfully marked as published (tags: {})".format(
+            len(pks), request.query_params["tags"]
+        )
 
     @action(
         name="always_failed",
