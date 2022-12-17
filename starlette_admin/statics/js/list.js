@@ -423,6 +423,11 @@ $(function () {
       query.append("pks", s);
     });
     query.append("name", name);
+
+    $('#modal-action :input').each(function() {
+        query.append(this.name, $(this).val());
+    });
+
     fetch(model.actionUrl + "?" + query.toString(), {
       method: "POST",
     })
@@ -456,12 +461,14 @@ $(function () {
     var button = $(event.relatedTarget); // Button that triggered the modal
     var confirmation = button.data("confirmation");
     var name = button.data("name");
+    var form = button.data("form");
     var submit_btn_text = button.data("submit-btn-text");
     var submit_btn_class = button.data("submit-btn-class");
 
     var modal = $(this);
     modal.find("#actionConfirmation").text(confirmation);
     var actionSubmit = modal.find("#actionSubmit");
+    $('#modal-form').html(form);
     actionSubmit.text(submit_btn_text);
     actionSubmit.removeClass().addClass(`btn ${submit_btn_class}`);
     actionSubmit.unbind();

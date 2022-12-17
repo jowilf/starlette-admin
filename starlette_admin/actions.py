@@ -7,6 +7,7 @@ def action(
     confirmation: Optional[str] = None,
     submit_btn_text: Optional[str] = "Proceed",
     submit_btn_class: Optional[str] = "btn-primary",
+    form: str = "",
 ) -> Callable[[Callable[..., Awaitable[str]]], Any]:
     """
     Use this decorator to add custom actions to your [ModelView][starlette_admin.views.BaseModelView]
@@ -50,6 +51,7 @@ def action(
             "confirmation": confirmation,
             "submit_btn_text": submit_btn_text,
             "submit_btn_class": submit_btn_class,
+            "form": form,
         }
         return f
 

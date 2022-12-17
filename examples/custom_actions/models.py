@@ -36,6 +36,10 @@ class ArticleView(ModelView):
         confirmation="Are you sure you want to mark selected articles as published ?",
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
+        form="""<div class="form-floating mb-3">
+        <input name="tags" class="form-control" id="floating-input" value="">
+        <label for="floating-input">Tags</label>
+        </div>""",
     )
     async def make_published_action(self, request: Request, pks: List[Any]) -> str:
         session: Session = request.state.session
@@ -43,7 +47,7 @@ class ArticleView(ModelView):
             article.status = Status.Published
             session.add(article)
         session.commit()
-        return "{} articles were successfully marked as published".format(len(pks))
+        return "{} articles were successfully marked as published (tags: {})".format(len(pks), request.query_params["tags"])
 
     @action(
         name="always_failed",
