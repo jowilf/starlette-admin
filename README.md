@@ -20,6 +20,8 @@
 </a>
 </p>
 
+![Preview image](https://raw.githubusercontent.com/jowilf/starlette-admin/main/docs/images/preview.jpg)
+
 ## Getting started
 
 * Check out [the documentation](https://jowilf.github.io/starlette-admin).
