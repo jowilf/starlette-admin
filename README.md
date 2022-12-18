@@ -20,7 +20,7 @@
 </a>
 </p>
 
-![Preview image](./docs/images/preview.jpg)
+![Preview image](https://raw.githubusercontent.com/jowilf/starlette-admin/main/docs/images/preview.jpg)
 
 ## Getting started
 
