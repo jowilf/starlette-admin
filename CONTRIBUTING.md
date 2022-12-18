@@ -23,9 +23,6 @@ community looks forward to your contributions. 🎉
     - [Suggesting Enhancements](#suggesting-enhancements)
     - [Your First Code Contribution](#your-first-code-contribution)
     - [Improving The Documentation](#improving-the-documentation)
-- [Styleguides](#styleguides)
-    - [Commit Messages](#commit-messages)
-- [Join The Project Team](#join-the-project-team)
 
 ## Code of Conduct
 
