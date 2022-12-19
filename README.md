@@ -122,4 +122,4 @@ Issues, feature requests, questions and bug reports should be reported via the i
 
 Code or documentation improvements in the form of pull requests are also welcome. Please file or comment on an issue to allow for discussion before doing a lot of work, though.
 
-For more details, see the [CONTRIBUTING.md file](https://github.com/jowilf/starlette-admin/blob/master/CONTRIBUTING.md).
+For more details, see the [CONTRIBUTING.md file](https://github.com/jowilf/starlette-admin/blob/main/CONTRIBUTING.md).
