@@ -40,6 +40,11 @@ Documentation = "https://jowilf.github.io/starlette-admin"
 Repository = "https://github.com/jowilf/starlette-admin"
 Changelog = "https://jowilf.github.io/starlette-admin/changelog/"
 
+[project.optional-dependencies]
+i18n = [
+    "babel >=2.11.0"
+]
+
 [tool.hatch.envs.default]
 dependencies = [
     "pytest >=7.2.0",
@@ -93,6 +98,9 @@ docs_build = "mkdocs build"
 docs_deploy = "mkdocs gh-deploy --force"
 test = "coverage run -m pytest tests"
 test_sqla = "coverage run -m pytest tests/sqla"
+i18n_extract = "pybabel extract -F i18n/babel.ini -o i18n/admin.pot --project starlette-admin starlette_admin"
+i18n_update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations -D admin"
+i18n_compile = "pybabel compile -D admin -d starlette_admin/translations"
 
 [tool.hatch.version]
 path = "starlette_admin/__init__.py"
