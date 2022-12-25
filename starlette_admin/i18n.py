@@ -1,6 +1,8 @@
 import pathlib
 from contextvars import ContextVar
-from typing import Dict
+from typing import Dict, Optional
+
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 DEFAULT_LOCALE = "en"
 SUPPORTED_LOCALES = ["en", "fr"]
@@ -34,16 +36,20 @@ try:
     def gettext(message: str) -> str:
         return _current_translation.get().ugettext(message)
 
-    def ngettext(self, msgid1: str, msgid2: str, n: int) -> str:
+    def ngettext(msgid1: str, msgid2: str, n: int) -> str:
         return _current_translation.get().ngettext(msgid1, msgid2, n)
 
     def lazy_gettext(message: str) -> str:
-        return LazyProxy(gettext, message=message)  # type: ignore
+        return LazyProxy(gettext, message)  # type: ignore
+
+    def lazy_ngettext(msgid1: str, msgid2: str, n: int) -> str:
+        return LazyProxy(ngettext, msgid1, msgid2, n)  # type: ignore
 
 except ImportError:
+    # Provide i18n support even if babel is not installed
 
     def set_locale(locale: str) -> None:
-        pass
+        raise NotImplementedError()
 
     def get_locale() -> str:
         return DEFAULT_LOCALE
@@ -51,5 +57,21 @@ except ImportError:
     def gettext(message: str):
         return message
 
+    def ngettext(msgid1: str, msgid2: str, n: int) -> str:
+        return msgid1 if (n == 1) else msgid2
+
     def lazy_gettext(message: str):
         return gettext(message)
+
+    def lazy_ngettext(msgid1: str, msgid2: str, n: int):
+        return ngettext(msgid1, msgid2, n)
+
+
+class LocaleMiddleware:
+    def __init__(self, app: ASGIApp, locale: Optional[str] = DEFAULT_LOCALE) -> None:
+        self.app = app
+        self.locale = locale
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        set_locale(self.locale)
+        await self.app(scope, receive, send)

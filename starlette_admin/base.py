@@ -17,7 +17,14 @@ from starlette_admin._types import RequestAction
 from starlette_admin.auth import AuthMiddleware, AuthProvider
 from starlette_admin.exceptions import ActionFailed, FormValidationError, LoginFailed
 from starlette_admin.helpers import get_file_icon
-from starlette_admin.i18n import get_locale, gettext, ngettext
+from starlette_admin.i18n import (
+    DEFAULT_LOCALE,
+    LocaleMiddleware,
+    get_locale,
+    gettext,
+    ngettext,
+)
+from starlette_admin.i18n import lazy_gettext as _
 from starlette_admin.views import BaseModelView, BaseView, CustomView, DropDown, Link
 
 
@@ -26,7 +33,7 @@ class BaseAdmin:
 
     def __init__(
         self,
-        title: str = "Admin",
+        title: str = _("Admin"),
         base_url: str = "/admin",
         route_name: str = "admin",
         logo_url: Optional[str] = None,
@@ -37,6 +44,7 @@ class BaseAdmin:
         auth_provider: Optional[AuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
+        locale: Optional[str] = DEFAULT_LOCALE,
     ):
         """
         Parameters:
@@ -69,7 +77,9 @@ class BaseAdmin:
         self._models: List[BaseModelView] = []
         self.routes: List[Union[Route, Mount]] = []
         self.debug = debug
+        self.locale = locale
         self._setup_templates()
+        self.init_locale()
         self.init_auth()
         self.init_routes()
 
@@ -94,6 +104,10 @@ class BaseAdmin:
             request: Starlette Request
         """
         return None
+
+    def init_locale(self) -> None:
+        self.middlewares = [] if self.middlewares is None else list(self.middlewares)
+        self.middlewares.insert(0, Middleware(LocaleMiddleware, locale=self.locale))
 
     def init_auth(self) -> None:
         if self.auth_provider is not None:
@@ -180,6 +194,7 @@ class BaseAdmin:
                 PackageLoader("starlette_admin", "templates"),
             ]
         )
+        # globals
         templates.env.globals["views"] = self._views
         templates.env.globals["title"] = self.title
         templates.env.globals["is_auth_enabled"] = self.auth_provider is not None
@@ -187,6 +202,8 @@ class BaseAdmin:
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["login_logo_url"] = self.login_logo_url
         templates.env.globals["custom_render_js"] = lambda r: self.custom_render_js(r)
+        templates.env.globals["get_locale"] = get_locale
+        # filters
         templates.env.filters["is_custom_view"] = lambda res: isinstance(
             res, CustomView
         )
@@ -204,7 +221,7 @@ class BaseAdmin:
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
-        templates.env.filters["get_locale"] = get_locale
+        # install i18n
         templates.env.install_gettext_callables(gettext, ngettext, True)
         self.templates = templates
 
@@ -231,7 +248,10 @@ class BaseAdmin:
             for model in self._models:
                 if model.identity == identity:
                     return model
-        raise HTTPException(404, "Model with identity %s not found" % identity)
+        raise HTTPException(
+            404,
+            _("Model with identity %(identity)s not found") % {"identity": identity},
+        )
 
     def _render_custom_view(
         self, custom_view: CustomView
@@ -471,7 +491,7 @@ class BaseAdmin:
     async def _render_error(
         self,
         request: Request,
-        exc: Exception = HTTPException(status_code=500),  # noqa: B008
+        exc: Exception = HTTPException(status_code=500),
     ) -> Response:
         assert isinstance(exc, HTTPException)
         return self.templates.TemplateResponse(

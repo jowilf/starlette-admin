@@ -7,7 +7,7 @@ def action(
     name: str,
     text: str,
     confirmation: Optional[str] = None,
-    submit_btn_text: Optional[str] = _("Yes, Proceed"),  # noqa: B008
+    submit_btn_text: Optional[str] = _("Yes, Proceed"),
     submit_btn_class: Optional[str] = "btn-primary",
 ) -> Callable[[Callable[..., Awaitable[str]]], Any]:
     """

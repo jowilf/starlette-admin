@@ -4,7 +4,7 @@
     <h1>{{ model.label }}</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="{{url_for(__name__ ~ ':index')}}">Admin</a>
+            <a href="{{url_for(__name__ ~ ':index')}}">{{_("Admin")}}</a>
         </li>
         <li class="breadcrumb-item">
             <a href="{{ url_for(__name__ ~ ':list', identity=model.identity)}}">{{ model.label }}</a>

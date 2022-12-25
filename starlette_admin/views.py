@@ -28,6 +28,7 @@ from starlette_admin.fields import (
     RelationField,
 )
 from starlette_admin.helpers import extract_fields
+from starlette_admin.i18n import get_locale, ngettext
 from starlette_admin.i18n import lazy_gettext as _
 
 
@@ -336,13 +337,17 @@ class BaseModelView(BaseView):
     @action(
         name="delete",
         text=_("Delete"),
-        confirmation=_("Are you sure you want to delete this items ?"),
+        confirmation=_("Are you sure you want to delete selected items?"),
         submit_btn_text=_("Yes, delete all"),
         submit_btn_class="btn-danger",
     )
     async def delete_action(self, request: Request, pks: List[Any]) -> str:
         affected_rows = await self.delete(request, pks)
-        return "{} items were successfully deleted".format(affected_rows)
+        return ngettext(
+            "Item was successfully deleted",
+            "%(count)d items were successfully deleted",
+            affected_rows,
+        ) % {"count": affected_rows}
 
     @abstractmethod
     async def find_all(
@@ -651,4 +656,5 @@ class BaseModelView(BaseView):
             "actionUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:action", identity=self.identity
             ),
+            "locale": get_locale(),
         }

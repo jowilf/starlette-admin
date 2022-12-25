@@ -70,7 +70,7 @@ $(function () {
       text: '<i class="fa-solid fa-file-csv"></i> CSV',
       exportOptions: {
         columns: model.exportColumns,
-        orthogonal: "export",
+        orthogonal: "export-csv",
       },
     });
   if (model.exportTypes.includes("excel"))
@@ -79,7 +79,7 @@ $(function () {
       text: '<i class="fa-solid fa-file-excel"></i> Excel',
       exportOptions: {
         columns: model.exportColumns,
-        orthogonal: "export",
+        orthogonal: "export-excel",
       },
     });
   if (model.exportTypes.includes("pdf"))
@@ -88,7 +88,7 @@ $(function () {
       text: '<i class="fa-solid fa-file-pdf"></i> PDF',
       exportOptions: {
         columns: model.exportColumns,
-        orthogonal: "export",
+        orthogonal: "export-pdf",
       },
     });
   if (model.exportTypes.includes("print"))
@@ -97,7 +97,7 @@ $(function () {
       text: '<i class="fa-solid fa-print"></i> Print',
       exportOptions: {
         columns: model.exportColumns,
-        orthogonal: "export",
+        orthogonal: "export-print",
       },
     });
   if (export_buttons.length > 0)

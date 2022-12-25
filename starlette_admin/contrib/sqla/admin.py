@@ -16,6 +16,8 @@ from starlette.routing import Route
 from starlette_admin.auth import AuthProvider
 from starlette_admin.base import BaseAdmin
 from starlette_admin.contrib.sqla.middleware import DBSessionMiddleware
+from starlette_admin.i18n import DEFAULT_LOCALE
+from starlette_admin.i18n import lazy_gettext as _
 from starlette_admin.views import CustomView
 
 
@@ -23,7 +25,7 @@ class Admin(BaseAdmin):
     def __init__(
         self,
         engine: Union[Engine, AsyncEngine],
-        title: str = "Admin",
+        title: str = _("Admin"),
         base_url: str = "/admin",
         route_name: str = "admin",
         logo_url: Optional[str] = None,
@@ -34,6 +36,7 @@ class Admin(BaseAdmin):
         auth_provider: Optional[AuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
+        locale: Optional[str] = DEFAULT_LOCALE,
     ) -> None:
         super().__init__(
             title=title,
@@ -47,6 +50,7 @@ class Admin(BaseAdmin):
             auth_provider=auth_provider,
             middlewares=middlewares,
             debug=debug,
+            locale=locale,
         )
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)
         self.middlewares.insert(0, Middleware(DBSessionMiddleware, engine=engine))

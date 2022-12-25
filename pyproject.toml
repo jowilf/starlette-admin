@@ -98,9 +98,9 @@ docs_build = "mkdocs build"
 docs_deploy = "mkdocs gh-deploy --force"
 test = "coverage run -m pytest tests"
 test_sqla = "coverage run -m pytest tests/sqla"
-i18n_extract = "pybabel extract -F i18n/babel.ini -o i18n/admin.pot --project starlette-admin starlette_admin"
+i18n_extract = "pybabel extract -F i18n/babel.ini -k _n -o i18n/admin.pot --project starlette-admin starlette_admin"
 i18n_update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations -D admin"
-i18n_compile = "pybabel compile -D admin -d starlette_admin/translations"
+i18n_compile = "pybabel compile -f -D admin -d starlette_admin/translations"
 
 [tool.hatch.version]
 path = "starlette_admin/__init__.py"
@@ -131,6 +131,7 @@ select = [
 ]
 ignore = [
     "E501", # line too long, handled by black
+    "B008", # Do not perform function call `_` in argument defaults, neccessary for lazy_gettext
 ]
 
 [tool.ruff.isort]

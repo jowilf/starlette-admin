@@ -2,7 +2,7 @@ This example shows how you can secure your admin interface with user authenticat
 
 Users:
 
-- Admin
+- Administrator
     - username: `admin`
     - password: `password`
     - Roles: Can do everything

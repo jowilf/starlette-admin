@@ -42,6 +42,7 @@ admin = Admin(
     title="Example: Auth",
     auth_provider=MyAuthProvider(),
     middlewares=[Middleware(SessionMiddleware, secret_key=SECRET)],
+    locale="fr",
 )
 
 # Add views

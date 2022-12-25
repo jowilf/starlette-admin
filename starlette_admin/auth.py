@@ -8,11 +8,12 @@ from starlette.responses import RedirectResponse, Response
 from starlette.status import HTTP_303_SEE_OTHER
 from starlette.types import ASGIApp
 from starlette_admin.exceptions import LoginFailed
+from starlette_admin.i18n import lazy_gettext as _
 
 
 @dataclass
 class AdminUser:
-    username: str = "admin"
+    username: str = _("Administrator")
     photo_url: Optional[str] = None
 
 

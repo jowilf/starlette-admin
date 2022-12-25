@@ -33,21 +33,17 @@
             d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"
           />
         </svg>
-        <h3>{{ _("Are you sure?") }}</h3>
-        <div id="modal-delete-body" class="text-muted">
-          Do you really want to remove <span></span> ? This action cannot be
-          undone.
-        </div>
+        <h3>{{ _("Are you sure you want to delete this item?") }}</h3>
       </div>
       <div class="modal-footer">
         <div class="w-100">
           <div class="row">
             <div class="col">
-              <a href="#" class="btn w-100" data-bs-dismiss="modal">Cancel</a>
+              <a href="#" class="btn w-100" data-bs-dismiss="modal">{{_("Cancel")}}</a>
             </div>
             <div class="col">
               <div id="modal-delete-btn" href="#" class="btn btn-danger w-100">
-                Delete
+                {{_("Delete")}}
               </div>
             </div>
           </div>
