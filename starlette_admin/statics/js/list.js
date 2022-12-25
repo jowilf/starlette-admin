@@ -67,7 +67,9 @@ $(function () {
   if (model.exportTypes.includes("csv"))
     export_buttons.push({
       extend: "csv",
-      text: '<i class="fa-solid fa-file-csv"></i> CSV',
+      text: function (dt) {
+        return `<i class="fa-solid fa-file-csv"></i> ${dt.i18n("buttons.csv")}`;
+      },
       exportOptions: {
         columns: model.exportColumns,
         orthogonal: "export-csv",
@@ -76,7 +78,11 @@ $(function () {
   if (model.exportTypes.includes("excel"))
     export_buttons.push({
       extend: "excel",
-      text: '<i class="fa-solid fa-file-excel"></i> Excel',
+      text: function (dt) {
+        return `<i class="fa-solid fa-file-excel"></i> ${dt.i18n(
+          "buttons.excel"
+        )}`;
+      },
       exportOptions: {
         columns: model.exportColumns,
         orthogonal: "export-excel",
@@ -85,7 +91,9 @@ $(function () {
   if (model.exportTypes.includes("pdf"))
     export_buttons.push({
       extend: "pdf",
-      text: '<i class="fa-solid fa-file-pdf"></i> PDF',
+      text: function (dt) {
+        return `<i class="fa-solid fa-file-pdf"></i> ${dt.i18n("buttons.pdf")}`;
+      },
       exportOptions: {
         columns: model.exportColumns,
         orthogonal: "export-pdf",
@@ -94,7 +102,9 @@ $(function () {
   if (model.exportTypes.includes("print"))
     export_buttons.push({
       extend: "print",
-      text: '<i class="fa-solid fa-print"></i> Print',
+      text: function (dt) {
+        return `<i class="fa-solid fa-print"></i> ${dt.i18n("buttons.print")}`;
+      },
       exportOptions: {
         columns: model.exportColumns,
         orthogonal: "export-print",
@@ -103,13 +113,19 @@ $(function () {
   if (export_buttons.length > 0)
     buttons.push({
       extend: "collection",
-      text: '<i class="fa-solid fa-file-export"></i> Export',
+      text: function (dt) {
+        return `<i class="fa-solid fa-file-export"></i> ${dt.i18n(
+          "starlette-admin.buttons.export"
+        )}`;
+      },
       className: "",
       buttons: export_buttons,
     });
   noInputCondition = function (cn) {
     return {
-      conditionName: cn,
+      conditionName: function (t, i) {
+        return t.i18n(cn);
+      },
       init: function (a) {
         a.s.dt.one("draw.dtsb", function () {
           a.s.topGroup.trigger("dtsb-redrawLogic");
@@ -124,25 +140,31 @@ $(function () {
   if (model.columnVisibility)
     buttons.push({
       extend: "colvis",
-      text: '<i class="fa-solid fa-eye"></i> Column visibility',
+      text: function (dt) {
+        return `<i class="fa-solid fa-eye"></i> ${dt.i18n("buttons.colvis")}`;
+      },
     });
 
   if (model.searchBuilder)
     buttons.push({
       extend: "searchBuilder",
-      text: '<i class="fa-solid fa-filter"></i> Filter',
+      text: function (dt) {
+        return `<i class="fa-solid fa-filter"></i> ${dt.i18n(
+          "searchBuilder.button.0"
+        )}`;
+      },
       config: {
         columns: model.searchColumns,
         conditions: {
           bool: {
-            false: noInputCondition("False"),
-            true: noInputCondition("True"),
-            null: noInputCondition("Empty"),
-            "!null": noInputCondition("Not Empty"),
+            false: noInputCondition("starlette-admin.conditions.false"),
+            true: noInputCondition("starlette-admin.conditions.true"),
+            null: noInputCondition("starlette-admin.conditions.empty"),
+            "!null": noInputCondition("starlette-admin.conditions.notEmpty"),
           },
           default: {
-            null: noInputCondition("Empty"),
-            "!null": noInputCondition("Not Empty"),
+            null: noInputCondition("starlette-admin.conditions.empty"),
+            "!null": noInputCondition("starlette-admin.conditions.notEmpty"),
           },
         },
         greyscale: true,
@@ -238,39 +260,45 @@ $(function () {
       className: "row-selected",
     },
     language: {
-      info: "Showing <strong>_START_</strong> to <strong>_END_</strong> off <strong>_TOTAL_</strong> records",
-      infoEmpty: "No matching records found",
+      url: model.dt_i18n_url,
+      //info: "Showing <strong>_START_</strong> to <strong>_END_</strong> off <strong>_TOTAL_</strong> records",
+      //infoEmpty: "No matching records found",
       infoFiltered: "",
+      select: {
+        rows: {
+          0: "",
+        },
+      },
       searchBuilder: {
-        button: {
-          0: '<i class="fa-solid fa-filter"></i> Filter',
-          _: '<i class="fa-solid fa-filter"></i> Filter (%d)',
-        },
-        add: "Add Condition",
-        condition: "Condition",
-        clearAll: "Reset",
+        // button: {
+        //   0: '<i class="fa-solid fa-filter"></i> Filter',
+        //   _: '<i class="fa-solid fa-filter"></i> Filter (%d)',
+        // },
+        // add: "Add Condition",
+        // condition: "Condition",
+        // clearAll: "Reset",
         delete: `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><line x1="4" y1="7" x2="20" y2="7"></line><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>`,
-        deleteTitle: "Delete",
-        data: "Column",
+        // deleteTitle: "Delete",
+        // data: "Column",
         left: `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="15 6 9 12 15 18"></polyline></svg>`,
-        leftTitle: "Left",
-        logicAnd: "AND",
-        logicOr: "OR",
+        // leftTitle: "Left",
+        // logicAnd: "AND",
+        // logicOr: "OR",
         right: `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="9 6 15 12 9 18"></polyline></svg>`,
-        rightTitle: "Right",
-        title: {
-          0: "Filters",
-          _: "Filters (%d)",
-        },
-        value: "Value",
-        valueJoiner: "and",
+        // rightTitle: "Right",
+        // title: {
+        //   0: "Filters",
+        //   _: "Filters (%d)",
+        // },
+        // value: "Value",
+        // valueJoiner: "and",
       },
-      buttons: {
-        pageLength: {
-          _: "%d",
-          "-1": "All",
-        },
-      },
+      // buttons: {
+      //   pageLength: {
+      //     _: "%d",
+      //     "-1": "All",
+      //   },
+      // },
     },
     ajax: function (data, callback, settings) {
       //console.log(data);
@@ -329,37 +357,38 @@ $(function () {
       ...dt_columns,
     ],
     order: [],
-  });
+    initComplete: function () {
+      new $.fn.dataTable.Buttons(table, {
+        name: "main",
+        buttons: buttons,
+        dom: {
+          button: {
+            className: "btn btn-secondary",
+          },
+        },
+      });
+      new $.fn.dataTable.Buttons(table, {
+        name: "pageLength",
+        buttons: [
+          {
+            extend: "pageLength",
+            className: "btn",
+          },
+        ],
+        dom: {
+          button: {
+            className: "",
+          },
+        },
+      });
 
-  new $.fn.dataTable.Buttons(table, {
-    name: "main",
-    buttons: buttons,
-    dom: {
-      button: {
-        className: "btn btn-secondary",
-      },
+      table.buttons("main", null).container().appendTo("#btn_container");
+      table
+        .buttons("pageLength", null)
+        .container()
+        .appendTo("#pageLength_container");
     },
   });
-  new $.fn.dataTable.Buttons(table, {
-    name: "pageLength",
-    buttons: [
-      {
-        extend: "pageLength",
-        className: "btn",
-      },
-    ],
-    dom: {
-      button: {
-        className: "",
-      },
-    },
-  });
-
-  table.buttons("main", null).container().appendTo("#btn_container");
-  table
-    .buttons("pageLength", null)
-    .container()
-    .appendTo("#pageLength_container");
 
   $("#searchInput").on("keyup", function () {
     table.search($(this).val()).draw();

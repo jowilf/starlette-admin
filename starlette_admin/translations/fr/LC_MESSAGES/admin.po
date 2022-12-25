@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: starlette-admin VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-12-25 13:26+0100\n"
+"POT-Creation-Date: 2022-12-25 15:36+0100\n"
 "PO-Revision-Date: 2022-12-24 18:16+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -24,12 +24,12 @@ msgstr ""
 msgid "Yes, Proceed"
 msgstr "Oui, Continuez"
 
-#: starlette_admin/auth.py:15
+#: starlette_admin/auth.py:16
 msgid "Administrator"
 msgstr "Administrateur"
 
-#: starlette_admin/base.py:36 starlette_admin/contrib/odmantic/admin.py:16
-#: starlette_admin/contrib/sqla/admin.py:27
+#: starlette_admin/base.py:36 starlette_admin/contrib/odmantic/admin.py:17
+#: starlette_admin/contrib/sqla/admin.py:28
 #: starlette_admin/templates/create.html:7
 #: starlette_admin/templates/detail.html:9
 #: starlette_admin/templates/edit.html:7 starlette_admin/templates/list.html:6
@@ -42,7 +42,8 @@ msgid "Model with identity %(identity)s not found"
 msgstr "Le model ayant pour identité %(identity)s n'existe pas"
 
 #: starlette_admin/templates/detail.html:39
-#: starlette_admin/templates/forms/_delete.html:5 starlette_admin/views.py:339
+#: starlette_admin/templates/forms/_delete.html:5
+#: starlette_admin/templates/modals/delete.html:46 starlette_admin/views.py:339
 msgid "Delete"
 msgstr "Supprimer"
 
@@ -61,6 +62,10 @@ msgid_plural "%(count)d items were successfully deleted"
 msgstr[0] "L'élément a été supprimé avec succès"
 msgstr[1] "%(count)d éléments ont été supprimés avec succès"
 
+#: starlette_admin/views.py:603
+msgid "All"
+msgstr "Tout"
+
 #: starlette_admin/templates/create.html:12
 msgid "Create"
 msgstr "Ajouter"
@@ -69,11 +74,12 @@ msgstr "Ajouter"
 #: starlette_admin/templates/list.html:64
 #, python-format
 msgid "New %(name)s"
-msgstr "Nouveau %(name)s"
+msgstr "Créer %(name)s"
 
 #: starlette_admin/templates/create.html:45
 #: starlette_admin/templates/edit.html:44
 #: starlette_admin/templates/modals/actions.html:8
+#: starlette_admin/templates/modals/delete.html:42
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -132,13 +138,9 @@ msgstr "Se déconnecter "
 msgid "With selected"
 msgstr "Avec la sélection"
 
-#: starlette_admin/templates/list.html:73
-msgid "Show"
-msgstr "Afficher"
-
-#: starlette_admin/templates/list.html:77
-msgid "entries"
-msgstr "entrées"
+#: starlette_admin/templates/list.html:101
+msgid "Search"
+msgstr "Rechercher"
 
 #: starlette_admin/templates/login.html:17
 msgid "Login to your account"

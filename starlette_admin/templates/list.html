@@ -69,12 +69,7 @@ block content %}
         </div>
         <div class="card-body border-bottom p-0">
           <div class="d-flex m-3">
-            <div class="text-muted">
-              {{ _("Show") }}
-              <div class="mx-1 d-inline-block">
-                <div id="pageLength_container"></div>
-              </div>
-              {{ _("entries") }}
+            <div id="pageLength_container">
             </div>
             <div class="ms-auto text-muted">
               <div class="ms-2 d-inline-block">
@@ -103,7 +98,7 @@ block content %}
                     id="searchInput"
                     value=""
                     class="form-control"
-                    placeholder="Search…"
+                    placeholder="{{_('Search')}}..."
                     aria-label="Search in list"
                   />
                 </div>

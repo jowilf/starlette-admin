@@ -600,7 +600,7 @@ class BaseModelView(BaseView):
     def _length_menu(self) -> Any:
         return [
             self.page_size_options,
-            [("All" if i < 0 else i) for i in self.page_size_options],
+            [(_("All") if i < 0 else i) for i in self.page_size_options],
         ]
 
     def _search_columns_selector(self) -> List[str]:
@@ -637,6 +637,7 @@ class BaseModelView(BaseView):
         return links
 
     async def _configs(self, request: Request) -> Dict[str, Any]:
+        locale = get_locale()
         return {
             "label": self.label,
             "pageSize": self.page_size,
@@ -650,11 +651,14 @@ class BaseModelView(BaseView):
             "fields": [f.dict() for f in self._extract_fields()],
             "actions": await self.get_all_actions(request),
             "pk": self.pk_attr,
+            "locale": locale,
             "apiUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:api", identity=self.identity
             ),
             "actionUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:action", identity=self.identity
             ),
-            "locale": get_locale(),
+            "dt_i18n_url": request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics", path=f"i18n/dt/{locale}.json"
+            ),
         }

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: starlette-admin VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-12-25 13:26+0100\n"
+"POT-Creation-Date: 2022-12-25 15:36+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,12 +23,12 @@ msgstr ""
 msgid "Yes, Proceed"
 msgstr ""
 
-#: starlette_admin/auth.py:15
+#: starlette_admin/auth.py:16
 msgid "Administrator"
 msgstr ""
 
-#: starlette_admin/base.py:36 starlette_admin/contrib/odmantic/admin.py:16
-#: starlette_admin/contrib/sqla/admin.py:27
+#: starlette_admin/base.py:36 starlette_admin/contrib/odmantic/admin.py:17
+#: starlette_admin/contrib/sqla/admin.py:28
 #: starlette_admin/templates/create.html:7
 #: starlette_admin/templates/detail.html:9
 #: starlette_admin/templates/edit.html:7 starlette_admin/templates/list.html:6
@@ -41,7 +41,8 @@ msgid "Model with identity %(identity)s not found"
 msgstr ""
 
 #: starlette_admin/templates/detail.html:39
-#: starlette_admin/templates/forms/_delete.html:5 starlette_admin/views.py:339
+#: starlette_admin/templates/forms/_delete.html:5
+#: starlette_admin/templates/modals/delete.html:46 starlette_admin/views.py:339
 msgid "Delete"
 msgstr ""
 
@@ -60,6 +61,10 @@ msgid_plural "%(count)d items were successfully deleted"
 msgstr[0] ""
 msgstr[1] ""
 
+#: starlette_admin/views.py:603
+msgid "All"
+msgstr ""
+
 #: starlette_admin/templates/create.html:12
 msgid "Create"
 msgstr ""
@@ -73,6 +78,7 @@ msgstr ""
 #: starlette_admin/templates/create.html:45
 #: starlette_admin/templates/edit.html:44
 #: starlette_admin/templates/modals/actions.html:8
+#: starlette_admin/templates/modals/delete.html:42
 msgid "Cancel"
 msgstr ""
 
@@ -131,12 +137,8 @@ msgstr ""
 msgid "With selected"
 msgstr ""
 
-#: starlette_admin/templates/list.html:73
-msgid "Show"
-msgstr ""
-
-#: starlette_admin/templates/list.html:77
-msgid "entries"
+#: starlette_admin/templates/list.html:101
+msgid "Search"
 msgstr ""
 
 #: starlette_admin/templates/login.html:17

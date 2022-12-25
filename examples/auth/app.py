@@ -40,13 +40,26 @@ app = Starlette(
 admin = Admin(
     engine,
     title="Example: Auth",
+    base_url="/admin/fr",
     auth_provider=MyAuthProvider(),
     middlewares=[Middleware(SessionMiddleware, secret_key=SECRET)],
     locale="fr",
 )
+# Create admin
+admin2 = Admin(
+    engine,
+    route_name="admin2",
+    base_url="/admin/en",
+    title="Example: Auth",
+    auth_provider=MyAuthProvider(),
+    middlewares=[Middleware(SessionMiddleware, secret_key=SECRET)],
+    locale="en",
+)
 
 # Add views
 admin.add_view(ArticleView(Article))
+admin2.add_view(ArticleView(Article))
 
 # Mount admin
 admin.mount_to(app)
+admin2.mount_to(app)
