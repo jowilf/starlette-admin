@@ -42,7 +42,7 @@ Changelog = "https://jowilf.github.io/starlette-admin/changelog/"
 
 [project.optional-dependencies]
 i18n = [
-    "babel >=2.11.0"
+    "babel >=2.11, <3.0"
 ]
 
 [tool.hatch.envs.default]
@@ -54,7 +54,7 @@ dependencies = [
     "mypy ==0.990",
     "ruff ==0.0.149",
     "black ==22.10.0",
-    "SQLAlchemy[asyncio] >=1.4, <1.5.0",
+    "SQLAlchemy[asyncio] >=1.4, <1.5",
     "sqlalchemy-file >=0.1.5",
     "fasteners >=0.18",
     "PyMySQL[rsa] >=1.0.2",

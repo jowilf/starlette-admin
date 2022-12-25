@@ -1,32 +1,55 @@
-import gettext
 import pathlib
 from contextvars import ContextVar
+from typing import Dict
 
-DEFAULT_LOCALE = "en_US"
-_current_locale: ContextVar[str] = ContextVar("current_locale", default=DEFAULT_LOCALE)
+DEFAULT_LOCALE = "en"
+SUPPORTED_LOCALES = ["en", "fr"]
 
-translations_dir = pathlib.Path(__file__).parent.joinpath("translations/")
+try:
+    from babel.support import LazyProxy, Translations
 
-translations = {
-    "fr_FR": gettext.translation("admin", translations_dir, ["fr_FR"]),
-}
+    translations: Dict[str, Translations] = {
+        locale: Translations.load(
+            dirname=pathlib.Path(__file__).parent.joinpath("translations/"),
+            locales=[locale],
+            domain="admin",
+        )
+        for locale in SUPPORTED_LOCALES
+    }
 
+    _current_locale: ContextVar[str] = ContextVar(
+        "current_locale", default=DEFAULT_LOCALE
+    )
+    _current_translation: ContextVar[Translations] = ContextVar(
+        "current_translation", default=translations[DEFAULT_LOCALE]
+    )
 
-def set_locale(locale: str) -> None:
-    _current_locale.set(locale if locale in translations.keys() else DEFAULT_LOCALE)
+    def set_locale(locale: str) -> None:
+        _current_locale.set(locale if locale in translations.keys() else DEFAULT_LOCALE)
+        _current_translation.set(translations[get_locale()])
 
+    def get_locale() -> str:
+        return _current_locale.get()
 
-def get_locale() -> str:
-    return _current_locale.get()
+    def gettext(message: str) -> str:
+        return _current_translation.get().ugettext(message)
 
+    def ngettext(self, msgid1: str, msgid2: str, n: int) -> str:
+        return _current_translation.get().ngettext(msgid1, msgid2, n)
 
-def _(message: str) -> str:
-    translator = translations.get(get_locale(), None)
-    if translator is None:
+    def lazy_gettext(message: str) -> str:
+        return LazyProxy(gettext, message=message)  # type: ignore
+
+except ImportError:
+
+    def set_locale(locale: str) -> None:
+        pass
+
+    def get_locale() -> str:
+        return DEFAULT_LOCALE
+
+    def gettext(message: str):
         return message
-    return translator.gettext(message)
 
-
-if __name__ == "__main__":
-    set_locale("fr_FR")
-    print(_("This is a translatable string."))
+    def lazy_gettext(message: str):
+        return gettext(message)

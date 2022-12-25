@@ -4,7 +4,7 @@
 {% block content %}
     <div class="empty">
         <div class="empty-header">{{exc.status_code}}</div>
-        <p class="empty-title">Oops… You just found an error page</p>
+        <p class="empty-title">{{_("Oops… You just found an error page")}}</p>
         <p class="empty-subtitle text-muted">{{exc.detail}}</p>
         <div class="empty-action">
             <a class="btn btn-primary" href="{{ url_for(__name__ ~ ':index')}}">
@@ -26,7 +26,7 @@
                     <line x1="5" x2="11" y1="12" y2="6">
                     </line>
                 </svg>
-                Take me home
+                {{_("Take me home")}}
             </a>
         </div>
     </div>

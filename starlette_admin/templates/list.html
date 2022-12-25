@@ -26,7 +26,7 @@ block content %}
                   data-bs-toggle="dropdown"
                   id="actionDropdownButton"
                 >
-                  With selected (<span class="actions-selected-counter">0</span
+                  {{_("With selected")}} (<span class="actions-selected-counter">0</span
                   >)
                 </button>
                 <div
@@ -61,7 +61,7 @@ block content %}
                 class="btn btn-primary btn-block ms-2"
               >
                 <i class="fa-solid fa-plus me-2"></i>
-                New {{ model.name }}
+                 {{ _("New %(name)s", name=model.name ) }}
               </a>
               {% endif %}
             </div>
@@ -70,11 +70,11 @@ block content %}
         <div class="card-body border-bottom p-0">
           <div class="d-flex m-3">
             <div class="text-muted">
-              Show
+              {{ _("Show") }}
               <div class="mx-1 d-inline-block">
                 <div id="pageLength_container"></div>
               </div>
-              entries
+              {{ _("entries") }}
             </div>
             <div class="ms-auto text-muted">
               <div class="ms-2 d-inline-block">

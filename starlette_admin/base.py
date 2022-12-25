@@ -17,6 +17,7 @@ from starlette_admin._types import RequestAction
 from starlette_admin.auth import AuthMiddleware, AuthProvider
 from starlette_admin.exceptions import ActionFailed, FormValidationError, LoginFailed
 from starlette_admin.helpers import get_file_icon
+from starlette_admin.i18n import get_locale, gettext, ngettext
 from starlette_admin.views import BaseModelView, BaseView, CustomView, DropDown, Link
 
 
@@ -172,7 +173,7 @@ class BaseAdmin:
             self._views.append(self.index_view)
 
     def _setup_templates(self) -> None:
-        templates = Jinja2Templates(self.templates_dir)
+        templates = Jinja2Templates(self.templates_dir, extensions=["jinja2.ext.i18n"])
         templates.env.loader = ChoiceLoader(
             [
                 FileSystemLoader(self.templates_dir),
@@ -203,6 +204,8 @@ class BaseAdmin:
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
+        templates.env.filters["get_locale"] = get_locale
+        templates.env.install_gettext_callables(gettext, ngettext, True)
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:

@@ -28,6 +28,7 @@ from starlette_admin.fields import (
     RelationField,
 )
 from starlette_admin.helpers import extract_fields
+from starlette_admin.i18n import lazy_gettext as _
 
 
 class BaseView:
@@ -334,9 +335,9 @@ class BaseModelView(BaseView):
 
     @action(
         name="delete",
-        text="Delete",
-        confirmation="Are you sure you want to delete this items ?",
-        submit_btn_text="Yes, delete them all",
+        text=_("Delete"),
+        confirmation=_("Are you sure you want to delete this items ?"),
+        submit_btn_text=_("Yes, delete all"),
         submit_btn_class="btn-danger",
     )
     async def delete_action(self, request: Request, pks: List[Any]) -> str:

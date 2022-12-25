@@ -11,7 +11,7 @@
         <li class="breadcrumb-item">
             <a href="{{ url_for(__name__ ~ ':list', identity=model.identity)}}">{{ model.label }}</a>
         </li>
-        <li class="breadcrumb-item active">Detail</li>
+        <li class="breadcrumb-item active">{{ _("Detail") }}</li>
     </ol>
 </div>
 {% endblock %} {% block modal %} {% include "modals/loading.html" %} {% include
@@ -36,14 +36,14 @@
                                     data-bs-target="#modal-delete"
                             >
                                 <i class="fas fa-trash-alt me-2"></i>
-                                Delete
+                                {{ _("Delete") }}
                             </button>
                             {%endif%}
                             {%if model.can_edit(request)%}
                             <a href="{{ url_for(__name__ ~ ':edit', identity=model.identity,pk=obj[pk])}}">
                                 <button type="button" class="btn btn-primary btn-block me-2">
                                     <i class="fa-solid fa-edit me-2"></i>
-                                    Edit
+                                    {{ _("Edit") }}
                                 </button>
                             </a>
                             {%endif%}
@@ -59,8 +59,8 @@
                         >
                             <thead>
                             <tr>
-                                <th>Attribute</th>
-                                <th>Value</th>
+                                <th>{{ _("Attribute") }}</th>
+                                <th>{{ _("Value") }}</th>
                             </tr>
                             </thead>
                             <tbody>
