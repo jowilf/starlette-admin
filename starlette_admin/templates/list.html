@@ -155,6 +155,12 @@ block content %}
   type="text/javascript"
   src="{{ url_for(__name__ ~ ':statics', path='js/vendor/moment.min.js') }}"
 ></script>
+{% if get_locale() != 'en' %}
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='i18n/momentjs/' ~ get_locale() ~ '.js') }}"
+></script>
+{% endif %}
 {% if 'pdf' in model.export_types%}
 <script
   type="text/javascript"

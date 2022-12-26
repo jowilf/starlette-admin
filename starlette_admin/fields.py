@@ -437,7 +437,7 @@ class DateTimeField(NumberField):
 
     input_type: str = "datetime-local"
     class_: str = "field-datetime form-control"
-    search_builder_type: str = "moment-MMMM D, YYYY HH:mm:ss"
+    search_builder_type: str = "moment-LL HH:mm:ss"
     output_format: str = "%B %d, %Y %H:%M:%S"
     search_format: Optional[str] = None
     form_alt_format: Optional[str] = "F j, Y  H:i:S"
@@ -502,7 +502,7 @@ class DateField(DateTimeField):
     class_: str = "field-date form-control"
     output_format: str = "%B %d, %Y"
     search_format: str = "YYYY-MM-DD"
-    search_builder_type: str = "moment-MMMM D, YYYY"
+    search_builder_type: str = "moment-LL"
     form_alt_format: Optional[str] = "F j, Y"
 
     async def parse_form_data(
