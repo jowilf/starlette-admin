@@ -1,7 +1,18 @@
 import inspect
 from typing import Any, Callable, Dict, List, Optional, Sequence, Type
 
-from sqlalchemy import ARRAY, Boolean, Column, and_, false, not_, or_, true
+from sqlalchemy import (
+    ARRAY,
+    Boolean,
+    Column,
+    String,
+    and_,
+    cast,
+    false,
+    not_,
+    or_,
+    true,
+)
 from sqlalchemy.orm import (
     ColumnProperty,
     InstrumentedAttribute,
@@ -38,12 +49,12 @@ OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
     "ge": lambda f, v: f >= v,
     "in": lambda f, v: f.in_(v),
     "not_in": lambda f, v: f.not_in(v),
-    "startswith": lambda f, v: f.startswith(v),
-    "not_startswith": lambda f, v: not_(f.startswith(v)),
-    "endswith": lambda f, v: f.endswith(v),
-    "not_endswith": lambda f, v: not_(f.endswith(v)),
-    "contains": lambda f, v: f.contains(v),
-    "not_contains": lambda f, v: not_(f.contains(v)),
+    "startswith": lambda f, v: cast(f, String).startswith(v),
+    "not_startswith": lambda f, v: not_(cast(f, String).startswith(v)),
+    "endswith": lambda f, v: cast(f, String).endswith(v),
+    "not_endswith": lambda f, v: not_(cast(f, String).endswith(v)),
+    "contains": lambda f, v: cast(f, String).contains(v),
+    "not_contains": lambda f, v: not_(cast(f, String).contains(v)),
     "is_false": lambda f, v: f == false(),
     "is_true": lambda f, v: f == true(),
     "is_null": lambda f, v: f.is_(None),
@@ -98,7 +109,7 @@ converters = {
     "LargeBinary": TextAreaField,
     "Binary": TextAreaField,
     "Boolean": BooleanField,
-    "dialects.mssql.base.BIT": BooleanField,
+    "BIT": BooleanField,
     "Date": DateField,
     "DateTime": DateTimeField,
     "Time": TimeField,
@@ -106,11 +117,11 @@ converters = {
     "Integer": IntegerField,  # includes BigInteger and SmallInteger
     "Numeric": DecimalField,  # includes DECIMAL, Float/FLOAT, REAL, and DOUBLE
     "JSON": JSONField,
-    "dialects.mysql.types.YEAR": StringField,
-    "dialects.mysql.base.YEAR": StringField,
-    "dialects.postgresql.base.INET": StringField,
-    "dialects.postgresql.base.MACADDR": StringField,
-    "dialects.postgresql.base.UUID": StringField,
+    "sqlalchemy.dialects.mysql.types.YEAR": StringField,
+    "sqlalchemy.dialects.mysql.base.YEAR": StringField,
+    "sqlalchemy.dialects.postgresql.base.INET": StringField,
+    "sqlalchemy.dialects.postgresql.base.MACADDR": StringField,
+    "sqlalchemy.dialects.postgresql.base.UUID": StringField,
     "sqlalchemy_file.types.FileField": FileField,  # support for sqlalchemy-file
     "sqlalchemy_file.types.ImageField": ImageField,  # support for sqlalchemy-file
 }
@@ -154,6 +165,10 @@ def convert_to_field(column: Column) -> Type[BaseField]:
 def normalize_fields(  # noqa: C901
     fields: Sequence[Any], mapper: Mapper
 ) -> List[BaseField]:
+    """
+    Look and convert all InstrumentedAttribute or str in fields into the
+    right field (starlette_admin.BaseField)
+    """
     converted_fields = []
     for field in fields:
         if isinstance(field, BaseField):
@@ -205,6 +220,7 @@ def normalize_fields(  # noqa: C901
 
 
 def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
+    """This methods will convert all InstrumentedAttribute into str"""
     if arr is None:
         return None
     _new_list = []
