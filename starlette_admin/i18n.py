@@ -49,7 +49,7 @@ except ImportError:
     # Provide i18n support even if babel is not installed
 
     def set_locale(locale: str) -> None:
-        raise NotImplementedError()
+        pass
 
     def get_locale() -> str:
         return DEFAULT_LOCALE
