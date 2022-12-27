@@ -1,4 +1,5 @@
 import enum
+import uuid
 
 import pytest
 import sqlalchemy_file
@@ -18,6 +19,8 @@ from sqlalchemy import (
     Time,
     TypeDecorator,
 )
+from sqlalchemy.dialects.mysql import YEAR
+from sqlalchemy.dialects.postgresql import BIT, INET, MACADDR, UUID
 from sqlalchemy.orm import declarative_base, relationship
 from starlette_admin import (
     BooleanField,
@@ -87,6 +90,16 @@ class Document(Base):
     attachments = relationship("Attachment", back_populates="document")
 
 
+class Other(Base):
+    __tablename__ = "other"
+
+    uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
+    bit = Column(BIT)
+    year = Column(YEAR)
+    macaddr = Column(MACADDR)
+    inet = Column(INET)
+
+
 class UserView(ModelView):
     form_include_pk = True
 
@@ -123,6 +136,13 @@ def test_fields_conversion():
         HasMany(
             "attachments", identity="attachment", orderable=False, searchable=False
         ),
+    ]
+    assert ModelView(Other).fields == [
+        StringField("uuid", exclude_from_create=True, exclude_from_edit=True),
+        BooleanField("bit"),
+        StringField("year"),
+        StringField("macaddr"),
+        StringField("inet"),
     ]
 
 
