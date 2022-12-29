@@ -52,3 +52,10 @@ function pretty_print_json(data) {
     .replace(/>/g, "&gt;")
     .replace(jsonLine, replacer);
 }
+
+if (typeof structuredClone === 'undefined') {
+  // Simple (non-performant) replacement of `structuredClone` for old browsers
+  structuredClone = function (value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+}

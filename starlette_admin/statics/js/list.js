@@ -3,7 +3,7 @@ $(function () {
   var dt_columns = [];
 
   (function () {
-    let fringe = model.fields;
+    let fringe = structuredClone(model.fields);
     while (fringe.length > 0) {
       let field = fringe.shift(0);
       if (field.type === "CollectionField")
