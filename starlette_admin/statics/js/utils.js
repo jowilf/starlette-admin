@@ -54,7 +54,7 @@ function pretty_print_json(data) {
 }
 
 if (typeof structuredClone === 'undefined') {
-  // Simple (non-performant) replacemente of `structuredClone` for old browsers
+  // Simple (non-performant) replacement of `structuredClone` for old browsers
   structuredClone = function (value) {
     return JSON.parse(JSON.stringify(value));
   }
