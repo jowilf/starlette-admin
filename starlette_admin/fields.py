@@ -11,6 +11,7 @@ from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
 from starlette_admin.helpers import extract_fields, html_params, is_empty_file
+from starlette_admin.i18n import get_locale
 
 
 @dataclass
@@ -450,6 +451,7 @@ class DateTimeField(NumberField):
                 "max": self.max,
                 "step": self.step,
                 "data_alt_format": self.form_alt_format,
+                "data_locale": get_locale(),
                 "placeholder": self.placeholder,
                 "required": self.required,
             }
@@ -481,12 +483,20 @@ class DateTimeField(NumberField):
         ]
 
     def additional_js_links(self, request: Request) -> List[str]:
-        return [
+        _links = [
             request.url_for(
                 f"{request.app.state.ROUTE_NAME}:statics",
                 path="js/vendor/flatpickr.min.js",
             )
         ]
+        if get_locale() != "en":
+            _links.append(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path=f"i18n/flatpickr/{get_locale()}.js",
+                )
+            )
+        return _links
 
 
 @dataclass

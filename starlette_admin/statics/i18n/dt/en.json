@@ -50,8 +50,8 @@
   "searchBuilder": {
     "add": "Add Condition",
     "button": {
-      "0": "Filter",
-      "_": "Filter (%d)"
+      "0": "<i class=\"fa-solid fa-filter\"></i> Filter",
+      "_": "<i class=\"fa-solid fa-filter\"></i> Filter (%d)"
     },
     "clearAll": "Clear All",
     "condition": "Condition",

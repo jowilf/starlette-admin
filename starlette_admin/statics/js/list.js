@@ -151,11 +151,6 @@ $(function () {
   if (model.searchBuilder)
     buttons.push({
       extend: "searchBuilder",
-      text: function (dt) {
-        return `<i class="fa-solid fa-filter"></i> ${dt.i18n(
-          "searchBuilder.button.0"
-        )}`;
-      },
       config: {
         columns: model.searchColumns,
         conditions: {

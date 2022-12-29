@@ -106,6 +106,7 @@
         altInput: true,
         dateFormat: "Y-m-d H:i:S",
         altFormat: el.data("alt-format"),
+        locale: el.data("locale"),
       });
     });
 
@@ -117,6 +118,7 @@
         altInput: true,
         dateFormat: "Y-m-d",
         altFormat: el.data("alt-format"),
+        locale: el.data("locale"),
       });
     });
 
@@ -131,6 +133,7 @@
         altInput: true,
         dateFormat: "H:i:S",
         altFormat: el.data("alt-format"),
+        locale: el.data("locale"),
       });
     });
 

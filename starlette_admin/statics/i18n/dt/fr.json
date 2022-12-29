@@ -55,8 +55,8 @@
     },
     "add": "Ajouter une condition",
     "button": {
-      "0": "Recherche avancée",
-      "_": "Recherche avancée (%d)"
+      "0": "<i class=\"fa-solid fa-filter\"></i> Recherche avancée",
+      "_": "<i class=\"fa-solid fa-filter\"></i> Recherche avancée (%d)"
     },
     "clearAll": "Effacer tout",
     "condition": "Condition",
