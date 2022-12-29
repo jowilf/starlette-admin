@@ -1,5 +1,14 @@
 $(function () {
+  /* list of primary keys of selected rows */
   var selectedRows = [];
+
+  /*
+  contains all fields including nested fields inside all CollectionField.
+  Each nested field name is prefixed by it parent CollectionField name (ex: 'category.name')
+  */
+  var dt_fields = [];
+
+  /* datatables columns generated from model.fields */
   var dt_columns = [];
 
   (function () {
@@ -56,6 +65,7 @@ $(function () {
             );
           },
         });
+        dt_fields.push(field);
       }
     }
   })();
@@ -151,7 +161,10 @@ $(function () {
 
   // End Buttons declarations
 
-  // Search Builder
+  /*
+  Convert datatables searchBuilder conditions into custom dict
+  with custom operators before send it to the backend.
+  */
   function extractCriteria(c) {
     var d = {};
     if ((c.logic && c.logic == "OR") || c.logic == "AND") {
@@ -161,7 +174,7 @@ $(function () {
       });
     } else {
       if (c.type.startsWith("moment-")) {
-        searchFormat = model.fields.find(
+        searchFormat = dt_fields.find(
           (f) => f.name == c.origData
         )?.search_format;
         if (!searchFormat) searchFormat = moment.defaultFormat;
@@ -217,7 +230,7 @@ $(function () {
   }
   // End Search builder
 
-  // tables
+  // Datatable instance
   var table = $("#dt").DataTable({
     dom: "r<'table-responsive't><'card-footer d-flex align-items-center'<'m-0'i><'m-0 ms-auto'p>>",
     paging: true,
