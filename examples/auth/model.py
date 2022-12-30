@@ -1,7 +1,17 @@
 import datetime
 import enum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Enum,
+    Integer,
+    String,
+    Text,
+    Time,
+)
 
 from . import Base
 
@@ -20,4 +30,6 @@ class Article(Base):
     enligne = Column(Boolean, default=False)
     body = Column(Text, nullable=False)
     status = Column(Enum(Status))
+    date_ = Column(Date, default=datetime.datetime.now)
+    time_ = Column(Time, default=datetime.time)
     created_at = Column(DateTime, default=datetime.datetime.now)

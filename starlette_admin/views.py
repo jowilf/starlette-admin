@@ -346,7 +346,7 @@ class BaseModelView(BaseView):
         return ngettext(
             "Item was successfully deleted",
             "%(count)d items were successfully deleted",
-            affected_rows,
+            affected_rows or 0,
         ) % {"count": affected_rows}
 
     @abstractmethod

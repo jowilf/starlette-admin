@@ -11,7 +11,7 @@ from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
 from starlette_admin.helpers import extract_fields, html_params, is_empty_file
-from starlette_admin.i18n import get_locale
+from starlette_admin.i18n import format_date, format_datetime, format_time, get_locale
 
 
 @dataclass
@@ -438,8 +438,8 @@ class DateTimeField(NumberField):
 
     input_type: str = "datetime-local"
     class_: str = "field-datetime form-control"
-    search_builder_type: str = "moment-LL HH:mm:ss"
-    output_format: str = "%B %d, %Y %H:%M:%S"
+    search_builder_type: str = "moment-LL LT"
+    output_format: Optional[str] = None
     search_format: Optional[str] = None
     form_alt_format: Optional[str] = "F j, Y  H:i:S"
 
@@ -470,9 +470,9 @@ class DateTimeField(NumberField):
     ) -> str:
         assert isinstance(
             value, (datetime, date, time)
-        ), f"Expect datetime, got  {type(value)}"
+        ), f"Expect datetime | date | time, got  {type(value)}"
         if action != RequestAction.EDIT:
-            return value.strftime(self.output_format)
+            return format_datetime(value, self.output_format)
         return value.isoformat()
 
     def additional_css_links(self, request: Request) -> List[str]:
@@ -510,7 +510,7 @@ class DateField(DateTimeField):
 
     input_type: str = "date"
     class_: str = "field-date form-control"
-    output_format: str = "%B %d, %Y"
+    output_format: Optional[str] = None
     search_format: str = "YYYY-MM-DD"
     search_builder_type: str = "moment-LL"
     form_alt_format: Optional[str] = "F j, Y"
@@ -522,6 +522,14 @@ class DateField(DateTimeField):
             return date.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> str:
+        assert isinstance(value, date), f"Expect date, got  {type(value)}"
+        if action != RequestAction.EDIT:
+            return format_date(value, self.output_format)
+        return value.isoformat()
 
 
 @dataclass
@@ -535,8 +543,8 @@ class TimeField(DateTimeField):
 
     input_type: str = "time"
     class_: str = "field-time form-control"
-    search_builder_type: str = "moment-HH:mm:ss"
-    output_format: str = "%H:%M:%S"
+    search_builder_type: str = "moment-LTS"
+    output_format: Optional[str] = None
     search_format: str = "HH:mm:ss"
     form_alt_format: Optional[str] = "H:i:S"
 
@@ -547,6 +555,14 @@ class TimeField(DateTimeField):
             return time.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> str:
+        assert isinstance(value, time), f"Expect time, got  {type(value)}"
+        if action != RequestAction.EDIT:
+            return format_time(value, self.output_format)
+        return value.isoformat()
 
 
 @dataclass

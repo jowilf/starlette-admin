@@ -222,7 +222,7 @@ class BaseAdmin:
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
         # install i18n
-        templates.env.install_gettext_callables(gettext, ngettext, True)
+        templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:
