@@ -22,7 +22,7 @@ class UserView(ModelView):
         "id",
         "last_name",
         "first_name",
-        EnumField("type", AVAILABLE_USER_TYPES),
+        EnumField("type", choices=AVAILABLE_USER_TYPES, select2=False),
         "posts",
     ]
 

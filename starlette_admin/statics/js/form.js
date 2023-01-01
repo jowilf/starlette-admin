@@ -1,6 +1,6 @@
 (function () {
   function processElement(element) {
-    $("select.field-tags, select.field-enum", element).each(function () {
+    $('select.field-tags, select.field-enum[data-role="select2"]', element).each(function () {
       $(this).select2();
     });
 

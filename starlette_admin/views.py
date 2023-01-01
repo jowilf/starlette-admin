@@ -623,7 +623,8 @@ class BaseModelView(BaseView):
                 action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
-            links.update(field.additional_css_links(request))
+            if _l := field.additional_css_links(request):
+                links.update(_l)
         return links
 
     def _additional_js_links(self, request: Request, action: RequestAction) -> Set[str]:
@@ -633,7 +634,8 @@ class BaseModelView(BaseView):
                 action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
-            links.update(field.additional_js_links(request))
+            if _l := field.additional_js_links(request):
+                links.update(_l)
         return links
 
     async def _configs(self, request: Request) -> Dict[str, Any]:

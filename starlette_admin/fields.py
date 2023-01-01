@@ -356,13 +356,13 @@ class EnumField(StringField):
 
     multiple: bool = False
     enum: Optional[Type[Enum]] = None
-    choices: Union[Sequence[str], Sequence[Tuple[str, str]], None] = None
+    choices: Union[Sequence[str], Sequence[Tuple[Any, str]], None] = None
     form_template: str = "forms/enum.html"
     class_: str = "field-enum form-control form-select"
     coerce: type = str
+    select2: bool = True
 
     def __post_init__(self) -> None:
-        print(self.choices, self.enum)
         if self.choices and not isinstance(self.choices[0], (list, tuple)):
             self.choices = list(zip(self.choices, self.choices))
         elif self.enum:
@@ -401,19 +401,22 @@ class EnumField(StringField):
         return labels if self.multiple else labels[0]
 
     def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/select2.min.css"
-            )
-        ]
+        if self.select2:
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/select2.min.css",
+                )
+            ]
 
     def additional_js_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics",
-                path="js/vendor/select2.min.js",
-            )
-        ]
+        if self.select2:
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/select2.min.js",
+                )
+            ]
 
     @classmethod
     def from_enum(
