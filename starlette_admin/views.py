@@ -469,7 +469,7 @@ class BaseModelView(BaseView):
             request: Starlette Request
         """
         if value is None:
-            return value
+            return await field.serialize_none_value(request, action)
         return await field.serialize_value(request, value, action)
 
     async def serialize(
@@ -510,7 +510,7 @@ class BaseModelView(BaseView):
                             for v in value
                         ]
             elif not isinstance(field, RelationField):
-                value = getattr(obj, field.name, None)
+                value = await field.parse_obj(request, obj)
                 obj_serialized[field.name] = await self.serialize_field_value(
                     value, field, action, request
                 )

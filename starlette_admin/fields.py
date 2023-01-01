@@ -72,11 +72,31 @@ class BaseField:
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
+        """
+        Extract value from submitted form data
+        """
         return form_data.get(self.id)
+
+    async def parse_obj(self, request: Request, obj: Any) -> Any:
+        """
+        Extract value from model instance
+        """
+        return getattr(obj, self.name, None)
+
+    async def serialize_none_value(
+        self, request: Request, action: RequestAction
+    ) -> Any:
+        """
+        Format None value for frontend
+        """
+        return None
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
+        """
+        Format value for frontend
+        """
         return value
 
     def additional_css_links(self, request: Request) -> List[str]:
