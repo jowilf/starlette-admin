@@ -141,6 +141,8 @@ class BooleanField(BaseField):
 class StringField(BaseField):
     """This field is used to represent any kind of short text content."""
 
+    maxlength: Optional[int] = None
+    minlength: Optional[int] = None
     search_builder_type: Optional[str] = "string"
     input_type: str = "text"
     class_: str = "field-string form-control"
@@ -150,6 +152,8 @@ class StringField(BaseField):
         return html_params(
             {
                 "type": self.input_type,
+                "minlength": self.minlength,
+                "maxlength": self.maxlength,
                 "placeholder": self.placeholder,
                 "required": self.required,
                 "disabled": self.disabled,
@@ -169,8 +173,6 @@ class TextAreaField(StringField):
     For short text contents, use [StringField][starlette_admin.fields.StringField]"""
 
     rows: int = 6
-    maxlength: Optional[int] = None
-    minlength: Optional[int] = None
     class_: str = "field-textarea form-control"
     form_template: str = "forms/textarea.html"
 

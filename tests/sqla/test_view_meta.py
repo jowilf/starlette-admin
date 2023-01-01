@@ -28,12 +28,13 @@ from starlette_admin import (
     DateTimeField,
     DecimalField,
     EnumField,
+    FloatField,
     HasMany,
     HasOne,
     IntegerField,
     JSONField,
+    ListField,
     StringField,
-    TagsField,
     TextAreaField,
     TimeField,
 )
@@ -56,7 +57,7 @@ class Status(str, enum.Enum):
 class User(Base):
     __tablename__ = "user"
 
-    name = Column(String(100), primary_key=True)
+    name = Column(String(100), primary_key=True, comment="user fullname")
     bio = Column(Text)
     document = relationship("Document", back_populates="user", uselist=False)
 
@@ -104,12 +105,15 @@ class UserView(ModelView):
     form_include_pk = True
 
 
-def test_fields_conversion():
+def test_user_fields_conversion():
     assert UserView(User).fields == [
-        StringField("name", required=True),
+        StringField("name", required=True, maxlength=100, help_text="user fullname"),
         TextAreaField("bio"),
         HasOne("document", identity="document", orderable=False, searchable=False),
     ]
+
+
+def test_attachment_fields_conversion():
     assert ModelView(Attachment).fields == [
         IntegerField(
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
@@ -120,27 +124,33 @@ def test_fields_conversion():
         FileField("files", multiple=True, orderable=False, searchable=False),
         HasOne("document", identity="document", orderable=False, searchable=False),
     ]
+
+
+def test_document_fields_conversion():
     assert ModelView(Document).fields == [
         IntegerField(
             "int", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
-        DecimalField("float"),
+        FloatField("float"),
         BooleanField("bool"),
         DateTimeField("datetime"),
         DateField("date"),
         TimeField("time"),
         EnumField("enum", enum=Status),
         JSONField("json_field"),
-        TagsField("tags"),
+        ListField(StringField("tags")),
         HasOne("user", identity="user", orderable=False, searchable=False),
         HasMany(
             "attachments", identity="attachment", orderable=False, searchable=False
         ),
     ]
+
+
+def test_other_fields_conversion():
     assert ModelView(Other).fields == [
         StringField("uuid", exclude_from_create=True, exclude_from_edit=True),
         BooleanField("bit"),
-        StringField("year"),
+        IntegerField("year", min=1901, max=2155),
         StringField("macaddr"),
         StringField("inet"),
     ]
@@ -244,5 +254,5 @@ def test_conversion_when_impl_not_callable() -> None:
         IntegerField(
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
-        StringField("name"),
+        StringField("name", maxlength=100),
     ]
