@@ -407,7 +407,7 @@ class EnumField(StringField):
 
     def __post_init__(self) -> None:
         if self.choices and not isinstance(self.choices[0], (list, tuple)):
-            self.choices = list(zip(self.choices, self.choices))
+            self.choices = list(zip(self.choices, self.choices))  # type: ignore
         elif self.enum:
             self.choices = [(e.value, e.name.replace("_", " ")) for e in self.enum]
             self.coerce = int if issubclass(self.enum, IntEnum) else str
@@ -429,7 +429,7 @@ class EnumField(StringField):
     def _get_label(self, value: Any) -> Any:
         if isinstance(value, Enum):
             return value.name
-        for v, label in self.choices:
+        for v, label in self.choices:  # type: ignore
             if value == v:
                 return label
         raise ValueError(f"Invalid choice value: {value}")
@@ -451,6 +451,7 @@ class EnumField(StringField):
                     path="css/select2.min.css",
                 )
             ]
+        return []
 
     def additional_js_links(self, request: Request) -> List[str]:
         if self.select2:
@@ -460,6 +461,7 @@ class EnumField(StringField):
                     path="js/vendor/select2.min.js",
                 )
             ]
+        return []
 
     @classmethod
     def from_enum(
