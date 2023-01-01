@@ -24,6 +24,8 @@ class BaseField:
         label: Field label
         help_text: Hint message to display in forms
         type: Field type, unique key used to define the field
+        disabled: Disabled in forms
+        read_only: Read only in forms
         id: Unique id, used to represent field instance
         search_builder_type: datatable columns.searchBuilderType, For more information
             [click here](https://datatables.net/reference/option/columns.searchBuilderType)
@@ -43,6 +45,8 @@ class BaseField:
     label: Optional[str] = None
     type: Optional[str] = None
     help_text: Optional[str] = None
+    disabled: Optional[bool] = False
+    read_only: Optional[bool] = False
     id: str = ""
     search_builder_type: Optional[str] = "default"
     required: Optional[bool] = False
@@ -84,6 +88,14 @@ class BaseField:
     def dict(self) -> Dict[str, Any]:
         return asdict(self)
 
+    def input_params(self) -> str:
+        return html_params(
+            {
+                "disabled": self.disabled,
+                "readonly": self.read_only,
+            }
+        )
+
 
 @dataclass
 class BooleanField(BaseField):
@@ -120,6 +132,8 @@ class StringField(BaseField):
                 "type": self.input_type,
                 "placeholder": self.placeholder,
                 "required": self.required,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
             }
         )
 
@@ -148,6 +162,8 @@ class TextAreaField(StringField):
                 "maxlength": self.maxlength,
                 "placeholder": self.placeholder,
                 "required": self.required,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
             }
         )
 
@@ -175,6 +191,8 @@ class NumberField(StringField):
                 "step": self.step,
                 "placeholder": self.placeholder,
                 "required": self.required,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
             }
         )
 
@@ -350,7 +368,12 @@ class EnumField(StringField):
             language: str
 
         class MyModelView(ModelView):
-            fields = [EnumField("language", choices=[('cpp', 'C++'), ('py', 'Python'), ('text', 'Plain Text')])]
+            fields = [
+                EnumField(
+                    "language",
+                    choices=[("cpp", "C++"), ("py", "Python"), ("text", "Plain Text")],
+                )
+            ]
         ```
     """
 
@@ -474,6 +497,8 @@ class DateTimeField(NumberField):
                 "data_locale": get_locale(),
                 "placeholder": self.placeholder,
                 "required": self.required,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
             }
         )
 
@@ -591,9 +616,16 @@ class JSONField(BaseField):
     This field render jsoneditor and represent a value that stores python dict object.
     Erroneous input is ignored and will not be accepted as a value."""
 
+    height: str = "20em"
+    modes: Optional[Sequence[str]] = None
     render_function_key: str = "json"
     form_template: str = "forms/json.html"
     display_template: str = "displays/json.html"
+
+    def __post_init__(self) -> None:
+        if self.modes is None:
+            self.modes = ["view"] if self.read_only else ["tree", "code"]
+        super().__post_init__()
 
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
@@ -630,6 +662,7 @@ class FileField(BaseField):
     When user ask for delete on editing page, the second part of the returned tuple is True.
     """
 
+    accept: Optional[str] = None
     multiple: bool = False
     render_function_key: str = "file"
     form_template: str = "forms/file.html"
@@ -656,6 +689,16 @@ class FileField(BaseField):
             ]
         )
 
+    def input_params(self) -> str:
+        return html_params(
+            {
+                "accept": self.accept,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
+                "multiple": self.multiple,
+            }
+        )
+
 
 @dataclass
 class ImageField(FileField):
@@ -663,6 +706,7 @@ class ImageField(FileField):
     FileField with `accept="image/*"`.
     """
 
+    accept: Optional[str] = "image/*"
     render_function_key: str = "image"
     form_template: str = "forms/image.html"
     display_template: str = "displays/image.html"

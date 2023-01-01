@@ -5,12 +5,12 @@
     });
 
     $("div.field-json", element).each(function () {
-      let name = $(this).attr("id");
+      let el = $(this)
+      let name = el.attr("id");
       new JSONEditor(
         this,
         {
-          mode: "tree",
-          modes: ["code", "tree"],
+          modes: String(el.data("modes")).split(","),
           onChangeText: function (json) {
             $(`input[name=${name}]`).val(json);
           },
