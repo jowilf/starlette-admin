@@ -1,17 +1,6 @@
 import inspect
 from abc import abstractmethod
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Type,
-    Union,
-)
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Type, Union
 
 from jinja2 import Template
 from starlette.requests import Request
@@ -616,26 +605,30 @@ class BaseModelView(BaseView):
 
     def _additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> Set[str]:
-        links = set()
+    ) -> Sequence[str]:
+        links = []
         for field in self.fields:
             if (action == RequestAction.CREATE and field.exclude_from_create) or (
                 action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
-            if _l := field.additional_css_links(request):
-                links.update(_l)
+            for link in field.additional_css_links(request) or []:
+                if link not in links:
+                    links.append(link)
         return links
 
-    def _additional_js_links(self, request: Request, action: RequestAction) -> Set[str]:
-        links = set()
+    def _additional_js_links(
+        self, request: Request, action: RequestAction
+    ) -> Sequence[str]:
+        links = []
         for field in self.fields:
             if (action == RequestAction.CREATE and field.exclude_from_create) or (
                 action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
-            if _l := field.additional_js_links(request):
-                links.update(_l)
+            for link in field.additional_js_links(request) or []:
+                if link not in links:
+                    links.append(link)
         return links
 
     async def _configs(self, request: Request) -> Dict[str, Any]:
