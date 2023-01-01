@@ -186,7 +186,7 @@ class TestMongoBasic:
                 "brand": "Infinix",
             },
         )
-        assert response.status_code == 200
+        assert response.status_code == 422
         assert (
             '<div class="invalid-feedback">String value is too short</div>'
             in response.text
@@ -230,7 +230,7 @@ class TestMongoBasic:
                 "brand": "Infinix",
             },
         )
-        assert response.status_code == 200
+        assert response.status_code == 422
         assert (
             '<div class="invalid-feedback">String value is too short</div>'
             in response.text

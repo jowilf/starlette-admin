@@ -266,10 +266,10 @@ class TestViews:
             "tags": ["tag1", "tag2"],
         }
         response = client.post("/admin/post/create", data=dummy_data)
-        assert response.status_code == 200
+        assert response.status_code == 422
         assert "Ensure Post title has at least 03 characters" in response.text
         response = client.post("/admin/post/edit/1", data=dummy_data)
-        assert response.status_code == 200
+        assert response.status_code == 422
         assert "Ensure Post title has at least 03 characters" in response.text
 
     def test_model_view_delete(self):

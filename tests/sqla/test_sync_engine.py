@@ -358,7 +358,7 @@ async def test_file_validation_error(client: AsyncClient, fake_invalid_image):
         },
         files={"image": ("image.png", fake_invalid_image, "image/png")},
     )
-    assert response.status_code == 200
+    assert response.status_code == 422
     assert (
         '<div class="invalid-feedback">Provide valid image file</div>' in response.text
     )
