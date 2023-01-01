@@ -156,7 +156,7 @@
   "thousands": " ",
   "starlette-admin": {
     "buttons": {
-      "export": "Exporter"
+      "export": "Export"
     },
     "conditions": {
       "false": "Faux",
