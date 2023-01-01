@@ -11,7 +11,14 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse, Response
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
-from starlette.status import HTTP_303_SEE_OTHER, HTTP_403_FORBIDDEN
+from starlette.status import (
+    HTTP_303_SEE_OTHER,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
 from starlette.templating import Jinja2Templates
 from starlette_admin._types import RequestAction
 from starlette_admin.auth import AuthMiddleware, AuthProvider
@@ -249,7 +256,7 @@ class BaseAdmin:
                 if model.identity == identity:
                     return model
         raise HTTPException(
-            404,
+            HTTP_404_NOT_FOUND,
             _("Model with identity %(identity)s not found") % {"identity": identity},
         )
 
@@ -258,7 +265,7 @@ class BaseAdmin:
     ) -> Callable[[Request], Awaitable[Response]]:
         async def wrapper(request: Request) -> Response:
             if not custom_view.is_accessible(request):
-                raise HTTPException(403)
+                raise HTTPException(HTTP_403_FORBIDDEN)
             return await custom_view.render(request, self.templates)
 
         return wrapper
@@ -319,9 +326,9 @@ class BaseAdmin:
                 raise ActionFailed("Forbidden")
             assert name is not None
             msg = await model.handle_action(request, pks, name)
-            return JSONResponse({"msg": msg}, status_code=200)
+            return JSONResponse({"msg": msg})
         except ActionFailed as exc:
-            return JSONResponse({"msg": exc.msg}, status_code=400)
+            return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
 
     async def _render_login(self, request: Request) -> Response:
         if request.method == "GET":
@@ -351,6 +358,7 @@ class BaseAdmin:
                         "request": request,
                         "form_errors": errors,
                     },
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                 )
             except LoginFailed as error:
                 return self.templates.TemplateResponse(
@@ -359,6 +367,7 @@ class BaseAdmin:
                         "request": request,
                         "error": error.msg,
                     },
+                    status_code=HTTP_400_BAD_REQUEST,
                 )
 
     async def _render_logout(self, request: Request) -> Response:
@@ -375,7 +384,7 @@ class BaseAdmin:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request):
-            raise HTTPException(403)
+            raise HTTPException(HTTP_403_FORBIDDEN)
         return self.templates.TemplateResponse(
             model.list_template,
             {
@@ -390,11 +399,11 @@ class BaseAdmin:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request) or not model.can_view_details(request):
-            raise HTTPException(403)
+            raise HTTPException(HTTP_403_FORBIDDEN)
         pk = request.path_params.get("pk")
         obj = await model.find_by_pk(request, pk)
         if obj is None:
-            raise HTTPException(404)
+            raise HTTPException(HTTP_404_NOT_FOUND)
         return self.templates.TemplateResponse(
             model.detail_template,
             {
@@ -409,7 +418,7 @@ class BaseAdmin:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request) or not model.can_create(request):
-            raise HTTPException(403)
+            raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
             return self.templates.TemplateResponse(
                 model.create_template,
@@ -431,6 +440,7 @@ class BaseAdmin:
                         "errors": exc.errors,
                         "obj": dict_obj,
                     },
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                 )
             pk = getattr(obj, model.pk_attr)  # type: ignore
             url = request.url_for(self.route_name + ":list", identity=model.identity)
@@ -446,11 +456,11 @@ class BaseAdmin:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request) or not model.can_edit(request):
-            raise HTTPException(403)
+            raise HTTPException(HTTP_403_FORBIDDEN)
         pk = request.path_params.get("pk")
         obj = await model.find_by_pk(request, pk)
         if obj is None:
-            raise HTTPException(404)
+            raise HTTPException(HTTP_404_NOT_FOUND)
         if request.method == "GET":
             return self.templates.TemplateResponse(
                 model.edit_template,
@@ -475,6 +485,7 @@ class BaseAdmin:
                         "errors": exc.errors,
                         "obj": dict_obj,
                     },
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                 )
             pk = getattr(obj, model.pk_attr)  # type: ignore
             url = request.url_for(self.route_name + ":list", identity=model.identity)
@@ -491,7 +502,7 @@ class BaseAdmin:
     async def _render_error(
         self,
         request: Request,
-        exc: Exception = HTTPException(status_code=500),
+        exc: Exception = HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR),
     ) -> Response:
         assert isinstance(exc, HTTPException)
         return self.templates.TemplateResponse(
