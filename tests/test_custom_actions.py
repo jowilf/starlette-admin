@@ -23,7 +23,7 @@ class Article(DummyBaseModel):
 
 class ArticleView(DummyModelView):
     model = Article
-    fields = [IntegerField("id"), EnumField.from_enum("status", Status)]
+    fields = [IntegerField("id"), EnumField("status", enum=Status)]
     actions = [
         "make_published",
         "delete",

@@ -206,7 +206,7 @@ def normalize_fields(  # noqa: C901
 
                 field = convert_to_field(column)
                 if field is EnumField:
-                    field = EnumField.from_enum(attr.key, column.type.enum_class)
+                    field = EnumField(attr.key, enum=column.type.enum_class)
                 else:
                     field = field(attr.key)
                     if isinstance(field, (FileField, ImageField)) and getattr(

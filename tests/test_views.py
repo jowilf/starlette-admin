@@ -295,12 +295,9 @@ class TestViews:
             fields = [
                 IntegerField("id"),
                 FloatField("score"),
-                EnumField.from_choices(
+                EnumField(
                     "gender",
-                    (
-                        "male",
-                        "female",
-                    ),
+                    choices=("male", "female"),
                 ),
                 JSONField("json_field"),
             ]

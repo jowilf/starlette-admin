@@ -103,7 +103,7 @@ def convert_odm_field_to_admin_field(  # noqa: C901
         types = inspect.getmro(annotation)
         for _type in types:
             if issubclass(_type, Enum):
-                admin_field = EnumField.from_enum(field_name, _type)
+                admin_field = EnumField(field_name, enum=_type)
                 break
             elif annotation_map.get(_type) is not None:
                 admin_field = annotation_map.get(_type)(field_name)  # type: ignore

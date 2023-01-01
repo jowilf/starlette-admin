@@ -1,11 +1,12 @@
 import decimal
 import json
+import warnings
 from dataclasses import asdict, dataclass
 from dataclasses import field as dc_field
 from datetime import date, datetime, time
 from enum import Enum, IntEnum
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
@@ -328,7 +329,7 @@ class PasswordField(StringField):
 class EnumField(StringField):
     """
     Enumeration Field.
-    It take a python `enum.Enum` class or a list of *(value, label)* pairs.
+    It takes a python `enum.Enum` class or a list of *(value, label)* pairs.
     It can also be a list of only values, in which case the value is used as the label.
     Example:
         ```Python
@@ -341,7 +342,7 @@ class EnumField(StringField):
             status: Optional[Status] = None
 
         class MyModelView(ModelView):
-            fields = [EnumField.from_enum("status", Status)]
+            fields = [EnumField("status", enum=Status)]
         ```
 
         ```Python
@@ -349,15 +350,27 @@ class EnumField(StringField):
             language: str
 
         class MyModelView(ModelView):
-            fields = [EnumField.from_choices("language", [('cpp', 'C++'), ('py', 'Python'), ('text', 'Plain Text')])]
+            fields = [EnumField("language", choices=[('cpp', 'C++'), ('py', 'Python'), ('text', 'Plain Text')])]
         ```
     """
 
     multiple: bool = False
-    choices: Iterable[Tuple[str, str]] = dc_field(default_factory=dict)
+    enum: Optional[Type[Enum]] = None
+    choices: Union[Sequence[str], Sequence[Tuple[str, str]], None] = None
     form_template: str = "forms/enum.html"
     class_: str = "field-enum form-control form-select"
     coerce: type = str
+
+    def __post_init__(self) -> None:
+        print(self.choices, self.enum)
+        if self.choices and not isinstance(self.choices[0], (list, tuple)):
+            self.choices = list(zip(self.choices, self.choices))
+        elif self.enum:
+            self.choices = [(e.value, e.name.replace("_", " ")) for e in self.enum]
+            self.coerce = int if issubclass(self.enum, IntEnum) else str
+        elif not self.choices:
+            raise ValueError("EnumField required a list of choices or an enum class")
+        super().__post_init__()
 
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
@@ -410,20 +423,24 @@ class EnumField(StringField):
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
-        choices = [(e.value, e.name.replace("_", " ")) for e in enum_type]
-        coerce = int if issubclass(enum_type, IntEnum) else str
-        return cls(name, choices=choices, multiple=multiple, coerce=coerce, **kwargs)  # type: ignore
+        warnings.warn(
+            'This method is deprecated. Use EnumField("name", enum=MyEnumClass) instead.',
+            DeprecationWarning,
+        )
+        return cls(name, enum=enum_type, multiple=multiple, **kwargs)  # type: ignore
 
     @classmethod
     def from_choices(
         cls,
         name: str,
-        choices: Union[List[Tuple[str, str]], List[str], Tuple],
+        choices: Union[Sequence[str], Sequence[Tuple[str, str]], None],
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
-        if len(choices) > 0 and not isinstance(choices[0], (list, tuple)):
-            choices = list(zip(choices, choices))
+        warnings.warn(
+            'This method is deprecated. Use EnumField("name", choices=my_choices) instead.',
+            DeprecationWarning,
+        )
         return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
 
 

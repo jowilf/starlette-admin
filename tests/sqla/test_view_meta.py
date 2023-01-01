@@ -129,7 +129,7 @@ def test_fields_conversion():
         DateTimeField("datetime"),
         DateField("date"),
         TimeField("time"),
-        EnumField.from_enum("enum", Status),
+        EnumField("enum", enum=Status),
         JSONField("json_field"),
         TagsField("tags"),
         HasOne("user", identity="user", orderable=False, searchable=False),
