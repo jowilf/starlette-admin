@@ -1,7 +1,5 @@
-import inspect
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
-import sqlalchemy_file
 from sqlalchemy import Column, String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
     ColumnProperty,
@@ -10,9 +8,7 @@ from sqlalchemy.orm import (
     RelationshipProperty,
 )
 from sqlalchemy.sql import ClauseElement
-from starlette_admin import ImageField
-from starlette_admin.contrib.sqla.converters import converters
-from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
+from starlette_admin.contrib.sqla.converters import find_converter
 from starlette_admin.fields import BaseField, HasMany, HasOne
 from starlette_admin.helpers import slugify_class_name
 
@@ -78,35 +74,6 @@ def build_order_clauses(order_list: List[str], model: Any) -> Any:
     return clauses
 
 
-def find_converter(column: Column) -> Callable[[str, Column], BaseField]:
-    types = inspect.getmro(type(column.type))
-    # Search by module + name
-    for col_type in types:
-        print(col_type)
-        type_string = f"{col_type.__module__}.{col_type.__name__}"
-        if type_string in converters:
-            return converters[type_string]
-
-    # Search by name
-    for col_type in types:
-        print(col_type.__name__)
-        if col_type.__name__ in converters:
-            return converters[col_type.__name__]
-
-        # Support for custom types like SQLModel which inherit TypeDecorator
-        if hasattr(col_type, "impl"):
-            if callable(col_type.impl):
-                impl = col_type.impl
-            else:
-                impl = col_type.impl.__class__
-
-            if impl.__name__ in converters:
-                return converters[impl.__name__]
-    raise NotSupportedColumn(  # pragma: no cover
-        f"Column {column.type} can not be converted automatically. Find the appropriate field manually"
-    )
-
-
 def normalize_fields(  # noqa: C901
     fields: Sequence[Any], mapper: Mapper
 ) -> List[BaseField]:
@@ -166,12 +133,3 @@ def extract_column_python_type(column: Column) -> type:
         return column.type.python_type
     except NotImplementedError:
         return str
-
-
-if __name__ == "__main__":
-    print(
-        find_converter(Column("n", sqlalchemy_file.ImageField))(
-            "n", Column("n", sqlalchemy_file.ImageField)
-        )
-    )
-    print(ImageField("n"))

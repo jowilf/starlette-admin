@@ -1,6 +1,7 @@
 import enum
 from datetime import datetime
 
+import sqlalchemy_utils as su
 from sqlalchemy import (
     Column,
     Date,
@@ -14,6 +15,7 @@ from sqlalchemy import (
     Unicode,
 )
 from sqlalchemy.orm import declarative_base, relationship
+from starlette_admin.contrib.sqla import ModelView
 
 Base = declarative_base()
 
@@ -76,3 +78,20 @@ class Tree(Base):
     # recursive relationship
     parent_id = Column(Integer, ForeignKey("tree.id"))
     parent = relationship("Tree", remote_side=[id], backref="childrens")
+
+
+class Model(Base):
+    __tablename__ = "model"
+    TYPES = [("admin", "Admin"), ("regular-user", "Regular user")]
+    id = Column(Integer, primary_key=True)
+    typ = Column(su.ChoiceType(TYPES))
+    balance = Column(
+        su.CompositeType(
+            "money_type",
+            [Column("currency", su.CurrencyType), Column("amount", Integer)],
+        )
+    )
+
+
+if __name__ == "__main__":
+    print(ModelView(Model).fields[2])

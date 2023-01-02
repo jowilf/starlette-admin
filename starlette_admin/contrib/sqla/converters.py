@@ -1,9 +1,10 @@
 # Inspired by wtforms-sqlalchemy
-
+import enum
+import inspect
 from typing import Any, Callable, Dict
 
 from sqlalchemy import ARRAY, Boolean, Column, Float
-from starlette_admin import JSONField, ListField
+from starlette_admin import CollectionField, JSONField, ListField
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
 from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.fields import (
@@ -30,6 +31,35 @@ def converts(*args: str):
         return func
 
     return wrap
+
+
+def find_converter(column: Column) -> Callable[[str, Column], BaseField]:
+    types = inspect.getmro(type(column.type))
+    # Search by module + name
+    for col_type in types:
+        print(col_type)
+        type_string = f"{col_type.__module__}.{col_type.__name__}"
+        if type_string in converters:
+            return converters[type_string]
+
+    # Search by name
+    for col_type in types:
+        print(col_type.__name__)
+        if col_type.__name__ in converters:
+            return converters[col_type.__name__]
+
+        # Support for custom types like SQLModel which inherit TypeDecorator
+        if hasattr(col_type, "impl"):
+            if callable(col_type.impl):
+                impl = col_type.impl
+            else:
+                impl = col_type.impl.__class__
+
+            if impl.__name__ in converters:
+                return converters[impl.__name__]
+    raise NotSupportedColumn(  # pragma: no cover
+        f"Column {column.type} can not be converted automatically. Find the appropriate field manually"
+    )
 
 
 def field_common(column: Column) -> Dict[str, Any]:
@@ -127,7 +157,8 @@ def conv_array(name: str, column: Column):
     if isinstance(column.type, ARRAY) and (
         column.type.dimensions is None or column.type.dimensions == 1
     ):
-        return ListField(StringField(name, **field_common(column)))
+        column = Column(name, column.type.item_type)
+        return ListField(find_converter(column)(name, column))
     raise NotSupportedColumn("Column ARRAY with dimensions != 1 is not supported")
 
 
@@ -148,3 +179,30 @@ def conv_sqla_filefield(name: str, column: Column):
 @converts("sqlalchemy_file.types.ImageField")
 def conv_sqla_imagefield(name: str, column: Column):
     return ImageField(name, **field_common(column), **_file_common(column))
+
+
+try:
+    # Converters for sqlalchemy_utils types
+
+    from sqlalchemy_utils import ChoiceType, CompositeType
+
+    @converts("sqlalchemy_utils.types.choice.ChoiceType")
+    def conv_choice(name: str, column: Column):
+        assert isinstance(column.type, ChoiceType)
+        choices = column.type.choices
+        if isinstance(choices, type) and issubclass(choices, enum.Enum):
+            return EnumField(name, enum=choices, **field_common(column))
+        return EnumField(name, choices=choices, **field_common(column))
+
+    @converts("sqlalchemy_utils.types.pg_composite.CompositeType")
+    def conv_composite_type(name: str, column: Column):
+        assert isinstance(column.type, CompositeType)
+        fields = []
+        for col in column.type.columns:
+            fields.append(find_converter(col)(col.name, col))
+        return CollectionField(
+            name, fields=fields, required=field_common(col)["required"]
+        )
+
+except ImportError:
+    pass

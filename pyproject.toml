@@ -55,6 +55,7 @@ dependencies = [
     "ruff ==0.0.149",
     "black ==22.10.0",
     "SQLAlchemy[asyncio] >=1.4, <1.5",
+    "SQLAlchemy-Utils >=0.39.0",
     "sqlalchemy-file >=0.1.5",
     "fasteners >=0.18",
     "PyMySQL[rsa] >=1.0.2",

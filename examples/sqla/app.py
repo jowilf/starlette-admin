@@ -7,10 +7,10 @@ from starlette_admin.contrib.sqla import Admin, ModelView
 from starlette_admin.views import Link
 
 from .config import ENGINE_URI
-from .models import Base, Post, Tag, Tree, User
+from .models import Base, Model, Post, Tag, Tree, User
 from .views import PostView, TagView, UserView
 
-engine = create_engine(ENGINE_URI, connect_args={"check_same_thread": False}, echo=True)
+engine = create_engine(ENGINE_URI, echo=True)
 
 
 def init_database() -> None:
@@ -35,6 +35,13 @@ admin.add_view(UserView(User, icon="fa fa-users"))
 admin.add_view(PostView(Post, icon="fa fa-blog", label="Blog Posts"))
 admin.add_view(TagView(Tag, icon="fa fa-tag"))
 admin.add_view(ModelView(Tree, icon="fa fa-tree"))
+
+
+class CView(ModelView):
+    searchable_fields = ["balance"]
+
+
+admin.add_view(CView(Model, icon="fa fa-tree"))
 # DropDown
 admin.add_view(
     DropDown(

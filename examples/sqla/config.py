@@ -1,2 +1,2 @@
 DATABASE_FILE = "sample_db.sqlite"
-ENGINE_URI = "sqlite:///" + DATABASE_FILE
+ENGINE_URI = "postgresql+psycopg2://adminer:adminer@localhost:5432/test_db"
