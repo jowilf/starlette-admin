@@ -1,11 +1,20 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
+from starlette.datastructures import FormData
 from starlette.requests import Request
+from starlette_admin import DateTimeField
 from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.exceptions import NotSupportedValue
 from starlette_admin.fields import FileField as BaseFileField
 from starlette_admin.fields import ImageField as BaseImageField
+from starlette_admin.i18n import get_locale
+
+arrow = None
+try:
+    import arrow
+except ImportError:
+    pass
 
 
 @dataclass
@@ -44,6 +53,34 @@ class ImageField(BaseImageField):
             NotSupportedValue,
         ):  # pragma: no cover
             return super().serialize_value(request, value, action)
+
+
+@dataclass
+class ArrowField(DateTimeField):
+    """
+    This field is used to represent sqlalchemy_utils.types.arrow.ArrowType
+    """
+
+    def __post_init__(self) -> None:
+        if not arrow:
+            raise ImportError("'arrow' package is required to use 'ArrowField'")
+        super().__post_init__()
+
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
+        try:
+            return arrow.get(form_data.get(self.id))  # type: ignore
+        except (TypeError, arrow.parser.ParserError):
+            return None
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> str:
+        assert isinstance(value, arrow.Arrow), f"Expected Arrow, got  {type(value)}"
+        if action != RequestAction.EDIT:
+            return value.humanize(locale=get_locale())
+        return value.isoformat()
 
 
 def _serialize_sqlalchemy_file_library(

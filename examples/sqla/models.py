@@ -84,14 +84,8 @@ class Model(Base):
     __tablename__ = "model"
     TYPES = [("admin", "Admin"), ("regular-user", "Regular user")]
     id = Column(Integer, primary_key=True)
-    typ = Column(su.ChoiceType(TYPES))
-    balance = Column(
-        su.CompositeType(
-            "money_type",
-            [Column("currency", su.CurrencyType), Column("amount", Integer)],
-        )
-    )
+    phone_number = Column(su.URLType())
 
 
 if __name__ == "__main__":
-    print(ModelView(Model).fields[2])
+    print(ModelView(Model).fields[1])

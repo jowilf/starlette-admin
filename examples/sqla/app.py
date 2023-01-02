@@ -38,7 +38,8 @@ admin.add_view(ModelView(Tree, icon="fa fa-tree"))
 
 
 class CView(ModelView):
-    searchable_fields = ["balance"]
+    # searchable_fields = ["balance"]
+    pass
 
 
 admin.add_view(CView(Model, icon="fa fa-tree"))
