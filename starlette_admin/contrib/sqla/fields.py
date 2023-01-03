@@ -3,18 +3,18 @@ from typing import Any, Dict, List, Optional, Union
 
 from starlette.datastructures import FormData
 from starlette.requests import Request
-from starlette_admin import DateTimeField
 from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.exceptions import NotSupportedValue
+from starlette_admin.fields import DateTimeField
 from starlette_admin.fields import FileField as BaseFileField
 from starlette_admin.fields import ImageField as BaseImageField
 from starlette_admin.i18n import get_locale
 
-arrow = None
+
 try:
     import arrow
 except ImportError:
-    pass
+    arrow = None  # type: ignore
 
 
 @dataclass

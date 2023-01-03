@@ -4,38 +4,40 @@ import inspect
 from typing import Any, Callable, Dict
 
 from sqlalchemy import ARRAY, Boolean, Column, Float
-from starlette_admin import (
-    CollectionField,
-    ColorField,
-    EmailField,
-    JSONField,
-    ListField,
-    PasswordField,
-    PhoneField,
-    URLField,
-)
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
 from starlette_admin.contrib.sqla.fields import ArrowField, FileField, ImageField
 from starlette_admin.fields import (
     BaseField,
     BooleanField,
+    CollectionField,
+    ColorField,
     DateField,
     DateTimeField,
     DecimalField,
+    EmailField,
     EnumField,
     FloatField,
     IntegerField,
+    JSONField,
+    ListField,
+    PasswordField,
+    PhoneField,
     StringField,
     TextAreaField,
     TimeField,
+    URLField,
 )
 from starlette_admin.utils import timezones
 
 converters: Dict[str, Callable[[str, Column], BaseField]] = {}
 
 
-def converts(*args: str):
-    def wrap(func: Callable[[str, Column], BaseField]):
+def converts(
+    *args: str,
+) -> Callable[[Callable[[str, Column], BaseField]], Callable[[str, Column], BaseField]]:
+    def wrap(
+        func: Callable[[str, Column], BaseField]
+    ) -> Callable[[str, Column], BaseField]:
         for arg in args:
             converters[arg] = func
         return func
@@ -141,10 +143,10 @@ def conv_enum(name: str, column: Column) -> BaseField:
 @converts("Integer")  # includes BigInteger and SmallInteger
 def conv_integer(name: str, column: Column) -> BaseField:
     unsigned = getattr(column.type, "unsigned", False)
-    extra = {}
+    extra = field_common(column)
     if unsigned:
         extra["min"] = 0
-    return IntegerField(name, **field_common(column), **extra)
+    return IntegerField(name, **extra)
 
 
 @converts("Numeric")  # includes DECIMAL, Float/FLOAT, REAL, and DOUBLE
@@ -219,7 +221,7 @@ def conv_scalar_list(name: str, column: Column) -> BaseField:
 
 
 @converts("sqlalchemy_utils.types.url.URLType")
-def conv_scalar_list(name: str, column: Column) -> BaseField:
+def conv_url(name: str, column: Column) -> BaseField:
     return URLField(name, **field_common(column))
 
 
@@ -243,7 +245,7 @@ try:
         choices = column.type.choices
         if isinstance(choices, type) and issubclass(choices, enum.Enum):
             return EnumField(name, enum=choices, **field_common(column))
-        return EnumField(name, choices=choices, **field_common(column))
+        return EnumField(name, choices=choices, **field_common(column))  # type: ignore
 
     @converts("sqlalchemy_utils.types.pg_composite.CompositeType")
     def conv_composite_type(name: str, column: Column) -> BaseField:
