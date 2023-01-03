@@ -84,7 +84,7 @@ class Model(Base):
     __tablename__ = "model"
     TYPES = [("admin", "Admin"), ("regular-user", "Regular user")]
     id = Column(Integer, primary_key=True)
-    phone_number = Column(su.URLType())
+    timezone = Column(su.TimezoneType(backend="zoneinfo"))
 
 
 if __name__ == "__main__":

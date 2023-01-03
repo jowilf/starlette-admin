@@ -29,6 +29,7 @@ from starlette_admin.fields import (
     TextAreaField,
     TimeField,
 )
+from starlette_admin.utils.timezones import common_timezones
 
 converters: Dict[str, Callable[[str, Column], BaseField]] = {}
 
@@ -220,6 +221,17 @@ def conv_scalar_list(name: str, column: Column) -> BaseField:
 @converts("sqlalchemy_utils.types.url.URLType")
 def conv_scalar_list(name: str, column: Column) -> BaseField:
     return URLField(name, **field_common(column))
+
+
+@converts("sqlalchemy_utils.types.timezone.TimezoneType")
+def conv_timezone(name: str, column: Column) -> BaseField:
+    coerce = column.type._coerce
+    return EnumField(
+        name,
+        choices=[(coerce(x), x.replace("_", " ")) for x in common_timezones],
+        coerce=coerce,
+        **field_common(column),
+    )
 
 
 try:
