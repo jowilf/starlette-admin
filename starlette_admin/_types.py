@@ -8,7 +8,7 @@ class RequestAction(str, Enum):
     CREATE = "CREATE"
     EDIT = "EDIT"
 
-    def isform(self) -> bool:
+    def is_form(self) -> bool:
         return self.value in [self.CREATE, self.EDIT]
 
 

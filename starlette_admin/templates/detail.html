@@ -93,9 +93,16 @@
     </div>
 </div>
 {% endblock %}
+{% block head_css %}
+{%for link in model._additional_css_links(request, "DETAIL" | ra)%}
+<link rel="stylesheet" href="{{ link }}">
+{%endfor%}
+{% endblock %}
 {% block script %}
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
-
+{%for link in model._additional_js_links(request, "DETAIL" | ra)%}
+<script type="text/javascript" src="{{ link}}"></script>
+{%endfor%}
 <script>
   $(function () {
     $("#modal-delete-btn").click(function () {

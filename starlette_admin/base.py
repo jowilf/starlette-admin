@@ -228,6 +228,7 @@ class BaseAdmin:
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
+        templates.env.filters["ra"] = lambda a: RequestAction(a)
         # install i18n
         templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
         self.templates = templates

@@ -309,7 +309,7 @@ class TagsField(BaseField):
     def additional_css_links(
         self, request: Request, action: RequestAction
     ) -> List[str]:
-        if action.isform():
+        if action.is_form():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -319,7 +319,7 @@ class TagsField(BaseField):
         return []
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
-        if action.isform():
+        if action.is_form():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -457,7 +457,7 @@ class EnumField(StringField):
     def additional_css_links(
         self, request: Request, action: RequestAction
     ) -> List[str]:
-        if self.select2 and action.isform():
+        if self.select2 and action.is_form():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -467,7 +467,7 @@ class EnumField(StringField):
         return []
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
-        if self.select2 and action.isform():
+        if self.select2 and action.is_form():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -558,7 +558,7 @@ class DateTimeField(NumberField):
     def additional_css_links(
         self, request: Request, action: RequestAction
     ) -> List[str]:
-        if action.isform():
+        if action.is_form():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -581,7 +581,7 @@ class DateTimeField(NumberField):
                     path=f"i18n/flatpickr/{get_locale()}.js",
                 )
             )
-        if action.isform():
+        if action.is_form():
             return _links
         return []
 
@@ -681,7 +681,7 @@ class JSONField(BaseField):
     def additional_css_links(
         self, request: Request, action: RequestAction
     ) -> List[str]:
-        if action.isform():
+        if action.is_form():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -691,7 +691,7 @@ class JSONField(BaseField):
         return []
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
-        if action.isform():
+        if action.is_form():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -779,7 +779,7 @@ class RelationField(BaseField):
     def additional_css_links(
         self, request: Request, action: RequestAction
     ) -> List[str]:
-        if action.isform():
+        if action.is_form():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -789,7 +789,7 @@ class RelationField(BaseField):
         return []
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
-        if action.isform():
+        if action.is_form():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",

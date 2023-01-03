@@ -128,6 +128,9 @@ block content %}
   rel="stylesheet"
   href="{{ url_for(__name__ ~ ':statics', path='css/dt.checkboxes.css') }}"
 />
+{%for link in model._additional_css_links(request, "LIST" | ra)%}
+<link rel="stylesheet" href="{{ link }}">
+{%endfor%}
 <style>
   div.dataTables_wrapper div.dataTables_info {
     padding-top: 0;
@@ -197,6 +200,9 @@ block content %}
 {% if custom_render_js(request) %}
 <script type="text/javascript" src="{{ custom_render_js(request) }}"></script>
 {% endif %}
+{%for link in model._additional_js_links(request, "LIST" | ra)%}
+<script type="text/javascript" src="{{ link}}"></script>
+{%endfor%}
 <script
   type="text/javascript"
   src="{{ url_for(__name__ ~ ':statics', path='js/list.js') }}"

@@ -57,7 +57,7 @@
 </div>
 {% endblock%}
 {%block head_css%}
-{%for link in model._additional_css_links(request, "CREATE")%}
+{%for link in model._additional_css_links(request, "CREATE" | ra)%}
 <link rel="stylesheet" href="{{ link }}">
 {%endfor%}
 <style>
@@ -67,7 +67,7 @@
 </style>
 {%endblock%}
 {%block script%}
-{%for link in model._additional_js_links(request, "CREATE")%}
+{%for link in model._additional_js_links(request, "CREATE" | ra)%}
 <script type="text/javascript" src="{{ link}}"></script>
 {%endfor%}
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/form.js') }}"></script>

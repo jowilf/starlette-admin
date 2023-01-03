@@ -608,8 +608,11 @@ class BaseModelView(BaseView):
     ) -> Sequence[str]:
         links = []
         for field in self.fields:
-            if (action == RequestAction.CREATE and field.exclude_from_create) or (
-                action == RequestAction.EDIT and field.exclude_from_edit
+            if (
+                (action == RequestAction.LIST and field.exclude_from_list)
+                or (action == RequestAction.DETAIL and field.exclude_from_detail)
+                or (action == RequestAction.CREATE and field.exclude_from_create)
+                or (action == RequestAction.EDIT and field.exclude_from_edit)
             ):
                 continue
             for link in field.additional_css_links(request, action) or []:
