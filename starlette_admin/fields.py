@@ -6,13 +6,19 @@ from dataclasses import field as dc_field
 from datetime import date, datetime, time
 from enum import Enum, IntEnum
 from json import JSONDecodeError
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
 from starlette_admin.helpers import extract_fields, html_params, is_empty_file
-from starlette_admin.i18n import format_date, format_datetime, format_time, get_locale
+from starlette_admin.i18n import (
+    format_date,
+    format_datetime,
+    format_time,
+    get_countries_list,
+    get_locale,
+)
 
 
 @dataclass
@@ -411,6 +417,9 @@ class EnumField(StringField):
     multiple: bool = False
     enum: Optional[Type[Enum]] = None
     choices: Union[Sequence[str], Sequence[Tuple[Any, str]], None] = None
+    choices_loader: Optional[
+        Callable[[Request], Union[Sequence[str], Sequence[Tuple[Any, str]]]]
+    ] = None
     form_template: str = "forms/enum.html"
     class_: str = "field-enum form-control form-select"
     coerce: type = str
@@ -422,8 +431,10 @@ class EnumField(StringField):
         elif self.enum:
             self.choices = [(e.value, e.name.replace("_", " ")) for e in self.enum]
             self.coerce = int if issubclass(self.enum, IntEnum) else str
-        elif not self.choices:
-            raise ValueError("EnumField required a list of choices or an enum class")
+        elif not self.choices and self.choices_loader is None:
+            raise ValueError(
+                "EnumField required a list of choices, enum class or a choices_loader for dynamic choices"
+            )
         super().__post_init__()
 
     async def parse_form_data(
@@ -437,10 +448,17 @@ class EnumField(StringField):
             )
         )
 
-    def _get_label(self, value: Any) -> Any:
+    def _get_choices(self, request: Request) -> Any:
+        return (
+            self.choices
+            if self.choices_loader is None
+            else self.choices_loader(request)
+        )
+
+    def _get_label(self, value: Any, request: Request) -> Any:
         if isinstance(value, Enum):
             return value.name
-        for v, label in self.choices:  # type: ignore
+        for v, label in self._get_choices(request):
             if value == v:
                 return label
         raise ValueError(f"Invalid choice value: {value}")
@@ -449,7 +467,7 @@ class EnumField(StringField):
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
         labels = [
-            (self._get_label(v) if action != RequestAction.EDIT else v)
+            (self._get_label(v, request) if action != RequestAction.EDIT else v)
             for v in (value if self.multiple else [value])
         ]
         return labels if self.multiple else labels[0]
@@ -503,6 +521,35 @@ class EnumField(StringField):
             DeprecationWarning,
         )
         return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
+
+
+@dataclass
+class TimeZoneField(EnumField):
+    """This field is used to represent the name of a timezone (eg. Africa/Porto-Novo)"""
+
+    def __post_init__(self) -> None:
+        if self.choices is None:
+            from starlette_admin.utils.timezones import common_timezones
+
+            self.choices = [
+                (self.coerce(x), x.replace("_", " ")) for x in common_timezones
+            ]
+        super().__post_init__()
+
+
+@dataclass
+class CountryField(EnumField):
+    """This field is used to represent the name that corresponds to the country code stored in your database"""
+
+    def __post_init__(self) -> None:
+        try:
+            import babel  # noqa
+        except ImportError as err:
+            raise ImportError(
+                "'babel' package is required to use 'CountryField'. Install it with `pip install starlette-admin[i18n]`"
+            ) from err
+        self.choices_loader = lambda r: get_countries_list()
+        super().__post_init__()
 
 
 @dataclass

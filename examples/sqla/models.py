@@ -17,6 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import declarative_base, relationship
 from starlette_admin.contrib.sqla import ModelView
 
+
 Base = declarative_base()
 
 
@@ -84,7 +85,7 @@ class Model(Base):
     __tablename__ = "model"
     TYPES = [("admin", "Admin"), ("regular-user", "Regular user")]
     id = Column(Integer, primary_key=True)
-    timezone = Column(su.TimezoneType(backend="zoneinfo"))
+    timezone = Column(su.CountryType)
 
 
 if __name__ == "__main__":

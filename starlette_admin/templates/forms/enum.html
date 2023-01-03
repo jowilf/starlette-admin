@@ -6,7 +6,7 @@
         {%if not field.multiple and not field.required %}
         <option></option>
         {%endif%}
-        {%for value, label in field.choices%}
+        {%for value, label in field._get_choices(request) %}
         <option value="{{value}}" {{'selected' if (data and (value in (data if field.multiple else [data]))) else ''}}>{{label}}</option>
         {%endfor%}
     </select>

@@ -11,6 +11,7 @@ from starlette_admin.fields import (
     BooleanField,
     CollectionField,
     ColorField,
+    CountryField,
     DateField,
     DateTimeField,
     DecimalField,
@@ -25,9 +26,9 @@ from starlette_admin.fields import (
     StringField,
     TextAreaField,
     TimeField,
+    TimeZoneField,
     URLField,
 )
-from starlette_admin.utils import timezones
 
 converters: Dict[str, Callable[[str, Column], BaseField]] = {}
 
@@ -227,11 +228,17 @@ def conv_url(name: str, column: Column) -> BaseField:
 
 @converts("sqlalchemy_utils.types.timezone.TimezoneType")
 def conv_timezone(name: str, column: Column) -> BaseField:
-    coerce = column.type._coerce
-    return EnumField(
+    return TimeZoneField(
         name,
-        choices=[(coerce(x), x.replace("_", " ")) for x in timezones.common_timezones],
-        coerce=coerce,
+        coerce=column.type._coerce,
+        **field_common(column),
+    )
+
+
+@converts("sqlalchemy_utils.types.country.CountryType")
+def conv_country(name: str, column: Column) -> BaseField:
+    return CountryField(
+        name,
         **field_common(column),
     )
 
@@ -254,7 +261,7 @@ try:
         for col in column.type.columns:
             fields.append(find_converter(col)(col.name, col))
         return CollectionField(
-            name, fields=fields, required=field_common(col)["required"]
+            name, fields=fields, required=field_common(column)["required"]
         )
 
 except ImportError:

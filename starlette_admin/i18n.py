@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 from contextvars import ContextVar
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from starlette.types import ASGIApp, Receive, Scope, Send
 
@@ -9,7 +9,7 @@ DEFAULT_LOCALE = "en"
 SUPPORTED_LOCALES = ["en", "fr"]
 
 try:
-    from babel import dates
+    from babel import Locale, dates
     from babel.support import LazyProxy, Translations
 
     translations: Dict[str, Translations] = {
@@ -64,6 +64,12 @@ try:
     ) -> str:
         return dates.format_time(time, format or "medium", tzinfo, get_locale())
 
+    def get_countries_list() -> List[Tuple[str, str]]:
+        from starlette_admin.utils.countries import countries_codes
+
+        locale = Locale.parse(get_locale())
+        return [(x, locale.territories[x]) for x in countries_codes]
+
 except ImportError:
     # Provide i18n support even if babel is not installed
 
@@ -99,6 +105,9 @@ except ImportError:
         time: datetime.time, format: Optional[str] = None, tzinfo: Any = None
     ) -> str:
         return time.strftime(format or "%H:%M:%S")
+
+    def get_countries_list() -> List[Tuple[str, str]]:
+        raise NotImplementedError() from None
 
 
 class LocaleMiddleware:
