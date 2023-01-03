@@ -99,10 +99,12 @@ class BaseField:
         """
         return value
 
-    def additional_css_links(self, request: Request) -> List[str]:
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
         return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         return []
 
     def dict(self) -> Dict[str, Any]:
@@ -304,20 +306,27 @@ class TagsField(BaseField):
     ) -> List[str]:
         return form_data.getlist(self.id)  # type: ignore
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/select2.min.css"
-            )
-        ]
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if action.isform():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/select2.min.css",
+                )
+            ]
+        return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics",
-                path="js/vendor/select2.min.js",
-            )
-        ]
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.isform():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/select2.min.js",
+                )
+            ]
+        return []
 
 
 @dataclass
@@ -445,8 +454,10 @@ class EnumField(StringField):
         ]
         return labels if self.multiple else labels[0]
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        if self.select2:
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if self.select2 and action.isform():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -455,8 +466,8 @@ class EnumField(StringField):
             ]
         return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        if self.select2:
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if self.select2 and action.isform():
             return [
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
@@ -544,14 +555,19 @@ class DateTimeField(NumberField):
             return format_datetime(value, self.output_format)
         return value.isoformat()
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/flatpickr.min.css"
-            )
-        ]
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if action.isform():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/flatpickr.min.css",
+                )
+            ]
+        return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         _links = [
             request.url_for(
                 f"{request.app.state.ROUTE_NAME}:statics",
@@ -565,7 +581,9 @@ class DateTimeField(NumberField):
                     path=f"i18n/flatpickr/{get_locale()}.js",
                 )
             )
-        return _links
+        if action.isform():
+            return _links
+        return []
 
 
 @dataclass
@@ -660,20 +678,27 @@ class JSONField(BaseField):
         except JSONDecodeError:
             return None
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/jsoneditor.min.css"
-            )
-        ]
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if action.isform():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/jsoneditor.min.css",
+                )
+            ]
+        return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics",
-                path="js/vendor/jsoneditor.min.js",
-            )
-        ]
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.isform():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/jsoneditor.min.js",
+                )
+            ]
+        return []
 
 
 @dataclass
@@ -751,20 +776,27 @@ class RelationField(BaseField):
             return form_data.getlist(self.id)
         return form_data.get(self.id)
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/select2.min.css"
-            )
-        ]
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if action.isform():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/select2.min.css",
+                )
+            ]
+        return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics",
-                path="js/vendor/select2.min.js",
-            )
-        ]
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.isform():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/select2.min.js",
+                )
+            ]
+        return []
 
 
 @dataclass
@@ -850,16 +882,18 @@ class CollectionField(BaseField):
                     )
         return serialized_value
 
-    def additional_css_links(self, request: Request) -> List[str]:
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
         _links = []
         for f in self.fields:
-            _links.extend(f.additional_css_links(request))
+            _links.extend(f.additional_css_links(request, action))
         return _links
 
-    def additional_js_links(self, request: Request) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         _links = []
         for f in self.fields:
-            _links.extend(f.additional_js_links(request))
+            _links.extend(f.additional_js_links(request, action))
         return _links
 
 
@@ -947,8 +981,10 @@ class ListField(BaseField):
             self.field._propagate_id()
         return self.field
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return self.field.additional_css_links(request)
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        return self.field.additional_css_links(request, action)
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return self.field.additional_js_links(request)
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        return self.field.additional_js_links(request, action)

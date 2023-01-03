@@ -8,6 +8,9 @@ class RequestAction(str, Enum):
     CREATE = "CREATE"
     EDIT = "EDIT"
 
+    def isform(self) -> bool:
+        return self.value in [self.CREATE, self.EDIT]
+
 
 class ExportType(str, Enum):
     CSV = "csv"

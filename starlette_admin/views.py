@@ -612,7 +612,7 @@ class BaseModelView(BaseView):
                 action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
-            for link in field.additional_css_links(request) or []:
+            for link in field.additional_css_links(request, action) or []:
                 if link not in links:
                     links.append(link)
         return links
@@ -626,7 +626,7 @@ class BaseModelView(BaseView):
                 action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
-            for link in field.additional_js_links(request) or []:
+            for link in field.additional_js_links(request, action) or []:
                 if link not in links:
                     links.append(link)
         return links
