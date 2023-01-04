@@ -2,8 +2,9 @@ from sqlalchemy import create_engine
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
-from starlette_admin import DropDown
+from starlette_admin import DropDown, I18nConfig
 from starlette_admin.contrib.sqla import Admin, ModelView
+from starlette_admin.i18n import SUPPORTED_LOCALES
 from starlette_admin.views import Link
 
 from .config import ENGINE_URI
@@ -28,7 +29,11 @@ app = Starlette(
 )
 
 # Create admin
-admin = Admin(engine, title="Example: SQLAlchemy")
+admin = Admin(
+    engine,
+    title="Example: SQLAlchemy",
+    i18n_config=I18nConfig(language_switcher=SUPPORTED_LOCALES),
+)
 
 # Add views
 admin.add_view(UserView(User, icon="fa fa-users"))

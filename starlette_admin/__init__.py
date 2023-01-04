@@ -31,4 +31,5 @@ from .fields import (
     TimeField,
     URLField,
 )
+from .i18n import I18nConfig
 from .views import BaseModelView, CustomView, DropDown

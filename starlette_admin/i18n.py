@@ -1,8 +1,10 @@
 import datetime
 import pathlib
 from contextvars import ContextVar
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from starlette.requests import HTTPConnection
 from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette_admin.utils.countries import countries_codes
 
@@ -73,6 +75,9 @@ try:
         locale = Locale.parse(get_locale())
         return [(x, f"{x} - {locale.currencies[x]}") for x in locale.currencies]
 
+    def get_locale_display_name(locale: str) -> str:
+        return Locale(locale).display_name.capitalize()
+
 except ImportError:
     # Provide i18n support even if babel is not installed
 
@@ -110,17 +115,48 @@ except ImportError:
         return time.strftime(format or "%H:%M:%S")
 
     def get_countries_list() -> List[Tuple[str, str]]:
-        raise NotImplementedError() from None
+        raise NotImplementedError()
 
     def get_currencies_list() -> List[Tuple[str, str]]:
-        raise NotImplementedError() from None
+        raise NotImplementedError()
+
+    def get_locale_display_name(locale: str) -> str:
+        raise NotImplementedError()
+
+
+@dataclass
+class I18nConfig:
+    """
+    i18n config for your admin interface
+    """
+
+    default_locale: str = DEFAULT_LOCALE
+    language_cookie_name: Optional[str] = "language"
+    language_header_name: Optional[str] = "Accept-Language"
+    language_switcher: Optional[List[str]] = None
 
 
 class LocaleMiddleware:
-    def __init__(self, app: ASGIApp, locale: str = DEFAULT_LOCALE) -> None:
+    def __init__(self, app: ASGIApp, i18n_config: I18nConfig) -> None:
         self.app = app
-        self.locale = locale
+        self.i18n_config = i18n_config
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        set_locale(self.locale)
+        conn = HTTPConnection(scope)
+        locale = self.i18n_config.default_locale
+        if (
+            self.i18n_config.language_cookie_name
+            and conn.cookies.get(self.i18n_config.language_cookie_name, None)
+            in SUPPORTED_LOCALES
+        ):
+            """detect locale in cookies"""
+            locale = conn.cookies.get(self.i18n_config.language_cookie_name)
+        elif (
+            self.i18n_config.language_header_name
+            and conn.headers.get(self.i18n_config.language_header_name, None)
+            in SUPPORTED_LOCALES
+        ):
+            """detect locale in headers"""
+            locale = conn.headers.get(self.i18n_config.language_header_name)
+        set_locale(locale)
         await self.app(scope, receive, send)

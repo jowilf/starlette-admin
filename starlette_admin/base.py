@@ -25,9 +25,10 @@ from starlette_admin.auth import AuthMiddleware, AuthProvider
 from starlette_admin.exceptions import ActionFailed, FormValidationError, LoginFailed
 from starlette_admin.helpers import get_file_icon
 from starlette_admin.i18n import (
-    DEFAULT_LOCALE,
+    I18nConfig,
     LocaleMiddleware,
     get_locale,
+    get_locale_display_name,
     gettext,
     ngettext,
 )
@@ -51,7 +52,7 @@ class BaseAdmin:
         auth_provider: Optional[AuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
-        locale: Optional[str] = DEFAULT_LOCALE,
+        i18n_config: Optional[I18nConfig] = None,
     ):
         """
         Parameters:
@@ -65,6 +66,7 @@ class BaseAdmin:
             index_view: CustomView to use for index page.
             auth_provider: Authentication Provider
             middlewares: Starlette middlewares
+            i18n_config: i18n configuration
         """
         self.title = title
         self.base_url = base_url
@@ -84,7 +86,7 @@ class BaseAdmin:
         self._models: List[BaseModelView] = []
         self.routes: List[Union[Route, Mount]] = []
         self.debug = debug
-        self.locale = locale
+        self.i18n_config = i18n_config
         self._setup_templates()
         self.init_locale()
         self.init_auth()
@@ -113,8 +115,20 @@ class BaseAdmin:
         return None
 
     def init_locale(self) -> None:
-        self.middlewares = [] if self.middlewares is None else list(self.middlewares)
-        self.middlewares.insert(0, Middleware(LocaleMiddleware, locale=self.locale))
+        if self.i18n_config is not None:
+            try:
+                import babel  # noqa
+            except ImportError as err:
+                raise ImportError(
+                    "'babel' package is required to use i18n features."
+                    "Install it with `pip install starlette-admin[i18n]`"
+                ) from err
+            self.middlewares = (
+                [] if self.middlewares is None else list(self.middlewares)
+            )
+            self.middlewares.insert(
+                0, Middleware(LocaleMiddleware, i18n_config=self.i18n_config)
+            )
 
     def init_auth(self) -> None:
         if self.auth_provider is not None:
@@ -210,10 +224,10 @@ class BaseAdmin:
         templates.env.globals["login_logo_url"] = self.login_logo_url
         templates.env.globals["custom_render_js"] = lambda r: self.custom_render_js(r)
         templates.env.globals["get_locale"] = get_locale
+        templates.env.globals["get_locale_display_name"] = get_locale_display_name
+        templates.env.globals["i18n_config"] = self.i18n_config or I18nConfig()
         # filters
-        templates.env.filters["is_custom_view"] = lambda res: isinstance(
-            res, CustomView
-        )
+        templates.env.filters["is_custom_view"] = lambda r: isinstance(r, CustomView)
         templates.env.filters["is_link"] = lambda res: isinstance(res, Link)
         templates.env.filters["is_model"] = lambda res: isinstance(res, BaseModelView)
         templates.env.filters["is_dropdown"] = lambda res: isinstance(res, DropDown)

@@ -51,14 +51,12 @@ def find_converter(column: Column) -> Callable[[str, Column], BaseField]:
     types = inspect.getmro(type(column.type))
     # Search by module + name
     for col_type in types:
-        print(col_type)
         type_string = f"{col_type.__module__}.{col_type.__name__}"
         if type_string in converters:
             return converters[type_string]
 
     # Search by name
     for col_type in types:
-        print(col_type.__name__)
         if col_type.__name__ in converters:
             return converters[col_type.__name__]
 
