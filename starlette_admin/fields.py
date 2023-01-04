@@ -17,8 +17,10 @@ from starlette_admin.i18n import (
     format_datetime,
     format_time,
     get_countries_list,
+    get_currencies_list,
     get_locale,
 )
+from starlette_admin.utils.timezones import common_timezones
 
 
 @dataclass
@@ -529,7 +531,6 @@ class TimeZoneField(EnumField):
 
     def __post_init__(self) -> None:
         if self.choices is None:
-            from starlette_admin.utils.timezones import common_timezones
 
             self.choices = [
                 (self.coerce(x), x.replace("_", " ")) for x in common_timezones
@@ -548,7 +549,25 @@ class CountryField(EnumField):
             raise ImportError(
                 "'babel' package is required to use 'CountryField'. Install it with `pip install starlette-admin[i18n]`"
             ) from err
-        self.choices_loader = lambda r: get_countries_list()
+        self.choices_loader = lambda request: get_countries_list()
+        super().__post_init__()
+
+
+@dataclass
+class CurrencyField(EnumField):
+    """
+    This field is used to represent a value that stores the
+    [3-letter ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code of currency
+    """
+
+    def __post_init__(self) -> None:
+        try:
+            import babel  # noqa
+        except ImportError as err:
+            raise ImportError(
+                "'babel' package is required to use 'CurrencyField'. Install it with `pip install starlette-admin[i18n]`"
+            ) from err
+        self.choices_loader = lambda request: get_currencies_list()
         super().__post_init__()
 
 

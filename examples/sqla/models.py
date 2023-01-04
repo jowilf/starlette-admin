@@ -85,7 +85,7 @@ class Model(Base):
     __tablename__ = "model"
     TYPES = [("admin", "Admin"), ("regular-user", "Regular user")]
     id = Column(Integer, primary_key=True)
-    timezone = Column(su.CountryType)
+    timezone = Column(su.CurrencyType)
 
 
 if __name__ == "__main__":

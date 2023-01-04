@@ -4,6 +4,7 @@ from contextvars import ContextVar
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette_admin.utils.countries import countries_codes
 
 DEFAULT_LOCALE = "en"
 SUPPORTED_LOCALES = ["en", "fr"]
@@ -65,10 +66,12 @@ try:
         return dates.format_time(time, format or "medium", tzinfo, get_locale())
 
     def get_countries_list() -> List[Tuple[str, str]]:
-        from starlette_admin.utils.countries import countries_codes
-
         locale = Locale.parse(get_locale())
         return [(x, locale.territories[x]) for x in countries_codes]
+
+    def get_currencies_list() -> List[Tuple[str, str]]:
+        locale = Locale.parse(get_locale())
+        return [(x, f"{x} - {locale.currencies[x]}") for x in locale.currencies]
 
 except ImportError:
     # Provide i18n support even if babel is not installed
@@ -107,6 +110,9 @@ except ImportError:
         return time.strftime(format or "%H:%M:%S")
 
     def get_countries_list() -> List[Tuple[str, str]]:
+        raise NotImplementedError() from None
+
+    def get_currencies_list() -> List[Tuple[str, str]]:
         raise NotImplementedError() from None
 
 

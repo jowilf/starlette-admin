@@ -12,6 +12,7 @@ from starlette_admin.fields import (
     CollectionField,
     ColorField,
     CountryField,
+    CurrencyField,
     DateField,
     DateTimeField,
     DecimalField,
@@ -237,10 +238,12 @@ def conv_timezone(name: str, column: Column) -> BaseField:
 
 @converts("sqlalchemy_utils.types.country.CountryType")
 def conv_country(name: str, column: Column) -> BaseField:
-    return CountryField(
-        name,
-        **field_common(column),
-    )
+    return CountryField(name, **field_common(column))
+
+
+@converts("sqlalchemy_utils.types.currency.CurrencyType")
+def conv_currency(name: str, column: Column) -> BaseField:
+    return CurrencyField(name, **field_common(column))
 
 
 try:
