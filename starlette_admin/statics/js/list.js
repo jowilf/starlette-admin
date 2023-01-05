@@ -367,7 +367,7 @@ $(function () {
       },
       ...dt_columns,
     ],
-    order: [],
+    order: dt_columns.length > 0 ? [[2, "asc"]] : [],
     initComplete: function () {
       new $.fn.dataTable.Buttons(table, {
         name: "main",
