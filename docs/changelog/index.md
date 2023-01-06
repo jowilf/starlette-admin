@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2022-12-29
+
+### Fixed
+
+* Fix Bug with `search_format` params for [DateField][starlette_admin.fields.DateField] and [TimeField][starlette_admin.fields.TimeField] by [@jowilf](https://github.com/jowilf) & [@ihuro](https://github.com/ihuro) in [#68](https://github.com/jowilf/starlette-admin/pull/68) & [#71](https://github.com/jowilf/starlette-admin/pull/71)
+
 ## [0.5.1] - 2022-12-27
 
 ### Fixed
