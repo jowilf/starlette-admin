@@ -143,7 +143,7 @@ class LocaleMiddleware:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         conn = HTTPConnection(scope)
-        locale = self.i18n_config.default_locale
+        locale: Optional[str] = self.i18n_config.default_locale
         if (
             self.i18n_config.language_cookie_name
             and conn.cookies.get(self.i18n_config.language_cookie_name, None)
@@ -158,5 +158,5 @@ class LocaleMiddleware:
         ):
             """detect locale in headers"""
             locale = conn.headers.get(self.i18n_config.language_header_name)
-        set_locale(locale)
+        set_locale(locale or DEFAULT_LOCALE)
         await self.app(scope, receive, send)
