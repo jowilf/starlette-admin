@@ -312,7 +312,7 @@ $(function () {
       // },
     },
     ajax: function (data, callback, settings) {
-      console.log(data);
+      // console.log(data);
       order = [];
       data.order.forEach((o) => {
         const { column, dir } = o;
@@ -321,7 +321,7 @@ $(function () {
       where = null;
       if (data.searchBuilder && !jQuery.isEmptyObject(data.searchBuilder)) {
         where = extractCriteria(data.searchBuilder);
-        console.log(where);
+        // console.log(where);
       }
       query = {
         skip: settings._iDisplayStart,

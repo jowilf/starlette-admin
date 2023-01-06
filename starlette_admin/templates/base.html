@@ -26,6 +26,7 @@
 {% block modal %}
 {% endblock %}
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jquery.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/js.cookie.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/tabler.min.js') }}"></script>
 {% block script %}
 {% endblock %}
@@ -34,9 +35,7 @@ $(function () {
   $(".language-switcher-item").each(function () {
     let el = $(this);
     el.on("click", function () {
-      document.cookie = `${String(el.data("cookie-name"))}=${String(
-        el.data("lang")
-      )};`;
+      Cookies.set(String(el.data("cookie-name")), String(el.data("lang")));
       window.location.reload();
     });
   });
