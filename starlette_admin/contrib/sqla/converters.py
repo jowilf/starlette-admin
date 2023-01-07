@@ -229,7 +229,7 @@ def conv_url(name: str, column: Column) -> BaseField:
 def conv_timezone(name: str, column: Column) -> BaseField:
     return TimeZoneField(
         name,
-        coerce=column.type._coerce,
+        coerce=column.type.python_type,
         **field_common(column),
     )
 
