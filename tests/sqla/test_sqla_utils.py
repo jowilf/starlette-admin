@@ -1,7 +1,11 @@
 import enum
 import ipaddress
 import uuid
-import zoneinfo
+
+try:
+    import zoneinfo
+except ImportError:
+    from backports import zoneinfo
 
 import arrow
 import pytest

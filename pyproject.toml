@@ -55,6 +55,7 @@ test = [
     "colour >=0.1.5",
     "phonenumbers >=8.13.3",
     "passlib >=1.7.4",
+    "backports.zoneinfo; python_version<'3.9'",
     "sqlalchemy-file >=0.1.5",
     "fasteners >=0.18",
     "PyMySQL[rsa] >=1.0.2",
