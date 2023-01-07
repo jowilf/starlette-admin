@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, Sequence
 from urllib.parse import urlencode
 
@@ -13,7 +13,7 @@ from starlette_admin.i18n import lazy_gettext as _
 
 @dataclass
 class AdminUser:
-    username: str = _("Administrator")
+    username: str = field(default_factory=lambda: _("Administrator"))
     photo_url: Optional[str] = None
 
 
