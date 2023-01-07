@@ -111,7 +111,7 @@ async def test_create(client: AsyncClient, session: Session):
         data={
             "choice": "1",
             "counter": "one",
-            "arrow": "2023-01-06T16:12:16.221904+00:00",
+            "arrow": "2023-01-06T16:12:16+00:00",
             "url": "https://example.com",
             "email": "admin@example.com",
             "ip_address": "192.123.45.55",
@@ -128,7 +128,7 @@ async def test_create(client: AsyncClient, session: Session):
     assert model is not None
     assert model.choice == 1
     assert model.counter == Counter("one")
-    assert model.arrow == arrow.get("2023-01-06T16:12:16.221904+00:00")
+    assert model.arrow == arrow.get("2023-01-06T16:12:16+00:00")
     assert model.url == "https://example.com"
     assert model.email == "admin@example.com"
     assert model.ip_address == ipaddress.ip_address("192.123.45.55")
