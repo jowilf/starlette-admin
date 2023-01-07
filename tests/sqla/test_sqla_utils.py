@@ -37,6 +37,8 @@ from starlette_admin import (
     ArrowField,
     CollectionField,
     ColorField,
+    CountryField,
+    CurrencyField,
     EmailField,
     EnumField,
     IntegerField,
@@ -44,10 +46,10 @@ from starlette_admin import (
     PasswordField,
     PhoneField,
     StringField,
+    TimeZoneField,
     URLField,
 )
 from starlette_admin.contrib.sqla import Admin, ModelView
-from starlette_admin.fields import CountryField, CurrencyField, TimeZoneField
 
 from tests.sqla.utils import get_test_engine
 

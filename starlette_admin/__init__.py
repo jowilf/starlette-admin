@@ -9,6 +9,8 @@ from .fields import (
     BooleanField,
     CollectionField,
     ColorField,
+    CountryField,
+    CurrencyField,
     DateField,
     DateTimeField,
     DecimalField,
@@ -30,6 +32,7 @@ from .fields import (
     TagsField,
     TextAreaField,
     TimeField,
+    TimeZoneField,
     URLField,
 )
 from .i18n import I18nConfig
