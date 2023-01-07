@@ -12,4 +12,4 @@ jobs:
           python-version: 3.8
       - name: Install Dependencies
         run: pip install hatch
-      - run: hatch run docs_deploy
+      - run: hatch run docs:deploy
