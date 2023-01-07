@@ -10,7 +10,6 @@ from starlette_admin.fields import FileField as BaseFileField
 from starlette_admin.fields import ImageField as BaseImageField
 from starlette_admin.i18n import get_locale
 
-
 try:
     import arrow
 except ImportError:
