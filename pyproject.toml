@@ -44,16 +44,11 @@ Changelog = "https://jowilf.github.io/starlette-admin/changelog/"
 i18n = [
     "babel >=2.11, <3.0"
 ]
-
-[tool.hatch.envs.default]
-dependencies = [
+test = [
     "pytest >=7.2.0",
     "pytest-asyncio >=0.20.2",
     "httpx >=0.23.1",
     "coverage >=6.5.0",
-    "mypy ==0.990",
-    "ruff ==0.0.149",
-    "black ==22.10.0",
     "SQLAlchemy[asyncio] >=1.4, <1.5",
     "SQLAlchemy-Utils >=0.39.0",
     "arrow >=1.2.3",
@@ -72,38 +67,68 @@ dependencies = [
     "Pillow >=9.3.0",
     "itsdangerous >=2.1.2",
     "pydantic[email] >=1.10.2",
-    "uvicorn >=0.20.0",
-    "pre-commit >=2.20.0",
-    # Docs
+]
+lint = [
+    "mypy ==0.991",
+    "ruff ==0.0.149",
+    "black ==22.12.0",
+]
+doc = [
     "mkdocs >=1.1.2, <2.0.0",
     "mkdocs-material >=8.5.10, <9.0.0",
     "mkdocstrings[python] >=0.19.0, <0.20.0",
     "mkdocs-static-i18n >= 0.18.0"
 ]
+dev = [
+    "pre-commit >=2.20.0",
+    "uvicorn >=0.20.0",
+]
 
+[tool.hatch.envs.default]
+features = [
+    "i18n",
+    "test",
+    "lint",
+    "doc",
+    "dev"
+]
 [tool.hatch.envs.default.scripts]
 format = [
     "ruff starlette_admin tests --fix",
     "black ."
 ]
+i18n_extract = "pybabel extract -F i18n/babel.ini -k _n -o i18n/admin.pot --project starlette-admin starlette_admin"
+i18n_update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations -D admin"
+i18n_compile = "pybabel compile -f -D admin -d starlette_admin/translations"
+
+[tool.hatch.envs.test]
+features = [
+    "i18n",
+    "lint",
+    "test",
+]
+[tool.hatch.envs.test.scripts]
 lint = [
     "mypy starlette_admin",
     "ruff starlette_admin tests",
     "black . --check"
 ]
+all = "coverage run -m pytest tests"
+sqla = "coverage run -m pytest tests/sqla"
 cov = [
     "coverage combine",
     "coverage report --show-missing",
     "coverage xml"
 ]
-docs = "mkdocs serve -a localhost:8080"
-docs_build = "mkdocs build"
-docs_deploy = "mkdocs gh-deploy --force"
-test = "coverage run -m pytest tests"
-test_sqla = "coverage run -m pytest tests/sqla"
-i18n_extract = "pybabel extract -F i18n/babel.ini -k _n -o i18n/admin.pot --project starlette-admin starlette_admin"
-i18n_update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations -D admin"
-i18n_compile = "pybabel compile -f -D admin -d starlette_admin/translations"
+
+[tool.hatch.envs.docs]
+features = [
+    "doc",
+]
+[tool.hatch.envs.docs.scripts]
+serve = "mkdocs serve -a localhost:8080"
+build = "mkdocs build"
+deploy = "mkdocs gh-deploy --force"
 
 [tool.hatch.version]
 path = "starlette_admin/__init__.py"
@@ -115,7 +140,8 @@ exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
     "raise NotImplementedError",
-    "except NotImplementedError"
+    "except NotImplementedError",
+    "except ImportError"
 ]
 
 [tool.coverage.run]
