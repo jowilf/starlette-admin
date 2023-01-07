@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import List, Optional
 
-from odmantic import EmbeddedModel, Field, Model, Reference
 from pydantic import EmailStr
+
+from odmantic import EmbeddedModel, Field, Model, Reference
 
 
 class Address(EmbeddedModel):

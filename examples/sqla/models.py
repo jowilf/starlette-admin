@@ -17,7 +17,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import declarative_base, relationship
 from starlette_admin.contrib.sqla import ModelView
 
-
 Base = declarative_base()
 
 
