@@ -81,12 +81,31 @@ class Tree(Base):
     parent = relationship("Tree", remote_side=[id], backref="childrens")
 
 
+class Counter(str, enum.Enum):
+    ONE = "one"
+    TWO = "two"
+
+
 class Model(Base):
     __tablename__ = "model"
-    TYPES = [("admin", "Admin"), ("regular-user", "Regular user")]
+    TYPES = [(0, "Admin"), (1, "Regular user")]
     id = Column(Integer, primary_key=True)
-    timezone = Column(su.CurrencyType)
+    timezone = Column(su.ChoiceType(TYPES))
 
 
 if __name__ == "__main__":
     print(ModelView(Model).fields[1])
+    d = {
+        "choice": "1",
+        "counter": "one",
+        "arrow": "2023-01-06T16:12:16.221904+00:00",
+        "url": "https://example.com",
+        "email": "admin@example.com",
+        "ip_address": "192.123.45.55",
+        "country": "BJ",
+        "color": "#fde",
+        "balance.currency": "XOF",
+        "balance.amount": "1000000",
+    }
+    for k in d:
+        print(f"assert model.{k}=='{d[k]}'")

@@ -3,7 +3,7 @@ import enum
 import inspect
 from typing import Any, Callable, Dict
 
-from sqlalchemy import ARRAY, Boolean, Column, Float
+from sqlalchemy import ARRAY, Boolean, Column, Float, String
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
 from starlette_admin.contrib.sqla.fields import ArrowField, FileField, ImageField
 from starlette_admin.fields import (
@@ -89,7 +89,7 @@ def field_common(column: Column) -> Dict[str, Any]:
 
 def _string_common(column: Column) -> Dict[str, Any]:
     if (
-        hasattr(column.type, "length")
+        isinstance(column.type, String)
         and isinstance(column.type.length, int)
         and column.type.length > 0
     ):
@@ -252,8 +252,13 @@ try:
         assert isinstance(column.type, ChoiceType)
         choices = column.type.choices
         if isinstance(choices, type) and issubclass(choices, enum.Enum):
-            return EnumField(name, enum=choices, **field_common(column))
-        return EnumField(name, choices=choices, **field_common(column))  # type: ignore
+            return EnumField(
+                name,
+                enum=choices,
+                **field_common(column),
+                coerce=column.type.python_type,
+            )
+        return EnumField(name, choices=choices, **field_common(column), coerce=column.type.python_type)  # type: ignore
 
     @converts("sqlalchemy_utils.types.pg_composite.CompositeType")
     def conv_composite_type(name: str, column: Column) -> BaseField:

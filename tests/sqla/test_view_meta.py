@@ -77,8 +77,9 @@ class Attachment(Base):
 class Document(Base):
     __tablename__ = "document"
 
-    int = Column(Integer, primary_key=True)
+    int = Column(Integer, primary_key=True, comment="This is the primary key")
     float = Column(Float)
+    decimal = Column(Float(asdecimal=True))
     bool = Column(Boolean)
     datetime = Column(DateTime)
     date = Column(Date)
@@ -86,6 +87,7 @@ class Document(Base):
     enum = Column(Enum(Status))
     json_field = Column(JSON)
     tags = Column(ARRAY(String, dimensions=1))
+    ints = Column(ARRAY(Integer, dimensions=1))
     user_name = Column(String(100), ForeignKey("user.name"))
     user = relationship("User", back_populates="document")
     attachments = relationship("Attachment", back_populates="document")
@@ -129,9 +131,14 @@ def test_attachment_fields_conversion():
 def test_document_fields_conversion():
     assert ModelView(Document).fields == [
         IntegerField(
-            "int", required=True, exclude_from_create=True, exclude_from_edit=True
+            "int",
+            required=True,
+            exclude_from_create=True,
+            exclude_from_edit=True,
+            help_text="This is the primary key",
         ),
         FloatField("float"),
+        DecimalField("decimal"),
         BooleanField("bool"),
         DateTimeField("datetime"),
         DateField("date"),
@@ -139,6 +146,7 @@ def test_document_fields_conversion():
         EnumField("enum", enum=Status),
         JSONField("json_field"),
         ListField(StringField("tags")),
+        ListField(IntegerField("ints")),
         HasOne("user", identity="user", orderable=False, searchable=False),
         HasMany(
             "attachments", identity="attachment", orderable=False, searchable=False
@@ -183,7 +191,11 @@ def test_fields_customisation():
 
     assert CustomDocumentView(Document).fields == [
         IntegerField(
-            "int", required=True, exclude_from_create=True, exclude_from_edit=True
+            "int",
+            required=True,
+            exclude_from_create=True,
+            exclude_from_edit=True,
+            help_text="This is the primary key",
         ),
         BooleanField("bool", exclude_from_detail=True),
         DecimalField("float", required=True, exclude_from_edit=True),
@@ -254,5 +266,5 @@ def test_conversion_when_impl_not_callable() -> None:
         IntegerField(
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
-        StringField("name", maxlength=100),
+        StringField("name"),
     ]

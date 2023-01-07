@@ -421,10 +421,10 @@ class EnumField(StringField):
     choices: Union[Sequence[str], Sequence[Tuple[Any, str]], None] = None
     choices_loader: Optional[
         Callable[[Request], Union[Sequence[str], Sequence[Tuple[Any, str]]]]
-    ] = None
+    ] = dc_field(default=None, compare=False)
     form_template: str = "forms/enum.html"
     class_: str = "field-enum form-control form-select"
-    coerce: type = str
+    coerce: Callable[[Any], Any] = str
     select2: bool = True
 
     def __post_init__(self) -> None:

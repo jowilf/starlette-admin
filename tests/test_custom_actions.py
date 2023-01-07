@@ -90,16 +90,19 @@ def test_all_actions_is_available_by_default():
     )
 
 
-def test_actions_is_available_in_ui(client: TestClient):
-    response = client.get("/admin/article/list")
-    assert response.status_code == 200
-    for action, expected_count in [
+@pytest.mark.parametrize(
+    "action, expected_count",
+    [
         ("make_published", 1),
         ("delete", 1),
         ("always_failed", 1),
         ("forbidden", 0),
-    ]:
-        assert response.text.count(f'data-name="{action}"') == expected_count
+    ],
+)
+def test_actions_is_available_in_ui(client: TestClient, action, expected_count):
+    response = client.get("/admin/article/list")
+    assert response.status_code == 200
+    assert response.text.count(f'data-name="{action}"') == expected_count
 
 
 def test_action_execution(client: TestClient):
