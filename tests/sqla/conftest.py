@@ -3,16 +3,6 @@ import tempfile
 
 import pytest
 
-from tests.sqla.utils import get_async_test_engine, get_test_engine
-
-collect_ignore_glob = []
-if (
-    get_test_engine().dialect.name != "postgresql"
-    or get_async_test_engine().dialect.name != "postgresql"
-):
-    # composite type is only supported on postgresql
-    collect_ignore_glob.append("test_sqla_utils.py")
-
 
 @pytest.fixture
 def fake_image_content():

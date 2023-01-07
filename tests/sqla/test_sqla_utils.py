@@ -14,29 +14,18 @@ from sqlalchemy_utils import (
     ArrowType,
     ChoiceType,
     ColorType,
-    CompositeType,
     Country,
     CountryType,
-    Currency,
-    CurrencyType,
     EmailType,
     IPAddressType,
     URLType,
     UUIDType,
 )
 from starlette.applications import Starlette
-from starlette_admin import (
-    CollectionField,
-    ColorField,
-    EmailField,
-    EnumField,
-    IntegerField,
-    StringField,
-    URLField,
-)
+from starlette_admin import ColorField, EmailField, EnumField, StringField, URLField
 from starlette_admin.contrib.sqla import Admin, ModelView
 from starlette_admin.contrib.sqla.fields import ArrowField
-from starlette_admin.fields import CountryField, CurrencyField
+from starlette_admin.fields import CountryField
 
 from tests.sqla.utils import get_test_engine
 
@@ -63,11 +52,12 @@ class Model(Base):
     ip_address = Column(IPAddressType)
     country = Column(CountryType)
     color = Column(ColorType)
-    balance = Column(
-        CompositeType(
-            "money_type", [Column("currency", CurrencyType), Column("amount", Integer)]
-        )
-    )
+    # Remove due to https://github.com/MagicStack/asyncpg/issues/991
+    # balance = Column(
+    #     CompositeType(
+    #         "money_type", [Column("currency", CurrencyType), Column("amount", Integer)]
+    #     )
+    # )
 
 
 async def test_model_fields_conversion():
@@ -81,13 +71,13 @@ async def test_model_fields_conversion():
         StringField("ip_address"),
         CountryField("country"),
         ColorField("color"),
-        CollectionField(
-            "balance",
-            fields=[
-                CurrencyField("currency", searchable=False, orderable=False),
-                IntegerField("amount", searchable=False, orderable=False),
-            ],
-        ),
+        # CollectionField(
+        #     "balance",
+        #     fields=[
+        #         CurrencyField("currency", searchable=False, orderable=False),
+        #         IntegerField("amount", searchable=False, orderable=False),
+        #     ],
+        # ),
     ]
 
 
@@ -127,8 +117,8 @@ async def test_create(client: AsyncClient, session: Session):
             "ip_address": "192.123.45.55",
             "country": "BJ",
             "color": "#fde",
-            "balance.currency": "XOF",
-            "balance.amount": "1000000",
+            # "balance.currency": "XOF",
+            # "balance.amount": "1000000",
         },
         follow_redirects=False,
     )
@@ -144,8 +134,8 @@ async def test_create(client: AsyncClient, session: Session):
     assert model.ip_address == ipaddress.ip_address("192.123.45.55")
     assert model.country == Country("BJ")
     assert model.color == Color("#fde")
-    assert model.balance.currency == Currency("XOF")
-    assert model.balance.amount == 1000000
+    # assert model.balance.currency == Currency("XOF")
+    # assert model.balance.amount == 1000000
 
     response = await client.get(f"/admin/model/detail/{model.uuid}")
     assert response.status_code == 200
