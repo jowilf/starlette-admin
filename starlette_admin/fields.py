@@ -429,7 +429,7 @@ class EnumField(StringField):
 
     def __post_init__(self) -> None:
         if self.choices and not isinstance(self.choices[0], (list, tuple)):
-            self.choices = list(zip(self.choices, self.choices, strict=True))  # type: ignore
+            self.choices = list(zip(self.choices, self.choices))  # type: ignore
         elif self.enum:
             self.choices = [(e.value, e.name.replace("_", " ")) for e in self.enum]
             self.coerce = int if issubclass(self.enum, IntEnum) else str

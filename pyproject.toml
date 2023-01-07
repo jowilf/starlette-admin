@@ -161,6 +161,7 @@ select = [
 ignore = [
     "E501", # line too long, handled by black
     "B008", # Do not perform function call `_` in argument defaults, neccessary for lazy_gettext
+    "B905", # `zip()` without an explicit `strict=` parameter
 ]
 
 [tool.ruff.isort]
