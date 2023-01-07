@@ -12,7 +12,7 @@ import pytest
 import pytest_asyncio
 from colour import Color
 from httpx import AsyncClient
-from sqlalchemy import Column, Integer, MetaData, select
+from sqlalchemy import Column, Integer, MetaData, event, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy_utils import (
@@ -34,9 +34,12 @@ from sqlalchemy_utils import (
 )
 from starlette.applications import Starlette
 from starlette_admin import (
+    ArrowField,
+    CollectionField,
     ColorField,
     EmailField,
     EnumField,
+    IntegerField,
     ListField,
     PasswordField,
     PhoneField,
@@ -44,7 +47,6 @@ from starlette_admin import (
     URLField,
 )
 from starlette_admin.contrib.sqla import Admin, ModelView
-from starlette_admin.contrib.sqla.fields import ArrowField
 from starlette_admin.fields import CountryField, CurrencyField, TimeZoneField
 
 from tests.sqla.utils import get_test_engine
@@ -52,7 +54,7 @@ from tests.sqla.utils import get_test_engine
 pytestmark = pytest.mark.asyncio
 
 
-Base = declarative_base(metadata=MetaData())
+Base = declarative_base()
 
 
 class Counter(str, enum.Enum):
@@ -186,5 +188,40 @@ async def test_create(client: AsyncClient, session: Session):
     assert response.status_code == 200
 
 
-async def test_get_detail(client: AsyncClient, session: Session):
-    pass
+async def test_composite_type():
+    from sqlalchemy_utils.types.pg_composite import (
+        CompositeType,
+        after_drop,
+        before_create,
+    )
+
+    class CompositeModel(Base):
+        __tablename__ = "compositemodel"
+
+        id = Column(Integer, primary_key=True)
+        balance = Column(
+            CompositeType(
+                "money_type",
+                [Column("currency", CurrencyType), Column("amount", Integer)],
+            )
+        )
+
+    assert ModelView(CompositeModel).fields == [
+        IntegerField(
+            "id", required=True, exclude_from_create=True, exclude_from_edit=True
+        ),
+        CollectionField(
+            "balance",
+            fields=[
+                CurrencyField("currency", searchable=False, orderable=False),
+                IntegerField("amount", searchable=False, orderable=False),
+            ],
+        ),
+    ]
+    # Remove all listeners added by CompositeType
+    listeners = [
+        (MetaData, "before_create", before_create),
+        (MetaData, "after_drop", after_drop),
+    ]
+    for listener in listeners:
+        event.remove(*listener)

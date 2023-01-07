@@ -19,7 +19,7 @@ from sqlalchemy import (
     Time,
     TypeDecorator,
 )
-from sqlalchemy.dialects.mysql import YEAR
+from sqlalchemy.dialects.mysql import INTEGER, YEAR
 from sqlalchemy.dialects.postgresql import BIT, INET, MACADDR, UUID
 from sqlalchemy.orm import declarative_base, relationship
 from starlette_admin import (
@@ -267,4 +267,17 @@ def test_conversion_when_impl_not_callable() -> None:
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
         StringField("name"),
+    ]
+
+
+def test_unsigned_int_conversion() -> None:
+    class UnsignedModel(Base):
+        __tablename__ = "usigned_model"
+
+        id = Column(INTEGER(unsigned=True), primary_key=True)
+
+    assert ModelView(UnsignedModel).fields == [
+        IntegerField(
+            "id", required=True, exclude_from_create=True, exclude_from_edit=True, min=0
+        ),
     ]

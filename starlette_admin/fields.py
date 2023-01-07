@@ -22,6 +22,11 @@ from starlette_admin.i18n import (
 )
 from starlette_admin.utils.timezones import common_timezones
 
+try:
+    import arrow
+except ImportError:
+    arrow = None  # type: ignore
+
 
 @dataclass
 class BaseField:
@@ -505,7 +510,7 @@ class EnumField(StringField):
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
         warnings.warn(
-            'This method is deprecated. Use EnumField("name", enum=MyEnumClass) instead.',
+            f'This method is deprecated. Use EnumField("name", enum={enum_type.__name__}) instead.',
             DeprecationWarning,
         )
         return cls(name, enum=enum_type, multiple=multiple, **kwargs)  # type: ignore
@@ -519,7 +524,7 @@ class EnumField(StringField):
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
         warnings.warn(
-            'This method is deprecated. Use EnumField("name", choices=my_choices) instead.',
+            f'This method is deprecated. Use EnumField("name", choices={choices}) instead.',
             DeprecationWarning,
         )
         return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
@@ -715,6 +720,34 @@ class TimeField(DateTimeField):
         assert isinstance(value, time), f"Expect time, got  {type(value)}"
         if action != RequestAction.EDIT:
             return format_time(value, self.output_format)
+        return value.isoformat()
+
+
+@dataclass
+class ArrowField(DateTimeField):
+    """
+    This field is used to represent sqlalchemy_utils.types.arrow.ArrowType
+    """
+
+    def __post_init__(self) -> None:
+        if not arrow:  # pragma: no cover
+            raise ImportError("'arrow' package is required to use 'ArrowField'")
+        super().__post_init__()
+
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
+        try:
+            return arrow.get(form_data.get(self.id))  # type: ignore
+        except (TypeError, arrow.parser.ParserError):  # pragma: no cover
+            return None
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> str:
+        assert isinstance(value, arrow.Arrow), f"Expected Arrow, got  {type(value)}"
+        if action != RequestAction.EDIT:
+            return value.humanize(locale=get_locale())
         return value.isoformat()
 
 

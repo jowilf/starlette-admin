@@ -47,9 +47,6 @@ try:
     def lazy_gettext(message: str) -> str:
         return LazyProxy(gettext, message)
 
-    def lazy_ngettext(msgid1: str, msgid2: str, n: int) -> str:
-        return LazyProxy(ngettext, msgid1, msgid2, n)
-
     def format_datetime(
         datetime: Union[datetime.date, datetime.time],
         format: Optional[str] = None,
@@ -95,9 +92,6 @@ except ImportError:
 
     def lazy_gettext(message: str) -> str:
         return gettext(message)
-
-    def lazy_ngettext(msgid1: str, msgid2: str, n: int) -> str:
-        return ngettext(msgid1, msgid2, n)
 
     def format_datetime(
         datetime: Union[datetime.date, datetime.time],

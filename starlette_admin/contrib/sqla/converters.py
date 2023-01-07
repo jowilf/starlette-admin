@@ -5,8 +5,9 @@ from typing import Any, Callable, Dict
 
 from sqlalchemy import ARRAY, Boolean, Column, Float, String
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
-from starlette_admin.contrib.sqla.fields import ArrowField, FileField, ImageField
+from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.fields import (
+    ArrowField,
     BaseField,
     BooleanField,
     CollectionField,

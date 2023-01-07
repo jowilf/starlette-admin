@@ -4,6 +4,7 @@ from ._types import ExportType, RequestAction
 from .actions import action
 from .base import BaseAdmin
 from .fields import (
+    ArrowField,
     BaseField,
     BooleanField,
     CollectionField,

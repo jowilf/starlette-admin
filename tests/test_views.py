@@ -311,6 +311,8 @@ class TestViews:
         admin.mount_to(app)
         client = TestClient(app)
 
+        assert client.get("admin/my-model/list").status_code == 200
+
         response = client.post(
             "/admin/my-model/create",
             data={"score": 3.4, "gender": "male", "json_field": '{"key":"value"}'},
