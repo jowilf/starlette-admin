@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{get_locale()}}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
@@ -26,8 +26,20 @@
 {% block modal %}
 {% endblock %}
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jquery.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/js.cookie.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/tabler.min.js') }}"></script>
 {% block script %}
 {% endblock %}
+<script>
+$(function () {
+  $(".language-switcher-item").each(function () {
+    let el = $(this);
+    el.on("click", function () {
+      Cookies.set(String(el.data("cookie-name")), String(el.data("lang")));
+      window.location.reload();
+    });
+  });
+});
+</script>
 </body>
 </html>

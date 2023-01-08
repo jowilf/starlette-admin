@@ -1,11 +1,13 @@
 from typing import Any, Awaitable, Callable, Optional
 
+from starlette_admin.i18n import lazy_gettext as _
+
 
 def action(
     name: str,
     text: str,
     confirmation: Optional[str] = None,
-    submit_btn_text: Optional[str] = "Proceed",
+    submit_btn_text: Optional[str] = _("Yes, Proceed"),
     submit_btn_class: Optional[str] = "btn-primary",
 ) -> Callable[[Callable[..., Awaitable[str]]], Any]:
     """

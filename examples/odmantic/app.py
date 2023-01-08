@@ -1,8 +1,9 @@
-from odmantic import AIOEngine
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
 from starlette_admin.contrib.odmantic import Admin, ModelView
+
+from odmantic import AIOEngine
 
 from .models import Author, Book
 from .views import AuthorView

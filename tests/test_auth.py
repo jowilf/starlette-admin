@@ -122,7 +122,6 @@ class TestAuth:
         assert response.status_code == 200
         response = await client.get("/admin/", follow_redirects=False)
         assert response.status_code == 303
-        print(response.headers.get("location"))
         assert (
             response.headers.get("location")
             == "http://testserver/admin/login?next=http%3A%2F%2Ftestserver%2Fadmin%2F"

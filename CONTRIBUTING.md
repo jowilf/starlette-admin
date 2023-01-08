@@ -159,7 +159,9 @@ and [ruff](https://github.com/charliermarsh/ruff)
 
 To clean all your code, run
 
-```hatch run format```
+```shell
+hatch run format
+```
 
 #### Testing
 
@@ -170,7 +172,7 @@ must be tested in a separate unit test.
 To run the test suite
 
 ```shell
-hatch run test
+hatch run test:all
 ```
 
 #### Submitting new code

@@ -16,7 +16,7 @@ jobs:
           python-version: 3.8
       - name: Install Dependencies
         run: pip install hatch
-      - run: hatch run docs_build
+      - run: hatch run docs:build
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.0.0
         with:

@@ -11,7 +11,6 @@ class TestAdminBasic:
         assert admin.title == "Admin"
         assert admin.logo_url is None
         assert admin.login_logo_url is None
-        assert admin.middlewares is None
         assert isinstance(admin.index_view, CustomView)
         assert not admin.debug
         app = Starlette()

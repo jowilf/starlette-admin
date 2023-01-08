@@ -14,7 +14,7 @@
   {%endif%}
   <form class="card card-md" action="{{request.url}}" method="POST">
     <div class="card-body">
-      <h2 class="card-title text-center mb-4">Login to your account</h2>
+      <h2 class="card-title text-center mb-4">{{_("Login to your account")}}</h2>
       {% if error %}
       <div
         class="alert alert-important alert-danger alert-dismissible"
@@ -34,7 +34,7 @@
       </div>
       {%endif%}
       <div class="mb-3">
-        <label class="form-label">Username</label>
+        <label class="form-label">{{_("Username")}}</label>
         <input
           type="text"
           name="username"
@@ -47,7 +47,7 @@
         {%endif%}
       </div>
       <div class="mb-2">
-        <label class="form-label">Password</label>
+        <label class="form-label">{{_("Password")}}</label>
         <input
           type="password"
           name="password"
@@ -63,18 +63,18 @@
       <div class="mb-2">
         <label class="form-check">
           <input name="remember_me" type="checkbox" class="form-check-input" />
-          <span class="form-check-label">Remember me</span>
+          <span class="form-check-label">{{_("Remember me")}}</span>
         </label>
       </div>
 
       <div class="form-footer">
-        <button type="submit" class="btn btn-primary w-100">Sign in</button>
+        <button type="submit" class="btn btn-primary w-100">{{_("Sign in")}}</button>
       </div>
     </div>
   </form>
   {#
   <div class="text-center text-muted mt-3">
-    Don't have account yet? <a href="./sign-up.html" tabindex="-1">Sign up</a>
+    Don't have account yet? <a href="./sign-up.html" tabindex="-1">{{_("Sign up")}}</a>
   </div>
   #}
 </div>

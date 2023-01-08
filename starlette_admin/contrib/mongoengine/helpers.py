@@ -56,9 +56,7 @@ def convert_mongoengine_field_to_admin_field(  # noqa: C901
         elif isinstance(field.field, (me.DictField, me.MapField)):
             admin_field = sa.JSONField(name)
         elif isinstance(field.field, me.EnumField):
-            admin_field = sa.EnumField.from_enum(
-                name, enum_type=field.field._enum_cls, multiple=True
-            )
+            admin_field = sa.EnumField(name, enum=field.field._enum_cls, multiple=True)
         else:
             field.field.name = name
             admin_field = sa.ListField(
@@ -81,7 +79,7 @@ def convert_mongoengine_field_to_admin_field(  # noqa: C901
             )
         admin_field = sa.CollectionField(name, fields=_fields)
     elif isinstance(field, me.EnumField):
-        admin_field = sa.EnumField.from_enum(name, enum_type=field._enum_cls)
+        admin_field = sa.EnumField(name, enum=field._enum_cls)
     else:
         if mongoengine_to_admin_map.get(type(field), None) is None:
             raise NotSupportedField(

@@ -5,7 +5,7 @@ from starlette_admin.exceptions import FormValidationError, LoginFailed
 
 users = {
     "admin": {
-        "name": "Admin",
+        "name": "Administrator",
         "avatar": "avatar.png",
         "roles": ["read", "create", "edit", "delete", "action_make_published"],
     },

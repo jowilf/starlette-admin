@@ -3,7 +3,7 @@
   <h1>{{ model.label }}</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
-      <a href="{{ url_for(__name__ ~ ':index')}}">Admin</a>
+      <a href="{{ url_for(__name__ ~ ':index')}}">{{_("Admin")}}</a>
     </li>
     <li class="breadcrumb-item active">{{ model.label }}</li>
   </ol>
@@ -26,7 +26,7 @@ block content %}
                   data-bs-toggle="dropdown"
                   id="actionDropdownButton"
                 >
-                  With selected (<span class="actions-selected-counter">0</span
+                  {{_("With selected")}} (<span class="actions-selected-counter">0</span
                   >)
                 </button>
                 <div
@@ -61,7 +61,7 @@ block content %}
                 class="btn btn-primary btn-block ms-2"
               >
                 <i class="fa-solid fa-plus me-2"></i>
-                New {{ model.name }}
+                 {{ _("New %(name)s", name=model.name ) }}
               </a>
               {% endif %}
             </div>
@@ -69,12 +69,7 @@ block content %}
         </div>
         <div class="card-body border-bottom p-0">
           <div class="d-flex m-3">
-            <div class="text-muted">
-              Show
-              <div class="mx-1 d-inline-block">
-                <div id="pageLength_container"></div>
-              </div>
-              entries
+            <div id="pageLength_container">
             </div>
             <div class="ms-auto text-muted">
               <div class="ms-2 d-inline-block">
@@ -103,7 +98,7 @@ block content %}
                     id="searchInput"
                     value=""
                     class="form-control"
-                    placeholder="Search…"
+                    placeholder="{{_('Search')}}..."
                     aria-label="Search in list"
                   />
                 </div>
@@ -133,6 +128,9 @@ block content %}
   rel="stylesheet"
   href="{{ url_for(__name__ ~ ':statics', path='css/dt.checkboxes.css') }}"
 />
+{%for link in model._additional_css_links(request, "LIST" | ra)%}
+<link rel="stylesheet" href="{{ link }}">
+{%endfor%}
 <style>
   div.dataTables_wrapper div.dataTables_info {
     padding-top: 0;
@@ -160,6 +158,12 @@ block content %}
   type="text/javascript"
   src="{{ url_for(__name__ ~ ':statics', path='js/vendor/moment.min.js') }}"
 ></script>
+{% if get_locale() != 'en' %}
+<script
+  type="text/javascript"
+  src="{{ url_for(__name__ ~ ':statics', path='i18n/momentjs/' ~ get_locale() ~ '.js') }}"
+></script>
+{% endif %}
 {% if 'pdf' in model.export_types%}
 <script
   type="text/javascript"
@@ -196,6 +200,9 @@ block content %}
 {% if custom_render_js(request) %}
 <script type="text/javascript" src="{{ custom_render_js(request) }}"></script>
 {% endif %}
+{%for link in model._additional_js_links(request, "LIST" | ra)%}
+<script type="text/javascript" src="{{ link}}"></script>
+{%endfor%}
 <script
   type="text/javascript"
   src="{{ url_for(__name__ ~ ':statics', path='js/list.js') }}"

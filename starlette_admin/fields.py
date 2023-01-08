@@ -1,16 +1,31 @@
 import decimal
 import json
+import warnings
 from dataclasses import asdict, dataclass
 from dataclasses import field as dc_field
 from datetime import date, datetime, time
 from enum import Enum, IntEnum
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
 from starlette_admin.helpers import extract_fields, html_params, is_empty_file
+from starlette_admin.i18n import (
+    format_date,
+    format_datetime,
+    format_time,
+    get_countries_list,
+    get_currencies_list,
+    get_locale,
+)
+from starlette_admin.utils.timezones import common_timezones
+
+try:
+    import arrow
+except ImportError:
+    arrow = None  # type: ignore
 
 
 @dataclass
@@ -22,6 +37,8 @@ class BaseField:
         label: Field label
         help_text: Hint message to display in forms
         type: Field type, unique key used to define the field
+        disabled: Disabled in forms
+        read_only: Read only in forms
         id: Unique id, used to represent field instance
         search_builder_type: datatable columns.searchBuilderType, For more information
             [click here](https://datatables.net/reference/option/columns.searchBuilderType)
@@ -41,6 +58,8 @@ class BaseField:
     label: Optional[str] = None
     type: Optional[str] = None
     help_text: Optional[str] = None
+    disabled: Optional[bool] = False
+    read_only: Optional[bool] = False
     id: str = ""
     search_builder_type: Optional[str] = "default"
     required: Optional[bool] = False
@@ -66,21 +85,51 @@ class BaseField:
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
+        """
+        Extract value from submitted form data
+        """
         return form_data.get(self.id)
+
+    async def parse_obj(self, request: Request, obj: Any) -> Any:
+        """
+        Extract value from model instance
+        """
+        return getattr(obj, self.name, None)
+
+    async def serialize_none_value(
+        self, request: Request, action: RequestAction
+    ) -> Any:
+        """
+        Format None value for frontend
+        """
+        return None
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
+        """
+        Format value for frontend
+        """
         return value
 
-    def additional_css_links(self, request: Request) -> List[str]:
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
         return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         return []
 
     def dict(self) -> Dict[str, Any]:
         return asdict(self)
+
+    def input_params(self) -> str:
+        return html_params(
+            {
+                "disabled": self.disabled,
+                "readonly": self.read_only,
+            }
+        )
 
 
 @dataclass
@@ -107,6 +156,8 @@ class BooleanField(BaseField):
 class StringField(BaseField):
     """This field is used to represent any kind of short text content."""
 
+    maxlength: Optional[int] = None
+    minlength: Optional[int] = None
     search_builder_type: Optional[str] = "string"
     input_type: str = "text"
     class_: str = "field-string form-control"
@@ -116,8 +167,12 @@ class StringField(BaseField):
         return html_params(
             {
                 "type": self.input_type,
+                "minlength": self.minlength,
+                "maxlength": self.maxlength,
                 "placeholder": self.placeholder,
                 "required": self.required,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
             }
         )
 
@@ -133,8 +188,6 @@ class TextAreaField(StringField):
     For short text contents, use [StringField][starlette_admin.fields.StringField]"""
 
     rows: int = 6
-    maxlength: Optional[int] = None
-    minlength: Optional[int] = None
     class_: str = "field-textarea form-control"
     form_template: str = "forms/textarea.html"
 
@@ -146,6 +199,8 @@ class TextAreaField(StringField):
                 "maxlength": self.maxlength,
                 "placeholder": self.placeholder,
                 "required": self.required,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
             }
         )
 
@@ -173,6 +228,8 @@ class NumberField(StringField):
                 "step": self.step,
                 "placeholder": self.placeholder,
                 "required": self.required,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
             }
         )
 
@@ -262,20 +319,27 @@ class TagsField(BaseField):
     ) -> List[str]:
         return form_data.getlist(self.id)  # type: ignore
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/select2.min.css"
-            )
-        ]
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if action.is_form():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/select2.min.css",
+                )
+            ]
+        return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics",
-                path="js/vendor/select2.min.js",
-            )
-        ]
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.is_form():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/select2.min.js",
+                )
+            ]
+        return []
 
 
 @dataclass
@@ -327,7 +391,7 @@ class PasswordField(StringField):
 class EnumField(StringField):
     """
     Enumeration Field.
-    It take a python `enum.Enum` class or a list of *(value, label)* pairs.
+    It takes a python `enum.Enum` class or a list of *(value, label)* pairs.
     It can also be a list of only values, in which case the value is used as the label.
     Example:
         ```Python
@@ -340,7 +404,7 @@ class EnumField(StringField):
             status: Optional[Status] = None
 
         class MyModelView(ModelView):
-            fields = [EnumField.from_enum("status", Status)]
+            fields = [EnumField("status", enum=Status)]
         ```
 
         ```Python
@@ -348,15 +412,37 @@ class EnumField(StringField):
             language: str
 
         class MyModelView(ModelView):
-            fields = [EnumField.from_choices("language", [('cpp', 'C++'), ('py', 'Python'), ('text', 'Plain Text')])]
+            fields = [
+                EnumField(
+                    "language",
+                    choices=[("cpp", "C++"), ("py", "Python"), ("text", "Plain Text")],
+                )
+            ]
         ```
     """
 
     multiple: bool = False
-    choices: Iterable[Tuple[str, str]] = dc_field(default_factory=dict)
+    enum: Optional[Type[Enum]] = None
+    choices: Union[Sequence[str], Sequence[Tuple[Any, str]], None] = None
+    choices_loader: Optional[
+        Callable[[Request], Union[Sequence[str], Sequence[Tuple[Any, str]]]]
+    ] = dc_field(default=None, compare=False)
     form_template: str = "forms/enum.html"
     class_: str = "field-enum form-control form-select"
-    coerce: type = str
+    coerce: Callable[[Any], Any] = str
+    select2: bool = True
+
+    def __post_init__(self) -> None:
+        if self.choices and not isinstance(self.choices[0], (list, tuple)):
+            self.choices = list(zip(self.choices, self.choices))  # type: ignore
+        elif self.enum:
+            self.choices = [(e.value, e.name.replace("_", " ")) for e in self.enum]
+            self.coerce = int if issubclass(self.enum, IntEnum) else str
+        elif not self.choices and self.choices_loader is None:
+            raise ValueError(
+                "EnumField required a list of choices, enum class or a choices_loader for dynamic choices"
+            )
+        super().__post_init__()
 
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
@@ -369,10 +455,17 @@ class EnumField(StringField):
             )
         )
 
-    def _get_label(self, value: Any) -> Any:
+    def _get_choices(self, request: Request) -> Any:
+        return (
+            self.choices
+            if self.choices_loader is None
+            else self.choices_loader(request)
+        )
+
+    def _get_label(self, value: Any, request: Request) -> Any:
         if isinstance(value, Enum):
             return value.name
-        for v, label in self.choices:
+        for v, label in self._get_choices(request):
             if value == v:
                 return label
         raise ValueError(f"Invalid choice value: {value}")
@@ -381,25 +474,32 @@ class EnumField(StringField):
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
         labels = [
-            (self._get_label(v) if action != RequestAction.EDIT else v)
+            (self._get_label(v, request) if action != RequestAction.EDIT else v)
             for v in (value if self.multiple else [value])
         ]
         return labels if self.multiple else labels[0]
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/select2.min.css"
-            )
-        ]
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if self.select2 and action.is_form():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/select2.min.css",
+                )
+            ]
+        return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics",
-                path="js/vendor/select2.min.js",
-            )
-        ]
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if self.select2 and action.is_form():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/select2.min.js",
+                )
+            ]
+        return []
 
     @classmethod
     def from_enum(
@@ -409,21 +509,71 @@ class EnumField(StringField):
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
-        choices = [(e.value, e.name.replace("_", " ")) for e in enum_type]
-        coerce = int if issubclass(enum_type, IntEnum) else str
-        return cls(name, choices=choices, multiple=multiple, coerce=coerce, **kwargs)  # type: ignore
+        warnings.warn(
+            f'This method is deprecated. Use EnumField("name", enum={enum_type.__name__}) instead.',
+            DeprecationWarning,
+        )
+        return cls(name, enum=enum_type, multiple=multiple, **kwargs)  # type: ignore
 
     @classmethod
     def from_choices(
         cls,
         name: str,
-        choices: Union[List[Tuple[str, str]], List[str], Tuple],
+        choices: Union[Sequence[str], Sequence[Tuple[str, str]], None],
         multiple: bool = False,
         **kwargs: Dict[str, Any],
     ) -> "EnumField":
-        if len(choices) > 0 and not isinstance(choices[0], (list, tuple)):
-            choices = list(zip(choices, choices))
+        warnings.warn(
+            f'This method is deprecated. Use EnumField("name", choices={choices}) instead.',
+            DeprecationWarning,
+        )
         return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
+
+
+@dataclass
+class TimeZoneField(EnumField):
+    """This field is used to represent the name of a timezone (eg. Africa/Porto-Novo)"""
+
+    def __post_init__(self) -> None:
+        if self.choices is None:
+
+            self.choices = [
+                (self.coerce(x), x.replace("_", " ")) for x in common_timezones
+            ]
+        super().__post_init__()
+
+
+@dataclass
+class CountryField(EnumField):
+    """This field is used to represent the name that corresponds to the country code stored in your database"""
+
+    def __post_init__(self) -> None:
+        try:
+            import babel  # noqa
+        except ImportError as err:
+            raise ImportError(
+                "'babel' package is required to use 'CountryField'. Install it with `pip install starlette-admin[i18n]`"
+            ) from err
+        self.choices_loader = lambda request: get_countries_list()
+        super().__post_init__()
+
+
+@dataclass
+class CurrencyField(EnumField):
+    """
+    This field is used to represent a value that stores the
+    [3-letter ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code of currency
+    """
+
+    def __post_init__(self) -> None:
+        try:
+            import babel  # noqa
+        except ImportError as err:
+            raise ImportError(
+                "'babel' package is required to use 'CurrencyField'. Install it with `pip install starlette-admin[i18n]`"
+            ) from err
+        self.choices_loader = lambda request: get_currencies_list()
+        super().__post_init__()
 
 
 @dataclass
@@ -437,8 +587,8 @@ class DateTimeField(NumberField):
 
     input_type: str = "datetime-local"
     class_: str = "field-datetime form-control"
-    search_builder_type: str = "moment-MMMM D, YYYY HH:mm:ss"
-    output_format: str = "%B %d, %Y %H:%M:%S"
+    search_builder_type: str = "moment-LL LT"
+    output_format: Optional[str] = None
     search_format: Optional[str] = None
     form_alt_format: Optional[str] = "F j, Y  H:i:S"
 
@@ -450,8 +600,11 @@ class DateTimeField(NumberField):
                 "max": self.max,
                 "step": self.step,
                 "data_alt_format": self.form_alt_format,
+                "data_locale": get_locale(),
                 "placeholder": self.placeholder,
                 "required": self.required,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
             }
         )
 
@@ -468,25 +621,40 @@ class DateTimeField(NumberField):
     ) -> str:
         assert isinstance(
             value, (datetime, date, time)
-        ), f"Expect datetime, got  {type(value)}"
+        ), f"Expect datetime | date | time, got  {type(value)}"
         if action != RequestAction.EDIT:
-            return value.strftime(self.output_format)
+            return format_datetime(value, self.output_format)
         return value.isoformat()
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/flatpickr.min.css"
-            )
-        ]
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if action.is_form():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/flatpickr.min.css",
+                )
+            ]
+        return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return [
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        _links = [
             request.url_for(
                 f"{request.app.state.ROUTE_NAME}:statics",
                 path="js/vendor/flatpickr.min.js",
             )
         ]
+        if get_locale() != "en":
+            _links.append(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path=f"i18n/flatpickr/{get_locale()}.js",
+                )
+            )
+        if action.is_form():
+            return _links
+        return []
 
 
 @dataclass
@@ -500,9 +668,9 @@ class DateField(DateTimeField):
 
     input_type: str = "date"
     class_: str = "field-date form-control"
-    output_format: str = "%B %d, %Y"
+    output_format: Optional[str] = None
     search_format: str = "YYYY-MM-DD"
-    search_builder_type: str = "moment-MMMM D, YYYY"
+    search_builder_type: str = "moment-LL"
     form_alt_format: Optional[str] = "F j, Y"
 
     async def parse_form_data(
@@ -512,6 +680,14 @@ class DateField(DateTimeField):
             return date.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> str:
+        assert isinstance(value, date), f"Expect date, got  {type(value)}"
+        if action != RequestAction.EDIT:
+            return format_date(value, self.output_format)
+        return value.isoformat()
 
 
 @dataclass
@@ -525,8 +701,8 @@ class TimeField(DateTimeField):
 
     input_type: str = "time"
     class_: str = "field-time form-control"
-    search_builder_type: str = "moment-HH:mm:ss"
-    output_format: str = "%H:%M:%S"
+    search_builder_type: str = "moment-LTS"
+    output_format: Optional[str] = None
     search_format: str = "HH:mm:ss"
     form_alt_format: Optional[str] = "H:i:S"
 
@@ -538,6 +714,42 @@ class TimeField(DateTimeField):
         except (TypeError, ValueError):
             return None
 
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> str:
+        assert isinstance(value, time), f"Expect time, got  {type(value)}"
+        if action != RequestAction.EDIT:
+            return format_time(value, self.output_format)
+        return value.isoformat()
+
+
+@dataclass
+class ArrowField(DateTimeField):
+    """
+    This field is used to represent sqlalchemy_utils.types.arrow.ArrowType
+    """
+
+    def __post_init__(self) -> None:
+        if not arrow:  # pragma: no cover
+            raise ImportError("'arrow' package is required to use 'ArrowField'")
+        super().__post_init__()
+
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
+        try:
+            return arrow.get(form_data.get(self.id))  # type: ignore
+        except (TypeError, arrow.parser.ParserError):  # pragma: no cover
+            return None
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> str:
+        assert isinstance(value, arrow.Arrow), f"Expected Arrow, got  {type(value)}"
+        if action != RequestAction.EDIT:
+            return value.humanize(locale=get_locale())
+        return value.isoformat()
+
 
 @dataclass
 class JSONField(BaseField):
@@ -545,9 +757,16 @@ class JSONField(BaseField):
     This field render jsoneditor and represent a value that stores python dict object.
     Erroneous input is ignored and will not be accepted as a value."""
 
+    height: str = "20em"
+    modes: Optional[Sequence[str]] = None
     render_function_key: str = "json"
     form_template: str = "forms/json.html"
     display_template: str = "displays/json.html"
+
+    def __post_init__(self) -> None:
+        if self.modes is None:
+            self.modes = ["view"] if self.read_only else ["tree", "code"]
+        super().__post_init__()
 
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
@@ -558,20 +777,27 @@ class JSONField(BaseField):
         except JSONDecodeError:
             return None
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/jsoneditor.min.css"
-            )
-        ]
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if action.is_form():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/jsoneditor.min.css",
+                )
+            ]
+        return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics",
-                path="js/vendor/jsoneditor.min.js",
-            )
-        ]
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.is_form():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/jsoneditor.min.js",
+                )
+            ]
+        return []
 
 
 @dataclass
@@ -584,6 +810,7 @@ class FileField(BaseField):
     When user ask for delete on editing page, the second part of the returned tuple is True.
     """
 
+    accept: Optional[str] = None
     multiple: bool = False
     render_function_key: str = "file"
     form_template: str = "forms/file.html"
@@ -610,6 +837,16 @@ class FileField(BaseField):
             ]
         )
 
+    def input_params(self) -> str:
+        return html_params(
+            {
+                "accept": self.accept,
+                "disabled": self.disabled,
+                "readonly": self.read_only,
+                "multiple": self.multiple,
+            }
+        )
+
 
 @dataclass
 class ImageField(FileField):
@@ -617,6 +854,7 @@ class ImageField(FileField):
     FileField with `accept="image/*"`.
     """
 
+    accept: Optional[str] = "image/*"
     render_function_key: str = "image"
     form_template: str = "forms/image.html"
     display_template: str = "displays/image.html"
@@ -637,20 +875,27 @@ class RelationField(BaseField):
             return form_data.getlist(self.id)
         return form_data.get(self.id)
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path="css/select2.min.css"
-            )
-        ]
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if action.is_form():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/select2.min.css",
+                )
+            ]
+        return []
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics",
-                path="js/vendor/select2.min.js",
-            )
-        ]
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.is_form():
+            return [
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/select2.min.js",
+                )
+            ]
+        return []
 
 
 @dataclass
@@ -736,16 +981,18 @@ class CollectionField(BaseField):
                     )
         return serialized_value
 
-    def additional_css_links(self, request: Request) -> List[str]:
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
         _links = []
         for f in self.fields:
-            _links.extend(f.additional_css_links(request))
+            _links.extend(f.additional_css_links(request, action))
         return _links
 
-    def additional_js_links(self, request: Request) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         _links = []
         for f in self.fields:
-            _links.extend(f.additional_js_links(request))
+            _links.extend(f.additional_js_links(request, action))
         return _links
 
 
@@ -833,8 +1080,10 @@ class ListField(BaseField):
             self.field._propagate_id()
         return self.field
 
-    def additional_css_links(self, request: Request) -> List[str]:
-        return self.field.additional_css_links(request)
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        return self.field.additional_css_links(request, action)
 
-    def additional_js_links(self, request: Request) -> List[str]:
-        return self.field.additional_js_links(request)
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        return self.field.additional_js_links(request, action)

@@ -11,12 +11,28 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse, Response
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
-from starlette.status import HTTP_303_SEE_OTHER, HTTP_403_FORBIDDEN
+from starlette.status import (
+    HTTP_303_SEE_OTHER,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
 from starlette.templating import Jinja2Templates
 from starlette_admin._types import RequestAction
 from starlette_admin.auth import AuthMiddleware, AuthProvider
 from starlette_admin.exceptions import ActionFailed, FormValidationError, LoginFailed
 from starlette_admin.helpers import get_file_icon
+from starlette_admin.i18n import (
+    I18nConfig,
+    LocaleMiddleware,
+    get_locale,
+    get_locale_display_name,
+    gettext,
+    ngettext,
+)
+from starlette_admin.i18n import lazy_gettext as _
 from starlette_admin.views import BaseModelView, BaseView, CustomView, DropDown, Link
 
 
@@ -25,7 +41,7 @@ class BaseAdmin:
 
     def __init__(
         self,
-        title: str = "Admin",
+        title: str = _("Admin"),
         base_url: str = "/admin",
         route_name: str = "admin",
         logo_url: Optional[str] = None,
@@ -36,6 +52,7 @@ class BaseAdmin:
         auth_provider: Optional[AuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
+        i18n_config: Optional[I18nConfig] = None,
     ):
         """
         Parameters:
@@ -49,6 +66,7 @@ class BaseAdmin:
             index_view: CustomView to use for index page.
             auth_provider: Authentication Provider
             middlewares: Starlette middlewares
+            i18n_config: i18n configuration
         """
         self.title = title
         self.base_url = base_url
@@ -68,7 +86,9 @@ class BaseAdmin:
         self._models: List[BaseModelView] = []
         self.routes: List[Union[Route, Mount]] = []
         self.debug = debug
+        self.i18n_config = i18n_config
         self._setup_templates()
+        self.init_locale()
         self.init_auth()
         self.init_routes()
 
@@ -93,6 +113,22 @@ class BaseAdmin:
             request: Starlette Request
         """
         return None
+
+    def init_locale(self) -> None:
+        if self.i18n_config is not None:
+            try:
+                import babel  # noqa
+            except ImportError as err:
+                raise ImportError(
+                    "'babel' package is required to use i18n features."
+                    "Install it with `pip install starlette-admin[i18n]`"
+                ) from err
+            self.middlewares = (
+                [] if self.middlewares is None else list(self.middlewares)
+            )
+            self.middlewares.insert(
+                0, Middleware(LocaleMiddleware, i18n_config=self.i18n_config)
+            )
 
     def init_auth(self) -> None:
         if self.auth_provider is not None:
@@ -172,13 +208,14 @@ class BaseAdmin:
             self._views.append(self.index_view)
 
     def _setup_templates(self) -> None:
-        templates = Jinja2Templates(self.templates_dir)
+        templates = Jinja2Templates(self.templates_dir, extensions=["jinja2.ext.i18n"])
         templates.env.loader = ChoiceLoader(
             [
                 FileSystemLoader(self.templates_dir),
                 PackageLoader("starlette_admin", "templates"),
             ]
         )
+        # globals
         templates.env.globals["views"] = self._views
         templates.env.globals["title"] = self.title
         templates.env.globals["is_auth_enabled"] = self.auth_provider is not None
@@ -186,9 +223,11 @@ class BaseAdmin:
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["login_logo_url"] = self.login_logo_url
         templates.env.globals["custom_render_js"] = lambda r: self.custom_render_js(r)
-        templates.env.filters["is_custom_view"] = lambda res: isinstance(
-            res, CustomView
-        )
+        templates.env.globals["get_locale"] = get_locale
+        templates.env.globals["get_locale_display_name"] = get_locale_display_name
+        templates.env.globals["i18n_config"] = self.i18n_config or I18nConfig()
+        # filters
+        templates.env.filters["is_custom_view"] = lambda r: isinstance(r, CustomView)
         templates.env.filters["is_link"] = lambda res: isinstance(res, Link)
         templates.env.filters["is_model"] = lambda res: isinstance(res, BaseModelView)
         templates.env.filters["is_dropdown"] = lambda res: isinstance(res, DropDown)
@@ -203,6 +242,9 @@ class BaseAdmin:
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
+        templates.env.filters["ra"] = lambda a: RequestAction(a)
+        # install i18n
+        templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:
@@ -228,14 +270,17 @@ class BaseAdmin:
             for model in self._models:
                 if model.identity == identity:
                     return model
-        raise HTTPException(404, "Model with identity %s not found" % identity)
+        raise HTTPException(
+            HTTP_404_NOT_FOUND,
+            _("Model with identity %(identity)s not found") % {"identity": identity},
+        )
 
     def _render_custom_view(
         self, custom_view: CustomView
     ) -> Callable[[Request], Awaitable[Response]]:
         async def wrapper(request: Request) -> Response:
             if not custom_view.is_accessible(request):
-                raise HTTPException(403)
+                raise HTTPException(HTTP_403_FORBIDDEN)
             return await custom_view.render(request, self.templates)
 
         return wrapper
@@ -296,9 +341,9 @@ class BaseAdmin:
                 raise ActionFailed("Forbidden")
             assert name is not None
             msg = await model.handle_action(request, pks, name)
-            return JSONResponse({"msg": msg}, status_code=200)
+            return JSONResponse({"msg": msg})
         except ActionFailed as exc:
-            return JSONResponse({"msg": exc.msg}, status_code=400)
+            return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
 
     async def _render_login(self, request: Request) -> Response:
         if request.method == "GET":
@@ -328,6 +373,7 @@ class BaseAdmin:
                         "request": request,
                         "form_errors": errors,
                     },
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                 )
             except LoginFailed as error:
                 return self.templates.TemplateResponse(
@@ -336,6 +382,7 @@ class BaseAdmin:
                         "request": request,
                         "error": error.msg,
                     },
+                    status_code=HTTP_400_BAD_REQUEST,
                 )
 
     async def _render_logout(self, request: Request) -> Response:
@@ -352,7 +399,7 @@ class BaseAdmin:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request):
-            raise HTTPException(403)
+            raise HTTPException(HTTP_403_FORBIDDEN)
         return self.templates.TemplateResponse(
             model.list_template,
             {
@@ -367,11 +414,11 @@ class BaseAdmin:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request) or not model.can_view_details(request):
-            raise HTTPException(403)
+            raise HTTPException(HTTP_403_FORBIDDEN)
         pk = request.path_params.get("pk")
         obj = await model.find_by_pk(request, pk)
         if obj is None:
-            raise HTTPException(404)
+            raise HTTPException(HTTP_404_NOT_FOUND)
         return self.templates.TemplateResponse(
             model.detail_template,
             {
@@ -386,7 +433,7 @@ class BaseAdmin:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request) or not model.can_create(request):
-            raise HTTPException(403)
+            raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
             return self.templates.TemplateResponse(
                 model.create_template,
@@ -408,6 +455,7 @@ class BaseAdmin:
                         "errors": exc.errors,
                         "obj": dict_obj,
                     },
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                 )
             pk = getattr(obj, model.pk_attr)  # type: ignore
             url = request.url_for(self.route_name + ":list", identity=model.identity)
@@ -423,11 +471,11 @@ class BaseAdmin:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request) or not model.can_edit(request):
-            raise HTTPException(403)
+            raise HTTPException(HTTP_403_FORBIDDEN)
         pk = request.path_params.get("pk")
         obj = await model.find_by_pk(request, pk)
         if obj is None:
-            raise HTTPException(404)
+            raise HTTPException(HTTP_404_NOT_FOUND)
         if request.method == "GET":
             return self.templates.TemplateResponse(
                 model.edit_template,
@@ -452,6 +500,7 @@ class BaseAdmin:
                         "errors": exc.errors,
                         "obj": dict_obj,
                     },
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                 )
             pk = getattr(obj, model.pk_attr)  # type: ignore
             url = request.url_for(self.route_name + ":list", identity=model.identity)
@@ -468,7 +517,7 @@ class BaseAdmin:
     async def _render_error(
         self,
         request: Request,
-        exc: Exception = HTTPException(status_code=500),  # noqa: B008
+        exc: Exception = HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR),
     ) -> Response:
         assert isinstance(exc, HTTPException)
         return self.templates.TemplateResponse(

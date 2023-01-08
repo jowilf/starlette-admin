@@ -1,6 +1,6 @@
 <div class="{%if error%}{{field.error_class}}{%endif%}">
-    <input type="file" class="form-control {%if error%}is-invalid{%endif%}" id="{{field.id}}" name="{{field.id}}" {%if
-       field.multiple%}multiple{%endif%} accept="image/*"/>
+    <input type="file" class="form-control {%if error%}is-invalid{%endif%}" id="{{field.id}}" name="{{field.id}}"
+           {{ field.input_params() | safe}}/>
     {% if field.help_text %}
     <small class="form-hint">{{field.help_text}}</small>
     {%endif%}
