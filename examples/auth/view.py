@@ -2,7 +2,7 @@ from typing import Any, List
 
 from sqlalchemy.orm import Session
 from starlette.requests import Request
-from starlette_admin import ExportType, action
+from starlette_admin import action
 from starlette_admin.contrib.sqla import ModelView
 
 from .model import Article, Status
@@ -10,8 +10,6 @@ from .model import Article, Status
 
 class ArticleView(ModelView):
     exclude_fields_from_list = [Article.body]
-    page_size_options = [10, 15, -1]
-    export_types = list(ExportType)
 
     def can_view_details(self, request: Request) -> bool:
         return "read" in request.state.user["roles"]
