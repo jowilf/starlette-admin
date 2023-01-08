@@ -272,8 +272,6 @@ $(function () {
     },
     language: {
       url: model.dt_i18n_url,
-      //info: "Showing <strong>_START_</strong> to <strong>_END_</strong> off <strong>_TOTAL_</strong> records",
-      //infoEmpty: "No matching records found",
       infoFiltered: "",
       select: {
         rows: {
@@ -281,35 +279,10 @@ $(function () {
         },
       },
       searchBuilder: {
-        // button: {
-        //   0: '<i class="fa-solid fa-filter"></i> Filter',
-        //   _: '<i class="fa-solid fa-filter"></i> Filter (%d)',
-        // },
-        // add: "Add Condition",
-        // condition: "Condition",
-        // clearAll: "Reset",
         delete: `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><line x1="4" y1="7" x2="20" y2="7"></line><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>`,
-        // deleteTitle: "Delete",
-        // data: "Column",
         left: `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="15 6 9 12 15 18"></polyline></svg>`,
-        // leftTitle: "Left",
-        // logicAnd: "AND",
-        // logicOr: "OR",
         right: `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="9 6 15 12 9 18"></polyline></svg>`,
-        // rightTitle: "Right",
-        // title: {
-        //   0: "Filters",
-        //   _: "Filters (%d)",
-        // },
-        // value: "Value",
-        // valueJoiner: "and",
       },
-      // buttons: {
-      //   pageLength: {
-      //     _: "%d",
-      //     "-1": "All",
-      //   },
-      // },
     },
     ajax: function (data, callback, settings) {
       // console.log(data);
