@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/advanced/base-model-view/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/advanced/base-model-view/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/advanced/base-model-view/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/advanced/custom-field/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/advanced/custom-field/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/advanced/custom-field/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/alternatives/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/alternatives/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/alternatives/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/api/actions/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/api/actions/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/api/actions/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/api/auth-provider/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/api/auth-provider/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/api/auth-provider/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/api/base-admin/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/api/base-admin/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/api/base-admin/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/api/contrib/sqlalchemy/modelview/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/api/contrib/sqlalchemy/modelview/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/api/contrib/sqlalchemy/modelview/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/api/fields/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/api/fields/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/api/fields/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/api/views/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/api/views/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/api/views/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/changelog/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/changelog/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/changelog/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/tutorial/authentication/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/tutorial/authentication/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/tutorial/authentication/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/tutorial/batch-actions/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/tutorial/batch-actions/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/tutorial/batch-actions/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/tutorial/configurations/admin/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/tutorial/configurations/admin/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/tutorial/configurations/admin/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/tutorial/configurations/modelview/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/tutorial/configurations/modelview/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/tutorial/configurations/modelview/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/tutorial/files/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/tutorial/files/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/tutorial/files/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/tutorial/getting-started/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/tutorial/getting-started/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/tutorial/getting-started/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/tutorial/multiple-admin/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/tutorial/multiple-admin/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/tutorial/multiple-admin/"/>
+         
+    </url>
+    <url>
+         <loc>https://jowilf.github.io/starlette-admin/tutorial/validations/</loc>
+         <lastmod>2023-01-10</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://jowilf.github.io/starlette-admin/tutorial/validations/"/>
+         <xhtml:link rel="alternate" hreflang="es" href="https://jowilf.github.io/starlette-admin/es/tutorial/validations/"/>
+         
+    </url>
+</urlset>
