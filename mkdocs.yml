@@ -3,6 +3,7 @@ site_description: Fast, beautiful and extensible administrative interface framew
 site_url: https://jowilf.github.io/starlette-admin
 repo_name: jowilf/starlette-admin
 repo_url: https://github.com/jowilf/starlette-admin
+edit_uri: https://github.com/jowilf/starlette-admin/tree/main/docs
 theme:
   name: material
   palette:
@@ -19,9 +20,12 @@ theme:
         name: Switch to light mode
 
   features:
+    - content.code.copy
+    - content.action.view
     - search.suggest
     - search.highlight
     - navigation.tabs
+    - navigation.footer
     - content.tabs.link
 
 markdown_extensions:
