@@ -81,7 +81,7 @@ doc = [
     "mkdocs-static-i18n >=0.53.0, <0.54.0"
 ]
 dev = [
-    "pre-commit >=2.20.0, <3.0.0",
+    "pre-commit >=2.20.0, <4.0.0",
     "uvicorn >=0.20.0, <0.21.0",
 ]
 
