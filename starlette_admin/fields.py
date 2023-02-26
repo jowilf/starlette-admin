@@ -327,7 +327,7 @@ class PasswordField(StringField):
 class EnumField(StringField):
     """
     Enumeration Field.
-    It take a python `enum.Enum` class or a list of *(value, label)* pairs.
+    It takes a python `enum.Enum` class or a list of *(value, label)* pairs.
     It can also be a list of only values, in which case the value is used as the label.
     Example:
         ```Python
@@ -371,7 +371,7 @@ class EnumField(StringField):
 
     def _get_label(self, value: Any) -> Any:
         if isinstance(value, Enum):
-            return value.name
+            return value.name.replace("_", " ")
         for v, label in self.choices:
             if value == v:
                 return label
