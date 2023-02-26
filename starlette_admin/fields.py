@@ -464,7 +464,7 @@ class EnumField(StringField):
 
     def _get_label(self, value: Any, request: Request) -> Any:
         if isinstance(value, Enum):
-            return value.name
+            return value.name.replace("_", " ")
         for v, label in self._get_choices(request):
             if value == v:
                 return label

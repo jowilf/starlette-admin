@@ -1,4 +1,4 @@
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 from ._types import ExportType, RequestAction
 from .actions import action
