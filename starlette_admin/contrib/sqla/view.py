@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 import anyio.to_thread
 from sqlalchemy import Column, String, cast, func, inspect, or_, select
-from sqlalchemy.exc import NoInspectionAvailable
+from sqlalchemy.exc import NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, Session, joinedload
 from sqlalchemy.sql import Select
@@ -15,7 +15,7 @@ from starlette_admin.contrib.sqla.helpers import (
     normalize_fields,
     normalize_list,
 )
-from starlette_admin.exceptions import FormValidationError
+from starlette_admin.exceptions import FormValidationError, ActionFailed
 from starlette_admin.fields import (
     ColorField,
     EmailField,
@@ -85,6 +85,12 @@ class ModelView(BaseModelView):
         )
         self.export_fields = normalize_list(self.export_fields)
         super().__init__()
+
+    async def handle_action(self, request: Request, pks: List[Any], name: str) -> str:
+        try:
+            return await super().handle_action(request, pks, name)
+        except SQLAlchemyError as exc:
+            raise ActionFailed(str(exc))
 
     def get_list_query(self) -> Select:
         """
