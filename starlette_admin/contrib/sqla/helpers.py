@@ -135,7 +135,16 @@ def convert_to_field(column: Column) -> Type[BaseField]:
         return TagsField
     elif isinstance(column.type, ARRAY):
         raise NotSupportedColumn("Column ARRAY with dimensions != 1 is not supported")
-    types = inspect.getmro(type(column.type))
+    field = _search_converter_for_col_type(type(column.type))
+    if field is not None:
+        return field
+    raise NotSupportedColumn(  # pragma: no cover
+        f"Column {column.type} is not supported"
+    )
+
+
+def _search_converter_for_col_type(col_type: Any) -> Optional[Type[BaseField]]:
+    types = inspect.getmro(col_type)
 
     # Search by module + name
     for col_type in types:
@@ -148,18 +157,14 @@ def convert_to_field(column: Column) -> Type[BaseField]:
         if col_type.__name__ in converters:
             return converters[col_type.__name__]
 
-        # Support for custom types like SQLModel which inherit TypeDecorator
+        # Support for custom types which inherit TypeDecorator
         if hasattr(col_type, "impl"):
             if callable(col_type.impl):
                 impl = col_type.impl
             else:
                 impl = col_type.impl.__class__
-
-            if impl.__name__ in converters:
-                return converters[impl.__name__]
-    raise NotSupportedColumn(  # pragma: no cover
-        f"Column {column.type} is not supported"
-    )
+            return _search_converter_for_col_type(impl)
+    return None
 
 
 def normalize_fields(  # noqa: C901

@@ -246,3 +246,24 @@ def test_conversion_when_impl_not_callable() -> None:
         ),
         StringField("name"),
     ]
+
+
+def test_conversion_for_nested_impl() -> None:
+    class CustomStringType(String):
+        pass
+
+    class CustomString(TypeDecorator):
+        impl = CustomStringType
+
+    class CustomModel3(Base):
+        __tablename__ = "custom_model_3"
+
+        id = Column(Integer, primary_key=True)
+        name = Column(CustomString)
+
+    assert ModelView(CustomModel3).fields == [
+        IntegerField(
+            "id", required=True, exclude_from_create=True, exclude_from_edit=True
+        ),
+        StringField("name"),
+    ]
