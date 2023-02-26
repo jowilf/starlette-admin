@@ -90,7 +90,7 @@ class ModelView(BaseModelView):
         try:
             return await super().handle_action(request, pks, name)
         except SQLAlchemyError as exc:
-            raise ActionFailed(str(exc))
+            raise ActionFailed(str(exc)) from exc
 
     def get_list_query(self) -> Select:
         """
