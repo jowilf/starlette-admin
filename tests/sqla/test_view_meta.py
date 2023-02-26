@@ -270,6 +270,27 @@ def test_conversion_when_impl_not_callable() -> None:
     ]
 
 
+def test_conversion_for_nested_impl() -> None:
+    class CustomStringType(String):
+        pass
+
+    class CustomString(TypeDecorator):
+        impl = CustomStringType
+
+    class CustomModel3(Base):
+        __tablename__ = "custom_model_3"
+
+        id = Column(Integer, primary_key=True)
+        name = Column(CustomString)
+
+    assert ModelView(CustomModel3).fields == [
+        IntegerField(
+            "id", required=True, exclude_from_create=True, exclude_from_edit=True
+        ),
+        StringField("name"),
+    ]
+
+
 def test_unsigned_int_conversion() -> None:
     class UnsignedModel(Base):
         __tablename__ = "usigned_model"

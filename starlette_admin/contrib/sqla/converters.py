@@ -1,7 +1,7 @@
 # Inspired by wtforms-sqlalchemy
 import enum
 import inspect
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from sqlalchemy import ARRAY, Boolean, Column, Float, String
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
@@ -49,7 +49,19 @@ def converts(
 
 
 def find_converter(column: Column) -> Callable[[str, Column], BaseField]:
-    types = inspect.getmro(type(column.type))
+    field = _search_converter_for_col_type(type(column.type))
+    if field is not None:
+        return field
+    raise NotSupportedColumn(  # pragma: no cover
+        f"Column {column.type} can not be converted automatically. Find the appropriate field manually"
+    )
+
+
+def _search_converter_for_col_type(
+    col_type: Any,
+) -> Optional[Callable[[str, Column], BaseField]]:
+    types = inspect.getmro(col_type)
+
     # Search by module + name
     for col_type in types:
         type_string = f"{col_type.__module__}.{col_type.__name__}"
@@ -61,18 +73,14 @@ def find_converter(column: Column) -> Callable[[str, Column], BaseField]:
         if col_type.__name__ in converters:
             return converters[col_type.__name__]
 
-        # Support for custom types like SQLModel which inherit TypeDecorator
+        # Support for custom types which inherit TypeDecorator
         if hasattr(col_type, "impl"):
             if callable(col_type.impl):
                 impl = col_type.impl
             else:
                 impl = col_type.impl.__class__
-
-            if impl.__name__ in converters:
-                return converters[impl.__name__]
-    raise NotSupportedColumn(  # pragma: no cover
-        f"Column {column.type} can not be converted automatically. Find the appropriate field manually"
-    )
+            return _search_converter_for_col_type(impl)
+    return None  # pragma: no cover
 
 
 def field_common(column: Column) -> Dict[str, Any]:
