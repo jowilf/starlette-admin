@@ -536,7 +536,6 @@ class TimeZoneField(EnumField):
 
     def __post_init__(self) -> None:
         if self.choices is None:
-
             self.choices = [
                 (self.coerce(x), x.replace("_", " ")) for x in common_timezones
             ]
