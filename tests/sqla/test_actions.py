@@ -27,7 +27,6 @@ class ArticleView(ModelView):
         request.state.session.execute(
             select(Article).where(Article.title == "test")
         ).one()
-        return 0
 
 
 @pytest.fixture
