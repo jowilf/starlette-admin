@@ -56,7 +56,7 @@ class MyAuthProvider(AuthProvider):
 
         return False
 
-    def get_admin_user(self, request: Request) -> AdminUser:
+    async def get_admin_user(self, request: Request) -> AdminUser:
         user = request.state.user  # Retrieve current user
         photo_url = None
         if user["avatar"] is not None:
