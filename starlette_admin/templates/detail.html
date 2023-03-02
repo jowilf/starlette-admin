@@ -97,26 +97,32 @@
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
 
 <script>
-  $(function () {
-    $("#modal-delete-btn").click(function () {
-      $("#modal-delete").modal('hide');
-      $("#modal-loading").modal('show');
-      fetch("{{ url_for(__name__ ~ ':action', identity=model.identity)  | safe}}?name=delete&pks={{obj[pk]}}", {
-        method: "POST",
-      }).then(async response => {
-        if (response.ok) {
-          await new Promise(r => setTimeout(r, 500));
-          $("#modal-loading").modal('hide')
-          window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity)  | safe}}")
-        } else
-          return Promise.reject();
 
-      }).catch(async (error) => {
+$(function () {
+  $("#modal-delete-btn").click(function () {
+    $("#modal-delete").modal('hide');
+    $("#modal-loading").modal('show');
+    fetch("{{ url_for(__name__ ~ ':action', identity=model.identity)  | safe}}?name=delete&pks={{obj[pk]}}", {
+      method: "POST",
+    }).then(async response => {
+      if (response.ok) {
         await new Promise(r => setTimeout(r, 500));
         $("#modal-loading").modal('hide')
-        $("#modal-error").modal('show');
-      });
+        window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity)  | safe}}")
+      } else {
+        if (response.status == 400) {
+          return Promise.reject((await response.json())["msg"]);
+        }
+        return Promise.reject("Something went wrong!");
+      }
+
+    }).catch(async (error) => {
+      await new Promise(r => setTimeout(r, 500));
+      $("#modal-loading").modal('hide');
+      $("#error-body").text(error);
+      $("#modal-error").modal('show');
     });
-  })
+  });
+})
 </script>
 {% endblock %}
