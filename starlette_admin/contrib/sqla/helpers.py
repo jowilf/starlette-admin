@@ -106,8 +106,8 @@ def normalize_fields(  # noqa: C901
                 ), "Multiple-column properties are not supported"
                 column = attr.columns[0]
                 if not column.foreign_keys:
-                    field_converter = find_converter(column)
-                    converted_fields.append(field_converter(attr.key, column))
+                    field_converter = find_converter(column)  # type: ignore
+                    converted_fields.append(field_converter(attr.key, column))  # type: ignore
     return converted_fields
 
 

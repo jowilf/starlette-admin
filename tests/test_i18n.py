@@ -59,8 +59,8 @@ def test_extract_locale_from_cookies():
     app = Starlette()
     admin.mount_to(app)
     admin.add_view(PostView())
-    client = TestClient(app)
-    response = client.get("/admin/post/list", cookies={"language": "fr"})
+    client = TestClient(app, cookies={"language": "fr"})
+    response = client.get("/admin/post/list")
     assert response.text.count('<html lang="fr">') == 1
     assert "Créer Post" in response.text
 

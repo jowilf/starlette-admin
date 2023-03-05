@@ -108,9 +108,12 @@ def _string_common(column: Column) -> Dict[str, Any]:
 
 @converts(
     "String",
+    "sqlalchemy.sql.sqltypes.Uuid",
     "sqlalchemy.dialects.postgresql.base.UUID",
     "sqlalchemy.dialects.postgresql.base.MACADDR",
+    "sqlalchemy.dialects.postgresql.types.MACADDR",
     "sqlalchemy.dialects.postgresql.base.INET",
+    "sqlalchemy.dialects.postgresql.types.INET",
     "sqlalchemy_utils.types.locale.LocaleType",
     "sqlalchemy_utils.types.ip_address.IPAddressType",
     "sqlalchemy_utils.types.uuid.UUIDType",
@@ -146,6 +149,7 @@ def conv_time(name: str, column: Column) -> BaseField:
 
 @converts("Enum")
 def conv_enum(name: str, column: Column) -> BaseField:
+    assert hasattr(column.type, "enum_class")
     return EnumField(name, enum=column.type.enum_class, **field_common(column))
 
 
