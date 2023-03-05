@@ -13,9 +13,9 @@ SUPPORTED_LOCALES = ["en", "fr"]
 
 try:
     from babel import Locale, dates
-    from babel.support import LazyProxy, Translations
+    from babel.support import LazyProxy, NullTranslations, Translations
 
-    translations: Dict[str, Translations] = {
+    translations: Dict[str, NullTranslations] = {
         locale: Translations.load(
             dirname=pathlib.Path(__file__).parent.joinpath("translations/"),
             locales=[locale],
@@ -27,7 +27,7 @@ try:
     _current_locale: ContextVar[str] = ContextVar(
         "current_locale", default=DEFAULT_LOCALE
     )
-    _current_translation: ContextVar[Translations] = ContextVar(
+    _current_translation: ContextVar[NullTranslations] = ContextVar(
         "current_translation", default=translations[DEFAULT_LOCALE]
     )
 
@@ -45,7 +45,7 @@ try:
         return _current_translation.get().ngettext(msgid1, msgid2, n)
 
     def lazy_gettext(message: str) -> str:
-        return LazyProxy(gettext, message)
+        return LazyProxy(gettext, message)  # type: ignore[return-value]
 
     def format_datetime(
         datetime: Union[datetime.date, datetime.time],
@@ -70,7 +70,7 @@ try:
 
     def get_currencies_list() -> List[Tuple[str, str]]:
         locale = Locale.parse(get_locale())
-        return [(x, f"{x} - {locale.currencies[x]}") for x in locale.currencies]
+        return [(str(x), f"{x} - {locale.currencies[x]}") for x in locale.currencies]
 
     def get_locale_display_name(locale: str) -> str:
         return Locale(locale).display_name.capitalize()
