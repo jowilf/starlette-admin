@@ -15,6 +15,7 @@ admin = Admin(
     auth_provider=MyAuthProvider(login_path="/sign-in", logout_path="/sign-out"),
     middlewares=[],
     debug=False,
+    i18n_config = I18nConfig(default_locale="en")
 )
 ```
 
@@ -31,3 +32,4 @@ admin = Admin(
 * `index_view`: CustomView to use for index page.
 * `auth_provider`: Authentication Provider
 * `middlewares`: Starlette middlewares
+* `i18n_config`: i18n config for your admin interface
