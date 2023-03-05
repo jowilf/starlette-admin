@@ -1,0 +1,3 @@
+starlette-admin[i18n]
+sqlalchemy
+uvicorn
