@@ -25,7 +25,7 @@ class User(Base):
     last_name = Column(String(100))
     first_name = Column(String(100))
     # use a regular string field, for which we can specify a list of available choices later on
-    # >>> EnumField.from_choices("type", AVAILABLE_USER_TYPES)
+    # >>> EnumField("type", choices=AVAILABLE_USER_TYPES, select2=False)
     type = Column(String(50))
 
     posts = relationship("Post", back_populates="publisher")
