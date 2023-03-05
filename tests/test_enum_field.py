@@ -27,7 +27,6 @@ def test_deprecated_from_enum_method():
 
 
 def test_deprecated_from_choices_method():
-
     with pytest.warns(
         DeprecationWarning,
         match="This method is deprecated.",
