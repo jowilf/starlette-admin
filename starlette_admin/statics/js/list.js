@@ -344,10 +344,9 @@ $(function () {
       let order = [];
       for (const [col, desc] of Object.entries(model.fieldsDefaultSort)) {
         let idx = dt_columns.findIndex((it) => col === it.name);
-        if (idx > -1);
-        order.push([idx + 2, desc === true ? "desc" : "asc"]);
+        if (idx > -1) order.push([idx + 2, desc === true ? "desc" : "asc"]);
       }
-      return order.length > 0 ? order : null;
+      return order;
     })(),
     initComplete: function () {
       new $.fn.dataTable.Buttons(table, {
