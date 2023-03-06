@@ -347,7 +347,7 @@ $(function () {
         if (idx > -1);
         order.push([idx + 2, desc === true ? "desc" : "asc"]);
       }
-      return order;
+      return order.length > 0 ? order : null;
     })(),
     initComplete: function () {
       new $.fn.dataTable.Buttons(table, {

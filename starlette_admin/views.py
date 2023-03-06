@@ -276,6 +276,8 @@ class BaseModelView(BaseView):
             self.sortable_fields = all_field_names[:]
         if self.export_fields is None:
             self.export_fields = all_field_names[:]
+        if self.fields_default_sort is None:
+            self.fields_default_sort = [self.pk_attr]  # type: ignore[list-item]
 
         # Actions
         self._actions: Dict[str, Dict[str, str]] = {}
@@ -660,7 +662,7 @@ class BaseModelView(BaseView):
                 k: v
                 for k, v in (
                     (it, False) if isinstance(it, str) else it
-                    for it in (self.fields_default_sort or [self.pk_attr])  # type: ignore[list-item]
+                    for it in self.fields_default_sort  # type: ignore[union-attr]
                 )
             },
             "exportTypes": self.export_types,
