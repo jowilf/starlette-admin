@@ -7,7 +7,7 @@ from starlette_admin import EnumField, ExportType, StringField
 from starlette_admin.contrib.sqla import ModelView
 from starlette_admin.exceptions import FormValidationError
 
-from .models import Post
+from .models import Post, User
 
 AVAILABLE_USER_TYPES = [
     ("admin", "Admin"),
@@ -25,6 +25,7 @@ class UserView(ModelView):
         EnumField("type", choices=AVAILABLE_USER_TYPES, select2=False),
         "posts",
     ]
+    fields_default_sort = [User.last_name, ("first_name", True)]
 
 
 class PostView(ModelView):

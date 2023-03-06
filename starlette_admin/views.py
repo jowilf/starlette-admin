@@ -1,6 +1,17 @@
 import inspect
 from abc import abstractmethod
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Type, Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 
 from jinja2 import Template
 from starlette.requests import Request
@@ -173,9 +184,11 @@ class BaseModelView(BaseView):
         searchable_fields: List of searchable fields.
         sortable_fields: List of sortable fields.
         export_fields: List of fields to include in exports.
+        fields_default_sort: Initial order (sort) to apply to the table.
+            eg: `["title", ("price", True)]`.
         export_types: A list of available export filetypes. Available
             exports are `['csv', 'excel', 'pdf', 'print']`. Only `pdf` is
-            disable by default.
+            disabled by default.
         column_visibility: Enable/Disable
             [column visibility](https://datatables.net/extensions/buttons/built-in#Column-visibility)
             extension
@@ -206,6 +219,7 @@ class BaseModelView(BaseView):
     exclude_fields_from_edit: Sequence[str] = []
     searchable_fields: Optional[Sequence[str]] = None
     sortable_fields: Optional[Sequence[str]] = None
+    fields_default_sort: Optional[Sequence[Union[Tuple[str, bool], str]]] = None
     export_types: Sequence[ExportType] = [
         ExportType.CSV,
         ExportType.EXCEL,
@@ -642,6 +656,13 @@ class BaseModelView(BaseView):
             "lengthMenu": self._length_menu(),
             "searchColumns": self._search_columns_selector(),
             "exportColumns": self._export_columns_selector(),
+            "fieldsDefaultSort": {
+                k: v
+                for k, v in (
+                    (it, False) if isinstance(it, str) else it
+                    for it in (self.fields_default_sort or [self.pk_attr])  # type: ignore[list-item]
+                )
+            },
             "exportTypes": self.export_types,
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,

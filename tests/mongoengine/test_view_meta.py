@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 
 import mongoengine as me
@@ -143,5 +144,19 @@ def test_invalid_exclude_list():
 
         class CustomDocumentView(ModelView):
             exclude_fields_from_create = [1]
+
+        CustomDocumentView(MyDocument)
+
+
+def test_invalid_fields_default_sort_list():
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Invalid argument, Expected Tuple[str | monogoengine.BaseField, bool]"
+        ),
+    ):
+
+        class CustomDocumentView(ModelView):
+            fields_default_sort = [MyDocument.id, (MyDocument.long, True), (1,)]
 
         CustomDocumentView(MyDocument)
