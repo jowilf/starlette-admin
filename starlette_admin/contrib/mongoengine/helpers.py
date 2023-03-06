@@ -174,7 +174,9 @@ def build_order_clauses(order_list: List[str]) -> List[str]:
     return clauses
 
 
-def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
+def normalize_list(
+    arr: Optional[Sequence[Any]], is_default_sort_list: bool = False
+) -> Optional[Sequence[str]]:
     if arr is None:
         return None
     _new_list = []
@@ -183,6 +185,25 @@ def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
             _new_list.append(v.name)
         elif isinstance(v, str):
             _new_list.append(v)
+        elif (
+            isinstance(v, tuple) and is_default_sort_list
+        ):  # Support for fields_default_sort:
+            if (
+                len(v) == 2
+                and isinstance(v[0], (str, MongoBaseField))
+                and isinstance(v[1], bool)
+            ):
+                _new_list.append(
+                    (
+                        v[0].name if isinstance(v[0], MongoBaseField) else v[0],
+                        v[1],
+                    )
+                )
+            else:
+                raise ValueError(
+                    "Invalid argument, Expected Tuple[str | monogoengine.BaseField, bool]"
+                )
+
         else:
             raise ValueError(
                 f"Expected str or monogoengine.BaseField, got {type(v).__name__}"

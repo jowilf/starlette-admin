@@ -84,6 +84,9 @@ class ModelView(BaseModelView):
             else _default_list
         )
         self.export_fields = normalize_list(self.export_fields)
+        self.fields_default_sort = normalize_list(
+            self.fields_default_sort, is_default_sort_list=True
+        )
         super().__init__()
 
     async def handle_action(self, request: Request, pks: List[Any], name: str) -> str:

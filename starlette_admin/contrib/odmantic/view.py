@@ -83,6 +83,9 @@ class ModelView(BaseModelView):
         self.searchable_fields = normalize_list(self.searchable_fields)
         self.sortable_fields = normalize_list(self.sortable_fields)
         self.export_fields = normalize_list(self.export_fields)
+        self.fields_default_sort = normalize_list(
+            self.fields_default_sort, is_default_sort_list=True
+        )
         super().__init__()
 
     async def find_all(

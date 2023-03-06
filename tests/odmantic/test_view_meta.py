@@ -159,3 +159,15 @@ def test_invalid_exclude_list():
             exclude_fields_from_create = [1]
 
         InvalidUserView(User)
+
+
+def test_invalid_fields_default_sort_list():
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Invalid argument, Expected Tuple[str | FieldProxy, bool]"),
+    ):
+
+        class InvalidDocumentView(ModelView):
+            fields_default_sort = [Document.id, (Document.bool, True), (1,)]
+
+        InvalidDocumentView(Document)

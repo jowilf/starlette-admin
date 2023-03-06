@@ -340,7 +340,15 @@ $(function () {
       },
       ...dt_columns,
     ],
-    order: dt_columns.length > 0 ? [[2, "asc"]] : [],
+    order: (function defaultSort() {
+      let order = [];
+      for (const [col, desc] of Object.entries(model.fieldsDefaultSort)) {
+        let idx = dt_columns.findIndex((it) => col === it.name);
+        if (idx > -1);
+        order.push([idx + 2, desc === true ? "desc" : "asc"]);
+      }
+      return order;
+    })(),
     initComplete: function () {
       new $.fn.dataTable.Buttons(table, {
         name: "main",

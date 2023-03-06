@@ -1,4 +1,5 @@
 import enum
+import re
 import uuid
 
 import pytest
@@ -219,6 +220,20 @@ def test_invalid_exclude_list():
 
         class CustomDocumentView(ModelView):
             exclude_fields_from_create = [1]
+
+        CustomDocumentView(Document)
+
+
+def test_invalid_fields_default_sort_list():
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Invalid argument, Expected Tuple[str | InstrumentedAttribute, bool]"
+        ),
+    ):
+
+        class CustomDocumentView(ModelView):
+            fields_default_sort = [Document.int, (Document.datetime, True), (1,)]
 
         CustomDocumentView(Document)
 

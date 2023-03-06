@@ -111,7 +111,9 @@ def normalize_fields(  # noqa: C901
     return converted_fields
 
 
-def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
+def normalize_list(
+    arr: Optional[Sequence[Any]], is_default_sort_list: bool = False
+) -> Optional[Sequence[str]]:
     """This methods will convert all InstrumentedAttribute into str"""
     if arr is None:
         return None
@@ -121,6 +123,24 @@ def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
             _new_list.append(v.key)
         elif isinstance(v, str):
             _new_list.append(v)
+        elif (
+            isinstance(v, tuple) and is_default_sort_list
+        ):  # Support for fields_default_sort:
+            if (
+                len(v) == 2
+                and isinstance(v[0], (str, InstrumentedAttribute))
+                and isinstance(v[1], bool)
+            ):
+                _new_list.append(
+                    (
+                        v[0].key if isinstance(v[0], InstrumentedAttribute) else v[0],  # type: ignore[arg-type]
+                        v[1],
+                    )
+                )
+            else:
+                raise ValueError(
+                    "Invalid argument, Expected Tuple[str | InstrumentedAttribute, bool]"
+                )
         else:
             raise ValueError(
                 f"Expected str or InstrumentedAttribute, got {type(v).__name__}"
