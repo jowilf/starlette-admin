@@ -21,8 +21,13 @@ app = Starlette(
 # Create admin
 admin = Admin(title="Example: MongoEngine")
 
+
 # Add views
-admin.add_view(ModelView(User, icon="fa fa-users"))
+class UserView(ModelView):
+    fields_default_sort = [(User.name, True)]
+
+
+admin.add_view(UserView(User, icon="fa fa-users"))
 admin.add_view(ModelView(Todo, icon="fa fa-list"))
 admin.add_view(ModelView(Post, icon="fa fa-blog", label="Blog Posts"))
 admin.add_view(ModelView(File, icon="fa fa-file"))

@@ -114,7 +114,9 @@ def convert_odm_field_to_admin_field(  # noqa: C901
     return admin_field
 
 
-def normalize_list(arr: t.Optional[t.Sequence[t.Any]]) -> t.Optional[t.Sequence[str]]:
+def normalize_list(
+    arr: t.Optional[t.Sequence[t.Any]], is_default_sort_list: bool = False
+) -> t.Optional[t.Sequence[str]]:
     if arr is None:
         return None
     _new_list = []
@@ -123,6 +125,24 @@ def normalize_list(arr: t.Optional[t.Sequence[t.Any]]) -> t.Optional[t.Sequence[
             _new_list.append(str(+v))
         elif isinstance(v, str):
             _new_list.append(v)
+        elif (
+            isinstance(v, tuple) and is_default_sort_list
+        ):  # Support for fields_default_sort:
+            if (
+                len(v) == 2
+                and isinstance(v[0], (str, FieldProxy))
+                and isinstance(v[1], bool)
+            ):
+                _new_list.append(
+                    (
+                        +v[0] if isinstance(v[0], FieldProxy) else v[0],  # type: ignore[arg-type]
+                        v[1],
+                    )
+                )
+            else:
+                raise ValueError(
+                    "Invalid argument, Expected Tuple[str | FieldProxy, bool]"
+                )
         else:
             raise ValueError(f"Expected str or FieldProxy, got {type(v).__name__}")
     return _new_list
