@@ -324,18 +324,12 @@ class BaseAdmin:
             except FormValidationError as errors:
                 return self.templates.TemplateResponse(
                     "login.html",
-                    {
-                        "request": request,
-                        "form_errors": errors,
-                    },
+                    {"request": request, "form_errors": errors, "_is_login_path": True},
                 )
             except LoginFailed as error:
                 return self.templates.TemplateResponse(
                     "login.html",
-                    {
-                        "request": request,
-                        "error": error.msg,
-                    },
+                    {"request": request, "error": error.msg, "_is_login_path": True},
                 )
 
     async def _render_logout(self, request: Request) -> Response:
