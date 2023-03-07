@@ -369,19 +369,13 @@ class BaseAdmin:
             except FormValidationError as errors:
                 return self.templates.TemplateResponse(
                     "login.html",
-                    {
-                        "request": request,
-                        "form_errors": errors,
-                    },
+                    {"request": request, "form_errors": errors, "_is_login_path": True},
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                 )
             except LoginFailed as error:
                 return self.templates.TemplateResponse(
                     "login.html",
-                    {
-                        "request": request,
-                        "error": error.msg,
-                    },
+                    {"request": request, "error": error.msg, "_is_login_path": True},
                     status_code=HTTP_400_BAD_REQUEST,
                 )
 
