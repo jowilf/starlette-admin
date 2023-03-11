@@ -86,7 +86,7 @@
 			"0": "<i class=\"fa-solid fa-filter\"></i> Filter",
 			"_": "<i class=\"fa-solid fa-filter\"></i> Filter (%d)"
 		},
-		"clearAll": "Clear All",
+		"clearAll": "Reset",
 		"condition": "Condition",
 		"conditions": {
 			"date": {
