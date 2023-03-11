@@ -38,11 +38,13 @@ def _serialize_file_field(
         return {
             "filename": getattr(value, "filename", "unamed"),
             "content_type": getattr(value, "content_type", "application/octet-stream"),
-            "url": request.url_for(
-                request.app.state.ROUTE_NAME + ":api:file",
-                db=value.db_alias,
-                col=value.collection_name,
-                pk=id,
+            "url": str(
+                request.url_for(
+                    request.app.state.ROUTE_NAME + ":api:file",
+                    db=value.db_alias,
+                    col=value.collection_name,
+                    pk=id,
+                )
             ),
         }
     return None
