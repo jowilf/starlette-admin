@@ -46,7 +46,7 @@ class ArticleView(DummyModelView):
     async def make_published_action(self, request: Request, pks: List[Any]) -> str:
         for article in await self.find_by_pks(request, pks):
             article.status = Status.Published
-        return "{} articles were successfully marked as published".format(len(pks))
+        return f"{len(pks)} articles were successfully marked as published"
 
     @action(
         name="always_failed",

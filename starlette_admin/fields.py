@@ -324,9 +324,11 @@ class TagsField(BaseField):
     ) -> List[str]:
         if action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path="css/select2.min.css",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="css/select2.min.css",
+                    )
                 )
             ]
         return []
@@ -334,9 +336,11 @@ class TagsField(BaseField):
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path="js/vendor/select2.min.js",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="js/vendor/select2.min.js",
+                    )
                 )
             ]
         return []
@@ -484,9 +488,11 @@ class EnumField(StringField):
     ) -> List[str]:
         if self.select2 and action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path="css/select2.min.css",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="css/select2.min.css",
+                    )
                 )
             ]
         return []
@@ -494,9 +500,11 @@ class EnumField(StringField):
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if self.select2 and action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path="js/vendor/select2.min.js",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="js/vendor/select2.min.js",
+                    )
                 )
             ]
         return []
@@ -630,25 +638,31 @@ class DateTimeField(NumberField):
     ) -> List[str]:
         if action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path="css/flatpickr.min.css",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="css/flatpickr.min.css",
+                    )
                 )
             ]
         return []
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         _links = [
-            request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics",
-                path="js/vendor/flatpickr.min.js",
+            str(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/flatpickr.min.js",
+                )
             )
         ]
         if get_locale() != "en":
             _links.append(
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path=f"i18n/flatpickr/{get_locale()}.js",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path=f"i18n/flatpickr/{get_locale()}.js",
+                    )
                 )
             )
         if action.is_form():
@@ -781,9 +795,11 @@ class JSONField(BaseField):
     ) -> List[str]:
         if action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path="css/jsoneditor.min.css",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="css/jsoneditor.min.css",
+                    )
                 )
             ]
         return []
@@ -791,9 +807,11 @@ class JSONField(BaseField):
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path="js/vendor/jsoneditor.min.js",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="js/vendor/jsoneditor.min.js",
+                    )
                 )
             ]
         return []
@@ -879,9 +897,11 @@ class RelationField(BaseField):
     ) -> List[str]:
         if action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path="css/select2.min.css",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="css/select2.min.css",
+                    )
                 )
             ]
         return []
@@ -889,9 +909,11 @@ class RelationField(BaseField):
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics",
-                    path="js/vendor/select2.min.js",
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="js/vendor/select2.min.js",
+                    )
                 )
             ]
         return []
@@ -1035,7 +1057,7 @@ class ListField(BaseField):
         indices = self._extra_indices(form_data)
         value = []
         for index in indices:
-            self.field.id = "{}.{}".format(self.id, index)
+            self.field.id = f"{self.id}.{index}"
             if isinstance(self.field, CollectionField):
                 self.field._propagate_id()
             value.append(await self.field.parse_form_data(request, form_data, action))

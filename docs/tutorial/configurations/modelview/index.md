@@ -60,12 +60,14 @@ Two options are available to specify which fields can be sorted or searched.
 
 * `searchable_fields` for list of searchable fields
 * `sortable_fields` for list of orderable fields
+* `fields_default_sort` for initial order (sort) to apply to the table
 
 !!! Usage
     ```Python
     class PostView(ModelView):
         sortable_fields = [Post.id, "title"]
         searchable_fields = [Post.id, Post.title, "tags"]
+        fields_default_sort = ["title", ("price", True)]
     ```
 
 ## Exporting

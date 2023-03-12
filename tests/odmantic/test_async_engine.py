@@ -178,7 +178,7 @@ async def test_create_validation_error(client: AsyncClient, aio_engine: AIOEngin
 async def test_edit(client: AsyncClient, aio_engine: AIOEngine):
     id = (await aio_engine.find_one(User, User.name == "Hills Terrill")).id
     response = await client.post(
-        "/admin/user/edit/{}".format(id),
+        f"/admin/user/edit/{id}",
         data={
             "name": "John Doe",
             "birthday": "1999-01-01T00:00:00",
@@ -212,7 +212,7 @@ async def test_edit(client: AsyncClient, aio_engine: AIOEngine):
 async def test_edit_validation_error(client: AsyncClient, aio_engine: AIOEngine):
     id = (await aio_engine.find_one(User, User.name == "Hills Terrill")).id
     response = await client.post(
-        "/admin/user/edit/{}".format(id),
+        f"/admin/user/edit/{id}",
         data={
             "name": "Jo",
             "birthday": "1999-01-01T00:00:00",

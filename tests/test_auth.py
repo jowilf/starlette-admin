@@ -7,7 +7,7 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette_admin import BaseAdmin, IntegerField, StringField, TextAreaField
-from starlette_admin.auth import AuthProvider
+from starlette_admin.auth import AdminUser, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 from starlette_admin.views import CustomView
 
@@ -96,13 +96,18 @@ class MyAuthProvider(AuthProvider):
 
     async def is_authenticated(self, request) -> bool:
         if "session" in request.cookies:
-            user_roles = users.get(request.cookies.get("session"), None)
+            username = request.cookies.get("session")
+            user_roles = users.get(username, None)
             if user_roles is not None:
                 """Save user roles in request state, can be use later,
                 to restrict user actions in admin interface"""
+                request.state.user = username
                 request.state.user_roles = user_roles
                 return True
         return False
+
+    def get_admin_user(self, request: Request) -> Optional[AdminUser]:
+        return AdminUser(request.state.user)
 
     async def logout(self, request: Request, response: Response):
         response.delete_cookie("session")

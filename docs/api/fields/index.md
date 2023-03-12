@@ -12,9 +12,13 @@
 :::starlette_admin.fields.ColorField
 :::starlette_admin.fields.PasswordField
 :::starlette_admin.fields.EnumField
+:::starlette_admin.fields.TimeZoneField
+:::starlette_admin.fields.CountryField
+:::starlette_admin.fields.CurrencyField
 :::starlette_admin.fields.DateTimeField
 :::starlette_admin.fields.DateField
 :::starlette_admin.fields.TimeField
+:::starlette_admin.fields.ArrowField
 :::starlette_admin.fields.JSONField
 :::starlette_admin.fields.FileField
 :::starlette_admin.fields.ImageField

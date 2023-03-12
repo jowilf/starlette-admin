@@ -41,4 +41,4 @@ class ArticleView(ModelView):
             article.status = Status.Published
             session.add(article)
         session.commit()
-        return "{} articles were successfully marked as published".format(len(pks))
+        return f"{len(pks)} articles were successfully marked as published"

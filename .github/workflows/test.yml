@@ -20,14 +20,16 @@ jobs:
         image: mongo
         ports:
           - 27017:27017
+        options: --health-cmd "mongosh mongodb://localhost:27017" --health-interval 10s --health-timeout 5s --health-retries 10
 
       minio:
-        image: minio/minio:edge-cicd
+        image: bitnami/minio
         env:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadmin
         ports:
           - 9000:9000
+        options: --health-cmd "curl http://localhost:9000/minio/health/live" --health-interval 10s --health-timeout 5s --health-retries 10
 
       postgres:
         image: postgres:14-alpine

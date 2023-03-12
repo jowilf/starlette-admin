@@ -248,7 +248,7 @@ class BaseModelView(BaseView):
                 field._name = field.name  # type: ignore
             if isinstance(field, CollectionField):
                 for f in field.fields:
-                    f._name = "{}.{}".format(field._name, f.name)  # type: ignore
+                    f._name = f"{field._name}.{f.name}"  # type: ignore
                 fringe.extend(field.fields)
             name = field._name  # type: ignore
             if name == self.pk_attr and not self.form_include_pk:
@@ -276,6 +276,8 @@ class BaseModelView(BaseView):
             self.sortable_fields = all_field_names[:]
         if self.export_fields is None:
             self.export_fields = all_field_names[:]
+        if self.fields_default_sort is None:
+            self.fields_default_sort = [self.pk_attr]  # type: ignore[list-item]
 
         # Actions
         self._actions: Dict[str, Dict[str, str]] = {}
@@ -300,7 +302,7 @@ class BaseModelView(BaseView):
             self.actions = list(self._handlers.keys())
         for action_name in self.actions:
             if action_name not in self._actions:
-                raise ValueError("Unknown action with name `{}`".format(action_name))
+                raise ValueError(f"Unknown action with name `{action_name}`")
 
     async def is_action_allowed(self, request: Request, name: str) -> bool:
         """
@@ -540,11 +542,11 @@ class BaseModelView(BaseView):
             self.pk_attr, str(pk)  # Make sure the primary key is always available
         )
         route_name = request.app.state.ROUTE_NAME
-        obj_serialized["_detail_url"] = request.url_for(
-            route_name + ":detail", identity=self.identity, pk=pk
+        obj_serialized["_detail_url"] = str(
+            request.url_for(route_name + ":detail", identity=self.identity, pk=pk)
         )
-        obj_serialized["_edit_url"] = request.url_for(
-            route_name + ":edit", identity=self.identity, pk=pk
+        obj_serialized["_edit_url"] = str(
+            request.url_for(route_name + ":edit", identity=self.identity, pk=pk)
         )
         return obj_serialized
 
@@ -660,7 +662,7 @@ class BaseModelView(BaseView):
                 k: v
                 for k, v in (
                     (it, False) if isinstance(it, str) else it
-                    for it in (self.fields_default_sort or [self.pk_attr])  # type: ignore[list-item]
+                    for it in self.fields_default_sort  # type: ignore[union-attr]
                 )
             },
             "exportTypes": self.export_types,

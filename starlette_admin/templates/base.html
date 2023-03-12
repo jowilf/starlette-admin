@@ -11,11 +11,13 @@
     <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/tabler.min.css') }}">
     <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/fontawesome.min.css') }}">
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+      @import url('https://rsms.me/inter/inter.css');
       :root {
-      	--tblr-font-sans-serif: Inter,-apple-system,BlinkMacSystemFont,San Francisco,Segoe UI,Roboto,Helvetica Neue,sans-serif !important;
+        --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
       }
-
+      body {
+        font-feature-settings: "cv03", "cv04", "cv11";
+      }
     </style>
     {% block head_css %}
     {% endblock %}
