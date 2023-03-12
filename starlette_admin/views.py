@@ -542,11 +542,11 @@ class BaseModelView(BaseView):
             self.pk_attr, str(pk)  # Make sure the primary key is always available
         )
         route_name = request.app.state.ROUTE_NAME
-        obj_serialized["_detail_url"] = request.url_for(
-            route_name + ":detail", identity=self.identity, pk=pk
+        obj_serialized["_detail_url"] = str(
+            request.url_for(route_name + ":detail", identity=self.identity, pk=pk)
         )
-        obj_serialized["_edit_url"] = request.url_for(
-            route_name + ":edit", identity=self.identity, pk=pk
+        obj_serialized["_edit_url"] = str(
+            request.url_for(route_name + ":edit", identity=self.identity, pk=pk)
         )
         return obj_serialized
 
