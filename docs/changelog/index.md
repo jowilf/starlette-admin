@@ -29,7 +29,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     ```
 ### Fixed
 
-* Fix [#69](https://github.com/jowilf/starlette-admin/issues/69) : Return `HTTP_422_UNPROCESSABLE_ENTITY` when form data is no valid
+* Fix [#69](https://github.com/jowilf/starlette-admin/issues/69) : Return `HTTP_422_UNPROCESSABLE_ENTITY` when form data is not valid
 
 ### Deprecated
 
