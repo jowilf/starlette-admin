@@ -1057,7 +1057,7 @@ class ListField(BaseField):
         indices = self._extra_indices(form_data)
         value = []
         for index in indices:
-            self.field.id = "{}.{}".format(self.id, index)
+            self.field.id = f"{self.id}.{index}"
             if isinstance(self.field, CollectionField):
                 self.field._propagate_id()
             value.append(await self.field.parse_form_data(request, form_data, action))

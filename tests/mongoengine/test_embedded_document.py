@@ -69,7 +69,7 @@ class TestEmbeddedDocument:
     def test_edit(self, client):
         id = Post.objects(name="Dummy post").get().id
         response = client.post(
-            "/admin/post/edit/{}".format(id),
+            f"/admin/post/edit/{id}",
             data={
                 "name": "His mother had always taught him",
                 "content": "Lorem ipsum dolor sit amet consectetur adipisicing elit",

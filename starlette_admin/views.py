@@ -248,7 +248,7 @@ class BaseModelView(BaseView):
                 field._name = field.name  # type: ignore
             if isinstance(field, CollectionField):
                 for f in field.fields:
-                    f._name = "{}.{}".format(field._name, f.name)  # type: ignore
+                    f._name = f"{field._name}.{f.name}"  # type: ignore
                 fringe.extend(field.fields)
             name = field._name  # type: ignore
             if name == self.pk_attr and not self.form_include_pk:
@@ -302,7 +302,7 @@ class BaseModelView(BaseView):
             self.actions = list(self._handlers.keys())
         for action_name in self.actions:
             if action_name not in self._actions:
-                raise ValueError("Unknown action with name `{}`".format(action_name))
+                raise ValueError(f"Unknown action with name `{action_name}`")
 
     async def is_action_allowed(self, request: Request, name: str) -> bool:
         """
