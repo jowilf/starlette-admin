@@ -59,6 +59,7 @@ def get_file_icon(mime_type: str) -> str:
 
 
 def html_params(kwargs: Dict[str, Any]) -> str:
+    """Converts a dictionary of HTML attribute name-value pairs into a string of HTML parameters."""
     params = []
     for k, v in kwargs.items():
         if v is None or v is False:
