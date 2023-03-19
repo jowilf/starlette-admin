@@ -86,13 +86,31 @@ class BaseField:
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
         """
-        Extract value from submitted form data
+        Extracts the value of this field from submitted form data.
         """
         return form_data.get(self.id)
 
     async def parse_obj(self, request: Request, obj: Any) -> Any:
-        """
-        Extract value from model instance
+        """Extracts the value of this field from a model instance.
+
+        By default, this function returns the value of the attribute with the name `self.name` from `obj`.
+        However, this function can be overridden to provide custom logic for computing the value of a field.
+
+        ??? Example
+            ```py
+            # Suppose we have a `User` model with `id`, `first_name`, and `last_name` fields.
+            # We define a custom field called `MyCustomField` to compute the full name of the user:
+
+            class MyCustomField(StringField):
+                async def parse_obj(self, request: Request, obj: Any) -> Any:
+                    return f"{obj.first_name} {obj.last_name}"  # Returns the full name of the user
+
+
+            # Then, We can define our view as follows
+
+            class UserView(ModelView):
+                fields = ["id", MyCustomField("full_name")]
+            ```
         """
         return getattr(obj, self.name, None)
 
