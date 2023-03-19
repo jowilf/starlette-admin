@@ -22,6 +22,7 @@
 :::starlette_admin.fields.JSONField
 :::starlette_admin.fields.FileField
 :::starlette_admin.fields.ImageField
+:::starlette_admin.fields.RelationField
 :::starlette_admin.fields.HasOne
 :::starlette_admin.fields.HasMany
 :::starlette_admin.fields.ListField

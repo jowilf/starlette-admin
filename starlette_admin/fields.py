@@ -32,6 +32,7 @@ except ImportError:
 class BaseField:
     """
     Base class for fields
+
     Parameters:
         name: Field name, same as attribute name in your model
         label: Field label
@@ -117,31 +118,51 @@ class BaseField:
     async def serialize_none_value(
         self, request: Request, action: RequestAction
     ) -> Any:
-        """
-        Format None value for frontend
+        """Formats a None value for sending to the frontend.
+
+        Args:
+            request: The current request object.
+            action: The current request action.
+
+        Returns:
+            Any: The formatted None value.
         """
         return None
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
-        """
-        Format value for frontend
+        """Formats a value for sending to the frontend based on the current request action.
+
+        !!! important
+            Make sure this value is JSON Serializable for RequestAction.LIST and RequestAction.API
+
+        Args:
+            request: The current request object.
+            value: The value to format.
+            action: The current request action.
+
+        Returns:
+            Any: The formatted value.
         """
         return value
 
     def additional_css_links(
         self, request: Request, action: RequestAction
     ) -> List[str]:
+        """Returns a list of CSS file URLs to include for the current request action."""
         return []
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        """Returns a list of JavaScript file URLs to include for the current request action."""
         return []
 
     def dict(self) -> Dict[str, Any]:
+        """Return the dataclass instance as a dictionary."""
         return asdict(self)
 
     def input_params(self) -> str:
+        """Return HTML input parameters as a string."""
         return html_params(
             {
                 "disabled": self.disabled,
@@ -897,6 +918,52 @@ class ImageField(FileField):
 
 @dataclass
 class RelationField(BaseField):
+    """
+    A field representing a relation between two data models.
+
+    This field should not be used directly; instead, use either the [HasOne][starlette_admin.fields.HasOne]
+    or [HasMany][starlette_admin.fields.HasMany] fields to specify a relation
+    between your models.
+
+    !!! important
+        It is important to add both models in your admin interface.
+
+    Parameters:
+        identity: Foreign ModelView identity
+
+
+    ??? Example
+        ```py
+        class Author:
+            id: Optional[int]
+            name: str
+            books: List["Book"]
+
+        class Book:
+            id: Optional[int]
+            title: str
+            author: Optional["Author"]
+
+        class AuthorView(ModelView):
+            fields = [
+                IntegerField("id"),
+                StringField("name"),
+                HasMany("books", identity="book"),
+            ]
+
+        class BookView(ModelView):
+            fields = [
+                IntegerField("id"),
+                StringField("title"),
+                HasOne("author", identity="author"),
+            ]
+        ...
+        admin.add_view(AuthorView(Author, identity="author"))
+        admin.add_view(BookView(Book, identity="book"))
+        ...
+        ```
+    """
+
     identity: Optional[str] = None
     multiple: bool = False
     render_function_key: str = "relation"
@@ -940,17 +1007,13 @@ class RelationField(BaseField):
 @dataclass
 class HasOne(RelationField):
     """
-    Parameters:
-        identity: Foreign ModelView identity
+    A field representing a "has-one" relation between two models.
     """
 
 
 @dataclass
 class HasMany(RelationField):
-    """
-    Parameters:
-        identity: Foreign ModelView identity
-    """
+    """A field representing a "has-many" relationship between two models."""
 
     multiple: bool = True
 
