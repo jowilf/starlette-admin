@@ -24,7 +24,7 @@ from starlette_admin.exceptions import ActionFailed
 
 
 class ArticleView(ModelView):
-    actions = ["make_published"]
+    actions = ["make_published", "delete"] # `delete` function is added by default
 
     @action(
         name="make_published",
