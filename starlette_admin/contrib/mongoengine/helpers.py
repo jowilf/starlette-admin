@@ -56,9 +56,7 @@ def convert_mongoengine_field_to_admin_field(  # noqa: C901
         elif isinstance(field.field, (me.DictField, me.MapField)):
             admin_field = sa.JSONField(name)
         elif isinstance(field.field, me.EnumField):
-            admin_field = sa.EnumField.from_enum(
-                name, enum_type=field.field._enum_cls, multiple=True
-            )
+            admin_field = sa.EnumField(name, enum=field.field._enum_cls, multiple=True)
         else:
             field.field.name = name
             admin_field = sa.ListField(
@@ -81,7 +79,7 @@ def convert_mongoengine_field_to_admin_field(  # noqa: C901
             )
         admin_field = sa.CollectionField(name, fields=_fields)
     elif isinstance(field, me.EnumField):
-        admin_field = sa.EnumField.from_enum(name, enum_type=field._enum_cls)
+        admin_field = sa.EnumField(name, enum=field._enum_cls)
     else:
         if mongoengine_to_admin_map.get(type(field), None) is None:
             raise NotSupportedField(
@@ -176,7 +174,9 @@ def build_order_clauses(order_list: List[str]) -> List[str]:
     return clauses
 
 
-def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
+def normalize_list(
+    arr: Optional[Sequence[Any]], is_default_sort_list: bool = False
+) -> Optional[Sequence[str]]:
     if arr is None:
         return None
     _new_list = []
@@ -185,6 +185,25 @@ def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
             _new_list.append(v.name)
         elif isinstance(v, str):
             _new_list.append(v)
+        elif (
+            isinstance(v, tuple) and is_default_sort_list
+        ):  # Support for fields_default_sort:
+            if (
+                len(v) == 2
+                and isinstance(v[0], (str, MongoBaseField))
+                and isinstance(v[1], bool)
+            ):
+                _new_list.append(
+                    (
+                        v[0].name if isinstance(v[0], MongoBaseField) else v[0],
+                        v[1],
+                    )
+                )
+            else:
+                raise ValueError(
+                    "Invalid argument, Expected Tuple[str | monogoengine.BaseField, bool]"
+                )
+
         else:
             raise ValueError(
                 f"Expected str or monogoengine.BaseField, got {type(v).__name__}"

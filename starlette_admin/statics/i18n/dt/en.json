@@ -1,0 +1,180 @@
+{
+	"aria": {
+		"sortAscending": ": activate to sort column ascending",
+		"sortDescending": ": activate to sort column descending"
+	},
+	"buttons": {
+		"collection": "Collection <span class='ui-button-icon-primary ui-icon ui-icon-triangle-1-s'/>",
+		"colvis": "Show/Hide columns",
+		"colvisRestore": "Restore visibility",
+		"copy": "Copy",
+		"copyKeys": "Press ctrl or u2318 + C to copy the table data to your system clipboard.<br><br>To cancel, click this message or press escape.",
+		"copySuccess": {
+			"1": "Copied 1 row to clipboard",
+			"_": "Copied %d rows to clipboard"
+		},
+		"copyTitle": "Copy to Clipboard",
+		"pageLength": {
+			"-1": "Show all rows",
+			"_": "Show %d rows"
+		},
+		"pdf": "PDF",
+		"print": "Print",
+		"csv": "CSV",
+		"excel": "Excel",
+		"updateState": "Update",
+		"stateRestore": "State %d",
+		"savedStates": "Saved States",
+		"renameState": "Rename",
+		"removeState": "Remove",
+		"removeAllStates": "Remove All States",
+		"createState": "Create State"
+	},
+	"datetime": {
+		"previous": "Previous",
+		"next": "Next",
+		"hours": "Hour",
+		"minutes": "Minute",
+		"seconds": "Second",
+		"unknown": "-",
+		"amPm": [
+			"am",
+			"pm"
+		],
+		"weekdays": [
+			"Sun",
+			"Mon",
+			"Tue",
+			"Wed",
+			"Thu",
+			"Fri",
+			"Sat"
+		],
+		"months": [
+			"January",
+			"February",
+			"March",
+			"April",
+			"May",
+			"June",
+			"July",
+			"August",
+			"September",
+			"October",
+			"November",
+			"December"
+		]
+	},
+	"emptyTable": "No data available in table",
+	"info": "Showing _START_ to _END_ of _TOTAL_ entries",
+	"infoEmpty": "Showing 0 to 0 of 0 entries",
+	"infoFiltered": "(filtered from _MAX_ total entries)",
+	"infoThousands": ",",
+	"lengthMenu": "Show _MENU_ entries",
+	"loadingRecords": "Loading...",
+	"paginate": {
+		"first": "First",
+		"last": "Last",
+		"next": "Next",
+		"previous": "Previous"
+	},
+	"processing": "Processing...",
+	"search": "Search:",
+	"searchBuilder": {
+		"add": "Add Condition",
+		"button": {
+			"0": "<i class=\"fa-solid fa-filter\"></i> Filter",
+			"_": "<i class=\"fa-solid fa-filter\"></i> Filter (%d)"
+		},
+		"clearAll": "Reset",
+		"condition": "Condition",
+		"conditions": {
+			"date": {
+				"after": "After",
+				"before": "Before",
+				"between": "Between",
+				"empty": "Empty",
+				"equals": "Equals",
+				"not": "Not",
+				"notBetween": "Not Between",
+				"notEmpty": "Not Empty"
+			},
+			"number": {
+				"between": "Between",
+				"empty": "Empty",
+				"equals": "Equals",
+				"gt": "Greater Than",
+				"gte": "Greater Than Equal To",
+				"lt": "Less Than",
+				"lte": "Less Than Equal To",
+				"not": "Not",
+				"notBetween": "Not Between",
+				"notEmpty": "Not Empty"
+			},
+			"string": {
+				"contains": "Contains",
+				"empty": "Empty",
+				"endsWith": "Ends With",
+				"equals": "Equals",
+				"not": "Not",
+				"notEmpty": "Not Empty",
+				"startsWith": "Starts With",
+				"notContains": "Does Not Contain",
+				"notStartsWith": "Does Not Start With",
+				"notEndsWith": "Does Not End With"
+			},
+			"array": {
+				"without": "Without",
+				"notEmpty": "Not Empty",
+				"not": "Not",
+				"contains": "Contains",
+				"empty": "Empty",
+				"equals": "Equals"
+			}
+		},
+		"data": "Data",
+		"deleteTitle": "Delete filtering rule",
+		"leftTitle": "Outdent Criteria",
+		"logicAnd": "And",
+		"logicOr": "Or",
+		"rightTitle": "Indent Criteria",
+		"title": {
+			"0": "Filter",
+			"_": "Filter (%d)"
+		},
+		"value": "Value"
+	},
+	"searchPanes": {
+		"clearMessage": "Clear All",
+		"collapse": {
+			"0": "SearchPanes",
+			"_": "SearchPanes (%d)"
+		},
+		"count": "{total}",
+		"countFiltered": "{shown} ({total})",
+		"emptyPanes": "No SearchPanes",
+		"loadMessage": "Loading SearchPanes",
+		"title": "Filters Active - %d",
+		"showMessage": "Show All",
+		"collapseMessage": "Collapse All"
+	},
+	"select": {
+		"rows": {
+			"1": "1 row selected",
+			"_": "%d rows selected"
+		}
+	},
+	"starlette-admin": {
+		"buttons": {
+			"export": "Export"
+		},
+		"conditions": {
+			"false": "False",
+			"true": "True",
+			"empty": "Empty",
+			"notEmpty": "Not Empty"
+		}
+	},
+	"thousands": ",",
+	"zeroRecords": "No matching records found"
+}

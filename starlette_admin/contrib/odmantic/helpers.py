@@ -103,7 +103,7 @@ def convert_odm_field_to_admin_field(  # noqa: C901
         types = inspect.getmro(annotation)
         for _type in types:
             if issubclass(_type, Enum):
-                admin_field = EnumField.from_enum(field_name, _type)
+                admin_field = EnumField(field_name, enum=_type)
                 break
             elif annotation_map.get(_type) is not None:
                 admin_field = annotation_map.get(_type)(field_name)  # type: ignore
@@ -114,7 +114,9 @@ def convert_odm_field_to_admin_field(  # noqa: C901
     return admin_field
 
 
-def normalize_list(arr: t.Optional[t.Sequence[t.Any]]) -> t.Optional[t.Sequence[str]]:
+def normalize_list(
+    arr: t.Optional[t.Sequence[t.Any]], is_default_sort_list: bool = False
+) -> t.Optional[t.Sequence[str]]:
     if arr is None:
         return None
     _new_list = []
@@ -123,6 +125,24 @@ def normalize_list(arr: t.Optional[t.Sequence[t.Any]]) -> t.Optional[t.Sequence[
             _new_list.append(str(+v))
         elif isinstance(v, str):
             _new_list.append(v)
+        elif (
+            isinstance(v, tuple) and is_default_sort_list
+        ):  # Support for fields_default_sort:
+            if (
+                len(v) == 2
+                and isinstance(v[0], (str, FieldProxy))
+                and isinstance(v[1], bool)
+            ):
+                _new_list.append(
+                    (
+                        +v[0] if isinstance(v[0], FieldProxy) else v[0],  # type: ignore[arg-type]
+                        v[1],
+                    )
+                )
+            else:
+                raise ValueError(
+                    "Invalid argument, Expected Tuple[str | FieldProxy, bool]"
+                )
         else:
             raise ValueError(f"Expected str or FieldProxy, got {type(v).__name__}")
     return _new_list

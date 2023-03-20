@@ -1,4 +1,6 @@
 import enum
+import re
+import uuid
 
 import pytest
 import sqlalchemy_file
@@ -18,6 +20,8 @@ from sqlalchemy import (
     Time,
     TypeDecorator,
 )
+from sqlalchemy.dialects.mysql import INTEGER, YEAR
+from sqlalchemy.dialects.postgresql import BIT, INET, MACADDR, UUID
 from sqlalchemy.orm import declarative_base, relationship
 from starlette_admin import (
     BooleanField,
@@ -25,12 +29,13 @@ from starlette_admin import (
     DateTimeField,
     DecimalField,
     EnumField,
+    FloatField,
     HasMany,
     HasOne,
     IntegerField,
     JSONField,
+    ListField,
     StringField,
-    TagsField,
     TextAreaField,
     TimeField,
 )
@@ -53,7 +58,7 @@ class Status(str, enum.Enum):
 class User(Base):
     __tablename__ = "user"
 
-    name = Column(String(100), primary_key=True)
+    name = Column(String(100), primary_key=True, comment="user fullname")
     bio = Column(Text)
     document = relationship("Document", back_populates="user", uselist=False)
 
@@ -73,8 +78,9 @@ class Attachment(Base):
 class Document(Base):
     __tablename__ = "document"
 
-    int = Column(Integer, primary_key=True)
+    int = Column(Integer, primary_key=True, comment="This is the primary key")
     float = Column(Float)
+    decimal = Column(Float(asdecimal=True))
     bool = Column(Boolean)
     datetime = Column(DateTime)
     date = Column(Date)
@@ -82,21 +88,35 @@ class Document(Base):
     enum = Column(Enum(Status))
     json_field = Column(JSON)
     tags = Column(ARRAY(String, dimensions=1))
+    ints = Column(ARRAY(Integer, dimensions=1))
     user_name = Column(String(100), ForeignKey("user.name"))
     user = relationship("User", back_populates="document")
     attachments = relationship("Attachment", back_populates="document")
+
+
+class Other(Base):
+    __tablename__ = "other"
+
+    uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
+    bit = Column(BIT)
+    year = Column(YEAR)
+    macaddr = Column(MACADDR)
+    inet = Column(INET)
 
 
 class UserView(ModelView):
     form_include_pk = True
 
 
-def test_fields_conversion():
+def test_user_fields_conversion():
     assert UserView(User).fields == [
-        StringField("name", required=True),
+        StringField("name", required=True, maxlength=100, help_text="user fullname"),
         TextAreaField("bio"),
         HasOne("document", identity="document", orderable=False, searchable=False),
     ]
+
+
+def test_attachment_fields_conversion():
     assert ModelView(Attachment).fields == [
         IntegerField(
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
@@ -107,22 +127,41 @@ def test_fields_conversion():
         FileField("files", multiple=True, orderable=False, searchable=False),
         HasOne("document", identity="document", orderable=False, searchable=False),
     ]
+
+
+def test_document_fields_conversion():
     assert ModelView(Document).fields == [
         IntegerField(
-            "int", required=True, exclude_from_create=True, exclude_from_edit=True
+            "int",
+            required=True,
+            exclude_from_create=True,
+            exclude_from_edit=True,
+            help_text="This is the primary key",
         ),
-        DecimalField("float"),
+        FloatField("float"),
+        DecimalField("decimal"),
         BooleanField("bool"),
         DateTimeField("datetime"),
         DateField("date"),
         TimeField("time"),
-        EnumField.from_enum("enum", Status),
+        EnumField("enum", enum=Status),
         JSONField("json_field"),
-        TagsField("tags"),
+        ListField(StringField("tags")),
+        ListField(IntegerField("ints")),
         HasOne("user", identity="user", orderable=False, searchable=False),
         HasMany(
             "attachments", identity="attachment", orderable=False, searchable=False
         ),
+    ]
+
+
+def test_other_fields_conversion():
+    assert ModelView(Other).fields == [
+        StringField("uuid", exclude_from_create=True, exclude_from_edit=True),
+        BooleanField("bit"),
+        IntegerField("year", min=1901, max=2155),
+        StringField("macaddr"),
+        StringField("inet"),
     ]
 
 
@@ -153,7 +192,11 @@ def test_fields_customisation():
 
     assert CustomDocumentView(Document).fields == [
         IntegerField(
-            "int", required=True, exclude_from_create=True, exclude_from_edit=True
+            "int",
+            required=True,
+            exclude_from_create=True,
+            exclude_from_edit=True,
+            help_text="This is the primary key",
         ),
         BooleanField("bool", exclude_from_detail=True),
         DecimalField("float", required=True, exclude_from_edit=True),
@@ -177,6 +220,20 @@ def test_invalid_exclude_list():
 
         class CustomDocumentView(ModelView):
             exclude_fields_from_create = [1]
+
+        CustomDocumentView(Document)
+
+
+def test_invalid_fields_default_sort_list():
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Invalid argument, Expected Tuple[str | InstrumentedAttribute, bool]"
+        ),
+    ):
+
+        class CustomDocumentView(ModelView):
+            fields_default_sort = [Document.int, (Document.datetime, True), (1,)]
 
         CustomDocumentView(Document)
 
@@ -225,4 +282,38 @@ def test_conversion_when_impl_not_callable() -> None:
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
         StringField("name"),
+    ]
+
+
+def test_conversion_for_nested_impl() -> None:
+    class CustomStringType(String):
+        pass
+
+    class CustomString(TypeDecorator):
+        impl = CustomStringType
+
+    class CustomModel3(Base):
+        __tablename__ = "custom_model_3"
+
+        id = Column(Integer, primary_key=True)
+        name = Column(CustomString)
+
+    assert ModelView(CustomModel3).fields == [
+        IntegerField(
+            "id", required=True, exclude_from_create=True, exclude_from_edit=True
+        ),
+        StringField("name"),
+    ]
+
+
+def test_unsigned_int_conversion() -> None:
+    class UnsignedModel(Base):
+        __tablename__ = "usigned_model"
+
+        id = Column(INTEGER(unsigned=True), primary_key=True)
+
+    assert ModelView(UnsignedModel).fields == [
+        IntegerField(
+            "id", required=True, exclude_from_create=True, exclude_from_edit=True, min=0
+        ),
     ]

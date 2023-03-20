@@ -126,7 +126,7 @@ async def test_file_serving_api(
     assert response.status_code == 404
     stmt = select(Product).where(Product.id == 1)
     path = session.execute(stmt).scalar_one().image.path
-    response = await client.get("/admin/api/file/{}".format(path))
+    response = await client.get(f"/admin/api/file/{path}")
     assert response.status_code == 200
 
 
@@ -281,7 +281,7 @@ async def test_create_with_image(client: AsyncClient, session: Session, fake_ima
     stmt = select(Product).where(Product.title == "Infinix INBOOK")
     product = session.execute(stmt).scalar_one()
     assert product.image.filename == "image.png"
-    response = await client.get("/admin/api/file/{}".format(product.image.path))
+    response = await client.get(f"/admin/api/file/{product.image.path}")
     assert response.status_code == 200
 
 
@@ -358,7 +358,7 @@ async def test_file_validation_error(client: AsyncClient, fake_invalid_image):
         },
         files={"image": ("image.png", fake_invalid_image, "image/png")},
     )
-    assert response.status_code == 200
+    assert response.status_code == 422
     assert (
         '<div class="invalid-feedback">Provide valid image file</div>' in response.text
     )

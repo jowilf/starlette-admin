@@ -20,14 +20,16 @@ jobs:
         image: mongo
         ports:
           - 27017:27017
+        options: --health-cmd "mongosh mongodb://localhost:27017" --health-interval 10s --health-timeout 5s --health-retries 10
 
       minio:
-        image: minio/minio:edge-cicd
+        image: bitnami/minio
         env:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadmin
         ports:
           - 9000:9000
+        options: --health-cmd "curl http://localhost:9000/minio/health/live" --health-interval 10s --health-timeout 5s --health-retries 10
 
       postgres:
         image: postgres:14-alpine
@@ -61,7 +63,7 @@ jobs:
       - name: Install Dependencies
         run: pip install hatch
       - name: Lint
-        run: hatch run lint
+        run: hatch run test:lint
       - name: Test sqla(postgresql) with LocalStorage & mongodb
         env:
           SQLA_ENGINE: 'postgresql+psycopg2://username:password@localhost:5432/test_db'
@@ -70,14 +72,14 @@ jobs:
           LOCAL_PATH: '/tmp/storage'
           MONGO_URI: 'mongodb://localhost:27017/'
           MONGO_DATABASE: 'test_db'
-        run: hatch run test
+        run: hatch run test:all
       - name: Test LocalStorage & mysql
         env:
           SQLA_ENGINE: 'mysql+pymysql://username:password@localhost:3306/test_db'
           SQLA_ASYNC_ENGINE: 'mysql+aiomysql://username:password@localhost:3306/test_db'
           STORAGE_PROVIDER: 'LOCAL'
           LOCAL_PATH: '/tmp/storage'
-        run: hatch run test_sqla
+        run: hatch run test:sqla
       - name: Test Minio Storage provider & sqlite memory
         env:
           SQLA_ENGINE: 'sqlite:///test.db?check_same_thread=False'
@@ -88,8 +90,8 @@ jobs:
           MINIO_HOST: 'localhost'
           MINIO_PORT: 9000
           MINIO_SECURE: false
-        run: hatch run test_sqla
+        run: hatch run test:sqla
       - name: Coverage Report
-        run: hatch run cov
+        run: hatch run test:cov
       - name: Upload coverage
         uses: codecov/codecov-action@v3

@@ -31,9 +31,22 @@
           {% endif %}
         </a>
       </h1>
-      {% if current_user %}
+      {% if current_user or i18n_config.language_switcher %}
       <div class="navbar-nav flex-row d-lg-none">
+        {% if i18n_config.language_switcher %}
         <div class="nav-item dropdown">
+          <a href="#" class="nav-link" data-bs-toggle="dropdown">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 5h7"></path><path d="M9 3v2c0 4.418 -2.239 8 -5 8"></path><path d="M5 9c-.003 2.144 2.952 3.908 6.7 4"></path><path d="M12 20l4 -9l4 9"></path><path d="M19.1 18h-6.2"></path></svg>
+          </a>
+          <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+            {% for lang in i18n_config.language_switcher%}
+            <a href="#" class="dropdown-item language-switcher-item" data-lang="{{lang}}" data-cookie-name="{{i18n_config.language_cookie_name}}">{{get_locale_display_name(lang)}}</a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if current_user %}
+        <div class="nav-item dropdown ms-3">
           <a
             href="#"
             class="nav-link d-flex lh-1 text-reset p-0"
@@ -53,9 +66,10 @@
             </div>
           </a>
           <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-            <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="dropdown-item">Logout</a>
+            <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="dropdown-item">{{_("Logout")}}</a>
           </div>
         </div>
+        {% endif %}
       </div>
       {% endif %}
       <div class="collapse navbar-collapse" id="sidebar-menu">
@@ -67,10 +81,10 @@
           {{macros.custom_link(view)}} {%elif (view| is_model)%}
           {{macros.model_link(view)}} {%elif (view | is_dropdown)%}
           {{macros.dropdown_link(view)}} {%endif%} {% endfor %}
-          {% if is_auth_enabled and current_user is none %} {# Backward Compatibility #}
+          {% if is_auth_enabled and current_user is none %}
           <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="btn btn-light mx-1 mt-2">
             <i class="fa fa-sign-out"></i>
-            <span class="ms-2">Logout</span>
+            <span class="ms-2">{{_("Logout")}}</span>
           </a>
           {% endif %}
         </ul>
@@ -80,7 +94,7 @@
   {% endblock %}
 
   {% block navbar %}
-  {% if current_user %}
+  {% if current_user or i18n_config.language_switcher%}
   <header
     class="navbar navbar-expand-md navbar-light d-none d-lg-flex d-print-none"
   >
@@ -97,7 +111,21 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="navbar-nav flex-row order-md-last">
+        {% if i18n_config.language_switcher %}
         <div class="nav-item dropdown">
+          <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 5h7"></path><path d="M9 3v2c0 4.418 -2.239 8 -5 8"></path><path d="M5 9c-.003 2.144 2.952 3.908 6.7 4"></path><path d="M12 20l4 -9l4 9"></path><path d="M19.1 18h-6.2"></path></svg>
+            {{get_locale_display_name(get_locale())}}
+          </button>
+          <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+            {% for lang in i18n_config.language_switcher%}
+            <a href="#" class="dropdown-item language-switcher-item" data-lang="{{lang}}" data-cookie-name="{{i18n_config.language_cookie_name}}">{{get_locale_display_name(lang)}}</a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if current_user %}
+        <div class="nav-item dropdown ms-3">
           <a
             href="#"
             class="nav-link d-flex lh-1 text-reset p-0"
@@ -117,9 +145,10 @@
             </div>
           </a>
           <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-            <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="dropdown-item">Logout</a>
+            <a href="{{ request.url_for(__name__ ~ ':logout') }}" class="dropdown-item">{{_("Logout")}}</a>
           </div>
         </div>
+        {% endif %}
       </div>
       <div class="collapse navbar-collapse" id="navbar-menu"></div>
     </div>

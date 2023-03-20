@@ -266,10 +266,10 @@ class TestViews:
             "tags": ["tag1", "tag2"],
         }
         response = client.post("/admin/post/create", data=dummy_data)
-        assert response.status_code == 200
+        assert response.status_code == 422
         assert "Ensure Post title has at least 03 characters" in response.text
         response = client.post("/admin/post/edit/1", data=dummy_data)
-        assert response.status_code == 200
+        assert response.status_code == 422
         assert "Ensure Post title has at least 03 characters" in response.text
 
     def test_model_view_delete(self):
@@ -295,12 +295,9 @@ class TestViews:
             fields = [
                 IntegerField("id"),
                 FloatField("score"),
-                EnumField.from_choices(
+                EnumField(
                     "gender",
-                    (
-                        "male",
-                        "female",
-                    ),
+                    choices=("male", "female"),
                 ),
                 JSONField("json_field"),
             ]
@@ -313,6 +310,8 @@ class TestViews:
         admin.add_view(MyModelView)
         admin.mount_to(app)
         client = TestClient(app)
+
+        assert client.get("admin/my-model/list").status_code == 200
 
         response = client.post(
             "/admin/my-model/create",

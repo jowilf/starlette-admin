@@ -1,16 +1,16 @@
 (function () {
   function processElement(element) {
-    $("select.field-tags, select.field-enum", element).each(function () {
+    $('select.field-tags, select.field-enum[data-role="select2"]', element).each(function () {
       $(this).select2();
     });
 
     $("div.field-json", element).each(function () {
-      let name = $(this).attr("id");
+      let el = $(this)
+      let name = el.attr("id");
       new JSONEditor(
         this,
         {
-          mode: "tree",
-          modes: ["code", "tree"],
+          modes: String(el.data("modes")).split(","),
           onChangeText: function (json) {
             $(`input[name=${name}]`).val(json);
           },
@@ -106,6 +106,7 @@
         altInput: true,
         dateFormat: "Y-m-d H:i:S",
         altFormat: el.data("alt-format"),
+        locale: el.data("locale"),
       });
     });
 
@@ -117,6 +118,7 @@
         altInput: true,
         dateFormat: "Y-m-d",
         altFormat: el.data("alt-format"),
+        locale: el.data("locale"),
       });
     });
 
@@ -131,6 +133,7 @@
         altInput: true,
         dateFormat: "H:i:S",
         altFormat: el.data("alt-format"),
+        locale: el.data("locale"),
       });
     });
 

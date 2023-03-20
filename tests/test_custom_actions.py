@@ -23,7 +23,7 @@ class Article(DummyBaseModel):
 
 class ArticleView(DummyModelView):
     model = Article
-    fields = [IntegerField("id"), EnumField.from_enum("status", Status)]
+    fields = [IntegerField("id"), EnumField("status", enum=Status)]
     actions = [
         "make_published",
         "delete",
@@ -46,7 +46,7 @@ class ArticleView(DummyModelView):
     async def make_published_action(self, request: Request, pks: List[Any]) -> str:
         for article in await self.find_by_pks(request, pks):
             article.status = Status.Published
-        return "{} articles were successfully marked as published".format(len(pks))
+        return f"{len(pks)} articles were successfully marked as published"
 
     @action(
         name="always_failed",
@@ -90,16 +90,19 @@ def test_all_actions_is_available_by_default():
     )
 
 
-def test_actions_is_available_in_ui(client: TestClient):
-    response = client.get("/admin/article/list")
-    assert response.status_code == 200
-    for action, expected_count in [
+@pytest.mark.parametrize(
+    "action, expected_count",
+    [
         ("make_published", 1),
         ("delete", 1),
         ("always_failed", 1),
         ("forbidden", 0),
-    ]:
-        assert response.text.count(f'data-name="{action}"') == expected_count
+    ],
+)
+def test_actions_is_available_in_ui(client: TestClient, action, expected_count):
+    response = client.get("/admin/article/list")
+    assert response.status_code == 200
+    assert response.text.count(f'data-name="{action}"') == expected_count
 
 
 def test_action_execution(client: TestClient):

@@ -37,8 +37,6 @@ class PostView(BaseModelView):
     pass
 ```
 
-Now, implement the following methods or attributes for the new class:
-
 ## Metadata
 
 Set the `identity`, `name` and `label` for the new class

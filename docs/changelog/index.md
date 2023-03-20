@@ -5,6 +5,71 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2023-03-12
+
+### Added
+* Setup i18n and Add French translations by [@jowilf](https://github.com/jowilf) in [#74](https://github.com/jowilf/starlette-admin/pull/74)
+* Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starlette_admin.fields.CountryField], [CurrencyField][starlette_admin.fields.CurrencyField] & [ArrowField][starlette_admin.fields.ArrowField]
+* Add support for [sqlalchemy_utils](https://github.com/kvesteri/sqlalchemy-utils) data types
+* Add SQLAlchemy 2 support by  [@jowilf](https://github.com/jowilf) in [#113](https://github.com/jowilf/starlette-admin/pull/113)
+* Add support for initial order (sort) to apply to the table by [@jowilf](https://github.com/jowilf) in [#115](https://github.com/jowilf/starlette-admin/pull/115)
+
+!!! usage
+    ```python
+    class User:
+        id: int
+        last_name: str
+        first_name: str
+
+
+    class UserView(ModelView):
+        fields_default_sort = ["last_name", ("first_name", True)]
+
+    admin.add_view(UserView(User))
+    ```
+### Fixed
+
+* Fix [#69](https://github.com/jowilf/starlette-admin/issues/69) : Return `HTTP_422_UNPROCESSABLE_ENTITY` when form data is not valid
+
+### Deprecated
+
+* `EnumField.from_enum("status", Status)` is deprecated. Use `EnumField("status", enum=Status)` instead.
+* `EnumField.from_choices("language", [('cpp', 'C++'), ('py', 'Python')])` is deprecated. Use `EnumField("name", choices=[('cpp', 'C++'), ('py', 'Python')])` instead.
+
+## [0.5.5] - 2023-03-06
+
+### Fixed
+
+* Fix [#116](https://github.com/jowilf/starlette-admin/issues/116) : Internal Server Error when login credentials are wrong by [@jowilf](https://github.com/jowilf) in [#117](https://github.com/jowilf/starlette-admin/pull/117)
+
+## [0.5.4] - 2023-03-03
+
+### Fixed
+
+* Fix [#99](https://github.com/jowilf/starlette-admin/issues/99) : Show error message when an error occur on `delete` action (detail view).
+
+### Added
+
+* Display meaningfully error message when SQLAlchemyError occur during action execution by [@jowilf](https://github.com/jowilf) and [@dolamroth](https://github.com/dolamroth) in [#105](https://github.com/jowilf/starlette-admin/pull/105)
+
+## [0.5.3] - 2023-02-25
+
+### Fixed
+
+* Fix Bug with SQLAlchemy column converters by [@jowilf](https://github.com/jowilf) in [#103](https://github.com/jowilf/starlette-admin/pull/103)
+
+## [0.5.2] - 2022-12-29
+
+### Fixed
+
+* Fix Bug with `search_format` params for [DateField][starlette_admin.fields.DateField] and [TimeField][starlette_admin.fields.TimeField] by [@jowilf](https://github.com/jowilf) & [@ihuro](https://github.com/ihuro) in [#68](https://github.com/jowilf/starlette-admin/pull/68) & [#71](https://github.com/jowilf/starlette-admin/pull/71)
+
+## [0.5.1] - 2022-12-27
+
+### Fixed
+
+* Fix Bug with `sqlalchemy.dialects.postgresql.base.UUID` column by [@jowilf](https://github.com/jowilf) in [#65](https://github.com/jowilf/starlette-admin/pull/65)
+
 ## [0.5.0] - 2022-12-17
 
 ### Added

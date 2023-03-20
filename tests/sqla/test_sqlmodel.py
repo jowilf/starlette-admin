@@ -92,7 +92,7 @@ async def test_create_validation_error(client: AsyncClient, session: Session):
             "completed_time": datetime.now().strftime("%H:%M:%S"),
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 422
     assert (
         '<div class="invalid-feedback">ensure this value has at least 10'
         " characters</div>" in response.text
@@ -138,7 +138,7 @@ async def test_edit_validation_error(client: AsyncClient, session: Session):
             "completed_time": datetime.now().strftime("%H:%M:%S"),
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 422
     assert (
         '<div class="invalid-feedback">ensure this value has at least 10'
         " characters</div>" in response.text

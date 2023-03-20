@@ -20,6 +20,8 @@
 </a>
 </p>
 
+![Preview image](https://raw.githubusercontent.com/jowilf/starlette-admin/main/docs/images/preview.jpg)
+
 ## Getting started
 
 * Check out [the documentation](https://jowilf.github.io/starlette-admin).
@@ -111,3 +113,13 @@ Access your admin interface in your browser at [http://localhost:8000/admin](htt
 - [moment](http://momentjs.com/)
 - [jsoneditor](https://github.com/josdejong/jsoneditor)
 - [fontawesome](https://fontawesome.com/)
+
+## Contributing
+
+Thanks for your interest! Contributions are welcome.
+
+Issues, feature requests, questions and bug reports should be reported via the issue tracker above. In particular, because StarletteAdmin aims to be well-documented, please report anything you find confusing or incorrect in the documentation.
+
+Code or documentation improvements in the form of pull requests are also welcome. Please file or comment on an issue to allow for discussion before doing a lot of work, though.
+
+For more details, see the [CONTRIBUTING.md file](https://github.com/jowilf/starlette-admin/blob/main/CONTRIBUTING.md).

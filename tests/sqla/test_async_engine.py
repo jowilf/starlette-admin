@@ -23,13 +23,13 @@ class Product(Base):
 
 @pytest_asyncio.fixture()
 async def engine():
-    engine = get_async_test_engine()
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+    _engine = get_async_test_engine()
+    async with _engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    yield engine
-    async with engine.begin() as conn:
+    yield _engine
+    async with _engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    await _engine.dispose()
 
 
 @pytest_asyncio.fixture()

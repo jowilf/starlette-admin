@@ -40,59 +40,107 @@ Documentation = "https://jowilf.github.io/starlette-admin"
 Repository = "https://github.com/jowilf/starlette-admin"
 Changelog = "https://jowilf.github.io/starlette-admin/changelog/"
 
-[tool.hatch.envs.default]
-dependencies = [
-    "pytest >=7.2.0",
-    "pytest-asyncio >=0.20.2",
-    "httpx >=0.23.1",
-    "coverage >=6.5.0",
-    "mypy ==0.990",
-    "ruff ==0.0.149",
-    "black ==22.10.0",
-    "SQLAlchemy[asyncio] >=1.4, <1.5.0",
-    "sqlalchemy-file >=0.1.5",
-    "fasteners >=0.18",
-    "PyMySQL[rsa] >=1.0.2",
-    "psycopg2-binary >=2.9.5",
-    "aiosqlite >=0.17.0",
-    "asyncpg >=0.27.0",
-    "aiomysql >=0.1.1",
-    "mongoengine >=0.24.2",
-    "sqlmodel >=0.0.8",
-    "odmantic >=0.9.0",
-    "tinydb >=4.7.0",
-    "Pillow >=9.3.0",
-    "itsdangerous >=2.1.2",
-    "pydantic[email] >=1.10.2",
-    "uvicorn >=0.20.0",
-    "pre-commit >=2.20.0",
-    # Docs
-    "mkdocs >=1.1.2, <2.0.0",
-    "mkdocs-material >=8.5.10, <9.0.0",
-    "mkdocstrings[python] >=0.19.0, <0.20.0",
-    "mkdocs-static-i18n >= 0.18.0"
+[project.optional-dependencies]
+i18n = [
+    "babel >=2.12.1"
+]
+test = [
+    "pytest >=7.2.0, <7.3.0",
+    "pytest-asyncio >=0.20.2, <0.21.0",
+    "mypy ==1.1.1",
+    "ruff ==0.0.254",
+    "black ==23.1.0",
+    "httpx >=0.23.3, <0.24.0",
+    "coverage >=7.0.0, <7.3.0",
+    "SQLAlchemy-Utils >=0.40.0, <0.41.0",
+    "arrow >=1.2.3, <1.3.0",
+    "colour >=0.1.5, <0.2.0",
+    "phonenumbers >=8.13.3, <8.14.0",
+    "passlib >=1.7.4, <1.8.0",
+    "backports.zoneinfo; python_version<'3.9'",
+    "sqlalchemy-file >=0.4.0, <0.5.0",
+    "fasteners ==0.18",
+    "PyMySQL[rsa] >=1.0.2, <1.1.0",
+    "psycopg2-binary >=2.9.5, <3.0.0",
+    "aiosqlite >=0.17.0, <0.19.0",
+    "asyncpg >=0.27.0, <0.28.0",
+    "aiomysql >=0.1.1, <0.2.0",
+    "mongoengine >=0.25.0, <0.28.0",
+    "odmantic >=0.9.0,<0.10.0",
+    "tinydb >=4.7.0, <4.8.0",
+    "Pillow >=9.4.0, <9.5.0",
+    "itsdangerous >=2.1.2, <2.2.0",
+    "pydantic[email] >=1.10.2, <2.0.0",
+]
+doc = [
+    "mkdocs >=1.4.2, <2.0.0",
+    "mkdocs-material >=9.0.0, <10.0.0",
+    "mkdocstrings[python] >=0.19.0, <0.21.0",
+    "mkdocs-static-i18n >=0.53.0, <0.54.0"
+]
+dev = [
+    "pre-commit >=2.20.0, <4.0.0",
+    "uvicorn >=0.20.0, <0.22.0",
 ]
 
+[tool.hatch.envs.default]
+features = [
+    "i18n",
+    "test",
+    "doc",
+    "dev"
+]
 [tool.hatch.envs.default.scripts]
 format = [
     "ruff starlette_admin tests --fix",
     "black ."
 ]
+i18n_extract = "pybabel extract -F i18n/babel.ini -k _n -o i18n/admin.pot --project starlette-admin starlette_admin"
+i18n_update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations -D admin"
+i18n_compile = "pybabel compile -f -D admin -d starlette_admin/translations"
+
+[tool.hatch.envs.test]
+features = [
+    "i18n",
+    "test",
+]
+[tool.hatch.envs.test.scripts]
 lint = [
     "mypy starlette_admin",
     "ruff starlette_admin tests",
     "black . --check"
 ]
+all = "coverage run -m pytest tests"
+sqla = "coverage run -m pytest tests/sqla"
 cov = [
     "coverage combine",
     "coverage report --show-missing",
     "coverage xml"
 ]
-docs = "mkdocs serve -a localhost:8080"
-docs_build = "mkdocs build"
-docs_deploy = "mkdocs gh-deploy --force"
-test = "coverage run -m pytest tests"
-test_sqla = "coverage run -m pytest tests/sqla"
+
+[[tool.hatch.envs.test.matrix]]
+sqla_version = ["sqla14", "sqla2"]
+
+[tool.hatch.envs.test.overrides]
+matrix.sqla_version.dependencies = [
+    { value = "SQLAlchemy[asyncio] >=2.0, <2.1", if = ["sqla2"] },
+    { value = "SQLAlchemy[asyncio] >=1.4, <1.5", if = ["sqla14"] },
+    { value = "sqlmodel ==0.0.8", if = ["sqla14"] },
+]
+matrix.sqla_version.scripts = [
+    { key = "all", value = 'coverage run -m pytest tests --ignore=tests/sqla/test_sqlmodel.py', if = ["sqla2"] },
+    { key = "sqla", value = 'coverage run -m pytest tests/sqla --ignore=tests/sqla/test_sqlmodel.py', if = ["sqla2"] },
+    { key = "cov", value = '', if = ["sqla14"] }, # run after sqla2 test
+]
+
+[tool.hatch.envs.docs]
+features = [
+    "doc",
+]
+[tool.hatch.envs.docs.scripts]
+serve = "mkdocs serve -a localhost:8080"
+build = "mkdocs build"
+deploy = "mkdocs gh-deploy --force"
 
 [tool.hatch.version]
 path = "starlette_admin/__init__.py"
@@ -104,7 +152,8 @@ exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
     "raise NotImplementedError",
-    "except NotImplementedError"
+    "except NotImplementedError",
+    "except ImportError"
 ]
 
 [tool.coverage.run]
@@ -123,6 +172,8 @@ select = [
 ]
 ignore = [
     "E501", # line too long, handled by black
+    "B008", # Do not perform function call `_` in argument defaults, neccessary for lazy_gettext
+    "B905", # `zip()` without an explicit `strict=` parameter
 ]
 
 [tool.ruff.isort]
@@ -143,6 +194,13 @@ implicit_reexport = false
 strict_equality = true
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "starlette_admin.contrib.sqla.helpers"
+warn_unused_ignores = false
+
+[[tool.mypy.overrides]]
+module = "starlette_admin.contrib.sqla.view"
+warn_unused_ignores = false
 
 [tool.hatch.build.targets.wheel]
 [tool.hatch.build.targets.sdist]

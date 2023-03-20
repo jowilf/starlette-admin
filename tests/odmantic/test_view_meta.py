@@ -101,8 +101,8 @@ def test_fields_conversion():
         DecimalField("decimal", required=True),
         EmailField("email", required=True),
         URLField("url", required=True),
-        EnumField.from_enum("enum", Status),
-        EnumField.from_enum("enums", Status, multiple=True, required=True),
+        EnumField("enum", enum=Status),
+        EnumField("enums", enum=Status, multiple=True, required=True),
         ListField(StringField("list_str")),
         JSONField("json_", required=True),
         ColorField("color", required=True),
@@ -159,3 +159,15 @@ def test_invalid_exclude_list():
             exclude_fields_from_create = [1]
 
         InvalidUserView(User)
+
+
+def test_invalid_fields_default_sort_list():
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Invalid argument, Expected Tuple[str | FieldProxy, bool]"),
+    ):
+
+        class InvalidDocumentView(ModelView):
+            fields_default_sort = [Document.id, (Document.bool, True), (1,)]
+
+        InvalidDocumentView(Document)

@@ -1,10 +1,10 @@
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 import anyio.to_thread
 from sqlalchemy import Column, String, cast, func, inspect, or_, select
-from sqlalchemy.exc import NoInspectionAvailable
+from sqlalchemy.exc import NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import InstrumentedAttribute, Session, joinedload
+from sqlalchemy.orm import InstrumentedAttribute, Mapper, Session, joinedload
 from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
@@ -15,7 +15,7 @@ from starlette_admin.contrib.sqla.helpers import (
     normalize_fields,
     normalize_list,
 )
-from starlette_admin.exceptions import FormValidationError
+from starlette_admin.exceptions import ActionFailed, FormValidationError
 from starlette_admin.fields import (
     ColorField,
     EmailField,
@@ -40,7 +40,7 @@ class ModelView(BaseModelView):
         identity: Optional[str] = None,
     ):
         try:
-            mapper = inspect(model)
+            mapper: Mapper = inspect(model)  # type: ignore
         except NoInspectionAvailable:
             raise InvalidModelError(  # noqa B904
                 f"Class {model.__name__} is not a SQLAlchemy model."
@@ -84,7 +84,16 @@ class ModelView(BaseModelView):
             else _default_list
         )
         self.export_fields = normalize_list(self.export_fields)
+        self.fields_default_sort = normalize_list(
+            self.fields_default_sort, is_default_sort_list=True
+        )
         super().__init__()
+
+    async def handle_action(self, request: Request, pks: List[Any], name: str) -> str:
+        try:
+            return await super().handle_action(request, pks, name)
+        except SQLAlchemyError as exc:
+            raise ActionFailed(str(exc)) from exc
 
     def get_list_query(self) -> Select:
         """
@@ -170,7 +179,7 @@ class ModelView(BaseModelView):
                 where = await self.build_full_text_search_query(
                     request, where, self.model
                 )
-            stmt = stmt.where(where)
+            stmt = stmt.where(where)  # type: ignore
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalar_one()
         return (await anyio.to_thread.run_sync(session.execute, stmt)).scalar_one()
@@ -182,7 +191,7 @@ class ModelView(BaseModelView):
         limit: int = 100,
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
-    ) -> List[Any]:
+    ) -> Sequence[Any]:
         session: Union[Session, AsyncSession] = request.state.session
         stmt = self.get_list_query().offset(skip)
         if limit > 0:
@@ -194,11 +203,11 @@ class ModelView(BaseModelView):
                 where = await self.build_full_text_search_query(
                     request, where, self.model
                 )
-            stmt = stmt.where(where)
+            stmt = stmt.where(where)  # type: ignore
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
         for field in self.fields:
             if isinstance(field, RelationField):
-                stmt = stmt.options(joinedload(field.name))
+                stmt = stmt.options(joinedload(getattr(self.model, field.name)))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
         return (
@@ -213,7 +222,7 @@ class ModelView(BaseModelView):
         stmt = select(self.model).where(self._pk_column == self._pk_coerce(pk))
         for field in self.fields:
             if isinstance(field, RelationField):
-                stmt = stmt.options(joinedload(field.name))
+                stmt = stmt.options(joinedload(getattr(self.model, field.name)))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().one_or_none()
         return (
@@ -223,12 +232,12 @@ class ModelView(BaseModelView):
             .one_or_none()
         )
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> List[Any]:
+    async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
         session: Union[Session, AsyncSession] = request.state.session
         stmt = select(self.model).where(self._pk_column.in_(map(self._pk_coerce, pks)))
         for field in self.fields:
             if isinstance(field, RelationField):
-                stmt = stmt.options(joinedload(field.name))
+                stmt = stmt.options(joinedload(getattr(self.model, field.name)))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
         return (

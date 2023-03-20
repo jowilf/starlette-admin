@@ -15,6 +15,7 @@ function that implements the desired logic and wrap it with the [@action][starle
 ```python
 from typing import List, Any
 
+from starlette.datastructures import FormData
 from starlette.requests import Request
 
 from starlette_admin import action
@@ -23,7 +24,7 @@ from starlette_admin.exceptions import ActionFailed
 
 
 class ArticleView(ModelView):
-    actions = ["make_published", "delete"] # `delete` function is added by default
+    actions = ["make_published"]
 
     @action(
         name="make_published",
@@ -31,9 +32,20 @@ class ArticleView(ModelView):
         confirmation="Are you sure you want to mark selected articles as published ?",
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
+        form="""
+        <form>
+            <div class="mt-3">
+                <input type="text" class="form-control" name="example-text-input" placeholder="Enter value">
+            </div>
+        </form>
+        """,
     )
     async def make_published_action(self, request: Request, pks: List[Any]) -> str:
         # Write your logic here
+
+        data: FormData = await request.form()
+        user_input = data.get("example-text-input")
+
         if ...:
             # Display meaningfully error
             raise ActionFailed("Sorry, We can't proceed this action now.")

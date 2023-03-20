@@ -1,0 +1,5 @@
+starlette-admin
+uvicorn
+sqlalchemy
+sqlalchemy-utils
+pydantic[email]

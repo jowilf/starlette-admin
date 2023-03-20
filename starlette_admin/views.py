@@ -8,7 +8,7 @@ from typing import (
     List,
     Optional,
     Sequence,
-    Set,
+    Tuple,
     Type,
     Union,
 )
@@ -28,6 +28,8 @@ from starlette_admin.fields import (
     RelationField,
 )
 from starlette_admin.helpers import extract_fields
+from starlette_admin.i18n import get_locale, ngettext
+from starlette_admin.i18n import lazy_gettext as _
 
 
 class BaseView:
@@ -182,9 +184,11 @@ class BaseModelView(BaseView):
         searchable_fields: List of searchable fields.
         sortable_fields: List of sortable fields.
         export_fields: List of fields to include in exports.
+        fields_default_sort: Initial order (sort) to apply to the table.
+            eg: `["title", ("price", True)]`.
         export_types: A list of available export filetypes. Available
             exports are `['csv', 'excel', 'pdf', 'print']`. Only `pdf` is
-            disable by default.
+            disabled by default.
         column_visibility: Enable/Disable
             [column visibility](https://datatables.net/extensions/buttons/built-in#Column-visibility)
             extension
@@ -215,6 +219,7 @@ class BaseModelView(BaseView):
     exclude_fields_from_edit: Sequence[str] = []
     searchable_fields: Optional[Sequence[str]] = None
     sortable_fields: Optional[Sequence[str]] = None
+    fields_default_sort: Optional[Sequence[Union[Tuple[str, bool], str]]] = None
     export_types: Sequence[ExportType] = [
         ExportType.CSV,
         ExportType.EXCEL,
@@ -243,7 +248,7 @@ class BaseModelView(BaseView):
                 field._name = field.name  # type: ignore
             if isinstance(field, CollectionField):
                 for f in field.fields:
-                    f._name = "{}.{}".format(field._name, f.name)  # type: ignore
+                    f._name = f"{field._name}.{f.name}"  # type: ignore
                 fringe.extend(field.fields)
             name = field._name  # type: ignore
             if name == self.pk_attr and not self.form_include_pk:
@@ -271,6 +276,8 @@ class BaseModelView(BaseView):
             self.sortable_fields = all_field_names[:]
         if self.export_fields is None:
             self.export_fields = all_field_names[:]
+        if self.fields_default_sort is None:
+            self.fields_default_sort = [self.pk_attr]  # type: ignore[list-item]
 
         # Actions
         self._actions: Dict[str, Dict[str, str]] = {}
@@ -295,7 +302,7 @@ class BaseModelView(BaseView):
             self.actions = list(self._handlers.keys())
         for action_name in self.actions:
             if action_name not in self._actions:
-                raise ValueError("Unknown action with name `{}`".format(action_name))
+                raise ValueError(f"Unknown action with name `{action_name}`")
 
     async def is_action_allowed(self, request: Request, name: str) -> bool:
         """
@@ -334,14 +341,18 @@ class BaseModelView(BaseView):
 
     @action(
         name="delete",
-        text="Delete",
-        confirmation="Are you sure you want to delete this items ?",
-        submit_btn_text="Yes, delete them all",
+        text=_("Delete"),
+        confirmation=_("Are you sure you want to delete selected items?"),
+        submit_btn_text=_("Yes, delete all"),
         submit_btn_class="btn-danger",
     )
     async def delete_action(self, request: Request, pks: List[Any]) -> str:
         affected_rows = await self.delete(request, pks)
-        return "{} items were successfully deleted".format(affected_rows)
+        return ngettext(
+            "Item was successfully deleted",
+            "%(count)d items were successfully deleted",
+            affected_rows or 0,
+        ) % {"count": affected_rows}
 
     @abstractmethod
     async def find_all(
@@ -474,7 +485,7 @@ class BaseModelView(BaseView):
             request: Starlette Request
         """
         if value is None:
-            return value
+            return await field.serialize_none_value(request, action)
         return await field.serialize_value(request, value, action)
 
     async def serialize(
@@ -515,7 +526,7 @@ class BaseModelView(BaseView):
                             for v in value
                         ]
             elif not isinstance(field, RelationField):
-                value = getattr(obj, field.name, None)
+                value = await field.parse_obj(request, obj)
                 obj_serialized[field.name] = await self.serialize_field_value(
                     value, field, action, request
                 )
@@ -531,11 +542,11 @@ class BaseModelView(BaseView):
             self.pk_attr, str(pk)  # Make sure the primary key is always available
         )
         route_name = request.app.state.ROUTE_NAME
-        obj_serialized["_detail_url"] = request.url_for(
-            route_name + ":detail", identity=self.identity, pk=pk
+        obj_serialized["_detail_url"] = str(
+            request.url_for(route_name + ":detail", identity=self.identity, pk=pk)
         )
-        obj_serialized["_edit_url"] = request.url_for(
-            route_name + ":edit", identity=self.identity, pk=pk
+        obj_serialized["_edit_url"] = str(
+            request.url_for(route_name + ":edit", identity=self.identity, pk=pk)
         )
         return obj_serialized
 
@@ -594,7 +605,7 @@ class BaseModelView(BaseView):
     def _length_menu(self) -> Any:
         return [
             self.page_size_options,
-            [("All" if i < 0 else i) for i in self.page_size_options],
+            [(_("All") if i < 0 else i) for i in self.page_size_options],
         ]
 
     def _search_columns_selector(self) -> List[str]:
@@ -610,33 +621,50 @@ class BaseModelView(BaseView):
 
     def _additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> Set[str]:
-        links = set()
+    ) -> Sequence[str]:
+        links = []
         for field in self.fields:
-            if (action == RequestAction.CREATE and field.exclude_from_create) or (
-                action == RequestAction.EDIT and field.exclude_from_edit
+            if (
+                (action == RequestAction.LIST and field.exclude_from_list)
+                or (action == RequestAction.DETAIL and field.exclude_from_detail)
+                or (action == RequestAction.CREATE and field.exclude_from_create)
+                or (action == RequestAction.EDIT and field.exclude_from_edit)
             ):
                 continue
-            links.update(field.additional_css_links(request))
+            for link in field.additional_css_links(request, action) or []:
+                if link not in links:
+                    links.append(link)
         return links
 
-    def _additional_js_links(self, request: Request, action: RequestAction) -> Set[str]:
-        links = set()
+    def _additional_js_links(
+        self, request: Request, action: RequestAction
+    ) -> Sequence[str]:
+        links = []
         for field in self.fields:
             if (action == RequestAction.CREATE and field.exclude_from_create) or (
                 action == RequestAction.EDIT and field.exclude_from_edit
             ):
                 continue
-            links.update(field.additional_js_links(request))
+            for link in field.additional_js_links(request, action) or []:
+                if link not in links:
+                    links.append(link)
         return links
 
     async def _configs(self, request: Request) -> Dict[str, Any]:
+        locale = get_locale()
         return {
             "label": self.label,
             "pageSize": self.page_size,
             "lengthMenu": self._length_menu(),
             "searchColumns": self._search_columns_selector(),
             "exportColumns": self._export_columns_selector(),
+            "fieldsDefaultSort": {
+                k: v
+                for k, v in (
+                    (it, False) if isinstance(it, str) else it
+                    for it in self.fields_default_sort  # type: ignore[union-attr]
+                )
+            },
             "exportTypes": self.export_types,
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,
@@ -644,10 +672,14 @@ class BaseModelView(BaseView):
             "fields": [f.dict() for f in self._extract_fields()],
             "actions": await self.get_all_actions(request),
             "pk": self.pk_attr,
+            "locale": locale,
             "apiUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:api", identity=self.identity
             ),
             "actionUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:action", identity=self.identity
+            ),
+            "dt_i18n_url": request.url_for(
+                f"{request.app.state.ROUTE_NAME}:statics", path=f"i18n/dt/{locale}.json"
             ),
         }

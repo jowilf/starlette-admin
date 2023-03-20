@@ -1,13 +1,9 @@
 name: Preview Docs
 on:
-  workflow_run:
-    workflows:
-      - Test suite
-    types:
-      - completed
+  pull_request:
+    branches: [ "main" ]
 jobs:
   preview-docs:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -16,14 +12,18 @@ jobs:
           python-version: 3.8
       - name: Install Dependencies
         run: pip install hatch
-      - run: hatch run docs_build
+      - run: hatch run docs:build
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.0.0
         with:
-          publish-dir: './site'
-          production-deploy: false
+          publish-dir: "./site"
+          production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "#${{ github.event.number }}: ${{ github.event.pull_request.title }}"
+          enable-pull-request-comment: true
           enable-commit-comment: false
+          overwrites-pull-request-comment: true
+          alias: docs-preview-${{ github.event.number }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

@@ -1,7 +1,6 @@
-import inspect
-from typing import Any, Callable, Dict, List, Optional, Sequence, Type
+from typing import Any, Callable, Dict, List, Optional, Sequence
 
-from sqlalchemy import ARRAY, Boolean, Column, and_, false, not_, or_, true
+from sqlalchemy import Column, String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
     ColumnProperty,
     InstrumentedAttribute,
@@ -9,24 +8,8 @@ from sqlalchemy.orm import (
     RelationshipProperty,
 )
 from sqlalchemy.sql import ClauseElement
-from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
-from starlette_admin.contrib.sqla.fields import FileField, ImageField
-from starlette_admin.fields import (
-    BaseField,
-    BooleanField,
-    DateField,
-    DateTimeField,
-    DecimalField,
-    EnumField,
-    HasMany,
-    HasOne,
-    IntegerField,
-    JSONField,
-    StringField,
-    TagsField,
-    TextAreaField,
-    TimeField,
-)
+from starlette_admin.contrib.sqla.converters import find_converter
+from starlette_admin.fields import BaseField, HasMany, HasOne
 from starlette_admin.helpers import slugify_class_name
 
 OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
@@ -38,12 +21,12 @@ OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
     "ge": lambda f, v: f >= v,
     "in": lambda f, v: f.in_(v),
     "not_in": lambda f, v: f.not_in(v),
-    "startswith": lambda f, v: f.startswith(v),
-    "not_startswith": lambda f, v: not_(f.startswith(v)),
-    "endswith": lambda f, v: f.endswith(v),
-    "not_endswith": lambda f, v: not_(f.endswith(v)),
-    "contains": lambda f, v: f.contains(v),
-    "not_contains": lambda f, v: not_(f.contains(v)),
+    "startswith": lambda f, v: cast(f, String).startswith(v),
+    "not_startswith": lambda f, v: not_(cast(f, String).startswith(v)),
+    "endswith": lambda f, v: cast(f, String).endswith(v),
+    "not_endswith": lambda f, v: not_(cast(f, String).endswith(v)),
+    "contains": lambda f, v: cast(f, String).contains(v),
+    "not_contains": lambda f, v: not_(cast(f, String).contains(v)),
     "is_false": lambda f, v: f == false(),
     "is_true": lambda f, v: f == true(),
     "is_null": lambda f, v: f.is_(None),
@@ -91,69 +74,13 @@ def build_order_clauses(order_list: List[str], model: Any) -> Any:
     return clauses
 
 
-converters = {
-    "String": StringField,  # includes Unicode
-    "CHAR": StringField,
-    "Text": TextAreaField,  # includes UnicodeText
-    "LargeBinary": TextAreaField,
-    "Binary": TextAreaField,
-    "Boolean": BooleanField,
-    "dialects.mssql.base.BIT": BooleanField,
-    "Date": DateField,
-    "DateTime": DateTimeField,
-    "Time": TimeField,
-    "Enum": EnumField,
-    "Integer": IntegerField,  # includes BigInteger and SmallInteger
-    "Numeric": DecimalField,  # includes DECIMAL, Float/FLOAT, REAL, and DOUBLE
-    "JSON": JSONField,
-    "dialects.mysql.types.YEAR": StringField,
-    "dialects.mysql.base.YEAR": StringField,
-    "dialects.postgresql.base.INET": StringField,
-    "dialects.postgresql.base.MACADDR": StringField,
-    "dialects.postgresql.base.UUID": StringField,
-    "sqlalchemy_file.types.FileField": FileField,  # support for sqlalchemy-file
-    "sqlalchemy_file.types.ImageField": ImageField,  # support for sqlalchemy-file
-}
-
-
-def convert_to_field(column: Column) -> Type[BaseField]:
-    if isinstance(column.type, ARRAY) and (
-        column.type.dimensions is None or column.type.dimensions == 1
-    ):
-        """Support for Postgresql ARRAY type"""
-        return TagsField
-    elif isinstance(column.type, ARRAY):
-        raise NotSupportedColumn("Column ARRAY with dimensions != 1 is not supported")
-    types = inspect.getmro(type(column.type))
-
-    # Search by module + name
-    for col_type in types:
-        type_string = f"{col_type.__module__}.{col_type.__name__}"
-        if type_string in converters:
-            return converters[type_string]
-
-    # Search by name
-    for col_type in types:
-        if col_type.__name__ in converters:
-            return converters[col_type.__name__]
-
-        # Support for custom types like SQLModel which inherit TypeDecorator
-        if hasattr(col_type, "impl"):
-            if callable(col_type.impl):
-                impl = col_type.impl
-            else:
-                impl = col_type.impl.__class__
-
-            if impl.__name__ in converters:
-                return converters[impl.__name__]
-    raise NotSupportedColumn(  # pragma: no cover
-        f"Column {column.type} is not supported"
-    )
-
-
 def normalize_fields(  # noqa: C901
     fields: Sequence[Any], mapper: Mapper
 ) -> List[BaseField]:
+    """
+    Look and convert all InstrumentedAttribute or str in fields into the
+    right field (starlette_admin.BaseField)
+    """
     converted_fields = []
     for field in fields:
         if isinstance(field, BaseField):
@@ -178,33 +105,16 @@ def normalize_fields(  # noqa: C901
                     len(attr.columns) == 1
                 ), "Multiple-column properties are not supported"
                 column = attr.columns[0]
-                required = False
-                if column.foreign_keys:
-                    continue
-                if (
-                    not column.nullable
-                    and not isinstance(column.type, (Boolean,))
-                    and not column.default
-                    and not column.server_default
-                ):
-                    required = True
-
-                field = convert_to_field(column)
-                if field is EnumField:
-                    field = EnumField.from_enum(attr.key, column.type.enum_class)
-                else:
-                    field = field(attr.key)
-                    if isinstance(field, (FileField, ImageField)) and getattr(
-                        column.type, "multiple", False
-                    ):
-                        field.multiple = True
-
-                field.required = required
-                converted_fields.append(field)
+                if not column.foreign_keys:
+                    field_converter = find_converter(column)  # type: ignore
+                    converted_fields.append(field_converter(attr.key, column))  # type: ignore
     return converted_fields
 
 
-def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
+def normalize_list(
+    arr: Optional[Sequence[Any]], is_default_sort_list: bool = False
+) -> Optional[Sequence[str]]:
+    """This methods will convert all InstrumentedAttribute into str"""
     if arr is None:
         return None
     _new_list = []
@@ -213,6 +123,24 @@ def normalize_list(arr: Optional[Sequence[Any]]) -> Optional[Sequence[str]]:
             _new_list.append(v.key)
         elif isinstance(v, str):
             _new_list.append(v)
+        elif (
+            isinstance(v, tuple) and is_default_sort_list
+        ):  # Support for fields_default_sort:
+            if (
+                len(v) == 2
+                and isinstance(v[0], (str, InstrumentedAttribute))
+                and isinstance(v[1], bool)
+            ):
+                _new_list.append(
+                    (
+                        v[0].key if isinstance(v[0], InstrumentedAttribute) else v[0],  # type: ignore[arg-type]
+                        v[1],
+                    )
+                )
+            else:
+                raise ValueError(
+                    "Invalid argument, Expected Tuple[str | InstrumentedAttribute, bool]"
+                )
         else:
             raise ValueError(
                 f"Expected str or InstrumentedAttribute, got {type(v).__name__}"
