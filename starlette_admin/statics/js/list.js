@@ -443,11 +443,6 @@ $(function () {
       query.append("pks", s);
     });
     query.append("name", name);
-
-    $('#modal-action :input').each(function() {
-        query.append(this.name, $(this).val());
-    });
-
     fetch(model.actionUrl + "?" + query.toString(), {
       method: "POST",
       body: formData,
@@ -483,7 +478,6 @@ $(function () {
     var confirmation = button.data("confirmation");
     var form = button.data("form");
     var name = button.data("name");
-    var form = button.data("form");
     var submit_btn_text = button.data("submit-btn-text");
     var submit_btn_class = button.data("submit-btn-class");
 
@@ -492,7 +486,6 @@ $(function () {
     var modalForm = modal.find("#modal-form");
     modalForm.html(form);
     var actionSubmit = modal.find("#actionSubmit");
-    $('#modal-form').html(form);
     actionSubmit.text(submit_btn_text);
     actionSubmit.removeClass().addClass(`btn ${submit_btn_class}`);
     actionSubmit.unbind();
