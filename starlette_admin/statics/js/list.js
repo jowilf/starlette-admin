@@ -436,7 +436,7 @@ $(function () {
   `).appendTo("#alertContainer");
   }
 
-  function submitAction(name) {
+  function submitAction(name, formData) {
     $("#modal-loading").modal("show");
     query = new URLSearchParams();
     selectedRows.forEach((s) => {
@@ -445,6 +445,7 @@ $(function () {
     query.append("name", name);
     fetch(model.actionUrl + "?" + query.toString(), {
       method: "POST",
+      body: formData,
     })
       .then(async (response) => {
         await new Promise((r) => setTimeout(r, 500));
@@ -475,18 +476,25 @@ $(function () {
   $("#modal-action").on("show.bs.modal", function (event) {
     var button = $(event.relatedTarget); // Button that triggered the modal
     var confirmation = button.data("confirmation");
+    var form = button.data("form");
     var name = button.data("name");
     var submit_btn_text = button.data("submit-btn-text");
     var submit_btn_class = button.data("submit-btn-class");
 
     var modal = $(this);
     modal.find("#actionConfirmation").text(confirmation);
+    var modalForm = modal.find("#modal-form");
+    modalForm.html(form);
     var actionSubmit = modal.find("#actionSubmit");
     actionSubmit.text(submit_btn_text);
     actionSubmit.removeClass().addClass(`btn ${submit_btn_class}`);
     actionSubmit.unbind();
     actionSubmit.on("click", function (event) {
-      submitAction(name);
+      const formElement = modalForm.find("form");
+      const formData = formElement.length
+        ? new FormData(formElement.get(0))
+        : new FormData();
+      submitAction(name, formData);
     });
   });
 
