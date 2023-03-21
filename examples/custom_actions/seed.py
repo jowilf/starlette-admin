@@ -52,5 +52,11 @@ fixture = [
 def fill_db():
     with Session(engine) as session:
         for _i, data in enumerate(fixture):
-            session.add(Article(**data, status=random.choice(list(Status))))
+            session.add(
+                Article(
+                    **data,
+                    status=random.choice(list(Status)),
+                    views=random.randint(0, 1000),
+                )
+            )
         session.commit()
