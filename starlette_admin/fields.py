@@ -6,7 +6,17 @@ from dataclasses import field as dc_field
 from datetime import date, datetime, time
 from enum import Enum, IntEnum
 from json import JSONDecodeError
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
@@ -224,7 +234,8 @@ class StringField(BaseField):
 @dataclass
 class TextAreaField(StringField):
     """This field is used to represent any kind of long text content.
-    For short text contents, use [StringField][starlette_admin.fields.StringField]"""
+    For short text contents, use [StringField][starlette_admin.fields.StringField]
+    """
 
     rows: int = 6
     class_: str = "field-textarea form-control"
@@ -242,6 +253,15 @@ class TextAreaField(StringField):
                 "readonly": self.read_only,
             }
         )
+
+
+@dataclass
+class TinyMCEEditorField(TextAreaField):
+    """This field is an optional field used to represent a WYSIWYG editor
+    for long text content.
+    """
+
+    form_template: str = "forms/tinymce.html"
 
 
 @dataclass
