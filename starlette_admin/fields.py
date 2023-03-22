@@ -262,6 +262,14 @@ class TinyMCEEditorField(TextAreaField):
     """
 
     form_template: str = "forms/tinymce.html"
+    display_template: str = "displays/tinymce.html"
+
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.is_form():
+            return [
+                "https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.0/tinymce.min.js",
+            ]
+        return []
 
 
 @dataclass

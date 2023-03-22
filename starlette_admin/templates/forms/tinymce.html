@@ -6,23 +6,4 @@
     <small class="form-hint">{{field.help_text}}</small>
     {%endif%}
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.0/tinymce.min.js"
-    integrity="sha512-nv2Ftve23IDZqQhji5P2w17Ch88OR37z6tV6djv8U6hcjpRjDXRypN6sXkN6UQo8S+/qf67LVh1a3COduJIG3Q=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let options = {
-            selector: '#tinymce-editor',
-            height: 300,
-            menubar: false,
-            statusbar: false,
-            toolbar: 'undo redo | formatselect | ' +
-                'bold italic backcolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat',
-            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }'
-        }
-        tinyMCE.init(options);
-    })
-</script>
 {% include "forms/_error.html" %}
