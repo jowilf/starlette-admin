@@ -6,7 +6,12 @@ from httpx import AsyncClient
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette_admin import BaseAdmin, IntegerField, StringField, TextAreaField
+from starlette_admin import (
+    BaseAdmin,
+    IntegerField,
+    StringField,
+    TinyMCEEditorField,
+)
 from starlette_admin.auth import AdminUser, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 from starlette_admin.views import CustomView
@@ -49,7 +54,7 @@ class PostView(DummyModelView):
     fields = (
         IntegerField("id"),
         StringField("title"),
-        TextAreaField("content"),
+        TinyMCEEditorField("content"),
         IntegerField("views"),
     )
     searchable_fields = ("title", "content")

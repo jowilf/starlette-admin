@@ -33,6 +33,7 @@ from .fields import (
     TextAreaField,
     TimeField,
     TimeZoneField,
+    TinyMCEEditorField,
     URLField,
 )
 from .i18n import I18nConfig

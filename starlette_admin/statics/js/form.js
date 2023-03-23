@@ -5,7 +5,7 @@
     });
 
     $("div.field-json", element).each(function () {
-      let el = $(this)
+      let el = $(this);
       let name = el.attr("id");
       new JSONEditor(
         this,
@@ -174,6 +174,30 @@
         $("input:first", template).focus();
       });
     });
+
+    // TinyMCEEditorField integration
+
+    let tinyMCEOptions = {
+      height: 300,
+      menubar: false,
+      statusbar: false,
+      toolbar:
+        "undo redo | formatselect | " +
+        "bold italic backcolor | alignleft aligncenter " +
+        "alignright alignjustify | bullist numlist outdent indent | " +
+        "removeformat",
+      content_style:
+        "body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }",
+    };
+    if (localStorage.getItem("tablerTheme") === "dark") {
+      tinyMCEOptions.skin = "oxide-dark";
+      tinyMCEOptions.content_css = "dark";
+    }
+    $(".field-tinymce-editor", element).each(function(){
+      $(this).tinymce(tinyMCEOptions);
+    });
+
+    // end TinyMCEEditorField integration
   }
 
   $(function () {
