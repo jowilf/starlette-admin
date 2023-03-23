@@ -234,8 +234,7 @@ class StringField(BaseField):
 @dataclass
 class TextAreaField(StringField):
     """This field is used to represent any kind of long text content.
-    For short text contents, use [StringField][starlette_admin.fields.StringField]
-    """
+    For short text contents, use [StringField][starlette_admin.fields.StringField]"""
 
     rows: int = 6
     class_: str = "field-textarea form-control"
@@ -257,17 +256,21 @@ class TextAreaField(StringField):
 
 @dataclass
 class TinyMCEEditorField(TextAreaField):
-    """This field is an optional field used to represent a WYSIWYG editor
-    for long text content.
+    """A field that provides a WYSIWYG editor for long text content using the
+     [TinyMCE](https://www.tiny.cloud/) library.
+
+    This field can be used as an alternative to the [TextAreaField][starlette_admin.fields.TextAreaField]
+    to provide a more sophisticated editor for user input.
     """
 
-    form_template: str = "forms/tinymce.html"
+    class_: str = "field-tinymce-editor form-control"
     display_template: str = "displays/tinymce.html"
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
-                "https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.4.0/tinymce.min.js",
+                "https://cdn.jsdelivr.net/npm/tinymce@6.4/tinymce.min.js",
+                "https://cdn.jsdelivr.net/npm/@tinymce/tinymce-jquery@2.0/dist/tinymce-jquery.min.js",
             ]
         return []
 

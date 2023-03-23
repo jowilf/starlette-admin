@@ -5,6 +5,7 @@
 :::starlette_admin.fields.FloatField
 :::starlette_admin.fields.StringField
 :::starlette_admin.fields.TextAreaField
+:::starlette_admin.fields.TinyMCEEditorField
 :::starlette_admin.fields.TagsField
 :::starlette_admin.fields.EmailField
 :::starlette_admin.fields.URLField

@@ -1,6 +1,6 @@
 <div class="{%if error%}{{field.error_class}}{%endif%}">
     <textarea name="{{field.id}}" data-bs-toggle="autosize"
-              class="form-control {%if error%}{{field.error_class}}{%endif%}"
+              class="{{field.class_}} {%if error%}{{field.error_class}}{%endif%}"
               {{ field.input_params() }}
     >{%if data%}{{data}}{%endif%}</textarea>
     {% if field.help_text %}
