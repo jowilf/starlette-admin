@@ -590,6 +590,7 @@ class EnumField(StringField):
         warnings.warn(
             f'This method is deprecated. Use EnumField("name", enum={enum_type.__name__}) instead.',
             DeprecationWarning,
+            stacklevel=1,
         )
         return cls(name, enum=enum_type, multiple=multiple, **kwargs)  # type: ignore
 
@@ -604,6 +605,7 @@ class EnumField(StringField):
         warnings.warn(
             f'This method is deprecated. Use EnumField("name", choices={choices}) instead.',
             DeprecationWarning,
+            stacklevel=1,
         )
         return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
 
