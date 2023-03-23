@@ -193,7 +193,7 @@ class BaseModelView(BaseView):
             [column visibility](https://datatables.net/extensions/buttons/built-in#Column-visibility)
             extension
         search_builder: Enable/Disable [search builder](https://datatables.net/extensions/searchbuilder/)
-         extension
+            extension
         page_size: Default number of items to display in List page pagination.
             Default value is set to `10`.
         page_size_options: Pagination choices displayed in List page.
@@ -330,7 +330,7 @@ class BaseModelView(BaseView):
         """
         Handle action with `name`.
         Raises:
-            ActionFailed
+            ActionFailed: to display
         """
         handler = self._handlers.get(name, None)
         if handler is None:
