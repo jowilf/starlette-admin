@@ -6,7 +6,17 @@ from dataclasses import field as dc_field
 from datetime import date, datetime, time
 from enum import Enum, IntEnum
 from json import JSONDecodeError
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
@@ -242,6 +252,27 @@ class TextAreaField(StringField):
                 "readonly": self.read_only,
             }
         )
+
+
+@dataclass
+class TinyMCEEditorField(TextAreaField):
+    """A field that provides a WYSIWYG editor for long text content using the
+     [TinyMCE](https://www.tiny.cloud/) library.
+
+    This field can be used as an alternative to the [TextAreaField][starlette_admin.fields.TextAreaField]
+    to provide a more sophisticated editor for user input.
+    """
+
+    class_: str = "field-tinymce-editor form-control"
+    display_template: str = "displays/tinymce.html"
+
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.is_form():
+            return [
+                "https://cdn.jsdelivr.net/npm/tinymce@6.4/tinymce.min.js",
+                "https://cdn.jsdelivr.net/npm/@tinymce/tinymce-jquery@2.0/dist/tinymce-jquery.min.js",
+            ]
+        return []
 
 
 @dataclass
@@ -559,6 +590,7 @@ class EnumField(StringField):
         warnings.warn(
             f'This method is deprecated. Use EnumField("name", enum={enum_type.__name__}) instead.',
             DeprecationWarning,
+            stacklevel=1,
         )
         return cls(name, enum=enum_type, multiple=multiple, **kwargs)  # type: ignore
 
@@ -573,6 +605,7 @@ class EnumField(StringField):
         warnings.warn(
             f'This method is deprecated. Use EnumField("name", choices={choices}) instead.',
             DeprecationWarning,
+            stacklevel=1,
         )
         return cls(name, choices=choices, multiple=multiple, **kwargs)  # type: ignore
 

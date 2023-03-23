@@ -193,7 +193,7 @@ class BaseModelView(BaseView):
             [column visibility](https://datatables.net/extensions/buttons/built-in#Column-visibility)
             extension
         search_builder: Enable/Disable [search builder](https://datatables.net/extensions/searchbuilder/)
-         extension
+            extension
         page_size: Default number of items to display in List page pagination.
             Default value is set to `10`.
         page_size_options: Pagination choices displayed in List page.
@@ -330,7 +330,7 @@ class BaseModelView(BaseView):
         """
         Handle action with `name`.
         Raises:
-            ActionFailed
+            ActionFailed: to display meaningfully error
         """
         handler = self._handlers.get(name, None)
         if handler is None:
@@ -658,13 +658,10 @@ class BaseModelView(BaseView):
             "lengthMenu": self._length_menu(),
             "searchColumns": self._search_columns_selector(),
             "exportColumns": self._export_columns_selector(),
-            "fieldsDefaultSort": {
-                k: v
-                for k, v in (
-                    (it, False) if isinstance(it, str) else it
-                    for it in self.fields_default_sort  # type: ignore[union-attr]
-                )
-            },
+            "fieldsDefaultSort": dict(
+                (it, False) if isinstance(it, str) else it
+                for it in self.fields_default_sort  # type: ignore[union-attr]
+            ),
             "exportTypes": self.export_types,
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,
