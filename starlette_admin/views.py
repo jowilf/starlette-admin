@@ -330,7 +330,7 @@ class BaseModelView(BaseView):
         """
         Handle action with `name`.
         Raises:
-            ActionFailed: to display
+            ActionFailed: to display meaningfully error
         """
         handler = self._handlers.get(name, None)
         if handler is None:
