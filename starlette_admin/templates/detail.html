@@ -1,135 +1,132 @@
 {% extends "layout.html" %}
-{%set pk = model.pk_attr%}
+{% set pk = model.pk_attr %}
 {% block header %}
-
-<div class="d-flex justify-content-between align-items-center">
-    <h1>{{ model.label }}</h1>
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-            <a href="{{ url_for(__name__ ~ ':index')}}">{{_("Admin")}}</a>
-        </li>
-        <li class="breadcrumb-item">
-            <a href="{{ url_for(__name__ ~ ':list', identity=model.identity)}}">{{ model.label }}</a>
-        </li>
-        <li class="breadcrumb-item active">{{ _("Detail") }}</li>
-    </ol>
-</div>
-{% endblock %} {% block modal %} {% include "modals/loading.html" %} {% include
-"modals/error.html" %} {% include "modals/delete.html" %} {% endblock %}
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>{{ model.label }}</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for(__name__ ~ ':index') }}">{{ _("Admin") }}</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for(__name__ ~ ':list', identity=model.identity) }}">{{ model.label }}</a>
+            </li>
+            <li class="breadcrumb-item active">{{ _("Detail") }}</li>
+        </ol>
+    </div>
+{% endblock %}
+{% block modal %}
+    {% include "modals/loading.html" %}
+    {% include "modals/error.html" %}
+    {% include "modals/delete.html" %}
+{% endblock %}
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                         <strong>#{{ obj[pk] }}</strong>
-                    </h3>
-                    <div class="card-actions">
-                        <div class="btn-list">
-                            {%if model.can_delete(request)%}
-                            <button
-                                    id="delete-btn"
-                                    type="button"
-                                    class="btn btn-danger btn-block"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modal-delete"
-                            >
-                                <i class="fas fa-trash-alt me-2"></i>
-                                {{ _("Delete") }}
-                            </button>
-                            {%endif%}
-                            {%if model.can_edit(request)%}
-                            <a href="{{ url_for(__name__ ~ ':edit', identity=model.identity,pk=obj[pk])}}">
-                                <button type="button" class="btn btn-primary btn-block me-2">
-                                    <i class="fa-solid fa-edit me-2"></i>
-                                    {{ _("Edit") }}
-                                </button>
-                            </a>
-                            {%endif%}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <strong>#{{ obj[pk] }}</strong>
+                        </h3>
+                        <div class="card-actions">
+                            <div class="btn-list">
+                                {% if model.can_delete(request) %}
+                                    <button id="delete-btn"
+                                            type="button"
+                                            class="btn btn-danger btn-block"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modal-delete">
+                                        <i class="fas fa-trash-alt me-2"></i>
+                                        {{ _("Delete") }}
+                                    </button>
+                                {% endif %}
+                                {% if model.can_edit(request) %}
+                                    <a href="{{ url_for(__name__ ~ ':edit', identity=model.identity,pk=obj[pk]) }}">
+                                        <button type="button" class="btn btn-primary btn-block me-2">
+                                            <i class="fa-solid fa-edit me-2"></i>
+                                            {{ _("Edit") }}
+                                        </button>
+                                    </a>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-
-
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table
-                                class="table table-bordered table-vcenter table-mobile-md"
-                        >
-                            <thead>
-                            <tr>
-                                <th>{{ _("Attribute") }}</th>
-                                <th>{{ _("Value") }}</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {%for field in model._extract_fields('DETAIL') %}
-                            <tr>
-                                <td data-label="Attribute">
-                                    <div>
-                                        <strong>{{field.label}}</strong>
-                                    </div>
-                                </td>
-                                <td data-label="Value">
-                                    {% with data=obj[field.name] %}
-                                        {% if data == None%}
-                                            {% include "displays/_null.html" %}
-                                        {%elif (data | is_iter) and (data |length) ==0%}
-                                            {% include "displays/_empty.html" %}
-                                        {%else%}
-                                            {% include field.display_template %}
-                                        {%endif%}
-                                    {% endwith %}
-                                </td>
-                            </tr>
-                            {%endfor%}
-                            </tbody>
-                        </table>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-vcenter table-mobile-md">
+                                <thead>
+                                <tr>
+                                    <th>{{ _("Attribute") }}</th>
+                                    <th>{{ _("Value") }}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for field in model._extract_fields('DETAIL') %}
+                                    <tr>
+                                        <td data-label="Attribute">
+                                            <div>
+                                                <strong>{{ field.label }}</strong>
+                                            </div>
+                                        </td>
+                                        <td data-label="Value">
+                                            {% with data=obj[field.name] %}
+                                                {% if data == None %}
+                                                    {% include "displays/_null.html" %}
+                                                {% elif (data | is_iter) and (data |length) ==0 %}
+                                                    {% include "displays/_empty.html" %}
+                                                {% else %}
+                                                    {% include field.display_template %}
+                                                {% endif %}
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 {% block head_css %}
-{%for link in model._additional_css_links(request, "DETAIL" | ra)%}
-<link rel="stylesheet" href="{{ link }}">
-{%endfor%}
+    {% for link in model._additional_css_links(request, "DETAIL" | ra) %}
+        <link rel="stylesheet" href="{{ link }}">
+    {% endfor %}
 {% endblock %}
 {% block script %}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
-{%for link in model._additional_js_links(request, "DETAIL" | ra)%}
-<script type="text/javascript" src="{{ link}}"></script>
-{%endfor%}
-<script>
+    <script type="text/javascript"
+            src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
+    {% for link in model._additional_js_links(request, "DETAIL" | ra) %}
+        <script type="text/javascript" src="{{ link }}"></script>
+    {% endfor %}
+    <script>
+    $(function () {
+        $("#modal-delete-btn").click(function () {
+            $("#modal-delete").modal('hide');
+            $("#modal-loading").modal('show');
+            fetch("{{ url_for(__name__ ~ ':action', identity=model.identity)  | safe }}?name=delete&pks={{ obj[pk] }}", {
+                method: "POST",
+            }).then(async response => {
+                if (response.ok) {
+                    await new Promise(r => setTimeout(r, 500));
+                    $("#modal-loading").modal('hide')
+                    window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity)  | safe }}")
+                } else {
+                    if (response.status == 400) {
+                        return Promise.reject((await response.json())["msg"]);
+                    }
+                    return Promise.reject("Something went wrong!");
+                }
 
-$(function () {
-  $("#modal-delete-btn").click(function () {
-    $("#modal-delete").modal('hide');
-    $("#modal-loading").modal('show');
-    fetch("{{ url_for(__name__ ~ ':action', identity=model.identity)  | safe}}?name=delete&pks={{obj[pk]}}", {
-      method: "POST",
-    }).then(async response => {
-      if (response.ok) {
-        await new Promise(r => setTimeout(r, 500));
-        $("#modal-loading").modal('hide')
-        window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity)  | safe}}")
-      } else {
-        if (response.status == 400) {
-          return Promise.reject((await response.json())["msg"]);
-        }
-        return Promise.reject("Something went wrong!");
-      }
-
-    }).catch(async (error) => {
-      await new Promise(r => setTimeout(r, 500));
-      $("#modal-loading").modal('hide');
-      $("#error-body").text(error);
-      $("#modal-error").modal('show');
-    });
-  });
-})
-</script>
+            }).catch(async (error) => {
+                await new Promise(r => setTimeout(r, 500));
+                $("#modal-loading").modal('hide');
+                $("#error-body").text(error);
+                $("#modal-error").modal('show');
+            });
+        });
+    })
+    </script>
 {% endblock %}
