@@ -5,9 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2023-03-24
+
+### Added
+
+* Allow custom form for batch actions by [@giaptx](https://github.com/giaptx) and [@jowilf](https://github.com/jowilf)
+  in [#61](https://github.com/jowilf/starlette-admin/pull/61)
+* Add [TinyMCEEditorField][starlette_admin.fields.TinyMCEEditorField] by [@sinisaos](https://github.com/sinisaos)
+  and [@jowilf](https://github.com/jowilf)
+  in [#131](https://github.com/jowilf/starlette-admin/pull/131)
+
+### Internals
+
+* Add SQLAlchemy model with Pydantic validation example [@jowilf](https://github.com/jowilf)
+  in [#125](https://github.com/jowilf/starlette-admin/pull/125)
+* Refactor and format HTML files for better readability by [@jowilf](https://github.com/jowilf)
+  in [#136](https://github.com/jowilf/starlette-admin/pull/136)
+
 ## [0.6.0] - 2023-03-12
 
 ### Added
+
 * Setup i18n and Add French translations by [@jowilf](https://github.com/jowilf) in [#74](https://github.com/jowilf/starlette-admin/pull/74)
 * Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starlette_admin.fields.CountryField], [CurrencyField][starlette_admin.fields.CurrencyField] & [ArrowField][starlette_admin.fields.ArrowField]
 * Add support for [sqlalchemy_utils](https://github.com/kvesteri/sqlalchemy-utils) data types
