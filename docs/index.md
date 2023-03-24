@@ -27,6 +27,7 @@
 * Check out [the documentation](https://jowilf.github.io/starlette-admin).
 * Try the [live demo](https://starlette-admin-demo.jowilf.com/). ([Source code](https://github.com/jowilf/starlette-admin-demo))
 * Try the several usage examples included in the [/examples](https://github.com/jowilf/starlette-admin/tree/main/examples) folder
+* If you find this project helpful or interesting, please consider giving it a star ⭐️
 
 ## Features
 
@@ -47,8 +48,8 @@
     * [SQLModel](https://sqlmodel.tiangolo.com/)
     * [MongoEngine](http://mongoengine.org/)
     * [ODMantic](https://github.com/art049/odmantic/)
-- Custom backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
-
+    * Custom backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
+- Internationalization
 
 ## Installation
 
@@ -113,3 +114,9 @@ Access your admin interface in your browser at [http://localhost:8000/admin](htt
 - [moment](http://momentjs.com/)
 - [jsoneditor](https://github.com/josdejong/jsoneditor)
 - [fontawesome](https://fontawesome.com/)
+- [TinyMCE](https://www.tiny.cloud/)
+
+## Contributing
+
+Contributions are welcome and greatly appreciated! Before getting started, please read
+[our contribution guidelines](https://github.com/jowilf/starlette-admin/blob/main/CONTRIBUTING.md)
