@@ -1,10 +1,58 @@
 # Forms Validations
 
-By design, *Starlette-admin* doesn't validate your data, the validation will depend on your database backend
+Starlette-admin is designed to be flexible and agnostic to your specific database backend. Therefore, it doesn't include
+built-in data validation capabilities. Instead, data validation will depend on the validation mechanisms provided by
+your chosen database backend.
 
 ## SQLAlchemy
 
-When working with sqlalchemy, you need to write your own validation logic to validate the data submitted in forms.
+There are several options available for validating your data:
+
+### Pydantic
+
+[Pydantic](https://github.com/pydantic/pydantic) is a widely used Python library that provides data validation
+capabilities using Python's type hints.
+
+To automatically validate submitted data with Pydantic, you only need to define a Pydantic model and
+use `starlette_admin.contrib.sqla.ext.pydantic.ModelView`
+
+!!!Example
+
+    ```python
+    from starlette_admin.contrib.sqla.ext.pydantic import ModelView
+
+
+    class Post(Base):
+        __tablename__ = "posts"
+
+        id = Column(Integer, primary_key=True)
+        title = Column(String)
+        content = Column(Text)
+        views = Column(Integer)
+
+
+    class PostIn(BaseModel):
+        id: Optional[int] = Field(primary_key=True)
+        title: str = Field(min_length=3)
+        content: str = Field(min_length=10)
+        views: int = Field(multiple_of=4)
+
+        @validator("title")
+        def title_must_contain_space(cls, v):
+            if " " not in v.strip():
+                raise ValueError("title must contain a space")
+            return v.title()
+
+
+    # Add view
+    admin.add_view(ModelView(Post, pydantic_model=PostIn))
+
+    ```
+
+### Custom Validation
+
+You can also create your own validation functions to enforce specific data requirements that are not covered by other
+libraries.
 
 !!!Example
     ```python
@@ -41,7 +89,8 @@ When working with sqlalchemy, you need to write your own validation logic to val
 
 ## SQLModel
 
-For SQLModel, you just need to define your model and submitted data are automatically validated.
+With SQLModel, validating your data is made easy. Once you've defined your model, any data submitted to it will be
+automatically validated.
 
 !!! Example
     ```python
@@ -71,7 +120,8 @@ For SQLModel, you just need to define your model and submitted data are automati
 
 ## Odmantic
 
-The submitted data will be automatically validated according to your model definition.
+Validation of submitted data is handled seamlessly by Odmantic. Any data that you submit to your defined model will be
+validated automatically.
 
 !!! Example
     ```python
