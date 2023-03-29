@@ -51,8 +51,7 @@ use `starlette_admin.contrib.sqla.ext.pydantic.ModelView`
 
 ### Custom Validation
 
-You can also create your own validation functions to enforce specific data requirements that are not covered by other
-libraries.
+You can also create your own validation functions to enforce specific data requirements.
 
 !!!Example
     ```python
