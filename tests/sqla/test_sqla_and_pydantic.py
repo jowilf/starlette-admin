@@ -42,7 +42,7 @@ class Todo(Base):
     __tablename__ = "todo"
 
     id = Column(Integer, primary_key=True)
-    todo = Column(String)
+    todo = Column(String(255))
     completed = Column(Boolean)
     deadline = Column(DateTime)
     completed_date = Column(Date)
