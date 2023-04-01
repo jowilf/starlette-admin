@@ -551,26 +551,72 @@ class BaseModelView(BaseView):
         return obj_serialized
 
     async def repr(self, obj: Any, request: Request) -> str:
+        """Return a string representation of the given object that can be displayed in the admin interface.
+
+        If the object has a custom representation method `__admin_repr__`, it is used to generate the string. Otherwise,
+        the value of the object's primary key attribute is used.
+
+        Args:
+            obj: The object to represent.
+            request: The request being processed
+
+        Example:
+            For example, the following implementation of `__admin_repr__` for a `User` model will display
+            the user's full name instead of their primary key in the admin interface:
+
+            ```python
+            class User:
+                id: int
+                first_name: str
+                last_name: str
+
+                def __admin_repr__(self, request: Request):
+                    return f"{self.last_name} {self.first_name}"
+            ```
         """
-        Override this function to customize item representation in
-        relationships columns
-        """
-        return str(getattr(obj, self.pk_attr))  # type: ignore
+        repr_method = getattr(
+            obj,
+            "__admin_repr__",
+            lambda request: str(getattr(obj, self.pk_attr)),  # type: ignore[arg-type]
+        )
+        if inspect.iscoroutinefunction(repr_method):
+            return await repr_method(request)
+        return repr_method(request)
 
     async def select2_result(self, obj: Any, request: Request) -> str:
-        """
-        Override this function to customize the way that search results are rendered.
+        """Returns an HTML-formatted string that represents the search results for a Select2 search box.
+
+        By default, this method returns a string that contains all the object's attributes in a list except
+        relation and file attributes.
+
+        If the object has a custom representation method `__admin_html_repr__`, it is used to generate the
+        HTML-formatted string.
+
         !!! note
-            The returned value should be html. You can use `<span>mytext</span>`
-            when you want to return string value
+            The returned value should be valid HTML.
+
         !!! danger
             Escape your database value to avoid Cross-Site Scripting (XSS) attack.
             You can use Jinja2 Template render with `autoescape=True`.
             For more information [click here](https://owasp.org/www-community/attacks/xss/)
 
         Parameters:
-            obj: item returned by `find_all` or `find_by_pk`
-            request: Starlette Request
+            obj: The object returned by the `find_all` or `find_by_pk` method.
+            request: The request being processed
+
+        Example:
+            Here is an example implementation of `__admin_html_repr__` for a `User` model
+            that includes the user's name and photo:
+
+            ```python
+            class User:
+                id: int
+                name: str
+                photo_url: str
+
+                def __admin_html_repr__(self, request: Request) -> str:
+                    return f'<div><img src="{escape(photo_url)}"><span>{escape(self.name)}</span></div>'
+            ```
 
         """
         template_str = (
@@ -582,14 +628,25 @@ class BaseModelView(BaseView):
             for field in self.fields
             if not isinstance(field, (RelationField, FileField))
         ]
-        return Template(template_str, autoescape=True).render(obj=obj, fields=fields)
+        html_repr_method = getattr(
+            obj,
+            "__admin_html_repr__",
+            lambda request: Template(template_str, autoescape=True).render(
+                obj=obj, fields=fields
+            ),
+        )
+        if inspect.iscoroutinefunction(html_repr_method):
+            return await html_repr_method(request)
+        return html_repr_method(request)
 
     async def select2_selection(self, obj: Any, request: Request) -> str:
         """
-        Override this function to customize the way that selections are rendered.
+        Returns the HTML representation of an item selected by a user in a Select2 component.
+        By default, it simply calls `select2_result()`.
+
         !!! note
-            The returned value should be html. You can use `<span>mytext</span>`
-            when you want to return string value
+            The returned value should be valid HTML.
+
         !!! danger
             Escape your database value to avoid Cross-Site Scripting (XSS) attack.
             You can use Jinja2 Template render with `autoescape=True`.
