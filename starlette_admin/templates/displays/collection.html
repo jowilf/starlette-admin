@@ -1,5 +1,5 @@
 <dl>
-    {% for field in field._extract_fields('DETAIL') %}
+    {% for field in field.get_fields_list(request, 'DETAIL' | ra) %}
         <dt>{{ field.label }}:</dt>
         <dd>
             {% with data=(data[field.name] if data else None) %}

@@ -61,7 +61,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for field in model._extract_fields('DETAIL') %}
+                                {% for field in model.get_fields_list(request, 'DETAIL' | ra) %}
                                     <tr>
                                         <td data-label="Attribute">
                                             <div>

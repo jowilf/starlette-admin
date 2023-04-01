@@ -82,7 +82,7 @@ class TestView:
 
         view_instance = PostViewWithExclusion()
         assert tuple(
-            f.name for f in view_instance._extract_fields(RequestAction.LIST)
+            f.name for f in view_instance.get_fields_list(None, RequestAction.LIST)
         ) == (
             "id",
             "title",
@@ -90,7 +90,7 @@ class TestView:
             "tags",
         )
         assert tuple(
-            f.name for f in view_instance._extract_fields(RequestAction.DETAIL)
+            f.name for f in view_instance.get_fields_list(None, RequestAction.DETAIL)
         ) == (
             "id",
             "title",
@@ -98,14 +98,14 @@ class TestView:
             "views",
         )
         assert tuple(
-            f.name for f in view_instance._extract_fields(RequestAction.CREATE)
+            f.name for f in view_instance.get_fields_list(None, RequestAction.CREATE)
         ) == (
             "id",
             "title",
             "content",
         )
         assert tuple(
-            f.name for f in view_instance._extract_fields(RequestAction.EDIT)
+            f.name for f in view_instance.get_fields_list(None, RequestAction.EDIT)
         ) == (
             "title",
             "content",
