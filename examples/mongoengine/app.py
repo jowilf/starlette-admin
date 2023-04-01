@@ -5,7 +5,7 @@ from starlette_admin.contrib.mongoengine import Admin, ModelView
 
 from mongoengine import connect, disconnect
 
-from .models import File, Image, Post, Todo, User
+from .models import File, Image, Post, Tag, Todo, User
 
 app = Starlette(
     routes=[
@@ -28,6 +28,7 @@ class UserView(ModelView):
 
 
 admin.add_view(UserView(User, icon="fa fa-users"))
+admin.add_view(UserView(Tag, icon="fa fa-users"))
 admin.add_view(ModelView(Todo, icon="fa fa-list"))
 admin.add_view(ModelView(Post, icon="fa fa-blog", label="Blog Posts"))
 admin.add_view(ModelView(File, icon="fa fa-file"))

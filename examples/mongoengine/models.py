@@ -9,6 +9,10 @@ class User(db.Document):
     password = db.StringField(max_length=40)
 
 
+class Tag(db.Document):
+    name = db.StringField(max_length=10)
+
+
 class Todo(db.Document):
     title = db.StringField(max_length=60)
     text = db.StringField()
@@ -20,6 +24,7 @@ class Todo(db.Document):
 class Comment(db.EmbeddedDocument):
     name = db.StringField(max_length=20, required=True)
     value = db.StringField(max_length=20)
+    tag = db.ReferenceField(Tag)
 
 
 class Post(db.Document):
