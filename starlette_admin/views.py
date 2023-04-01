@@ -623,8 +623,8 @@ class BaseModelView(BaseView):
         Returns a list of fields instances that should be displayed in the specified action of the view.
 
         Parameters:
-        - request: The request being processed.
-        - action: The type of action being performed on the view.
+            request: The request being processed.
+            action: The type of action being performed on the view.
         """
         return extract_fields(self.fields, action)
 
