@@ -561,7 +561,7 @@ class BaseModelView(BaseView):
             request: The request being processed
 
         Example:
-            For example, the following implementation of `__admin_repr__` for a `User` model will display
+            For example, the following implementation for a `User` model will display
             the user's full name instead of their primary key in the admin interface:
 
             ```python
@@ -589,7 +589,7 @@ class BaseModelView(BaseView):
         By default, this method returns a string that contains all the object's attributes in a list except
         relation and file attributes.
 
-        If the object has a custom representation method `__admin_html_repr__`, it is used to generate the
+        If the object has a custom representation method `__admin_select2_repr__`, it is used to generate the
         HTML-formatted string.
 
         !!! note
@@ -605,7 +605,7 @@ class BaseModelView(BaseView):
             request: The request being processed
 
         Example:
-            Here is an example implementation of `__admin_html_repr__` for a `User` model
+            Here is an example implementation for a `User` model
             that includes the user's name and photo:
 
             ```python
@@ -614,7 +614,7 @@ class BaseModelView(BaseView):
                 name: str
                 photo_url: str
 
-                def __admin_html_repr__(self, request: Request) -> str:
+                def __admin_select2_repr__(self, request: Request) -> str:
                     return f'<div><img src="{escape(photo_url)}"><span>{escape(self.name)}</span></div>'
             ```
 
@@ -630,7 +630,7 @@ class BaseModelView(BaseView):
         ]
         html_repr_method = getattr(
             obj,
-            "__admin_html_repr__",
+            "__admin_select2_repr__",
             lambda request: Template(template_str, autoescape=True).render(
                 obj=obj, fields=fields
             ),
