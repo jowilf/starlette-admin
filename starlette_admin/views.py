@@ -619,12 +619,13 @@ class BaseModelView(BaseView):
         request: Request,
         action: RequestAction = RequestAction.LIST,
     ) -> Sequence[BaseField]:
-        """
-        Returns a list of fields instances that should be displayed in the specified action of the view.
+        """Return a list of field instances to display in the specified view action.
+        This function excludes fields with corresponding exclude flags, which are
+        determined by the `exclude_fields_from_*` attributes.
 
         Parameters:
-            request: The request being processed.
-            action: The type of action being performed on the view.
+             request: The request being processed.
+             action: The type of action being performed on the view.
         """
         return extract_fields(self.fields, action)
 
