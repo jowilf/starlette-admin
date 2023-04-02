@@ -43,6 +43,12 @@ class User(DummyBaseModel):
     posts: List[Post] = Field(default_factory=list)
     reviewer: Optional["User"] = None
 
+    def __admin_repr__(self, request: Request):
+        return self.name
+
+    def __admin_select2_repr__(self, request: Request):
+        return f"<span>{self.name}</span>"
+
 
 class UserView(DummyModelView):
     model = User
@@ -177,7 +183,22 @@ class TestViews:
         assert data["total"] == 2
         assert data["items"][0]["id"] == 5
 
-    def test_object_representation(self):
+    def test_sync_object_representation(self):
+        admin = BaseAdmin()
+        app = Starlette()
+        admin.add_view(UserView)
+        admin.mount_to(app)
+        client = TestClient(app)
+        response = client.get("/admin/api/user?select2=true&order_by=id asc")
+        data = response.json()
+        for value in data["items"]:
+            assert value.get("_select2_selection") is not None
+            assert value.get("_select2_result") is not None
+        assert data["items"][0]["_repr"] == "John Doe"
+        assert data["items"][0]["_select2_selection"] == "<span>John Doe</span>"
+        assert data["items"][0]["_select2_result"] == "<span>John Doe</span>"
+
+    def test_async_object_representation(self):
         admin = BaseAdmin()
         app = Starlette()
         admin.add_view(PostView)
