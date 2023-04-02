@@ -5,6 +5,7 @@ import pytest
 from pydantic import Field
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
+from starlette.requests import Request
 from starlette.testclient import TestClient
 from starlette_admin import (
     BaseAdmin,
@@ -29,6 +30,12 @@ class Post(DummyBaseModel):
     content: str
     views: Optional[int] = 0
     tags: List[str]
+
+    async def __admin_repr__(self, request: Request):
+        return self.title
+
+    async def __admin_select2_repr__(self, request: Request):
+        return f"<span>{self.title}</span>"
 
 
 class User(DummyBaseModel):
@@ -169,10 +176,22 @@ class TestViews:
         data = response.json()
         assert data["total"] == 2
         assert data["items"][0]["id"] == 5
-        response = client.get("/admin/api/post?select2=true")
-        for value in response.json()["items"]:
+
+    def test_object_representation(self):
+        admin = BaseAdmin()
+        app = Starlette()
+        admin.add_view(PostView)
+        admin.mount_to(app)
+        client = TestClient(app)
+        response = client.get("/admin/api/post?select2=true&order_by=id asc")
+        data = response.json()
+        for value in data["items"]:
             assert value.get("_select2_selection") is not None
             assert value.get("_select2_result") is not None
+        title = "Dave wasn't exactly sure how he had ended up"
+        assert data["items"][0]["_repr"] == title
+        assert data["items"][0]["_select2_selection"] == f"<span>{title}</span>"
+        assert data["items"][0]["_select2_result"] == f"<span>{title}</span>"
 
     def test_model_view_create_new(self):
         admin = BaseAdmin()
