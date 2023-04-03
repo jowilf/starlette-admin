@@ -626,7 +626,10 @@ class BaseModelView(BaseView):
         fields = [
             field.name
             for field in self.fields
-            if not isinstance(field, (RelationField, FileField))
+            if (
+                not isinstance(field, (RelationField, FileField))
+                and not field.exclude_from_detail
+            )
         ]
         html_repr_method = getattr(
             obj,
