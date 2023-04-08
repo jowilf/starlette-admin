@@ -224,7 +224,6 @@ async def test_edit_with_has_one_relationships(client: AsyncClient, session: Ses
     )
     session.add(User(id=2, name="Tommy Sharp"))
     session.commit()
-    session.commit()
 
     response = await client.post(
         "/admin/todo/edit/1",
