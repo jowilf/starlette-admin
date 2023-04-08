@@ -42,19 +42,22 @@ admin.mount_to(app)
 
 ## Exclusions
 
-There are several options to help you exclude some fields from certain part of admin interface.
+There are several options available for customizing which fields are displayed in different parts of the admin
+view. These options include:
 
-The options are:
-
-* `exclude_fields_from_list`: List of fields to exclude in List page.
-* `exclude_fields_from_detail`: List of fields to exclude in Detail page.
-* `exclude_fields_from_create`: List of fields to exclude from creation page.
-* `exclude_fields_from_edit`: List of fields to exclude from editing page.
+* `exclude_fields_from_list`: List of fields to exclude from the List page.
+* `exclude_fields_from_detail`: List of fields to exclude from the Detail page.
+* `exclude_fields_from_create`: List of fields to exclude from the creation page.
+* `exclude_fields_from_edit`: List of fields to exclude from the editing page.\
 
 ```Python
 class PostView(ModelView):
     exclude_fields_from_list = [Post.content, Post.tags]
 ```
+
+!!! note
+    For more advanced use cases, you can override
+    the [ModelView.get_fields_list()][starlette_admin.views.BaseModelView.get_fields_list] function.
 
 ## Searching & Sorting
 

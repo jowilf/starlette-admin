@@ -1,26 +1,63 @@
 from datetime import date, datetime, time
-from typing import List, Optional
+from typing import Optional
 
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
+from pydantic import BaseModel, Field
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Time,
+    select,
+)
 from sqlalchemy.engine import Engine
-from sqlmodel import Field, Relationship, Session, SQLModel, select
+from sqlalchemy.orm import Session, declarative_base, relationship
 from starlette.applications import Starlette
-from starlette_admin.contrib.sqlmodel import Admin, ModelView
+from starlette_admin.contrib.sqla import Admin
+from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 from tests.sqla.utils import get_test_engine
 
 pytestmark = pytest.mark.asyncio
 
+Base = declarative_base()
 
-class User(SQLModel, table=True):
+
+class User(Base):
+    __tablename__ = "user"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100))
+
+    todos = relationship("Todo", back_populates="user")
+
+
+class Todo(Base):
+    __tablename__ = "todo"
+
+    id = Column(Integer, primary_key=True)
+    todo = Column(String(255))
+    completed = Column(Boolean)
+    deadline = Column(DateTime)
+    completed_date = Column(Date)
+    completed_time = Column(Time)
+
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user = relationship("User", back_populates="todos")
+
+
+class UserIn(BaseModel):
     id: Optional[int] = Field(None, primary_key=True)
-    name: str
-    todos: List["Todo"] = Relationship(back_populates="user")
+    name: str = Field(max_length=100)
 
 
-class Todo(SQLModel, table=True):
+class TodoIn(BaseModel):
     id: Optional[int] = Field(None, primary_key=True)
     todo: str = Field(min_length=10)
     completed: Optional[bool]
@@ -28,16 +65,13 @@ class Todo(SQLModel, table=True):
     completed_date: Optional[date]
     completed_time: Optional[time]
 
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
-    user: Optional[User] = Relationship(back_populates="todos")
-
 
 @pytest.fixture
 def engine() -> Engine:
     _engine = get_test_engine()
-    SQLModel.metadata.create_all(_engine)
+    Base.metadata.create_all(_engine)
     yield _engine
-    SQLModel.metadata.drop_all(_engine)
+    Base.metadata.drop_all(_engine)
 
 
 @pytest.fixture
@@ -49,8 +83,8 @@ def session(engine: Engine) -> Session:
 @pytest.fixture
 def admin(engine: Engine):
     admin = Admin(engine)
-    admin.add_view(ModelView(User))
-    admin.add_view(ModelView(Todo))
+    admin.add_view(ModelView(User, pydantic_model=UserIn))
+    admin.add_view(ModelView(Todo, pydantic_model=TodoIn))
     return admin
 
 

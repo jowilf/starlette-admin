@@ -366,7 +366,7 @@ class BaseModelView(BaseView):
         """
         Find all items
         Parameters:
-            request: Starlette Request
+            request: The request being processed
             where: Can be dict for complex query
                 ```json
                  {"and":[{"id": {"gt": 5}},{"name": {"startsWith": "ban"}}]}
@@ -387,7 +387,7 @@ class BaseModelView(BaseView):
         """
         Count items
         Parameters:
-            request: Starlette Request
+            request: The request being processed
             where: Can be dict for complex query
                 ```json
                  {"and":[{"id": {"gt": 5}},{"name": {"startsWith": "ban"}}]}
@@ -401,7 +401,7 @@ class BaseModelView(BaseView):
         """
         Bulk delete items
         Parameters:
-            request: Starlette Request
+            request: The request being processed
             pks: List of primary keys
         """
         raise NotImplementedError()
@@ -411,7 +411,7 @@ class BaseModelView(BaseView):
         """
         Find one item
         Parameters:
-            request: Starlette Request
+            request: The request being processed
             pk: Primary key
         """
         raise NotImplementedError()
@@ -421,7 +421,7 @@ class BaseModelView(BaseView):
         """
         Find many items
         Parameters:
-            request: Starlette Request
+            request: The request being processed
             pks: List of Primary key
         """
         raise NotImplementedError()
@@ -431,7 +431,7 @@ class BaseModelView(BaseView):
         """
         Create item
         Parameters:
-            request: Starlette Request
+            request: The request being processed
             data: Dict values contained converted form data
         Returns:
             Any: Created Item
@@ -443,7 +443,7 @@ class BaseModelView(BaseView):
         """
         Edit item
         Parameters:
-            request: Starlette Request
+            request: The request being processed
             pk: Primary key
             data: Dict values contained converted form data
         Returns:
@@ -482,7 +482,7 @@ class BaseModelView(BaseView):
             action: Specify where the data will be used. Possible values are
                 `VIEW` for detail page, `EDIT` for editing page and `API`
                 for listing page and select2 data.
-            request: Starlette Request
+            request: The request being processed
         """
         if value is None:
             return await field.serialize_none_value(request, action)
@@ -657,7 +657,7 @@ class BaseModelView(BaseView):
 
         Parameters:
             obj: item returned by `find_all` or `find_by_pk`
-            request: Starlette Request
+            request: The request being processed
 
         """
         return await self.select2_result(obj, request)
@@ -674,9 +674,19 @@ class BaseModelView(BaseView):
     def _export_columns_selector(self) -> List[str]:
         return ["%s:name" % name for name in self.export_fields]  # type: ignore
 
-    def _extract_fields(
-        self, action: RequestAction = RequestAction.LIST
+    def get_fields_list(
+        self,
+        request: Request,
+        action: RequestAction = RequestAction.LIST,
     ) -> Sequence[BaseField]:
+        """Return a list of field instances to display in the specified view action.
+        This function excludes fields with corresponding exclude flags, which are
+        determined by the `exclude_fields_from_*` attributes.
+
+        Parameters:
+             request: The request being processed.
+             action: The type of action being performed on the view.
+        """
         return extract_fields(self.fields, action)
 
     def _additional_css_links(
@@ -726,7 +736,7 @@ class BaseModelView(BaseView):
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,
             "responsiveTable": self.responsive_table,
-            "fields": [f.dict() for f in self._extract_fields()],
+            "fields": [f.dict() for f in self.get_fields_list(request)],
             "actions": await self.get_all_actions(request),
             "pk": self.pk_attr,
             "locale": locale,

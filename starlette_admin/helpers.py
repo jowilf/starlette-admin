@@ -74,6 +74,7 @@ def html_params(kwargs: Dict[str, Any]) -> str:
 def extract_fields(
     fields: Sequence["BaseField"], action: RequestAction = RequestAction.LIST
 ) -> Sequence["BaseField"]:
+    """Extract fields based on the requested action and exclude flags."""
     arr = []
     for field in fields:
         if (
