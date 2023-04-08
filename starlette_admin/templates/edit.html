@@ -29,9 +29,9 @@
                             </div>
                         </div>
                         <div class="card-body border-bottom py-3">
-                            {% for field in model._extract_fields('EDIT') %}
+                            {% for field in model.get_fields_list(request, 'EDIT' | ra) %}
                                 <div class="mb-3">
-                                    {% with action='EDIT',data=obj[field.name], error=errors.get(field.name, None) if errors else None %}
+                                    {% with action=('EDIT' | ra),data=obj[field.name], error=errors.get(field.name, None) if errors else None %}
                                         {% include field.label_template %}
                                         {% include field.form_template %}
                                     {% endwith %}

@@ -1075,8 +1075,10 @@ class CollectionField(BaseField):
         super().__post_init__()
         self._propagate_id()
 
-    def _extract_fields(
-        self, action: RequestAction = RequestAction.LIST
+    def get_fields_list(
+        self,
+        request: Request,
+        action: RequestAction = RequestAction.LIST,
     ) -> Sequence[BaseField]:
         return extract_fields(self.fields, action)
 
