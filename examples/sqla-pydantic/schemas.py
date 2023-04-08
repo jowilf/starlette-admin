@@ -5,7 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, HttpUrl, IPvAnyAddress, validator
 
 
-class UserSchema(BaseModel):
+class UserIn(BaseModel):
     id: Optional[int]
     uuid: Optional[uuid.UUID]
     full_name: str = Field(min_length=3)
@@ -24,7 +24,7 @@ class UserSchema(BaseModel):
         return v
 
 
-class PostSchema(BaseModel):
+class PostIn(BaseModel):
     id: Optional[int]
     title: str = Field(min_length=3)
     text: str = Field(min_length=5)
