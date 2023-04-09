@@ -69,7 +69,7 @@ class DummyModelView(BaseModelView):
                 key, dir = clause.split(maxsplit=1)
                 values = sorted(
                     values,
-                    key=lambda v: getattr(v, key),  # noqa B023
+                    key=lambda v: getattr(v, key),  # B023
                     reverse=(dir == "desc"),
                 )
         if where is not None and isinstance(where, (str, int)):

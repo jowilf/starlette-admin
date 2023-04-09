@@ -218,7 +218,7 @@ async def test_create(client: AsyncClient, session: Session):
         data={
             "title": "Infinix INBOOK",
             "description": (
-                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                 " Warranty"
             ),
             "price": 1049,
@@ -236,7 +236,7 @@ async def test_edit(client: AsyncClient, session: Session):
     data = {
         "title": "Infinix INBOOK",
         "description": (
-            "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year Warranty"
+            "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year Warranty"
         ),
         "price": 1049,
         "brand": "Infinix",
@@ -268,7 +268,7 @@ async def test_create_with_image(client: AsyncClient, session: Session, fake_ima
         data={
             "title": "Infinix INBOOK",
             "description": (
-                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                 " Warranty"
             ),
             "price": 1049,
@@ -291,7 +291,7 @@ async def test_edit_with_image(client: AsyncClient, session: Session, fake_image
         data={
             "title": "Infinix INBOOK",
             "description": (
-                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                 " Warranty"
             ),
             "price": "",  # None input
@@ -312,7 +312,7 @@ async def test_edit_without_delete_image(client: AsyncClient, session: Session):
         data={
             "title": "Infinix INBOOK",
             "description": (
-                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                 " Warranty"
             ),
             "price": "",  # simulate null input
@@ -332,7 +332,7 @@ async def test_delete_image(client: AsyncClient, session: Session):
         data={
             "title": "Infinix INBOOK",
             "description": (
-                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                 " Warranty"
             ),
             "price": 1049,

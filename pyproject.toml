@@ -177,7 +177,8 @@ select = [
     "ERA", # eradicate
     "N", # pep8-naming
     "Q", # flake8-quotes
-    "RET", # flake8-return
+    "RET", # flake8-return,
+    "RUF", # Ruff-specific rules
 ]
 ignore = [
     "E501", # line too long, handled by black
