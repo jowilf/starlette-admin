@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2023-04-09
+
+### Added
+
+* Add extension to autovalidate SQLAlchemy data with pydantic by [@jowilf](https://github.com/jowilf)
+  in [#144](https://github.com/jowilf/starlette-admin/pull/144)
+* Make `_extract_fields()` method in BaseModelView public and renamed
+  to [get_fields_list()][starlette_admin.views.BaseModelView.get_fields_list] by [@jowilf](https://github.com/jowilf)
+  in [#148](https://github.com/jowilf/starlette-admin/pull/148)
+* Add support for custom object representations in the admin interface with `__admin_repr__`
+  and `__admin_select2_repr__`  by [@jowilf](https://github.com/jowilf)
+  in [#152](https://github.com/jowilf/starlette-admin/pull/152). The documentation can be
+  found [here](../tutorial/configurations/modelview/#object-representation)
+
+### Internals
+
+* Enhance code quality with additional ruff rules by [@jowilf](https://github.com/jowilf)
+  in [#159](https://github.com/jowilf/starlette-admin/pull/159)
+
 ## [0.7.0] - 2023-03-24
 
 ### Added

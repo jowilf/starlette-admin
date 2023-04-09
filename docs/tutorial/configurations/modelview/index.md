@@ -152,18 +152,22 @@ It is a special method that can be defined in a model class to customize the obj
 interface. By default, only the value of the object's primary key attribute is displayed. However, by implementing
 `__admin_repr__`, you can return a string that better represents the object in the admin interface.
 
-For example, the following implementation for a `User` model will display the user's full name instead of their primary
-key in the admin interface:
+!!! Example
+    For example, the following implementation for a `User` model will display the user's full name instead of their primary
+    key in the admin interface:
 
-```python
-class User:
-    id: int
-    first_name: str
-    last_name: str
+    ```python
+    class User:
+        id: int
+        first_name: str
+        last_name: str
 
-    def __admin_repr__(self, request: Request):
-        return f"{self.last_name} {self.first_name}"
-```
+        async def __admin_repr__(self, request: Request):
+            return f"{self.last_name} {self.first_name}"
+    ```
+
+    ![Custom Object representation](../../../images/tutorial/configurations/modelview/object_text_representation.png){ width="200" }
+
 
 ### `__admin_select2_repr__`
 
@@ -183,14 +187,18 @@ fields.
     Template("Hello {{name}}", autoescape=True).render(name=name)
     ```
 
-Here is an example implementation for a `User` model that includes the user's name and photo:
+!!! Example
 
-```python
-class User:
-    id: int
-    name: str
-    photo_url: str
+    Here is an example implementation for a `User` model that includes the user's name and photo:
 
-    def __admin_select2_repr__(self, request: Request) -> str:
-        return f'<div><img src="{escape(photo_url)}"><span>{escape(self.name)}</span></div>'
-```
+    ```python
+    class User:
+        id: int
+        name: str
+        photo_url: str
+
+        async def __admin_select2_repr__(self, request: Request) -> str:
+            return f'<div><img src="{escape(photo_url)}"><span>{escape(self.name)}</span></div>'
+    ```
+
+    ![Custom Select2 rendering](../../../images/tutorial/configurations/modelview/select2_customization.png){ width="300" }
