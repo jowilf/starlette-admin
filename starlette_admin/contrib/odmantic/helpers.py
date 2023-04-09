@@ -72,7 +72,7 @@ def convert_odm_field_to_admin_field(  # noqa: C901
         return convert_odm_field_to_admin_field(
             field, field_name, get_args(annotation)[0]
         )
-    elif _origin in annotation_map:
+    if _origin in annotation_map:
         admin_field = annotation_map.get(_origin)(field_name)  # type: ignore
     elif _origin in (list, set) and not isinstance(field, ODMEmbeddedGeneric):
         child_field = convert_odm_field_to_admin_field(
@@ -105,7 +105,7 @@ def convert_odm_field_to_admin_field(  # noqa: C901
             if issubclass(_type, Enum):
                 admin_field = EnumField(field_name, enum=_type)
                 break
-            elif annotation_map.get(_type) is not None:
+            if annotation_map.get(_type) is not None:
                 admin_field = annotation_map.get(_type)(field_name)  # type: ignore
                 break
     if admin_field is None:
@@ -192,7 +192,7 @@ def _check_value(v: t.Any, proxy: t.Optional[FieldProxy]) -> t.Any:
     """
     if isinstance(v, str) and pyd.datetime_parse.datetime_re.match(v):
         return datetime.datetime.fromisoformat(v)
-    elif proxy is not None and +proxy == "_id" and bson.ObjectId.is_valid(v):
+    if proxy is not None and +proxy == "_id" and bson.ObjectId.is_valid(v):
         return bson.ObjectId(v)
     return v
 

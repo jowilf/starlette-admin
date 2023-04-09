@@ -75,10 +75,7 @@ def _search_converter_for_col_type(
 
         # Support for custom types which inherit TypeDecorator
         if hasattr(col_type, "impl"):
-            if callable(col_type.impl):
-                impl = col_type.impl
-            else:
-                impl = col_type.impl.__class__
+            impl = col_type.impl if callable(col_type.impl) else col_type.impl.__class__
             return _search_converter_for_col_type(impl)
     return None  # pragma: no cover
 
@@ -133,12 +130,12 @@ def conv_boolean(name: str, column: Column) -> BaseField:
 
 
 @converts("DateTime")
-def conv_dateTime(name: str, column: Column) -> BaseField:
+def conv_datetime(name: str, column: Column) -> BaseField:
     return DateTimeField(name, **field_common(column))
 
 
 @converts("Date")
-def conv_Date(name: str, column: Column) -> BaseField:
+def conv_date(name: str, column: Column) -> BaseField:
     return DateField(name, **field_common(column))
 
 

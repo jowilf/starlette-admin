@@ -204,9 +204,10 @@ class TestAuth:
 class TestAccess:
     def setup_method(self, method):
         PostView.db.clear()
-        for post in json.load(open("./tests/data/posts.json")):
-            del post["tags"]
-            PostView.db[post["id"]] = Post(**post)
+        with open("./tests/data/posts.json") as f:
+            for post in json.load(f):
+                del post["tags"]
+                PostView.db[post["id"]] = Post(**post)
         PostView.seq = len(PostView.db.keys()) + 1
 
     @pytest.fixture

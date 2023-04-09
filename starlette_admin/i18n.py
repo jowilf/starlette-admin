@@ -32,7 +32,7 @@ try:
     )
 
     def set_locale(locale: str) -> None:
-        _current_locale.set(locale if locale in translations.keys() else DEFAULT_LOCALE)
+        _current_locale.set(locale if locale in translations else DEFAULT_LOCALE)
         _current_translation.set(translations[get_locale()])
 
     def get_locale() -> str:

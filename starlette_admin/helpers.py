@@ -64,7 +64,7 @@ def html_params(kwargs: Dict[str, Any]) -> str:
     for k, v in kwargs.items():
         if v is None or v is False:
             continue
-        elif v is True:
+        if v is True:
             params.append(k)
         else:
             params.append('{}="{}"'.format(str(k).replace("_", "-"), escape(v)))

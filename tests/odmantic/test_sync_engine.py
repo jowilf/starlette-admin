@@ -30,7 +30,7 @@ def prepare_database(sync_engine: SyncEngine):
                 author=Author(name="Albert Einstein"),
             ),
             Quote(
-                quote="Your time is limited, so don’t waste it living someone else’s life.",
+                quote="Your time is limited, so don`t waste it living someone else`s life.",
                 author=Author(name="Steve Jobs"),
             ),
             Quote(
@@ -97,15 +97,15 @@ async def test_create(client: AsyncClient, sync_engine: SyncEngine):
     response = await client.post(
         "/admin/quote/create",
         data={
-            "quote": "Life isn’t about getting and having, it’s about giving and being.",
+            "quote": "Life isn`t about getting and having, it`s about giving and being.",
             "author": kevin.id,
         },
     )
     assert response.status_code == 303
-    quote = sync_engine.find_one(Quote, Quote.quote.match(r"^Life isn’t"))
+    quote = sync_engine.find_one(Quote, Quote.quote.match(r"^Life isn`t"))
     assert (
         quote.quote
-        == "Life isn’t about getting and having, it’s about giving and being."
+        == "Life isn`t about getting and having, it`s about giving and being."
     )
     assert quote.author.name == "Kevin Kruse"
 
@@ -116,16 +116,16 @@ async def test_edit(client: AsyncClient, sync_engine: SyncEngine):
     response = await client.post(
         f"/admin/quote/edit/{quote.id}",
         data={
-            "quote": "Life isn’t about getting and having, it’s about giving and being.",
+            "quote": "Life isn`t about getting and having, it`s about giving and being.",
             "author": kevin.id,
         },
     )
     assert response.status_code == 303
     assert sync_engine.find_one(Quote, Quote.quote.match(r"^Strive not")) is None
-    quote = sync_engine.find_one(Quote, Quote.quote.match(r"^Life isn’t"))
+    quote = sync_engine.find_one(Quote, Quote.quote.match(r"^Life isn`t"))
     assert (
         quote.quote
-        == "Life isn’t about getting and having, it’s about giving and being."
+        == "Life isn`t about getting and having, it`s about giving and being."
     )
     assert quote.author.name == "Kevin Kruse"
 

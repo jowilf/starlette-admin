@@ -222,8 +222,7 @@ class ModelView(BaseModelView):
             return Q.empty()
         if isinstance(where, dict):
             return resolve_deep_query(where, self.document)
-        else:
-            return await self.build_full_text_search_query(request, where)
+        return await self.build_full_text_search_query(request, where)
 
     async def build_full_text_search_query(self, request: Request, term: str) -> QNode:
         queries = []

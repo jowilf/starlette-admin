@@ -5,7 +5,7 @@ import mongoengine.fields as me
 import starlette_admin.fields as sa
 from mongoengine import EmbeddedDocument
 from mongoengine.base.fields import BaseField as MongoBaseField
-from mongoengine.queryset import Q as BaseQ
+from mongoengine.queryset import Q as BaseQ  # noqa: N811
 from mongoengine.queryset import QNode
 from starlette_admin.contrib.mongoengine.exceptions import NotSupportedField
 from starlette_admin.contrib.mongoengine.fields import FileField, ImageField

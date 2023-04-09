@@ -96,10 +96,7 @@ class BaseAdmin:
         """
         Add View to the Admin interface.
         """
-        if isinstance(view, BaseView):
-            view_instance = view
-        else:
-            view_instance = view()
+        view_instance = view if isinstance(view, BaseView) else view()
         self._views.append(view_instance)
         self.setup_view(view_instance)
 
@@ -295,7 +292,7 @@ class BaseAdmin:
         order_by = request.query_params.getlist("order_by")
         where = request.query_params.get("where")
         pks = request.query_params.getlist("pks")
-        select2 = "select2" in request.query_params.keys()
+        select2 = "select2" in request.query_params
         if len(pks) > 0:
             items = await model.find_by_pks(request, pks)
             total = len(items)
@@ -351,33 +348,32 @@ class BaseAdmin:
                 "login.html",
                 {"request": request, "_is_login_path": True},
             )
-        else:
-            form = await request.form()
-            try:
-                assert self.auth_provider is not None
-                return await self.auth_provider.login(
-                    form.get("username"),  # type: ignore
-                    form.get("password"),  # type: ignore
-                    form.get("remember_me") == "on",
-                    request,
-                    RedirectResponse(
-                        request.query_params.get("next")
-                        or request.url_for(self.route_name + ":index"),
-                        status_code=HTTP_303_SEE_OTHER,
-                    ),
-                )
-            except FormValidationError as errors:
-                return self.templates.TemplateResponse(
-                    "login.html",
-                    {"request": request, "form_errors": errors, "_is_login_path": True},
-                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-            except LoginFailed as error:
-                return self.templates.TemplateResponse(
-                    "login.html",
-                    {"request": request, "error": error.msg, "_is_login_path": True},
-                    status_code=HTTP_400_BAD_REQUEST,
-                )
+        form = await request.form()
+        try:
+            assert self.auth_provider is not None
+            return await self.auth_provider.login(
+                form.get("username"),  # type: ignore
+                form.get("password"),  # type: ignore
+                form.get("remember_me") == "on",
+                request,
+                RedirectResponse(
+                    request.query_params.get("next")
+                    or request.url_for(self.route_name + ":index"),
+                    status_code=HTTP_303_SEE_OTHER,
+                ),
+            )
+        except FormValidationError as errors:
+            return self.templates.TemplateResponse(
+                "login.html",
+                {"request": request, "form_errors": errors, "_is_login_path": True},
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        except LoginFailed as error:
+            return self.templates.TemplateResponse(
+                "login.html",
+                {"request": request, "error": error.msg, "_is_login_path": True},
+                status_code=HTTP_400_BAD_REQUEST,
+            )
 
     async def _render_logout(self, request: Request) -> Response:
         assert self.auth_provider is not None
@@ -433,33 +429,30 @@ class BaseAdmin:
                 model.create_template,
                 {"request": request, "model": model},
             )
-        else:
-            form = await request.form()
-            dict_obj = await self.form_to_dict(
-                request, form, model, RequestAction.CREATE
+        form = await request.form()
+        dict_obj = await self.form_to_dict(request, form, model, RequestAction.CREATE)
+        try:
+            obj = await model.create(request, dict_obj)
+        except FormValidationError as exc:
+            return self.templates.TemplateResponse(
+                model.create_template,
+                {
+                    "request": request,
+                    "model": model,
+                    "errors": exc.errors,
+                    "obj": dict_obj,
+                },
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
-            try:
-                obj = await model.create(request, dict_obj)
-            except FormValidationError as exc:
-                return self.templates.TemplateResponse(
-                    model.create_template,
-                    {
-                        "request": request,
-                        "model": model,
-                        "errors": exc.errors,
-                        "obj": dict_obj,
-                    },
-                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-            pk = getattr(obj, model.pk_attr)  # type: ignore
-            url = request.url_for(self.route_name + ":list", identity=model.identity)
-            if form.get("_continue_editing", None) is not None:
-                url = request.url_for(
-                    self.route_name + ":edit", identity=model.identity, pk=pk
-                )
-            elif form.get("_add_another", None) is not None:
-                url = request.url
-            return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
+        pk = getattr(obj, model.pk_attr)  # type: ignore
+        url = request.url_for(self.route_name + ":list", identity=model.identity)
+        if form.get("_continue_editing", None) is not None:
+            url = request.url_for(
+                self.route_name + ":edit", identity=model.identity, pk=pk
+            )
+        elif form.get("_add_another", None) is not None:
+            url = request.url
+        return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_edit(self, request: Request) -> Response:
         identity = request.path_params.get("identity")
@@ -480,33 +473,30 @@ class BaseAdmin:
                     "obj": await model.serialize(obj, request, RequestAction.EDIT),
                 },
             )
-        else:
-            form = await request.form()
-            dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
-            try:
-                obj = await model.edit(request, pk, dict_obj)
-            except FormValidationError as exc:
-                return self.templates.TemplateResponse(
-                    model.edit_template,
-                    {
-                        "request": request,
-                        "model": model,
-                        "errors": exc.errors,
-                        "obj": dict_obj,
-                    },
-                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-            pk = getattr(obj, model.pk_attr)  # type: ignore
-            url = request.url_for(self.route_name + ":list", identity=model.identity)
-            if form.get("_continue_editing", None) is not None:
-                url = request.url_for(
-                    self.route_name + ":edit", identity=model.identity, pk=pk
-                )
-            elif form.get("_add_another", None) is not None:
-                url = request.url_for(
-                    self.route_name + ":create", identity=model.identity
-                )
-            return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
+        form = await request.form()
+        dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
+        try:
+            obj = await model.edit(request, pk, dict_obj)
+        except FormValidationError as exc:
+            return self.templates.TemplateResponse(
+                model.edit_template,
+                {
+                    "request": request,
+                    "model": model,
+                    "errors": exc.errors,
+                    "obj": dict_obj,
+                },
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        pk = getattr(obj, model.pk_attr)  # type: ignore
+        url = request.url_for(self.route_name + ":list", identity=model.identity)
+        if form.get("_continue_editing", None) is not None:
+            url = request.url_for(
+                self.route_name + ":edit", identity=model.identity, pk=pk
+            )
+        elif form.get("_add_another", None) is not None:
+            url = request.url_for(self.route_name + ":create", identity=model.identity)
+        return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_error(
         self,

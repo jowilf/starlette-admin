@@ -162,5 +162,4 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 ),
                 status_code=HTTP_303_SEE_OTHER,
             )
-        else:
-            return await call_next(request)
+        return await call_next(request)

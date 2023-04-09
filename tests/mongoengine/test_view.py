@@ -45,8 +45,9 @@ class User(me.Document):
 class TestMongoBasic:
     def setup_method(self, method):
         connect(host=MONGO_URL)
-        for product in json.load(open("./tests/data/products.json")):
-            Product(**product).save()
+        with open("./tests/data/products.json") as f:
+            for product in json.load(f):
+                Product(**product).save()
 
     def teardown_method(self, method):
         Product.drop_collection()
@@ -161,7 +162,7 @@ class TestMongoBasic:
             data={
                 "title": "Infinix INBOOK",
                 "description": (
-                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                     " Warranty"
                 ),
                 "price": 1049,
@@ -179,7 +180,7 @@ class TestMongoBasic:
             data={
                 "title": "In",
                 "description": (
-                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                     " Warranty"
                 ),
                 "price": 1049,
@@ -202,7 +203,7 @@ class TestMongoBasic:
             data={
                 "title": "Infinix INBOOK",
                 "description": (
-                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                     " Warranty"
                 ),
                 "price": 1049,
@@ -223,7 +224,7 @@ class TestMongoBasic:
             data={
                 "title": "In",
                 "description": (
-                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                     " Warranty"
                 ),
                 "price": 1049,
@@ -259,7 +260,7 @@ class TestMongoBasic:
             data={
                 "title": "Infinix INBOOK",
                 "description": (
-                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                     " Warranty"
                 ),
                 "price": 1049,
@@ -298,7 +299,7 @@ class TestMongoBasic:
             data={
                 "title": "Infinix INBOOK",
                 "description": (
-                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                     " Warranty"
                 ),
                 "price": "",
@@ -321,7 +322,7 @@ class TestMongoBasic:
             data={
                 "title": "Infinix INBOOK",
                 "description": (
-                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year"
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
                     " Warranty"
                 ),
                 "price": 1049,

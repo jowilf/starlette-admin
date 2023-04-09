@@ -225,8 +225,7 @@ class ModelView(BaseModelView):
             return {}
         if isinstance(where, dict):
             return resolve_deep_query(where, self.model)
-        else:
-            return await self.build_full_text_search_query(request, where)
+        return await self.build_full_text_search_query(request, where)
 
     async def _build_order_clauses(self, order_list: List[str]) -> Any:
         clauses = []

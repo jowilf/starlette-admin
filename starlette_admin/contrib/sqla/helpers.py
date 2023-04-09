@@ -74,9 +74,7 @@ def build_order_clauses(order_list: List[str], model: Any) -> Any:
     return clauses
 
 
-def normalize_fields(  # noqa: C901
-    fields: Sequence[Any], mapper: Mapper
-) -> List[BaseField]:
+def normalize_fields(fields: Sequence[Any], mapper: Mapper) -> List[BaseField]:
     """
     Look and convert all InstrumentedAttribute or str in fields into the
     right field (starlette_admin.BaseField)
