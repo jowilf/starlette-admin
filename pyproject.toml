@@ -167,7 +167,7 @@ select = [
     "W", # pycodestyle warnings
     "F", # pyflakes
     "I", # isort
-    "C", # flake8-comprehensions
+    "C4", # flake8-comprehensions
     "B", # flake8-bugbear
     "PIE" # flake8-pie
 ]
