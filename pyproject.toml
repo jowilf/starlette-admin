@@ -179,6 +179,7 @@ select = [
     "Q", # flake8-quotes
     "RET", # flake8-return,
     "RUF", # Ruff-specific rules
+    "SIM", # flake8-simplify
 ]
 ignore = [
     "E501", # line too long, handled by black

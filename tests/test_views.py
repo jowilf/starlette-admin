@@ -110,8 +110,9 @@ class TestViews:
         UserView.seq = 3
 
         PostView.db.clear()
-        for post in json.load(open("./tests/data/posts.json")):
-            PostView.db[post["id"]] = Post(**post)
+        with open("./tests/data/posts.json") as f:
+            for post in json.load(f):
+                PostView.db[post["id"]] = Post(**post)
         PostView.seq = len(PostView.db.keys()) + 1
 
     def test_add_custom_view(self, report_view):

@@ -75,10 +75,7 @@ def _search_converter_for_col_type(
 
         # Support for custom types which inherit TypeDecorator
         if hasattr(col_type, "impl"):
-            if callable(col_type.impl):
-                impl = col_type.impl
-            else:
-                impl = col_type.impl.__class__
+            impl = col_type.impl if callable(col_type.impl) else col_type.impl.__class__
             return _search_converter_for_col_type(impl)
     return None  # pragma: no cover
 

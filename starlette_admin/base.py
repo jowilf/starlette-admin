@@ -96,10 +96,7 @@ class BaseAdmin:
         """
         Add View to the Admin interface.
         """
-        if isinstance(view, BaseView):
-            view_instance = view
-        else:
-            view_instance = view()
+        view_instance = view if isinstance(view, BaseView) else view()
         self._views.append(view_instance)
         self.setup_view(view_instance)
 
@@ -295,7 +292,7 @@ class BaseAdmin:
         order_by = request.query_params.getlist("order_by")
         where = request.query_params.get("where")
         pks = request.query_params.getlist("pks")
-        select2 = "select2" in request.query_params.keys()
+        select2 = "select2" in request.query_params
         if len(pks) > 0:
             items = await model.find_by_pks(request, pks)
             total = len(items)

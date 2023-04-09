@@ -45,8 +45,9 @@ class User(me.Document):
 class TestMongoBasic:
     def setup_method(self, method):
         connect(host=MONGO_URL)
-        for product in json.load(open("./tests/data/products.json")):
-            Product(**product).save()
+        with open("./tests/data/products.json") as f:
+            for product in json.load(f):
+                Product(**product).save()
 
     def teardown_method(self, method):
         Product.drop_collection()
