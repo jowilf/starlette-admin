@@ -176,6 +176,7 @@ select = [
     "C90", # mccabe
     "ERA", # eradicate
     "N", # pep8-naming
+    "Q", # flake8-quotes
 ]
 ignore = [
     "E501", # line too long, handled by black
