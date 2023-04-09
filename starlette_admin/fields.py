@@ -1198,11 +1198,11 @@ class ListField(BaseField):
         as indices.
         """
         indices = set()
-        for k in form_data:
-            if k.startswith(self.id):
-                k = k[len(self.id) + 1 :].split(".", maxsplit=1)[0]
-                if k.isdigit():
-                    indices.add(int(k))
+        for name in form_data:
+            if name.startswith(self.id):
+                idx = name[len(self.id) + 1 :].split(".", maxsplit=1)[0]
+                if idx.isdigit():
+                    indices.add(int(idx))
         return sorted(indices)
 
     def _field_at(self, idx: Optional[int] = None) -> BaseField:

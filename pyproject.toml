@@ -169,7 +169,10 @@ select = [
     "I", # isort
     "C4", # flake8-comprehensions
     "B", # flake8-bugbear
-    "PIE" # flake8-pie
+    "PIE", # flake8-pie,
+    "PLC", # pylint - convention
+    "PLE", # pylint - error
+    "PLW", # pylint - warning,
 ]
 ignore = [
     "E501", # line too long, handled by black
