@@ -91,10 +91,10 @@ class DropDown(BaseView):
         ]
 
     def is_active(self, request: Request) -> bool:
-        return any([v.is_active(request) for v in self.views])
+        return any(v.is_active(request) for v in self.views)
 
     def is_accessible(self, request: Request) -> bool:
-        return any([v.is_accessible(request) for v in self.views])
+        return any(v.is_accessible(request) for v in self.views)
 
 
 class Link(BaseView):
