@@ -163,30 +163,30 @@ source = ["starlette_admin", "tests"]
 
 [tool.ruff]
 select = [
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "C90", # mccabe
     "E", # pycodestyle errors
-    "W", # pycodestyle warnings
+    "ERA", # eradicate
     "F", # pyflakes
     "I", # isort
-    "C4", # flake8-comprehensions
-    "B", # flake8-bugbear
+    "INT", # flake8-gettext
+    "N", # pep8-naming
     "PIE", # flake8-pie,
     "PLC", # pylint - convention
     "PLE", # pylint - error
     "PLW", # pylint - warning
-    "C90", # mccabe
-    "ERA", # eradicate
-    "N", # pep8-naming
     "Q", # flake8-quotes
     "RET", # flake8-return,
     "RUF", # Ruff-specific rules
     "SIM", # flake8-simplify
     "UP", # pyupgrade
-    "INT" # flake8-gettext
+    "W", # pycodestyle warnings
 ]
 ignore = [
-    "E501", # line too long, handled by black
     "B008", # Do not perform function call `_` in argument defaults, neccessary for lazy_gettext
     "B905", # `zip()` without an explicit `strict=` parameter
+    "E501", # line too long, handled by black
     "N818", # Exception {name} should be named with an Error suffix
 ]
 target-version = "py37"
