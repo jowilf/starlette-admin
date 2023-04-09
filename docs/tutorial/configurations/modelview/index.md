@@ -161,7 +161,7 @@ class User:
     first_name: str
     last_name: str
 
-    def __admin_repr__(self, request: Request):
+    async def __admin_repr__(self, request: Request):
         return f"{self.last_name} {self.first_name}"
 ```
 
@@ -191,6 +191,6 @@ class User:
     name: str
     photo_url: str
 
-    def __admin_select2_repr__(self, request: Request) -> str:
+    async def __admin_select2_repr__(self, request: Request) -> str:
         return f'<div><img src="{escape(photo_url)}"><span>{escape(self.name)}</span></div>'
 ```
