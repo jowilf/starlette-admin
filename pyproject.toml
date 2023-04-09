@@ -172,13 +172,15 @@ select = [
     "PIE", # flake8-pie,
     "PLC", # pylint - convention
     "PLE", # pylint - error
-    "PLW", # pylint - warning,
+    "PLW", # pylint - warning
+    "C90", # mccabe
 ]
 ignore = [
     "E501", # line too long, handled by black
     "B008", # Do not perform function call `_` in argument defaults, neccessary for lazy_gettext
     "B905", # `zip()` without an explicit `strict=` parameter
 ]
+target-version = "py37"
 
 [tool.ruff.isort]
 known-third-party = ["starlette_admin"]
