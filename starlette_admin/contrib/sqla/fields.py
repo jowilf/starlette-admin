@@ -52,7 +52,7 @@ def _serialize_sqlalchemy_file_library(
     from sqlalchemy_file import File
 
     if isinstance(value, File) or (
-        isinstance(value, list) and all([isinstance(f, File) for f in value])
+        isinstance(value, list) and all(isinstance(f, File) for f in value)
     ):
         data = []
         for item in value if isinstance(value, list) else [value]:

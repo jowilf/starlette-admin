@@ -917,13 +917,11 @@ class FileField(BaseField):
 
     def _isvalid_value(self, value: Any) -> bool:
         return value is not None and all(
-            [
-                (
-                    hasattr(v, "url")
-                    or (isinstance(v, dict) and v.get("url", None) is not None)
-                )
-                for v in (value if self.multiple else [value])
-            ]
+            (
+                hasattr(v, "url")
+                or (isinstance(v, dict) and v.get("url", None) is not None)
+            )
+            for v in (value if self.multiple else [value])
         )
 
     def input_params(self) -> str:

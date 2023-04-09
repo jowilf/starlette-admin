@@ -41,6 +41,6 @@ class Post:
             q.title.search(term, flags=re.IGNORECASE)
             | q.body.search(term, flags=re.IGNORECASE)
             | q.tags.test(
-                lambda tags: any([re.match(term, tag, re.IGNORECASE) for tag in tags])
+                lambda tags: any(re.match(term, tag, re.IGNORECASE) for tag in tags)
             )
         )

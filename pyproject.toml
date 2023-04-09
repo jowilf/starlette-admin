@@ -169,6 +169,7 @@ select = [
     "I", # isort
     "C", # flake8-comprehensions
     "B", # flake8-bugbear
+    "PIE" # flake8-pie
 ]
 ignore = [
     "E501", # line too long, handled by black
