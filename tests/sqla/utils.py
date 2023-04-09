@@ -45,7 +45,6 @@ def get_test_container(name: str) -> Container:
             ),
             name,
         )
-    else:
-        dir_path = os.environ.get("LOCAL_PATH", "/tmp/storage")
-        os.makedirs(dir_path, 0o777, exist_ok=True)
-        return get_or_create_container(LocalStorageDriver(dir_path), name)
+    dir_path = os.environ.get("LOCAL_PATH", "/tmp/storage")
+    os.makedirs(dir_path, 0o777, exist_ok=True)
+    return get_or_create_container(LocalStorageDriver(dir_path), name)

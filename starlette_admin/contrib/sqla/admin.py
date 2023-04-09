@@ -86,15 +86,14 @@ def _serve_file(request: Request) -> Response:
             return FileResponse(
                 file.get_cdn_url(), media_type=file.content_type, filename=file.filename  # type: ignore
             )
-        elif file.get_cdn_url() is not None:  # pragma: no cover
+        if file.get_cdn_url() is not None:  # pragma: no cover
             """If file has public url, redirect to this url"""
             return RedirectResponse(file.get_cdn_url())  # type: ignore
-        else:
-            """Otherwise, return a streaming response"""
-            return StreamingResponse(
-                file.object.as_stream(),
-                media_type=file.content_type,
-                headers={"Content-Disposition": f"attachment;filename={file.filename}"},
-            )
+        """Otherwise, return a streaming response"""
+        return StreamingResponse(
+            file.object.as_stream(),
+            media_type=file.content_type,
+            headers={"Content-Disposition": f"attachment;filename={file.filename}"},
+        )
     except ObjectDoesNotExistError:
         return JSONResponse({"detail": "Not found"}, status_code=404)

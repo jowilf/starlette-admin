@@ -109,7 +109,7 @@ class AuthProvider:
                 return AdminUser(username=user["name"], photo_url=user["photo_url"])
             ```
         """
-        return None  # pragma: no cover
+        return  # pragma: no cover
 
     async def logout(self, request: Request, response: Response) -> Response:
         """
@@ -162,5 +162,4 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 ),
                 status_code=HTTP_303_SEE_OTHER,
             )
-        else:
-            return await call_next(request)
+        return await call_next(request)

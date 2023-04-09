@@ -177,12 +177,13 @@ select = [
     "ERA", # eradicate
     "N", # pep8-naming
     "Q", # flake8-quotes
+    "RET", # flake8-return
 ]
 ignore = [
     "E501", # line too long, handled by black
     "B008", # Do not perform function call `_` in argument defaults, neccessary for lazy_gettext
     "B905", # `zip()` without an explicit `strict=` parameter
-    "N818", # Exception name {name} should be named with an Error suffix
+    "N818", # Exception {name} should be named with an Error suffix
 ]
 target-version = "py37"
 

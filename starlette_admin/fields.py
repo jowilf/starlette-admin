@@ -137,7 +137,7 @@ class BaseField:
         Returns:
             Any: The formatted None value.
         """
-        return None
+        return
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
