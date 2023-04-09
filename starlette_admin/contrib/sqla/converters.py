@@ -133,12 +133,12 @@ def conv_boolean(name: str, column: Column) -> BaseField:
 
 
 @converts("DateTime")
-def conv_dateTime(name: str, column: Column) -> BaseField:
+def conv_datetime(name: str, column: Column) -> BaseField:
     return DateTimeField(name, **field_common(column))
 
 
 @converts("Date")
-def conv_Date(name: str, column: Column) -> BaseField:
+def conv_date(name: str, column: Column) -> BaseField:
     return DateField(name, **field_common(column))
 
 
