@@ -85,12 +85,6 @@ class Model(Base):
             schemes=["pbkdf2_sha512"],
         )
     )
-    # Remove due to https://github.com/MagicStack/asyncpg/issues/991
-    # balance = Column(
-    #     CompositeType(
-    #         "money_type", [Column("currency", CurrencyType), Column("amount", Integer)]
-    #     )
-    # )
 
 
 async def test_model_fields_conversion():
@@ -109,13 +103,6 @@ async def test_model_fields_conversion():
         ListField(StringField("scalars")),
         PhoneField("phonenumber"),
         PasswordField("password"),
-        # CollectionField(
-        #     "balance",
-        #     fields=[
-        #         CurrencyField("currency", searchable=False, orderable=False),
-        #         IntegerField("amount", searchable=False, orderable=False),
-        #     ],
-        # ),
     ]
 
 
@@ -183,8 +170,6 @@ async def test_create(client: AsyncClient, session: Session):
     assert model.scalars == ["item-1", "item-2"]
     assert model.phonenumber.e164 == "+358401234567"
     assert model.password == "pass1234"
-    # assert model.balance.currency == Currency("XOF")
-    # assert model.balance.amount == 1000000
 
     response = await client.get(f"/admin/model/detail/{model.uuid}")
     assert response.status_code == 200
