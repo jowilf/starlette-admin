@@ -109,7 +109,7 @@ class BaseAdmin:
         Args:
             request: Starlette Request
         """
-        return
+        return None
 
     def init_locale(self) -> None:
         if self.i18n_config is not None:

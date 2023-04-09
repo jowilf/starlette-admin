@@ -109,7 +109,7 @@ class AuthProvider:
                 return AdminUser(username=user["name"], photo_url=user["photo_url"])
             ```
         """
-        return  # pragma: no cover
+        return None  # pragma: no cover
 
     async def logout(self, request: Request, response: Response) -> Response:
         """
