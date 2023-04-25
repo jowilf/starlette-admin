@@ -117,7 +117,7 @@ from dataclasses import dataclass
 class CustomField(BaseField):
     render_function_key: str = "mycustomkey"
     form_template: str = "forms/custom.html"
-    display_template = "displays/custom.html"
+    display_template: str = "displays/custom.html"
 ```
 
 ## Data processing
@@ -142,7 +142,7 @@ from starlette_admin import BaseField
 class CustomField(BaseField):
     render_function_key: str = "mycustomkey"
     form_template: str = "forms/custom.html"
-    display_template = "displays/custom.html"
+    display_template: str = "displays/custom.html"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         return form_data.get(self.name)
