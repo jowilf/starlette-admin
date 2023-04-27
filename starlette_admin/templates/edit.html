@@ -29,14 +29,16 @@
                             </div>
                         </div>
                         <div class="card-body border-bottom py-3">
-                            {% for field in model.get_fields_list(request, 'EDIT' | ra) %}
-                                <div class="mb-3">
-                                    {% with action=('EDIT' | ra),data=obj[field.name], error=errors.get(field.name, None) if errors else None %}
-                                        {% include field.label_template %}
-                                        {% include field.form_template %}
-                                    {% endwith %}
-                                </div>
-                            {% endfor %}
+                            {% block edit_form %}
+                                {% for field in model.get_fields_list(request, 'EDIT' | ra) %}
+                                    <div class="mb-3">
+                                        {% with action=('EDIT' | ra),data=obj[field.name], error=errors.get(field.name, None) if errors else None %}
+                                            {% include field.label_template %}
+                                            {% include field.form_template %}
+                                        {% endwith %}
+                                    </div>
+                                {% endfor %}
+                            {% endblock %}
                         </div>
                         <div class="card-footer text-black">
                             <div class="btn-list ms-auto justify-content-end">
@@ -56,6 +58,7 @@
     </div>
 {% endblock %}
 {% block head_css %}
+    {{ super() }}
     {% for link in model._additional_css_links(request, "EDIT" | ra) %}
         <link rel="stylesheet" href="{{ link }}">
     {% endfor %}
@@ -66,6 +69,7 @@
     </style>
 {% endblock %}
 {% block script %}
+    {{ super() }}
     {% for link in model._additional_js_links(request, "EDIT" | ra) %}
         <script type="text/javascript" src="{{ link }}"></script>
     {% endfor %}

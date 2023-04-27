@@ -15,6 +15,7 @@
     </div>
 {% endblock %}
 {% block modal %}
+    {{ super() }}
     {% include "modals/loading.html" %}
     {% include "modals/error.html" %}
     {% include "modals/delete.html" %}
@@ -52,38 +53,40 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-vcenter table-mobile-md">
-                                <thead>
-                                <tr>
-                                    <th>{{ _("Attribute") }}</th>
-                                    <th>{{ _("Value") }}</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for field in model.get_fields_list(request, 'DETAIL' | ra) %}
+                        {% block details_table %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-vcenter table-mobile-md">
+                                    <thead>
                                     <tr>
-                                        <td data-label="Attribute">
-                                            <div>
-                                                <strong>{{ field.label }}</strong>
-                                            </div>
-                                        </td>
-                                        <td data-label="Value">
-                                            {% with data=obj[field.name] %}
-                                                {% if data == None %}
-                                                    {% include "displays/_null.html" %}
-                                                {% elif (data | is_iter) and (data |length) ==0 %}
-                                                    {% include "displays/_empty.html" %}
-                                                {% else %}
-                                                    {% include field.display_template %}
-                                                {% endif %}
-                                            {% endwith %}
-                                        </td>
+                                        <th>{{ _("Attribute") }}</th>
+                                        <th>{{ _("Value") }}</th>
                                     </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                    {% for field in model.get_fields_list(request, 'DETAIL' | ra) %}
+                                        <tr>
+                                            <td data-label="Attribute">
+                                                <div>
+                                                    <strong>{{ field.label }}</strong>
+                                                </div>
+                                            </td>
+                                            <td data-label="Value">
+                                                {% with data=obj[field.name] %}
+                                                    {% if data == None %}
+                                                        {% include "displays/_null.html" %}
+                                                    {% elif (data | is_iter) and (data |length) ==0 %}
+                                                        {% include "displays/_empty.html" %}
+                                                    {% else %}
+                                                        {% include field.display_template %}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endblock %}
                     </div>
                 </div>
             </div>
@@ -91,11 +94,13 @@
     </div>
 {% endblock %}
 {% block head_css %}
+    {{ super() }}
     {% for link in model._additional_css_links(request, "DETAIL" | ra) %}
         <link rel="stylesheet" href="{{ link }}">
     {% endfor %}
 {% endblock %}
 {% block script %}
+    {{ super() }}
     <script type="text/javascript"
             src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
     {% for link in model._additional_js_links(request, "DETAIL" | ra) %}
