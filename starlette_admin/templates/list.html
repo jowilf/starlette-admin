@@ -110,6 +110,7 @@
     </div>
 {% endblock %}
 {% block head_css %}
+    {{ super() }}
     <link rel="stylesheet"
           href="{{ url_for(__name__ ~ ':statics', path='css/dt.min.css') }}"/>
     <link rel="stylesheet"
@@ -144,6 +145,7 @@
     </style>
 {% endblock %}
 {% block script %}
+    {{ super() }}
     <script type="text/javascript"
             src="{{ url_for(__name__ ~ ':statics', path='js/vendor/moment.min.js') }}"></script>
     {% if get_locale() != 'en' %}
