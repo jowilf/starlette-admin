@@ -47,9 +47,13 @@ class ModelView(BaseModelView):
         identity: Optional[str] = None,
     ):
         self.model = model
-        self.identity = identity or slugify_class_name(self.model.__name__)
-        self.label = label or prettify_class_name(self.model.__name__) + "s"
-        self.name = name or prettify_class_name(self.model.__name__)
+        self.identity = (
+            identity or self.identity or slugify_class_name(self.model.__name__)
+        )
+        self.label = (
+            label or self.label or prettify_class_name(self.model.__name__) + "s"
+        )
+        self.name = name or self.name or prettify_class_name(self.model.__name__)
         self.icon = icon
         self.pk_attr = "id"
         if self.fields is None or len(self.fields) == 0:

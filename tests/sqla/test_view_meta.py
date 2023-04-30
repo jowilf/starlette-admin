@@ -108,6 +108,41 @@ class UserView(ModelView):
     form_include_pk = True
 
 
+def test_view_meta_info():
+    model_view = ModelView(
+        Other, identity="other-id", label="Other label", name="Other name"
+    )
+    assert model_view.identity == "other-id"
+    assert model_view.label == "Other label"
+    assert model_view.name == "Other name"
+
+
+def test_view_meta_info_with_class_level_config():
+    class CustomView(ModelView):
+        identity = "custom-id"
+        label = "Custom label"
+        name = "Custom name"
+
+    model_view = CustomView(Other)
+    assert model_view.identity == "custom-id"
+    assert model_view.label == "Custom label"
+    assert model_view.name == "Custom name"
+
+
+def test_view_meta_info_with_overridden_class_level_config():
+    class CustomView(ModelView):
+        identity = "custom-id"
+        label = "Custom label"
+        name = "Custom name"
+
+    model_view = CustomView(
+        Other, identity="other-id", label="Other label", name="Other name"
+    )
+    assert model_view.identity == "other-id"
+    assert model_view.label == "Other label"
+    assert model_view.name == "Other name"
+
+
 def test_user_fields_conversion():
     assert UserView(User).fields == [
         StringField("name", required=True, maxlength=100, help_text="user fullname"),
