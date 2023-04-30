@@ -60,6 +60,41 @@ class User(me.Document):
     documents = me.ListField(me.ReferenceField(MyDocument))
 
 
+def test_view_meta_info():
+    model_view = ModelView(
+        User, identity="other-id", label="Other label", name="Other name"
+    )
+    assert model_view.identity == "other-id"
+    assert model_view.label == "Other label"
+    assert model_view.name == "Other name"
+
+
+def test_view_meta_info_with_class_level_config():
+    class CustomView(ModelView):
+        identity = "custom-id"
+        label = "Custom label"
+        name = "Custom name"
+
+    model_view = CustomView(User)
+    assert model_view.identity == "custom-id"
+    assert model_view.label == "Custom label"
+    assert model_view.name == "Custom name"
+
+
+def test_view_meta_info_with_overridden_class_level_config():
+    class CustomView(ModelView):
+        identity = "custom-id"
+        label = "Custom label"
+        name = "Custom name"
+
+    model_view = CustomView(
+        User, identity="other-id", label="Other label", name="Other name"
+    )
+    assert model_view.identity == "other-id"
+    assert model_view.label == "Other label"
+    assert model_view.name == "Other name"
+
+
 def test_fields_conversion():
     assert ModelView(User).fields == [
         StringField("id", exclude_from_create=True, exclude_from_edit=True),
