@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2023-04-30
+
+### Added
+
+* Update fontawesome to 6.4.0 & add missings webfonts by [@jowilf](https://github.com/jowilf)
+  in [176](https://github.com/jowilf/starlette-admin/pull/176)
+* Allow class level configuration for ModelView identity, name & label by [@jowilf](https://github.com/jowilf)
+  in [178](https://github.com/jowilf/starlette-admin/pull/178)
+
 ## [0.8.0] - 2023-04-09
 
 ### Added
