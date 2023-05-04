@@ -136,7 +136,7 @@ class BaseAdmin:
                 Middleware(
                     AuthMiddleware,
                     provider=self.auth_provider,
-                    allow_paths=[self.login_logo_url]
+                    allow_paths=[self.login_logo_url],
                 )
             )
             self.routes.extend(
