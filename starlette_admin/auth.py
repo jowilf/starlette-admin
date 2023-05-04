@@ -146,6 +146,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 "/statics/css/fontawesome.min.css",
                 "/statics/js/vendor/jquery.min.js",
                 "/statics/js/vendor/tabler.min.js",
+                "/statics/js/vendor/js.cookie.min.js",
             ]
         )  # Allow static files needed for the login page
 
