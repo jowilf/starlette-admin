@@ -36,6 +36,22 @@ The first step is to initialize an empty admin interface for your app:
     engine = AIOEngine()
 
     admin = Admin(engine)
+    ``
+
+=== "beanie"
+    ```python
+    from motor.motor_asyncio import AsyncIOMotorClient
+    from starlette_admin.contrib.beanie import Admin
+
+    import mongoengine
+    from gridfs import GridFS
+
+    client = AsyncIOMotorClient()
+
+    db = mongoengine.connect(db='demo', alias='demo')
+    fs = GridFS(database=db['demo'], collection='fs_files')
+
+    admin = Admin(fs=fs)
     ```
 
 ## Adding Views
@@ -101,6 +117,29 @@ Model views allow you to add a dedicated set of admin pages for managing any mod
     admin.add_view(ModelView(Post))
 
     ```
+
+=== "beanie"
+    ```python hl_lines="2 16"
+    from motor.motor_asyncio import AsyncIOMotorClient
+    from starlette_admin.contrib.beanie import Admin, ModelView
+
+    import mongoengine
+    from gridfs import GridFS
+
+    from .models import Author
+
+    client = AsyncIOMotorClient()
+
+    db = mongoengine.connect(db='demo', alias='demo')
+    fs = GridFS(database=db['demo'], collection='fs_files')
+
+    admin = Admin(fs=fs)
+
+    admin.add_view(ModelView(Author))
+
+    ```
+
+
 This gives you a set of fully featured CRUD views for your model:
 
 - A *list view*, with support for searching, sorting, filtering, and deleting records.
@@ -254,5 +293,44 @@ The last step is to mount the admin interfaces to your app
 
     admin.mount_to(app)
     ```
+
+=== "beanie"
+    ```python hl_lines="2 24 26"
+    from motor.motor_asyncio import AsyncIOMotorClient
+    from starlette.applications import Starlette
+    from starlette_admin.contrib.beanie import Admin, ModelView
+
+    import mongoengine
+    from gridfs import GridFS
+
+    from beanie import init_beanie
+
+    from .models import Author
+
+    client = AsyncIOMotorClient()
+
+    db = mongoengine.connect(db='demo', alias='demo')
+    fs = GridFS(database=db['demo'], collection='fs_files')
+
+    async def init() -> None:
+        # init beanie
+        await init_beanie(database=client['demo'], document_models=[Author])  # type: ignore
+
+        # starlette-admin
+        admin = Admin(fs=fs)
+        admin.add_view(ModelView(Author))
+        admin.mount_to(app)
+
+    app = Starlette()  # FastAPI()
+
+    @app.on_event("startup")
+    async def on_startup() -> None:
+        """Initialize services on startup."""
+        await init()
+
+
+
+    ```
+
 
 You can now access your admin interfaces in your browser at [http://localhost:8000/admin](http://localhost:8000/admin)

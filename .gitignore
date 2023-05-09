@@ -16,3 +16,12 @@ site
 __pycache__/
 .pytest_cache/
 .examples/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
