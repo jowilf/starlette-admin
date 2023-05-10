@@ -14,3 +14,4 @@ itsdangerous
 # using by beanie-support for starlette-admin
 pillow
 pydantic[email] # email validator
+phonenumbers    # phone validator

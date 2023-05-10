@@ -11,8 +11,14 @@ from beanie import Link, PydanticObjectId
 from pydantic import AnyUrl, BaseModel, EmailStr, NameEmail
 from pydantic.typing import get_args, get_origin
 from pymongo.errors import DuplicateKeyError
+from starlette_admin.contrib.beanie._email import Email
+
+# custom datatypes
 from starlette_admin.contrib.beanie._file import File, FileGfs, Image
+from starlette_admin.contrib.beanie._my_json import MyJson
 from starlette_admin.contrib.beanie._password import Password
+from starlette_admin.contrib.beanie._slug import Slug
+from starlette_admin.contrib.beanie._telephone import Telephone
 from starlette_admin.contrib.beanie.exceptions import NotSupportedField
 from starlette_admin.contrib.beanie.fields import FileField, ImageField, PasswordField
 from starlette_admin.contrib.beanie.pyd import Attr
@@ -36,6 +42,7 @@ bearnie_to_admin_map = {
     UUID: sa.StringField,
     Enum: sa.EnumField,
     IPv4Address: sa.StringField,
+    # custom datatypes
     FileGfs: FileField,
     Password: PasswordField,
 }
@@ -119,7 +126,18 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
         if isinstance(annotation, EnumType):
             admin_field = sa.EnumField(name, enum=annotation)
 
-        # realizo un caso especial de File para poder integrarlo, luego veo
+        elif issubclass(annotation, Email):
+            admin_field = sa.EmailField(name=str(name))
+
+        elif issubclass(annotation, MyJson):
+            admin_field = sa.JSONField(name=str(name))
+
+        elif issubclass(annotation, Slug):
+            admin_field = sa.StringField(name=str(name))
+
+        elif issubclass(annotation, Telephone):
+            admin_field = sa.PhoneField(name=str(name))
+
         elif issubclass(annotation, File):
             admin_field = FileField(name=str(name))
 
