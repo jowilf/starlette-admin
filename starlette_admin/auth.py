@@ -20,13 +20,23 @@ class AdminUser:
 class AuthProvider:
     """
     Base class for implementing the Authentication into your admin interface
+
+    Args:
+        login_path: The path for the login page.
+        logout_path: The path for the logout page.
+        allow_paths: A list of paths that are allowed without authentication.
+
     """
 
     def __init__(
-        self, login_path: str = "/login", logout_path: str = "/logout"
+        self,
+        login_path: str = "/login",
+        logout_path: str = "/logout",
+        allow_paths: Optional[Sequence[str]] = None,
     ) -> None:
         self.login_path = login_path
         self.logout_path = logout_path
+        self.allow_paths = allow_paths
 
     async def login(
         self,
@@ -148,6 +158,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 "/statics/js/vendor/tabler.min.js",
             ]
         )  # Allow static files needed for the login page
+        self.allow_paths.extend(
+            self.provider.allow_paths if self.provider.allow_paths is not None else []
+        )
 
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
