@@ -133,11 +133,7 @@ class BaseAdmin:
                 [] if self.middlewares is None else list(self.middlewares)
             )
             self.middlewares.append(
-                Middleware(
-                    AuthMiddleware,
-                    provider=self.auth_provider,
-                    allow_paths=[self.login_logo_url],
-                )
+                Middleware(AuthMiddleware, provider=self.auth_provider)
             )
             self.routes.extend(
                 [
