@@ -40,7 +40,10 @@ app = Starlette(
 admin = Admin(
     engine,
     title="Example: Auth",
-    auth_provider=MyAuthProvider(),
+    base_url="/admin",
+    statics_dir="examples/auth/static",
+    login_logo_url="/admin/statics/logo.svg",  # base_url + '/statics/' + path_to_the_file
+    auth_provider=MyAuthProvider(allow_paths=["/statics/logo.svg"]),
     middlewares=[Middleware(SessionMiddleware, secret_key=SECRET)],
 )
 
