@@ -1,6 +1,7 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional, Tuple, Union
 
+from beanie.odm.enums import SortDirection
 from pydantic import BaseModel
 
 
@@ -24,11 +25,14 @@ class SortBy(BaseModel):
     def parse(value: str) -> "SortBy":
         """example value: 'first_name asc'"""
         vals = value.split()
-        option = vals[1] if len(vals) == 2 else SortOption.NONE
+        option = SortOption(vals[1]) if len(vals) == 2 else SortOption.NONE
         return SortBy(name=vals[0], by=option)
 
 
-def build_order_clauses(options: List[str]) -> List[str]:
+# def build_order_clauses(options: Optional[List[str]]) -> List[str]:
+def build_order_clauses(
+    options: Optional[List[str]],
+) -> Union[None, str, List[Tuple[str, SortDirection]], List]:
     """https://beanie-odm.dev/tutorial/finding-documents/#sorting"""
     if options is None:
         return []

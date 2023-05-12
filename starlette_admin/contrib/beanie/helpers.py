@@ -3,12 +3,13 @@ import inspect
 import typing as t
 from enum import Enum, EnumType
 from ipaddress import IPv4Address
-from typing import Any, Dict, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 from uuid import UUID
 
 import starlette_admin.fields as sa
 from beanie import Link, PydanticObjectId
 from pydantic import AnyUrl, BaseModel, EmailStr, NameEmail
+from pydantic.fields import ModelField
 from pydantic.typing import get_args, get_origin
 from pymongo.errors import DuplicateKeyError
 from starlette_admin.contrib.beanie._email import Email
@@ -49,8 +50,12 @@ bearnie_to_admin_map = {
 
 
 def convert_beanie_field_to_admin_field(  # noqa: C901
-    field: Any, annotation: Type[Any], attr: Attr, field_meta=None, identity=None
-) -> sa.BaseField:
+    field: str,
+    annotation: Type[Any],
+    attr: Attr,
+    field_meta: ModelField | None = None,
+    identity: str | None = None,
+) -> Union[None, sa.BaseField]:
     name = field
     admin_field: Optional[sa.BaseField] = None
     _origin = get_origin(annotation)
@@ -71,10 +76,13 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
                     return admin_field
                 if bearnie_to_admin_map.get(_type) is not None:
                     admin_field = bearnie_to_admin_map.get(_type)(name)  # type: ignore
-                    admin_field.required = True
-                    return admin_field
+                    if admin_field is not None:
+                        admin_field.required = True
+                        return admin_field
+                    return None
 
-    if _origin is Union:
+    if isinstance(_origin, type(Union)):
+        # if _origin is Union:
         return convert_beanie_field_to_admin_field(
             field, get_args(annotation)[0], attr, field_meta, identity
         )
@@ -85,11 +93,13 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
 
         elif issubclass(_origin, Link):
             identity = None
-            if hasattr(attr.model_class, "__name__"):
+
+            if attr.model_class is not None and hasattr(attr.model_class, "__name__"):
                 identity = slugify_class_name(attr.model_class.__name__)
+
             # find the identity for class with composition
             has_many_or_one = "LIST"  # default
-            if field in attr.linked:
+            if attr.linked is not None and field in attr.linked:
                 identity = slugify_class_name(attr.linked[field].model_class.__name__)
                 has_many_or_one = attr.linked[field].link_type
 
@@ -105,6 +115,9 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
             child_field = convert_beanie_field_to_admin_field(
                 field, get_args(annotation)[0], attr, field_meta, identity
             )
+            if child_field is None:
+                # admin_field None, same error?fix?
+                return None
             if isinstance(child_field, sa.EnumField):
                 child_field.multiple = True
                 return child_field
@@ -117,10 +130,15 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
         raise NotSupportedField(f"Field {field.__class__.__name__} is not supported")
 
     # those that are from pydantic... and if they are in the conversion table...
-    if hasattr(field_meta, "type_") and bearnie_to_admin_map.get(
-        (field_meta.type_), None
+    if (
+        field_meta is not None
+        and hasattr(field_meta, "type_")
+        # and bearnie_to_admin_map.get(field_meta.type_, None)
+        and name is not None
     ):
-        admin_field = bearnie_to_admin_map.get(field_meta.type_)(name)
+        t = bearnie_to_admin_map.get(field_meta.type_, None)
+        if t is not None:
+            admin_field = t(name)
 
     if annotation is not None:
         if isinstance(annotation, EnumType):
@@ -145,7 +163,7 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
             admin_field = ImageField(name=str(name))
 
         elif issubclass(annotation, BaseModel):
-            _fields = []
+            _fields: List = []
 
             tmp = annotation.__annotations__.items()
             for key in annotation.__fields__:
@@ -188,14 +206,20 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
             admin_field = sa.CollectionField(name, fields=_fields)
 
         else:
+            # if annotation is not None:
+
             if annotation is not None:
-                admin_field = bearnie_to_admin_map.get(annotation)(name)
+                t = bearnie_to_admin_map.get(annotation, None)
+                if t is not None:
+                    admin_field = t(name)
 
     if admin_field is not None:
         admin_field.required = attr.required
         admin_field.help_text = attr.description
-        admin_field.minlength = attr.min_length
-        admin_field.maxlength = attr.max_length
+
+        if isinstance(admin_field, sa.StringField):  # StringField and their inheritance
+            admin_field.minlength = attr.min_length
+            admin_field.maxlength = attr.max_length
 
     return admin_field
 
@@ -230,6 +254,8 @@ def pymongo_error_to_form_validation_errors(
 
     assert isinstance(exc, DuplicateKeyError)
     errors: Dict[Union[str, int], Any] = {}
-    field_name = list(exc.details["keyValue"].keys())[0]
+    field_name: str = "<field unknown>"
+    if exc.details is not None and exc.details.get("keyValue"):
+        field_name = list(exc.details["keyValue"].keys())[0]
     errors = {field_name: "duplicate key error"}
     return FormValidationError(errors)

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Callable, Generator, Union
 
 from devtools import debug  # noqa: F401
 from phonenumbers import (
@@ -13,11 +13,11 @@ from phonenumbers import (
 
 class Telephone(PhoneNumber):
     @classmethod
-    def __get_validators__(cls):
+    def __get_validators__(cls) -> Generator[Callable, None, None]:
         yield cls.validate
 
     @classmethod
-    def validate(cls, v: Union[str, PhoneNumber]):
+    def validate(cls, v: Union[str, PhoneNumber]) -> Union[None, str]:
         if isinstance(v, PhoneNumber):
             return format_number(v, PhoneNumberFormat.E164)
         # is a str...

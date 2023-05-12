@@ -1,5 +1,5 @@
 import inspect
-from typing import Dict, List, Optional, Type, TypeVar
+from typing import Any, Dict, List, Optional, Type, TypeVar
 
 from beanie import Document
 from pydantic import BaseModel, ConstrainedStr
@@ -10,11 +10,11 @@ BaseModelT = TypeVar("BaseModelT", bound=Document)
 class Attr(BaseModel):
     name: str
     required: bool = False
-    min_length: int = None
-    max_length: int = None
+    min_length: int | None = None
+    max_length: int | None = None
     description: Optional[str]
     model_class: Optional[Type[BaseModel]]
-    linked: Dict = None
+    linked: Dict | None = None
 
 
 class Attrs:
@@ -47,7 +47,7 @@ class Attrs:
             field_model = model.__fields__.get(str(name))
             field_class = getattr(field_model, "type_", None)
             field_links = {}
-            if hasattr(field_class, "get_link_fields"):
+            if field_class is not None and hasattr(field_class, "get_link_fields"):
                 field_links = field_class.get_link_fields()
                 self.linked = field_links
 
@@ -57,7 +57,7 @@ class Attrs:
             model_class = None
             if linked is not None and name in linked:
                 model_class = linked[name].model_class
-            if field_links is not None and name in field_links:  # type: ignore
+            if field_links is not None and name in field_links:
                 model_class = linked[name].model_class
                 self.linked = field_links
 
@@ -79,19 +79,21 @@ class Attrs:
                 max_length = getattr(field, "max_length", None)
                 self.update_by_name(name, min_length, max_length)
 
-    def update_by_name(self, name, min_length, max_length):
+    def update_by_name(
+        self, name: str, min_length: Any | None, max_length: Any | None
+    ) -> None:
         for attr in self.attributes:
             if attr.name is name:
                 attr.min_length = min_length
                 attr.max_length = max_length
 
-    def get_field_info(self, name: str):
+    def get_field_info(self, name: str) -> Attr | None:
         for attr in self.attributes:
             if attr.name is name:
                 return attr
         return None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         d = []
         for attr in self.attributes:
             d.append(attr.json())

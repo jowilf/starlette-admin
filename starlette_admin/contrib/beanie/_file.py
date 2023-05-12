@@ -12,12 +12,12 @@ class FileGfs(BaseModel):
     collection_name: Optional[str] = "fs_files"
     content_type: Optional[str] = "application/octet-stream"
     multiple: Optional[bool] = False
-    thumbnail_id: PydanticObjectId = None
+    thumbnail_id: PydanticObjectId | None = None
 
 
 class File(BaseModel):
-    file_name: Union[FileGfs, UploadFile] = None
+    file_name: Union[FileGfs, UploadFile, None] = None
 
 
 class Image(BaseModel):
-    file_name: Union[FileGfs, UploadFile] = None
+    file_name: Union[FileGfs, UploadFile, None] = None

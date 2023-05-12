@@ -1,14 +1,15 @@
 import io
 from datetime import datetime
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import starlette_admin.fields as sa
-from beanie import Document
+from beanie import Document, PydanticObjectId
+from beanie.odm.enums import SortDirection
 from beanie.operators import In, Or
 from bson import ObjectId
 from devtools import debug
-from motor.motor_asyncio import AsyncIOMotorGridFSBucket
+from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorGridFSBucket
 from PIL import Image
 from pydantic import ValidationError
 from pymongo.errors import DuplicateKeyError
@@ -29,29 +30,21 @@ from starlette_admin.helpers import (
 )
 from starlette_admin.views import BaseModelView
 
-
 # not using....
-async def populate_link(field_model):
-    field_class = type(field_model)
-    if hasattr(field_class, "get_link_fields"):
-        field_links = field_class.get_link_fields()
-        if len(field_links):
-            await field_model.fetch_all_links()
+# async def populate_link(field_model):
+#     if hasattr(field_class, "get_link_fields"):
+#         if len(field_links):
 
 
-# not using....
-async def populate_links(search_result):
-    for item in search_result:
-        # each item is a tuple
-        for _field_name, field_value in item:
-            field_class = type(field_value)
+# # not using....
+# async def populate_links(search_result):
+#     for item in search_result:
+#         # each item is a tuple
+#         for _field_name, field_value in item:
 
-            if issubclass(field_class, List):
-                # field_value is a list, I loop through it
-                for _item in field_value:
-                    await populate_link(_item)
-            else:
-                await populate_link(item)
+#             if issubclass(field_class, List):
+#                 # field_value is a list, I loop through it
+#                 for _item in field_value:
 
 
 class ModelView(BaseModelView):
@@ -73,7 +66,7 @@ class ModelView(BaseModelView):
         if self.fields is None or len(self.fields) == 0:
             # _all_list has the names of the model fields (class)
             _all_list = list(document.__fields__)
-            self.fields = _all_list  # type: ignore[override]
+            self.fields = _all_list
 
         attr_list = Attrs(document)
 
@@ -130,7 +123,6 @@ class ModelView(BaseModelView):
         request: Request,
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
-        print(where)
         if where is None:
             return await self.document.count()
         q = await self.build_full_text_search_query(request=request, term=where)
@@ -153,7 +145,9 @@ class ModelView(BaseModelView):
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
     ) -> Sequence[Any]:
-        query_sort = build_order_clauses(order_by)
+        query_sort: Union[
+            None, str, List[Tuple[str, SortDirection]]
+        ] = build_order_clauses(order_by)
 
         if where is None:
             r = await self.document.find_many(
@@ -205,18 +199,20 @@ class ModelView(BaseModelView):
                 return True
         return False
 
-    def _type_of(self, field_name: str):
+    def _type_of(self, field_name: str) -> None:
         for field in self.fields:
             if field.name == field_name:
                 debug(field)
 
-    def _get_field(self, field_name: str):
+    def _get_field(self, field_name: str) -> Union[None, Any]:
         for field in self.fields:
             if field.name == field_name:
                 return field
         return None
 
-    async def _put_thumbnail(self, thumbnail, format, db, **kwargs):
+    async def _put_thumbnail(
+        self, thumbnail: Image.Image, format: str, db: AsyncIOMotorDatabase
+    ) -> PydanticObjectId:
         bucket_name = "fs_files"
         gfs = AsyncIOMotorGridFSBucket(db, bucket_name=bucket_name)
 
@@ -241,7 +237,9 @@ class ModelView(BaseModelView):
             metadata=metadata,
         )
 
-    async def populate_FileField(self, data: Dict, object_old: Document = None):  # noqa
+    async def populate_file_field(
+        self, data: Dict, object_old: Document | None = None
+    ) -> Dict:
         bucket_name = "fs_files"
         db = self.document.get_settings().motor_db
         gfs = AsyncIOMotorGridFSBucket(db, bucket_name=bucket_name)
@@ -255,8 +253,10 @@ class ModelView(BaseModelView):
         # get a Dict with a Tuple with [UploadFile,bool] take that it is a 'File'
         for key, _value in data.items():
             f = self._get_field(key)
+
             if (
-                hasattr(f, "field")
+                f is not None
+                and hasattr(f, "field")
                 and isinstance(f.field, sa.HasMany)
                 and _value is not None
             ):
@@ -275,12 +275,13 @@ class ModelView(BaseModelView):
                 # if upload is empty, it means that the field is optional
                 # and the user did not load anything or was able to select the delete checkbox?
                 # in that case, delete and go to look for the next field
+                if object_old is not None:
+                    f = getattr(object_old, key)
                 if upload is None:
                     # if I am in edit mode, it has a file loaded but in the edition
                     # nothing is put, I keep the previous file
                     f = None
-                    if object_old is not None:
-                        f = getattr(object_old, key)
+                    # if object_old is not None:
                     if f:
                         # if there was a previous value and the 'delete' flag is True I delete it
                         if delete:
@@ -295,11 +296,9 @@ class ModelView(BaseModelView):
                     continue
                 else:  # noqa
                     # if there was a previous value, and I change it, I have to delete the previous 'fs'
-                    #
-                    if object_old is not None:
-                        f = getattr(object_old, key)
-                        if f:
-                            gfs.delete(file_id=f.file_name.gfs_id)
+                    # if object_old is not None:
+                    if f:
+                        gfs.delete(file_id=f.file_name.gfs_id)
 
                 filename = upload.filename  # str
                 contents = await upload.read()  # bytes
@@ -329,12 +328,13 @@ class ModelView(BaseModelView):
                     metadata=metadata,
                 )
 
+                db_name = getattr(db, "name", "fastapi_admin")
                 fgfs = FileGfs(
                     gfs_id=id,
                     filename=filename,
                     content_type=content_type,
                     thumbnail_id=thumb_id,
-                    db_name=db.name,
+                    db_name=db_name,
                 )
                 tmp = File(file_name=fgfs)
 
@@ -344,7 +344,7 @@ class ModelView(BaseModelView):
         return data
 
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
-        data = await self.populate_FileField(data=data)
+        data = await self.populate_file_field(data=data)
         doc = self.document(**data)
         try:
             return await doc.create()
@@ -354,7 +354,7 @@ class ModelView(BaseModelView):
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
             r = await self.document.get(pk)
-            data = await self.populate_FileField(data=data, object_old=r)
+            data = await self.populate_file_field(data=data, object_old=r)
             tmp = self.document(**data)
             # I don't use 'update' because it adds keys that don't exist
             # if you don't do this, the fields, for example password, are saved without hashing
@@ -366,8 +366,10 @@ class ModelView(BaseModelView):
             # if no errors, then save
             # only update the fields that come in 'data'
             # that's why I use set and not save
-            await r.set(data)
-            await r.set({"updated_at": datetime.utcnow()})
+            if r is not None:
+                await r.set(data)
+            if r is not None:
+                await r.set({"updated_at": datetime.utcnow()})
             return r
         except Exception as e:
             self.handle_exception(e)
@@ -381,9 +383,9 @@ class ModelView(BaseModelView):
             r = await self.document.find({"_id": {"$in": ids}}).delete()
             if r is not None:
                 return r.deleted_count
-            return 0
         except Exception as e:
             self.handle_exception(e)
+        return 0
 
     def handle_exception(self, exc: Exception) -> None:
         if isinstance(exc, ValidationError):
@@ -394,7 +396,11 @@ class ModelView(BaseModelView):
 
         raise exc  # pragma: no cover
 
-    async def build_full_text_search_query(self, request: Request, term: str):
+    async def build_full_text_search_query(
+        self,
+        request: Request,
+        term: Union[Dict[str, Any], str, None],
+    ) -> Or:
         queries = []
         for field in self.fields:
             if (
