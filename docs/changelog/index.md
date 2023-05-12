@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2023-05-12
+
+### Added
+
+* Add `allow_paths` parameter to AuthProvider to allow unauthenticated access to specific paths
+  by [@jowilf](https://github.com/jowilf)
+  in [187](https://github.com/jowilf/starlette-admin/pull/187)
+* Allow Unauthenticated Access to `js.cookie.min.js` by [@mixartemev](https://github.com/mixartemev)
+  in [183](https://github.com/jowilf/starlette-admin/pull/183)
+
 ## [0.8.1] - 2023-04-30
 
 ### Added
