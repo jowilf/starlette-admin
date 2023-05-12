@@ -72,6 +72,7 @@ test = [
     "itsdangerous >=2.1.2, <2.2.0",
     "pydantic[email] >=1.10.2, <2.0.0",
     "python-slugify == 8.0.1",
+    "types-python-slugify == 8.0.0.2",
 ]
 doc = [
     "mkdocs >=1.4.2, <2.0.0",
