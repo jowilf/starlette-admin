@@ -25,10 +25,10 @@ class Attrs:
         initialize class based in pydantic class definition
         """
 
-        # si el modelo (class Document de beanie), no tiene campos 'Link'
-        # devuelve vacio, aunque un campo se otra clase que si tenga campos Link
-        # por eso, para class composition, tengo qye obtener la informacion de 'links'
-        # ejemplo
+        # if the model (class Beanie Document), has no 'Link' fields
+        # returns empty, even if a field is of another class that does have Link fields
+        # that's why, for class composition, I have to get the information from 'links'
+        # example:
         # self.document.get_link_fields(): {
         #     'principals': LinkInfo(
         #         model_class=<class 'examples.beanie.user.user.Principal'>,
@@ -40,10 +40,10 @@ class Attrs:
         self.linked = linked
 
         for name, field in model.__fields__.items():
-            # si el campo es una 'composicion' de otro modelo de pydantic
-            # busco si ese campo tiene algun 'Link'
-            # ya que lo voy a necesitar para poder asigar el campo 'identity'
-            # de la clase HasMany o HasOne
+            # if the field is a 'composition' of another pydantic model
+            # I search if that field has any 'Link'
+            # since I'm going to need it to be able to assign the 'identity' field
+            # of the HasMany or HasOne class
             field_model = model.__fields__.get(str(name))
             field_class = getattr(field_model, "type_", None)
             field_links = {}

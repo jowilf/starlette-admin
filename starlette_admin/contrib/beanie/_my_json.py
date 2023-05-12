@@ -19,26 +19,16 @@ class MyJson(str):
         field_schema.update(type="string", format="json-string", examples='{"key": 10}')
 
     @classmethod
-    # con fastapi necesitaba que el campo json sea un string, para poder enviarlo
-    # pero para utilizar con starlette_admin necesito que sea dict
+    # with fastapi, I needed the json field to be a string, in order to send it from /docs
+    # but to use with starlette_admin I need it to be dict
     def validate(cls, v: Union[str, Dict]) -> dict:
-        # antes..
-        # if not isinstance(v, str):
         if not isinstance(v, get_args(Union[str, Dict])):
             raise TypeError("string or dict required")
 
-        # si es un dict...
         if isinstance(v, Dict):
             return v
 
-        # si un str....
-        # ....
-
-        # validate
-        # using json.loads()
-        # convert dictionary string to dictionary
-
-        # reemplazo '(single quote) por "(double quote)
+        # replace '(single quote) with "(double quote)
         v = v.replace("'", '"')
         if len(v) > 0:
             # parse a valid JSON string and convert it into a Python Dictionary.
@@ -47,15 +37,6 @@ class MyJson(str):
                 raise TypeError("invalid my json format")
         else:
             res = {}
-
-        # pendiente validar
-
-        # if not m:
-
-        # you could also return a string here which would mean model.post_code
-        # would be a string, pydantic won't care but you could end up with some
-        # confusion since the value's type won't match the type annotation
-        # exactly
 
         return cls(res)
 

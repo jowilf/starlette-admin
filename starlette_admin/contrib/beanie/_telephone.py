@@ -24,9 +24,9 @@ class Telephone(PhoneNumber):
         if len(v) == 0:
             return None
         try:
-            # en el caso que se ingrese un numero valido, pero por ejemplo con un caracter(letra) de mas
-            # se la elimina y lo da como valido
-            # ejemplo: 541165661234a es valido aunque tenga la letra 'a'
+            # in the case that a valid number is entered, but for example with an extra
+            # remove it, and confirm it as valid
+            # example: 541165661234a is valid even if it has the letter 'a'
             number = parse(v, None)
 
         except NumberParseException as ex:

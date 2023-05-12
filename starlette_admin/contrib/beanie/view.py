@@ -42,12 +42,12 @@ async def populate_link(field_model):
 # not using....
 async def populate_links(search_result):
     for item in search_result:
-        # cada item es una tupla
+        # each item is a tuple
         for _field_name, field_value in item:
             field_class = type(field_value)
 
             if issubclass(field_class, List):
-                # field_value es una lista, la recorro
+                # field_value is a list, I loop through it
                 for _item in field_value:
                     await populate_link(_item)
             else:
@@ -71,7 +71,7 @@ class ModelView(BaseModelView):
         self.pk_attr = "id"
 
         if self.fields is None or len(self.fields) == 0:
-            # _all_list tiene los nombres de los campos del modelo (class)
+            # _all_list has the names of the model fields (class)
             _all_list = list(document.__fields__)
             self.fields = _all_list  # type: ignore[override]
 
@@ -92,9 +92,9 @@ class ModelView(BaseModelView):
                 else:
                     raise ValueError(f"Can't find field with key {value}")
 
-                # tengo que buscar la manera de obtener en benie el tipo de cada campo de la class Document
-                # para esto utilizo document.__annotations__[field]
-                # ejemplo:
+                # I have to find a way to obtain in beanie the type of each field of the Document class
+                # for this I use document.__annotations__[field]
+                # example:
                 # document.__annotations__: {
                 # } (dict) len=4
 
@@ -246,14 +246,13 @@ class ModelView(BaseModelView):
         db = self.document.get_settings().motor_db
         gfs = AsyncIOMotorGridFSBucket(db, bucket_name=bucket_name)
 
-        # genero un nuevo dict basado en 'data' para poder instanciar un objeto
-        # con los valores por default sin que me error
-        # ese objeto unicamente lo necesito para obtener de beanie 'motor_db'
-        # ...pendiente
+        # generate a new dict based on 'data' so I can instantiate an object
+        # with default values without error
+        # I only need that object to get from the 'motor_db' beanie
 
-        # 'data', tengo que verificar si el field es un FileField (es un caso especial)
-        # para ello buscar en  self.fields
-        # venga un Dict con una Tuple con [UploadFile,bool] tomo que es un 'File'
+        # 'data', I have to check if the field is a FileField (it's a special case)
+        # to do this search in self.fields
+        # get a Dict with a Tuple with [UploadFile,bool] take that it is a 'File'
         for key, _value in data.items():
             f = self._get_field(key)
             if (
@@ -267,28 +266,26 @@ class ModelView(BaseModelView):
 
             thumb_id = None
             if self.is_type_of(key, sa.FileField):
-                # creo un objeto vacio, con los valores por default
-
-                # 1° elemento de la Tuple, es el objeto UploadFile
+                # 1st) element of the tuple, is the UploadFile object
                 upload = data[key][0]
 
-                # 2° elemento de la Tuple, checkbox es Delete? (True/False)
+                # 2nd) element of the tuple, checkbox is Delete? (True/False)
                 delete = data[key][1]
 
-                # si upload esta vacio, quiere decir que el campo es opcional
-                # y el usuario no cargo nada o bien pudo seleccionar el checkbox delete?
-                # en ese caso, borro y paso a buscar el proximo field
+                # if upload is empty, it means that the field is optional
+                # and the user did not load anything or was able to select the delete checkbox?
+                # in that case, delete and go to look for the next field
                 if upload is None:
-                    # si estoy en edit, tiene cargado un file pero en la edicion
-                    # no se pone nada mantengo el file anterior
+                    # if I am in edit mode, it has a file loaded but in the edition
+                    # nothing is put, I keep the previous file
                     f = None
                     if object_old is not None:
                         f = getattr(object_old, key)
                     if f:
-                        # si habia un valor anterior y el flag 'delete' es True lo borro
+                        # if there was a previous value and the 'delete' flag is True I delete it
                         if delete:
                             data[key] = None
-                            # tambien lo tengo que borrar de gfs
+                            # I also have to delete it from gfs
                             gfs.delete(file_id=f.file_name.gfs_id)
 
                         else:
@@ -297,7 +294,7 @@ class ModelView(BaseModelView):
                         data[key] = None
                     continue
                 else:  # noqa
-                    # si habia un valor anterior, y lo cambie, tengo que borrar el 'fs' anterior
+                    # if there was a previous value, and I change it, I have to delete the previous 'fs'
                     #
                     if object_old is not None:
                         f = getattr(object_old, key)
@@ -308,11 +305,7 @@ class ModelView(BaseModelView):
                 contents = await upload.read()  # bytes
                 content_type = upload.content_type  # str
 
-                # 2° elemento de la Tuple es ...averiguar
-                # ...
-
-                # obtengo informacion de la imagen y la gaurdo en gridfs
-
+                # get information from the image and save it in gridfs
                 metadata = {"contentType": content_type}
                 try:
                     with Image.open(io.BytesIO(contents)) as img:
@@ -345,7 +338,7 @@ class ModelView(BaseModelView):
                 )
                 tmp = File(file_name=fgfs)
 
-                # reemplazo el 'key' del dict de UploadFile a FileGFs
+                # replace the 'key' of the UploadFile dict to FileGFs
                 data[key] = tmp
 
         return data
@@ -363,17 +356,16 @@ class ModelView(BaseModelView):
             r = await self.document.get(pk)
             data = await self.populate_FileField(data=data, object_old=r)
             tmp = self.document(**data)
-            # no utilizo 'update' porque me agrega las key que no existen
-            # realizo el update
-            # si no hacia esto, los campos por ejemplo password, se guardan sin hashing
+            # I don't use 'update' because it adds keys that don't exist
+            # if you don't do this, the fields, for example password, are saved without hashing
             temp = tmp.dict()
             for key in data:
                 if key in temp:
                     data[key] = temp[key]
 
             # if no errors, then save
-            # solo actualizo los campos que vienen en 'data'
-            # por eso utilizo set y no save
+            # only update the fields that come in 'data'
+            # that's why I use set and not save
             await r.set(data)
             await r.set({"updated_at": datetime.utcnow()})
             return r
@@ -381,7 +373,7 @@ class ModelView(BaseModelView):
             self.handle_exception(e)
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
-        # convierto los id str en id ObjectId
+        # convert the id str to id ObjectId
         ids = []
         for pk in pks:
             ids.append(ObjectId(pk))

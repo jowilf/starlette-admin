@@ -58,11 +58,11 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
     if hasattr(annotation, "__mro__"):
         types = inspect.getmro(annotation)
 
-    # si es del tipo 'Indexed'...empieza con Indexed....
-    # ejemplo por un 'str': 'Indexed str'
+    # if it is of type 'Indexed'...start with Indexed....
+    # example for a 'str': 'Indexed str'
     if hasattr(annotation, "__name__") and annotation.__name__.startswith("Indexed"):
         annotation.__name__[8:]
-        # busco si esta definida esa class
+        # I search if that class is defined
         if hasattr(annotation, "__mro__"):
             types = inspect.getmro(annotation)
             for _type in types:
@@ -87,7 +87,7 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
             identity = None
             if hasattr(attr.model_class, "__name__"):
                 identity = slugify_class_name(attr.model_class.__name__)
-            # busco la identidad para class con composition
+            # find the identity for class with composition
             has_many_or_one = "LIST"  # default
             if field in attr.linked:
                 identity = slugify_class_name(attr.linked[field].model_class.__name__)
@@ -101,7 +101,7 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
             return admin_field
 
         elif _origin in (list, set):
-            # es una lista...
+            # it is a list...
             child_field = convert_beanie_field_to_admin_field(
                 field, get_args(annotation)[0], attr, field_meta, identity
             )
@@ -116,7 +116,7 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
     if bearnie_to_admin_map.get(type(field), None) is None:
         raise NotSupportedField(f"Field {field.__class__.__name__} is not supported")
 
-    # los que son de pydantic....y si estan en la tabla de conversion...
+    # those that are from pydantic... and if they are in the conversion table...
     if hasattr(field_meta, "type_") and bearnie_to_admin_map.get(
         (field_meta.type_), None
     ):
