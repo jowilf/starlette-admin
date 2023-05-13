@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Self
+from __future__ import annotations
+
+from typing import Any
 
 from beanie.operators import And, Or
 from bson.son import SON
@@ -10,20 +12,20 @@ from starlette_admin.contrib.beanie.exceptions import (
 
 class Expr:
     def __init__(self, current_field: str | None = None):
-        self.query: Dict = {}
-        self.new_obj: Dict = {}
+        self.query: dict = {}
+        self.new_obj: dict = {}
         self.current_field = current_field
-        self.options: Dict = {}
+        self.options: dict = {}
 
-    def add_and(self, expression: Any) -> Self:
+    def add_and(self, expression: Any) -> Expr:
         self.query.setdefault("$and", []).append(_get_query(expression))
         return self
 
-    def add_or(self, expression: Any) -> Self:
+    def add_or(self, expression: Any) -> Expr:
         self.query.setdefault("$or", []).append(_get_query(expression))
         return self
 
-    def add_many_to_set(self, values: Any) -> Self:
+    def add_many_to_set(self, values: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$addToSet", {})[self.current_field] = {"$each": values}
         return self
@@ -31,16 +33,16 @@ class Expr:
     def add_nor(self, expression: Any) -> None:
         self.query.setdefault("$nor", []).append(_get_query(expression))
 
-    def add_to_set(self, value_or_expression: Dict) -> None:
+    def add_to_set(self, value_or_expression: dict) -> None:
         self._requires_current_field()
         self.new_obj.setdefault("$addToSet", {})[self.current_field] = _get_query(
             value_or_expression
         )
 
-    def all(self, values: Any) -> Self:
+    def all(self, values: Any) -> Expr:
         return self.operator("$all", list(values))
 
-    def operator(self, operator: Any, value: Any) -> Self:
+    def operator(self, operator: Any, value: Any) -> Expr:
         self._wrap_equality_criteria()
         if self.current_field:
             self.query.setdefault(self.current_field, {})[operator] = value
@@ -48,28 +50,28 @@ class Expr:
             self.query[operator] = value
         return self
 
-    def _bit(self, operator: Any, value: Any) -> Self:
+    def _bit(self, operator: Any, value: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$bit", {}).setdefault(self.current_field, {})[
             operator
         ] = value
         return self
 
-    def bit_and(self, value: Any) -> Self:
+    def bit_and(self, value: Any) -> Expr:
         return self._bit("and", value)
 
-    def bit_or(self, value: Any) -> Self:
+    def bit_or(self, value: Any) -> Expr:
         return self._bit("or", value)
 
-    def bits_all_clear(self, value: Any) -> Self:
+    def bits_all_clear(self, value: Any) -> Expr:
         self._requires_current_field()
         return self.operator("$bitsAllClear", value)
 
-    def bits_all_set(self, value: Any) -> Self:
+    def bits_all_set(self, value: Any) -> Expr:
         self._requires_current_field()
         return self.operator("$bitsAllSet", value)
 
-    def case_sensitive(self, case_sensitive: Any) -> Self:
+    def case_sensitive(self, case_sensitive: Any) -> Expr:
         if "$text" not in self.query:
             raise RuntimeError(
                 "This method requires a $text operator (call text() first)"
@@ -82,11 +84,11 @@ class Expr:
 
         return self
 
-    def comment(self, comment: Any) -> Self:
+    def comment(self, comment: Any) -> Expr:
         self.query["$comment"] = comment
         return self
 
-    def current_date(self, type: str = "date") -> Self:
+    def current_date(self, type: str = "date") -> Expr:
         if type not in ("date", "timestamp"):
             raise ValueError(
                 'Type for current_date operator must be "date" or "timestamp".'
@@ -98,13 +100,13 @@ class Expr:
 
         return self
 
-    def each(self, values: Any) -> Self:
+    def each(self, values: Any) -> Expr:
         return self.operator("$each", values)
 
-    def elem_match(self, expression: Any) -> Self:
+    def elem_match(self, expression: Any) -> Expr:
         return self.operator("$elemMatch", _get_query(expression))
 
-    def equals(self, value: Any) -> Self:
+    def equals(self, value: Any) -> Expr:
         if self.current_field:
             self.query[self.current_field] = value
         else:
@@ -112,63 +114,63 @@ class Expr:
 
         return self
 
-    def exists(self, value: bool = True) -> Self:
+    def exists(self, value: bool = True) -> Expr:
         return self.operator("$exists", bool(value))
 
-    def field(self, field: Any) -> Self:
+    def field(self, field: Any) -> Expr:
         self.current_field = str(field)
         return self
 
-    def gt(self, value: Any) -> Self:
+    def gt(self, value: Any) -> Expr:
         return self.operator("$gt", value)
 
-    def gte(self, value: Any) -> Self:
+    def gte(self, value: Any) -> Expr:
         return self.operator("$gte", value)
 
-    def lt(self, value: Any) -> Self:
+    def lt(self, value: Any) -> Expr:
         return self.operator("$lt", value)
 
-    def lte(self, value: Any) -> Self:
+    def lte(self, value: Any) -> Expr:
         return self.operator("$lte", value)
 
-    def is_in(self, values: Any) -> Self:
+    def is_in(self, values: Any) -> Expr:
         return self.operator(
             "$in", list(values.values()) if isinstance(values, dict) else values
         )
 
-    def is_not_in(self, values: Any) -> Self:
+    def is_not_in(self, values: Any) -> Expr:
         return self.operator(
             "$nin", list(values.values()) if isinstance(values, dict) else values
         )
 
-    def inc(self, value: Any) -> Self:
+    def inc(self, value: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$inc", {})[self.current_field] = value
 
         return self
 
-    def max(self, value: Any) -> Self:
+    def max(self, value: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$max", {})[self.current_field] = value
         return self
 
-    def min(self, value: Any) -> Self:
+    def min(self, value: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$min", {})[self.current_field] = value
         return self
 
-    def mul(self, value: Any) -> Self:
+    def mul(self, value: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$mul", {})[self.current_field] = value
         return self
 
-    def is_not(self, expression: Any) -> Self:
+    def is_not(self, expression: Any) -> Expr:
         return self.operator("$not", _get_query(expression))
 
-    def not_equals(self, value: Any) -> Self:
+    def not_equals(self, value: Any) -> Expr:
         return self.ne(value)
 
-    def ne(self, value: Any) -> Self:
+    def ne(self, value: Any) -> Expr:
         return self.operator("$ne", value)
 
     def text(
@@ -177,7 +179,7 @@ class Expr:
         language: Any = None,
         case_sensitive: bool = False,
         diacritic_sensitive: bool = False,
-    ) -> Self:
+    ) -> Expr:
         search_expression = {
             "$search": search,
             "$language": language,
@@ -197,7 +199,7 @@ class Expr:
         language: Any = None,
         case_sensitive: bool = False,
         diacritic_sensitive: bool = False,
-    ) -> Self:
+    ) -> Expr:
         return self.text(
             search=search,
             language=language,
@@ -205,38 +207,38 @@ class Expr:
             diacritic_sensitive=diacritic_sensitive,
         )
 
-    def null(self) -> Self:
+    def null(self) -> Expr:
         return self.equals(None)
 
-    def not_null(self) -> Self:
+    def not_null(self) -> Expr:
         return self.ne(None)
 
-    def pop_first(self) -> Self:
+    def pop_first(self) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$pop", {})[self.current_field] = 1
         return self
 
-    def pop_last(self) -> Self:
+    def pop_last(self) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$pop", {})[self.current_field] = -1
         return self
 
-    def position(self, position: Any) -> Self:
+    def position(self, position: Any) -> Expr:
         return self.operator("$position", position)
 
-    def pull(self, value_or_expression: Any) -> Self:
+    def pull(self, value_or_expression: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$pull", {})[self.current_field] = _get_query(
             value_or_expression
         )
         return self
 
-    def pull_all(self, values: Any) -> Self:
+    def pull_all(self, values: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$pullAll", {})[self.current_field] = values
         return self
 
-    def push(self, value_or_expression: Any) -> Self:
+    def push(self, value_or_expression: Any) -> Expr:
         if isinstance(value_or_expression, Expr):
             value_or_expression = value_or_expression.get_query()
             value_or_expression.setdefault("$each", [])
@@ -245,24 +247,24 @@ class Expr:
         self.new_obj.setdefault("$push", {})[self.current_field] = value_or_expression
         return self
 
-    def push_all(self, values: Any) -> Self:
+    def push_all(self, values: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$pushAll", {})[self.current_field] = values
         return self
 
-    def range(self, start: Any, end: Any) -> Self:
+    def range(self, start: Any, end: Any) -> Expr:
         return self.operator("$gte", start).operator("$lt", end)
 
-    def regex(self, pattern: Any, options: str = "i") -> Self:
+    def regex(self, pattern: Any, options: str = "i") -> Expr:
         return self.operator("$regex", pattern).operator("$options", options)
 
-    def rename(self, name: Any) -> Self:
+    def rename(self, name: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$rename", {})[self.current_field] = name
 
         return self
 
-    def set(self, value: Any, atomic: bool = True) -> Self:
+    def set(self, value: Any, atomic: bool = True) -> Expr:
         self._requires_current_field()
         if atomic:
             self.new_obj.setdefault("$set", {})[self.current_field] = value
@@ -281,19 +283,19 @@ class Expr:
 
         return self
 
-    def set_on_insert(self, value: Any) -> Self:
+    def set_on_insert(self, value: Any) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$setOnInsert", {})[self.current_field] = value
 
         return self
 
-    def size(self, size: Any) -> Self:
+    def size(self, size: Any) -> Expr:
         return self.operator("$size", size)
 
-    def slice(self, size: Any) -> Self:
+    def slice(self, size: Any) -> Expr:
         return self.operator("$slice", size)
 
-    def is_type(self, type: str | Any) -> Self:
+    def is_type(self, type: str | Any) -> Expr:
         if isinstance(type, str):
             type = type.lower()
             _map = {
@@ -322,16 +324,16 @@ class Expr:
 
         return self.operator("$type", type)
 
-    def unset_field(self) -> Self:
+    def unset_field(self) -> Expr:
         self._requires_current_field()
         self.new_obj.setdefault("$unset", {})[self.current_field] = 1
         return self
 
-    def where(self, javascript: Dict) -> Self:
+    def where(self, javascript: dict) -> Expr:
         self.query["$where"] = javascript
         return self
 
-    def get_query(self) -> Dict:
+    def get_query(self) -> dict:
         return self.query
 
     def _requires_current_field(self) -> None:
@@ -383,7 +385,7 @@ class Expression:
 
 class Where:
     op: str
-    expression: List[Expression] = []
+    expression: list[Expression] = []
     data: Any
 
     def __init__(self, data: Any):

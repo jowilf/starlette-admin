@@ -12,7 +12,7 @@ class FileGfs(BaseModel):
     collection_name: Optional[str] = "fs_files"
     content_type: Optional[str] = "application/octet-stream"
     multiple: Optional[bool] = False
-    thumbnail_id: PydanticObjectId | None = None
+    thumbnail_id: Union[PydanticObjectId, None] = None
 
 
 class File(BaseModel):

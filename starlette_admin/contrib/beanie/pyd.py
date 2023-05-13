@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Dict, List, Optional, Type, TypeVar
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 from beanie import Document
 from pydantic import BaseModel, ConstrainedStr
@@ -10,11 +10,11 @@ BaseModelT = TypeVar("BaseModelT", bound=Document)
 class Attr(BaseModel):
     name: str
     required: bool = False
-    min_length: int | None = None
-    max_length: int | None = None
+    min_length: Union[int, None] = None
+    max_length: Union[int, None] = None
     description: Optional[str]
     model_class: Optional[Type[BaseModel]]
-    linked: Dict | None = None
+    linked: Union[Dict, None] = None
 
 
 class Attrs:
@@ -80,14 +80,14 @@ class Attrs:
                 self.update_by_name(name, min_length, max_length)
 
     def update_by_name(
-        self, name: str, min_length: Any | None, max_length: Any | None
+        self, name: str, min_length: Union[Any, None], max_length: Union[Any, None]
     ) -> None:
         for attr in self.attributes:
             if attr.name is name:
                 attr.min_length = min_length
                 attr.max_length = max_length
 
-    def get_field_info(self, name: str) -> Attr | None:
+    def get_field_info(self, name: str) -> Union[Attr, None]:
         for attr in self.attributes:
             if attr.name is name:
                 return attr

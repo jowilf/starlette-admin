@@ -1,7 +1,7 @@
 import datetime
 import inspect
 import typing as t
-from enum import Enum, EnumType
+from enum import Enum
 from ipaddress import IPv4Address
 from typing import Any, Dict, List, Optional, Type, Union
 from uuid import UUID
@@ -53,8 +53,8 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
     field: str,
     annotation: Type[Any],
     attr: Attr,
-    field_meta: ModelField | None = None,
-    identity: str | None = None,
+    field_meta: Union[ModelField, None] = None,
+    identity: Union[str, None] = None,
 ) -> Union[None, sa.BaseField]:
     name = field
     admin_field: Optional[sa.BaseField] = None
@@ -141,7 +141,8 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
             admin_field = t(name)
 
     if annotation is not None:
-        if isinstance(annotation, EnumType):
+        # if isinstance(annotation, EnumType):
+        if issubclass(annotation, Enum):
             admin_field = sa.EnumField(name, enum=annotation)
 
         elif issubclass(annotation, Email):

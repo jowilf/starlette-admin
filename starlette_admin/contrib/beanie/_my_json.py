@@ -1,5 +1,5 @@
 import json
-from typing import Any, Callable, Dict, Generator, Union, get_args
+from typing import Any, Callable, Dict, Generator, Union
 
 from devtools import debug  # noqa: F401
 
@@ -22,7 +22,7 @@ class MyJson(str):
     # with fastapi, I needed the json field to be a string, in order to send it from /docs
     # but to use with starlette_admin I need it to be dict
     def validate(cls, v: Union[str, Dict]) -> Union[Dict, str]:
-        if not isinstance(v, get_args(Union[str, Dict])):
+        if not isinstance(v, (str, Dict)):
             raise TypeError("string or dict required")
 
         if isinstance(v, Dict):

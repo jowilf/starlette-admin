@@ -238,7 +238,7 @@ class ModelView(BaseModelView):
         )
 
     async def populate_file_field(
-        self, data: Dict, object_old: Document | None = None
+        self, data: Dict, object_old: Union[Document, None] = None
     ) -> Dict:
         bucket_name = "fs_files"
         db = self.document.get_settings().motor_db
