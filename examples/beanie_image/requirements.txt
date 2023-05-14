@@ -1,0 +1,17 @@
+# starlette-admin   # using local version (dev)
+# pip install C:\Users\opani\Documents\git\contrib\starlette-admin\dist\starlette_admin-0.8.1.tar.gz
+beanie
+devtools
+pydantic
+python-slugify
+python-decouple     # there's no need
+mongoengine
+pymongo
+uvicorn
+fastapi
+# using by starlette-admin
+itsdangerous
+# using by beanie-support for starlette-admin
+pillow
+pydantic[email] # email validator
+phonenumbers    # phone validator

@@ -125,6 +125,11 @@ class ModelView(BaseModelView):
     ) -> int:
         if where is None:
             return await self.document.count()
+
+        if isinstance(where, dict):
+            w = Where(where)
+            q = w.builder()
+            return await self.document.find_many(q).count()
         q = await self.build_full_text_search_query(request=request, term=where)
         return await self.document.find_many(q).count()
 
@@ -158,9 +163,11 @@ class ModelView(BaseModelView):
             ).to_list()
             return r
 
+        debug(where)
         if isinstance(where, dict):
             w = Where(where)
             q = w.builder()
+            debug(q)
             rq = await self.document.find_many(
                 q,
                 skip=skip,
@@ -211,7 +218,7 @@ class ModelView(BaseModelView):
         return None
 
     async def _put_thumbnail(
-        self, thumbnail: Image.Image, format: str, db: AsyncIOMotorDatabase
+        self, thumbnail: Image.Image, format: Union[str, None], db: AsyncIOMotorDatabase
     ) -> PydanticObjectId:
         bucket_name = "fs_files"
         gfs = AsyncIOMotorGridFSBucket(db, bucket_name=bucket_name)
@@ -251,7 +258,9 @@ class ModelView(BaseModelView):
         # 'data', I have to check if the field is a FileField (it's a special case)
         # to do this search in self.fields
         # get a Dict with a Tuple with [UploadFile,bool] take that it is a 'File'
+
         for key, _value in data.items():
+            # get starlette-admin Field, example: StringField, ImageField, ...etc
             f = self._get_field(key)
 
             if (
@@ -272,74 +281,54 @@ class ModelView(BaseModelView):
                 # 2nd) element of the tuple, checkbox is Delete? (True/False)
                 delete = data[key][1]
 
+                if object_old is None and upload is None:
+                    data[key] = None
+                    continue
+
                 # if upload is empty, it means that the field is optional
                 # and the user did not load anything or was able to select the delete checkbox?
                 # in that case, delete and go to look for the next field
+
+                # cases:
+                # case a) load a file and replace old file
                 if object_old is not None:
-                    f = getattr(object_old, key)
-                if upload is None:
-                    # if I am in edit mode, it has a file loaded but in the edition
-                    # nothing is put, I keep the previous file
-                    f = None
-                    # if object_old is not None:
-                    if f:
-                        # if there was a previous value and the 'delete' flag is True I delete it
-                        if delete:
-                            data[key] = None
-                            # I also have to delete it from gfs
-                            gfs.delete(file_id=f.file_name.gfs_id)
-
-                        else:
-                            data[key] = f
-                    else:
+                    file_old = getattr(object_old, key, None)
+                    if file_old and upload:
+                        gfs.delete(file_id=file_old.file_name.gfs_id)
+                    # case b) previuos file exist, but not loaded and delete is set
+                    if file_old and upload is None and delete:
+                        gfs.delete(
+                            file_id=file_old.file_name.gfs_id
+                        )  # I also have to delete it from gfs
                         data[key] = None
-                    continue
-                else:  # noqa
-                    # if there was a previous value, and I change it, I have to delete the previous 'fs'
-                    # if object_old is not None:
-                    if f:
-                        gfs.delete(file_id=f.file_name.gfs_id)
+                        continue
+                # case c) not previus file, but upload file
+                if upload:
+                    # ------
+                    filename = upload.filename  # str
+                    contents = await upload.read()  # bytes
+                    content_type = upload.content_type  # str
 
-                filename = upload.filename  # str
-                contents = await upload.read()  # bytes
-                content_type = upload.content_type  # str
+                    metadata = await self.get_image_metadata(content_type, contents, db)
 
-                # get information from the image and save it in gridfs
-                metadata = {"contentType": content_type}
-                try:
-                    with Image.open(io.BytesIO(contents)) as img:
-                        thumbnail = img.copy()
-                        thumb_id = await self._put_thumbnail(thumbnail, img.format, db)
-                        metadata = {
-                            "contentType": content_type,
-                            "format": img.format,
-                            "width": img.size[0],
-                            "height": img.size[1],
-                            "mode": img.mode,
-                            "thumbnail_id": thumb_id,
-                        }
+                    id = await gfs.upload_from_stream(
+                        filename=filename,
+                        source=contents,
+                        metadata=metadata,
+                    )
 
-                except OSError:
-                    pass
+                    db_name = getattr(db, "name", "fastapi_admin")
+                    fgfs = FileGfs(
+                        gfs_id=id,
+                        filename=filename,
+                        content_type=content_type,
+                        thumbnail_id=thumb_id,
+                        db_name=db_name,
+                    )
+                    tmp = File(file_name=fgfs)
 
-                id = await gfs.upload_from_stream(
-                    filename=filename,
-                    source=contents,
-                    metadata=metadata,
-                )
-
-                db_name = getattr(db, "name", "fastapi_admin")
-                fgfs = FileGfs(
-                    gfs_id=id,
-                    filename=filename,
-                    content_type=content_type,
-                    thumbnail_id=thumb_id,
-                    db_name=db_name,
-                )
-                tmp = File(file_name=fgfs)
-
-                # replace the 'key' of the UploadFile dict to FileGFs
-                data[key] = tmp
+                    # replace the 'key' of the UploadFile dict to FileGFs
+                    data[key] = tmp
 
         return data
 
@@ -419,3 +408,27 @@ class ModelView(BaseModelView):
                 queries.append(Expr(current_field=field.name).regex(term).get_query())
 
         return Or(*queries)
+
+    async def get_image_metadata(
+        self, content_type: str, contents: Any, db: Union[Any, None]
+    ) -> Dict:
+        """get information from the image"""
+
+        # default value
+        metadata = {"contentType": content_type}
+        try:
+            with Image.open(io.BytesIO(contents)) as img:
+                thumbnail = img.copy()
+                thumb_id = await self._put_thumbnail(thumbnail, img.format, db)
+                metadata = {
+                    "contentType": content_type,
+                    "format": img.format,
+                    "width": img.size[0],
+                    "height": img.size[1],
+                    "mode": img.mode,
+                    "thumbnail_id": str(thumb_id),
+                }
+
+        except OSError:
+            pass
+        return metadata

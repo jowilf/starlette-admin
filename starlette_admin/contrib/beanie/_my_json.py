@@ -32,7 +32,10 @@ class MyJson(str):
         v = v.replace("'", '"')
         if len(v) > 0:
             # parse a valid JSON string and convert it into a Python Dictionary.
-            res = json.loads(v)
+            try:
+                res = json.loads(v)
+            except ValueError as e:
+                raise TypeError("invalid my json format") from e
             if not isinstance(res, dict):
                 raise TypeError("invalid my json format")
         else:
