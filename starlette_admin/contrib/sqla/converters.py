@@ -74,11 +74,12 @@ class BaseModelConverter:
         self.converters = converters
 
     def get_converter(self, column: Column) -> Callable[[str, Column], BaseField]:
-        field = self.find_converter_for_col_type(type(column.type))
-        if field is not None:
-            return field
+        converter = self.find_converter_for_col_type(type(column.type))
+        if converter is not None:
+            return converter
         raise NotSupportedColumn(  # pragma: no cover
-            f"Column {column.type} can not be converted automatically. Find the appropriate field manually"
+            f"Column {column.type} can not be converted automatically. Find the appropriate field manually or provide "
+            "your custom converter"
         )
 
     def find_converter_for_col_type(
