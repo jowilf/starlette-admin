@@ -5,17 +5,19 @@ import mongoengine as me
 import starlette_admin.fields as sa
 from bson import ObjectId
 from mongoengine.base import BaseDocument
-from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.errors import DoesNotExist, ValidationError
 from mongoengine.fields import GridFSProxy
 from mongoengine.queryset import QNode
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
+from starlette_admin.contrib.mongoengine.converters import (
+    BaseModelConverter,
+    ModelConverter,
+)
 from starlette_admin.contrib.mongoengine.fields import FileField, ImageField
 from starlette_admin.contrib.mongoengine.helpers import (
     Q,
     build_order_clauses,
-    convert_mongoengine_field_to_admin_field,
     normalize_list,
     resolve_deep_query,
 )
@@ -32,6 +34,7 @@ class ModelView(BaseModelView):
         name: Optional[str] = None,
         label: Optional[str] = None,
         identity: Optional[str] = None,
+        converter: Optional[BaseModelConverter] = None,
     ):
         self.document = document
         self.identity = (
@@ -45,19 +48,9 @@ class ModelView(BaseModelView):
         self.pk_attr = "id"
         if self.fields is None or len(self.fields) == 0:
             self.fields = document._fields_ordered
-        converted_fields = []
-        for value in self.fields:
-            if isinstance(value, sa.BaseField):
-                converted_fields.append(value)
-            else:
-                if isinstance(value, MongoBaseField):
-                    field = value
-                elif isinstance(value, str) and hasattr(document, value):
-                    field = getattr(document, value)
-                else:
-                    raise ValueError(f"Can't find field with key {value}")
-                converted_fields.append(convert_mongoengine_field_to_admin_field(field))
-        self.fields = converted_fields
+        self.fields = (converter or ModelConverter()).normalize_fields_list(
+            self.fields, self.document
+        )
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
         self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
         self.exclude_fields_from_create = normalize_list(self.exclude_fields_from_create)  # type: ignore
