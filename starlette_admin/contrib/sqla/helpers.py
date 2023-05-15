@@ -2,15 +2,9 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 
 from sqlalchemy import Column, String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
-    ColumnProperty,
     InstrumentedAttribute,
-    Mapper,
-    RelationshipProperty,
 )
 from sqlalchemy.sql import ClauseElement
-from starlette_admin.contrib.sqla.converters import find_converter
-from starlette_admin.fields import BaseField, HasMany, HasOne
-from starlette_admin.helpers import slugify_class_name
 
 OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
     "eq": lambda f, v: f == v,
@@ -72,41 +66,6 @@ def build_order_clauses(order_list: List[str], model: Any) -> Any:
         if attr is not None:
             clauses.append(attr.desc() if order.lower() == "desc" else attr)
     return clauses
-
-
-def normalize_fields(fields: Sequence[Any], mapper: Mapper) -> List[BaseField]:
-    """
-    Look and convert all InstrumentedAttribute or str in fields into the
-    right field (starlette_admin.BaseField)
-    """
-    converted_fields = []
-    for field in fields:
-        if isinstance(field, BaseField):
-            converted_fields.append(field)
-        else:
-            if isinstance(field, InstrumentedAttribute):
-                attr = mapper.attrs.get(field.key)
-            else:
-                attr = mapper.attrs.get(field)
-            if attr is None:
-                raise ValueError(f"Can't find column with key {field}")
-            if isinstance(attr, RelationshipProperty):
-                identity = slugify_class_name(attr.entity.class_.__name__)
-                if attr.direction.name == "MANYTOONE" or (
-                    attr.direction.name == "ONETOMANY" and not attr.uselist
-                ):
-                    converted_fields.append(HasOne(attr.key, identity=identity))
-                else:
-                    converted_fields.append(HasMany(attr.key, identity=identity))
-            elif isinstance(attr, ColumnProperty):
-                assert (
-                    len(attr.columns) == 1
-                ), "Multiple-column properties are not supported"
-                column = attr.columns[0]
-                if not column.foreign_keys:
-                    field_converter = find_converter(column)  # type: ignore
-                    converted_fields.append(field_converter(attr.key, column))  # type: ignore
-    return converted_fields
 
 
 def normalize_list(

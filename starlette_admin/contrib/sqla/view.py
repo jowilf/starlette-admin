@@ -7,12 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, Mapper, Session, joinedload
 from sqlalchemy.sql import Select
 from starlette.requests import Request
+from starlette_admin.contrib.sqla.converters import BaseModelConverter, ModelConverter
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
     build_query,
     extract_column_python_type,
-    normalize_fields,
     normalize_list,
 )
 from starlette_admin.exceptions import ActionFailed, FormValidationError
@@ -38,6 +38,7 @@ class ModelView(BaseModelView):
         name: Optional[str] = None,
         label: Optional[str] = None,
         identity: Optional[str] = None,
+        converter: Optional[BaseModelConverter] = None,
     ):
         try:
             mapper: Mapper = inspect(model)  # type: ignore
@@ -67,7 +68,9 @@ class ModelView(BaseModelView):
                 for f in self.model.__dict__
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
-        self.fields = normalize_fields(self.fields, mapper)
+        self.fields = (converter or ModelConverter()).normalize_fields_list(
+            self.fields, mapper
+        )
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
         self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
         self.exclude_fields_from_create = normalize_list(self.exclude_fields_from_create)  # type: ignore
