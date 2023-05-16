@@ -4,6 +4,9 @@ from slugify import slugify
 
 
 class Slug(str):
+    class Config:
+        validate_assignment = True
+
     @classmethod
     def __get_validators__(cls) -> Generator[Callable, None, None]:
         # one or more validators may be yielded which will be called in the

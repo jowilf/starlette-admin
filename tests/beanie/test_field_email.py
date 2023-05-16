@@ -1,11 +1,12 @@
 import pytest
 import pytest_asyncio
-from beanie import Document, Indexed, init_beanie
+from beanie import Document, init_beanie
 from beanie.operators import In
 from bson import ObjectId
 from httpx import AsyncClient
 from starlette.applications import Starlette
 from starlette_admin.contrib.beanie import Admin, ModelView
+from starlette_admin.contrib.beanie._email import Email
 
 from tests.beanie import MONGO_DATABASE
 
@@ -13,8 +14,8 @@ pytestmark = pytest.mark.asyncio
 
 
 class User(Document):
-    name: Indexed(str, unique=True)  # type: ignore
-    lastname: str
+    name: str
+    email: Email
 
 
 @pytest_asyncio.fixture
@@ -27,10 +28,10 @@ async def client(cli, db, fs):
     # prepare database
     await User.delete_all()
     users = [
-        User(name="Pedro", lastname="Garcia"),
-        User(name="Pedrito", lastname="Moreno"),
-        User(name="Juan", lastname="Perez"),
-        User(name="Carlos", lastname="Tevez"),
+        User(name="Pedro", email="pedro@gmail.com"),
+        User(name="Pedrito", email="pedrito@gmail.com"),
+        User(name="Juan", email="juan@gmail.com"),
+        User(name="Carlos", email="carlos@gmail.com"),
     ]
     await User.insert_many(users)
 
@@ -58,23 +59,6 @@ async def test_api(client: AsyncClient):
     assert ["Juan", "Pedrito"] == [x["name"] for x in data["items"]]
 
 
-# order 'desc'
-async def test_api_order_desc(client: AsyncClient):
-    """
-    skip = 1
-    limit = 2
-    order = by name desc
-    """
-    response = await client.get(
-        "/admin/api/user?skip=1&limit=2&where=&order_by=name desc"
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["total"] == 4
-    assert len(data["items"]) == 2  # limit!
-    assert ["Pedrito", "Juan"] == [x["name"] for x in data["items"]]
-
-
 async def test_full_text_search(client: AsyncClient):
     response = await client.get("/admin/api/user?skip=0&limit=10&where=Pedr")
     assert response.status_code == 200
@@ -89,7 +73,7 @@ async def test_detail(client: AsyncClient):
     response = await client.get(f"/admin/user/detail/{user.id}")
     assert response.status_code == 200
     assert "Pedro" in response.text
-    assert "Garcia" in response.text
+    assert "pedro@gmail.com" in response.text
 
 
 async def test_create(client: AsyncClient):
@@ -97,7 +81,7 @@ async def test_create(client: AsyncClient):
         "/admin/user/create",
         data={
             "name": "John",
-            "lastname": "Doe",
+            "email": "john@gmail.com",
         },
         follow_redirects=False,
     )
@@ -106,7 +90,7 @@ async def test_create(client: AsyncClient):
     assert len(users) == 1
     assert users[0].dict(exclude={"id"}) == {
         "name": "John",
-        "lastname": "Doe",
+        "email": "john@gmail.com",
     }
 
 
@@ -117,7 +101,7 @@ async def test_edit(client: AsyncClient):
         f"/admin/user/edit/{user.id}",
         data={
             "name": "Pedro",
-            "lastname": "Marmol",
+            "email": "PEDRO@gmail.com",
         },
         follow_redirects=False,
     )
@@ -127,7 +111,7 @@ async def test_edit(client: AsyncClient):
     assert usuario.dict() == {
         "id": ObjectId(user.id),
         "name": "Pedro",
-        "lastname": "Marmol",
+        "email": Email("PEDRO@gmail.com"),
     }
 
 

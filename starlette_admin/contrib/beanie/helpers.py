@@ -116,7 +116,7 @@ def convert_beanie_field_to_admin_field(  # noqa: C901
                 field, get_args(annotation)[0], attr, field_meta, identity
             )
             if child_field is None:
-                # admin_field None, same error?fix?
+                # admin_field None, some error?fix?
                 return None
             if isinstance(child_field, sa.EnumField):
                 child_field.multiple = True
