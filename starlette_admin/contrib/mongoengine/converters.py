@@ -37,24 +37,27 @@ class BaseModelConverter:
             self, predicate=inspect.ismethod
         ):
             if hasattr(method, "_converter_for"):
-                for classname in method._converter_for:
-                    converters[classname] = method
+                for arg in method._converter_for:
+                    converters[arg] = method
 
         self.converters = converters
 
     def get_converter(
         self, field: me.BaseField
-    ) -> Callable[[sa.BaseField], sa.BaseField]:
+    ) -> Callable[[me.BaseField], sa.BaseField]:
         converter = self.converters.get(field.__class__)
         if converter is not None:
             return converter
-        for cls in self.converters:
+        for cls, converter in self.converters.items():
             if isinstance(field, cls):
-                return self.converters.get(cls)
+                return converter
         raise NotSupportedField(
             f"Field {field.__class__.__name__} can not be converted automatically. Find the appropriate field "
             "manually or provide your custom converter"
         )
+
+    def convert(self, field: me.BaseField) -> sa.BaseField:
+        return self.get_converter(field)(field)
 
     def normalize_fields_list(
         self,
@@ -72,7 +75,7 @@ class BaseModelConverter:
                     field = getattr(document, value)
                 else:
                     raise ValueError(f"Can't find field with key {value}")
-                converted_fields.append(self.get_converter(field)(field))
+                converted_fields.append(self.convert(field))
         return converted_fields
 
 
@@ -167,11 +170,7 @@ class ModelConverter(BaseModelConverter):
         document_type_obj: me.EmbeddedDocument = field.document_type
         _fields = []
         for _field in document_type_obj._fields_ordered:
-            _fields.append(
-                self.get_converter(getattr(document_type_obj, _field))(
-                    getattr(document_type_obj, _field)
-                )
-            )
+            _fields.append(self.convert(getattr(document_type_obj, _field)))
         return sa.CollectionField(field.name, _fields, field.required)
 
     @converts(me.ListField, me.SortedListField)
@@ -192,11 +191,9 @@ class ModelConverter(BaseModelConverter):
             return sa.HasMany(**self._field_common(field), identity=identity)
         field.field.name = field.name
         if isinstance(field.field, (me.DictField, me.MapField)):
-            return self.get_converter(field.field)(field.field)
+            return self.convert(field.field)
         if isinstance(field.field, me.EnumField):
-            admin_field = self.get_converter(field.field)(field.field)
-            admin_field.multiple = True
+            admin_field = self.convert(field.field)
+            admin_field.multiple = True  # type: ignore [attr-defined]
             return admin_field
-        return sa.ListField(
-            self.get_converter(field.field)(field.field), required=field.required
-        )
+        return sa.ListField(self.convert(field.field), required=field.required)

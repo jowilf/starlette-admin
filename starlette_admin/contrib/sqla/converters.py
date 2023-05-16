@@ -82,6 +82,9 @@ class BaseModelConverter:
             "your custom converter"
         )
 
+    def convert(self, name: str, column: Column) -> BaseField:
+        return self.get_converter(column)(name, column)
+
     def find_converter_for_col_type(
         self,
         col_type: Any,
@@ -137,8 +140,7 @@ class BaseModelConverter:
                     ), "Multiple-column properties are not supported"
                     column = attr.columns[0]
                     if not column.foreign_keys:
-                        field_converter = self.get_converter(column)
-                        converted_fields.append(field_converter(attr.key, column))
+                        converted_fields.append(self.convert(attr.key, column))
         return converted_fields
 
 
@@ -241,7 +243,7 @@ class ModelConverter(BaseModelConverter):
             column.type.dimensions is None or column.type.dimensions == 1
         ):
             column = Column(name, column.type.item_type)
-            return ListField(self.get_converter(column)(name, column))
+            return ListField(self.convert(name, column))
         raise NotSupportedColumn("Column ARRAY with dimensions != 1 is not supported")
 
     @converts("JSON", "sqlalchemy_utils.types.json.JSONType")
@@ -328,7 +330,7 @@ class ModelConverter(BaseModelConverter):
     def conv_composite_type(self, name: str, column: Column) -> BaseField:
         fields = []
         for col in column.type.columns:
-            fields.append(self.get_converter(col)(col.name, col))
+            fields.append(self.convert(col.name, col))
         return CollectionField(
             name, fields=fields, required=self._field_common(column)["required"]
         )
