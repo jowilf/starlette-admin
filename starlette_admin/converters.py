@@ -67,8 +67,10 @@ class BaseModelConverter:
     @abstractmethod
     def convert_fields_list(
         self,
+        *,
         fields: Sequence[Any],
         model: Type[Any],
+        **kwargs: Any,
     ) -> Sequence[BaseField]:
         """Override this method to convert non-BaseField instances in your defined fields list into corresponding
         starlette_admin.BaseField objects."""
@@ -77,20 +79,16 @@ class BaseModelConverter:
 class BaseStandardModelConverter(BaseModelConverter):
     """Converters for python built-in types"""
 
-    def convert(self, *args: Any, **kwargs: Any) -> BaseField:
-        _type = kwargs.get("type")
-
+    def get_converter(self, _type: Any) -> Callable[..., BaseField]:
         # If there is a converter for the specified type, use it.
-        converter = self.converters.get(_type)
-        if converter is not None:
-            return converter(*args, **kwargs)
+        if _type in self.converters:
+            return self.converters[_type]
 
-        # If the type is a generic type, try to convert the origin type.
+        # If the type is a generic type, search the origin type.
         _origin = get_origin(_type)
         _args = get_args(_type)
         if _origin is not None and _origin in self.converters:
-            kwargs.update({"type": _origin, "args": _args})
-            return self.convert(*args, **kwargs)
+            return self.converters[_origin]
 
         # Otherwise, try to find a converter for any of the type's base classes.
         for cls, converter in self.converters.items():
@@ -100,22 +98,23 @@ class BaseStandardModelConverter(BaseModelConverter):
                 and _origin is None  # exclude generic
                 and issubclass(_type, cls)
             ):
-                return converter(*args, **kwargs)
+                return converter
             if inspect.isclass(cls) and isinstance(_type, cls):
-                return converter(*args, **kwargs)
+                return converter
 
         raise NotSupportedAnnotation(
-            f"Cannot automatically convert '{kwargs.get('name')}'. Find the appropriate field"
+            f"Cannot automatically convert '{_type}'. Find the appropriate field"
             " manually or provide your own converter"
         )
+
+    def convert(self, *args: Any, **kwargs: Any) -> BaseField:
+        return self.get_converter(kwargs.get("type"))(*args, **kwargs)
 
     def get_type(self, model: Any, field_name: str) -> Any:
         return model.__annotations__[field_name]
 
     def convert_fields_list(
-        self,
-        fields: Sequence[Any],
-        model: Type[Any],
+        self, *, fields: Sequence[Any], model: Type[Any], **kwargs: Any
     ) -> Sequence[BaseField]:
         converted_fields = []
         for value in fields:
@@ -194,8 +193,8 @@ class StandardModelConverter(BaseStandardModelConverter):
         """Converter for `list` annotation (eg. `list[str]`, `list[int]`)
         `list` will be treated as `list[str]`
         """
-        subtypes = kwargs.get("args")
-        subtype = subtypes[0] if len(subtypes) > 0 else str  # type: ignore [index, arg-type]
+        subtypes = get_args(kwargs.get("type"))
+        subtype = subtypes[0] if len(subtypes) > 0 else str
         if inspect.isclass(subtype) and issubclass(subtype, enum.Enum):
             kwargs.update({"type": subtype, "multiple": True})
             return self.convert(*args, **kwargs)
@@ -207,9 +206,9 @@ class StandardModelConverter(BaseStandardModelConverter):
     @converts(typing.Union)
     def conv_standard_optional(self, *args: Any, **kwargs: Any) -> BaseField:
         """Support for Optional[type], Union[type, None] or Union[None, type]"""
-        type_args = kwargs.get("args")
-        if len(type_args) == 2 and type(None) in type_args:  # type: ignore [operator, arg-type]
-            _sub_type = type_args[0] if type_args[1] is type(None) else type_args[1]  # type: ignore [index]
+        type_args = get_args(kwargs.get("type"))
+        if len(type_args) == 2 and type(None) in type_args:
+            _sub_type = type_args[0] if type_args[1] is type(None) else type_args[1]
             kwargs.update({"type": _sub_type, "required": False})
             return self.convert(*args, **kwargs)
         raise NotSupportedAnnotation(
