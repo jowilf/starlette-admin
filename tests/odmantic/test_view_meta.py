@@ -207,7 +207,3 @@ def test_invalid_fields_default_sort_list():
             fields_default_sort = [Document.id, (Document.bool, True), (1,)]
 
         InvalidDocumentView(Document)
-
-
-if __name__ == "__main__":
-    print(User.__odm_fields__)
