@@ -147,7 +147,8 @@ def test_fields_conversion():
 
 def test_not_supported_annotation():
     with pytest.raises(
-        NotSupportedAnnotation, match=re.escape("Cannot automatically convert 'tuple_'")
+        NotSupportedAnnotation,
+        match=re.escape("Cannot automatically convert 'tuple[str, ...]'"),
     ):
 
         class MyModel(Model):

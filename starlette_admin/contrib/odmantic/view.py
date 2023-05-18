@@ -62,7 +62,7 @@ class ModelView(BaseModelView):
                 _all_list[-1:] + _all_list[:-1]  # type: ignore
             )  # Move 'id' to first position.
         self.fields = (converter or ModelConverter()).convert_fields_list(
-            self.fields, self.model
+            fields=self.fields, model=self.model
         )
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
         self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore

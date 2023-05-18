@@ -36,23 +36,21 @@ from starlette_admin.fields import (
 from starlette_admin.helpers import slugify_class_name
 
 
-class BaseModelConverter(StandardModelConverter):
+class BaseODMModelConverter(StandardModelConverter):
     def get_type(self, model: Model, field_name: str) -> Any:
         return model.__odm_fields__[field_name]
 
     def convert_fields_list(
-        self,
-        fields: Sequence[Any],
-        model: Type[Model],
+        self, *, fields: Sequence[Any], model: Type[Model], **kwargs: Any
     ) -> Sequence[BaseField]:
         fields = [str(+v) if isinstance(v, FieldProxy) else v for v in fields]
         try:
-            return super().convert_fields_list(fields, model)
+            return super().convert_fields_list(fields=fields, model=model, **kwargs)
         except BaseNotSupportedAnnotation as e:
             raise NotSupportedAnnotation(*e.args) from e
 
 
-class ModelConverter(BaseModelConverter):
+class ModelConverter(BaseODMModelConverter):
     @converts(ODMField)
     def conv_odm_field(self, *args: Any, type: ODMField, **kwargs: Any) -> BaseField:
         kwargs.update(
