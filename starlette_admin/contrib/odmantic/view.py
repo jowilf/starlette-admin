@@ -5,13 +5,12 @@ from typing import Any, Dict, List, Optional, Sequence, Type, Union
 import anyio
 from bson import ObjectId
 from odmantic import Model, query
-from odmantic.field import FieldProxy
 from odmantic.query import QueryExpression
 from odmantic.session import AIOSession, SyncSession
 from pydantic import ValidationError
 from starlette.requests import Request
+from starlette_admin.contrib.odmantic.converters import ModelConverter
 from starlette_admin.contrib.odmantic.helpers import (
-    convert_odm_field_to_admin_field,
     normalize_list,
     resolve_deep_query,
     resolve_proxy,
@@ -45,6 +44,7 @@ class ModelView(BaseModelView):
         name: Optional[str] = None,
         label: Optional[str] = None,
         identity: Optional[str] = None,
+        converter: Optional[ModelConverter] = None,
     ):
         self.model = model
         self.identity = (
@@ -61,25 +61,9 @@ class ModelView(BaseModelView):
             self.fields = (
                 _all_list[-1:] + _all_list[:-1]  # type: ignore
             )  # Move 'id' to first position.
-        converted_fields = []
-        for value in self.fields:
-            if isinstance(value, BaseField):
-                converted_fields.append(value)
-            else:
-                if isinstance(value, FieldProxy):
-                    field_name = +value
-                elif isinstance(value, str) and hasattr(model, value):
-                    field_name = value
-                else:
-                    raise ValueError(f"Can't find attribute with key {value}")
-                converted_fields.append(
-                    convert_odm_field_to_admin_field(
-                        model.__odm_fields__[field_name],
-                        field_name,
-                        model.__annotations__[field_name],
-                    )
-                )
-        self.fields = converted_fields
+        self.fields = (converter or ModelConverter()).convert_fields_list(
+            self.fields, self.model
+        )
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
         self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
         self.exclude_fields_from_create = normalize_list(self.exclude_fields_from_create)  # type: ignore

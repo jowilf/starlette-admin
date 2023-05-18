@@ -121,10 +121,11 @@ def test_fields_conversion():
                     StringField("name", required=True),
                     StringField("reason", required=True),
                 ],
+                required=True,
             ),
             required=True,
         ),
-        HasOne("document", identity="document"),
+        HasOne("document", identity="document", required=True),
     ]
 
     assert ModelView(Document).fields == [
@@ -146,7 +147,7 @@ def test_fields_conversion():
 
 def test_not_supported_annotation():
     with pytest.raises(
-        NotSupportedAnnotation, match=re.escape("tuple[str, ...] is not supported")
+        NotSupportedAnnotation, match=re.escape("Cannot automatically convert 'tuple_'")
     ):
 
         class MyModel(Model):
@@ -206,3 +207,7 @@ def test_invalid_fields_default_sort_list():
             fields_default_sort = [Document.id, (Document.bool, True), (1,)]
 
         InvalidDocumentView(Document)
+
+
+if __name__ == "__main__":
+    print(User.__odm_fields__)
