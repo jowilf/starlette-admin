@@ -11,7 +11,7 @@ from mongoengine.queryset import QNode
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
 from starlette_admin.contrib.mongoengine.converters import (
-    BaseModelConverter,
+    BaseMongoEngineModelConverter,
     ModelConverter,
 )
 from starlette_admin.contrib.mongoengine.fields import FileField, ImageField
@@ -34,7 +34,7 @@ class ModelView(BaseModelView):
         name: Optional[str] = None,
         label: Optional[str] = None,
         identity: Optional[str] = None,
-        converter: Optional[BaseModelConverter] = None,
+        converter: Optional[BaseMongoEngineModelConverter] = None,
     ):
         self.document = document
         self.identity = (
@@ -48,8 +48,8 @@ class ModelView(BaseModelView):
         self.pk_attr = "id"
         if self.fields is None or len(self.fields) == 0:
             self.fields = document._fields_ordered
-        self.fields = (converter or ModelConverter()).normalize_fields_list(
-            self.fields, self.document
+        self.fields = (converter or ModelConverter()).convert_fields_list(
+            fields=self.fields, model=self.document
         )
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
         self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
