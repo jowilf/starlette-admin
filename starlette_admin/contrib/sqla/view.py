@@ -7,7 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, Mapper, Session, joinedload
 from sqlalchemy.sql import Select
 from starlette.requests import Request
-from starlette_admin.contrib.sqla.converters import BaseModelConverter, ModelConverter
+from starlette_admin.contrib.sqla.converters import (
+    BaseSQLAModelConverter,
+    ModelConverter,
+)
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
     build_order_clauses,
@@ -38,7 +41,7 @@ class ModelView(BaseModelView):
         name: Optional[str] = None,
         label: Optional[str] = None,
         identity: Optional[str] = None,
-        converter: Optional[BaseModelConverter] = None,
+        converter: Optional[BaseSQLAModelConverter] = None,
     ):
         try:
             mapper: Mapper = inspect(model)  # type: ignore
@@ -68,8 +71,8 @@ class ModelView(BaseModelView):
                 for f in self.model.__dict__
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
-        self.fields = (converter or ModelConverter()).normalize_fields_list(
-            self.fields, mapper
+        self.fields = (converter or ModelConverter()).convert_fields_list(
+            fields=self.fields, model=self.model, mapper=mapper
         )
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
         self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore

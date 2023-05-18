@@ -1,7 +1,7 @@
 # Inspired by wtforms-sqlalchemy
 import enum
 import inspect
-from typing import Any, Callable, Dict, Optional, Sequence
+from typing import Any, Callable, Dict, Optional, Sequence, Type
 
 from sqlalchemy import ARRAY, Boolean, Column, Float, String
 from sqlalchemy.orm import (
@@ -12,6 +12,7 @@ from sqlalchemy.orm import (
 )
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
 from starlette_admin.contrib.sqla.fields import FileField, ImageField
+from starlette_admin.converters import BaseModelConverter, converts
 from starlette_admin.fields import (
     ArrowField,
     BaseField,
@@ -42,53 +43,23 @@ from starlette_admin.fields import (
 from starlette_admin.helpers import slugify_class_name
 
 
-def converts(
-    *args: str,
-) -> Callable[
-    [Callable[["ModelConverter", str, Column], BaseField]],
-    Callable[["ModelConverter", str, Column], BaseField],
-]:
-    def wrap(
-        func: Callable[["ModelConverter", str, Column], BaseField]
-    ) -> Callable[["ModelConverter", str, Column], BaseField]:
-        func._converter_for = frozenset(args)  # type:ignore [attr-defined]
-        return func
-
-    return wrap
-
-
-class BaseModelConverter:
-    def __init__(
-        self, converters: Optional[Dict[str, Callable[[str, Column], BaseField]]] = None
-    ):
-        if converters is None:
-            converters = {}
-
-        for _method_name, method in inspect.getmembers(
-            self, predicate=inspect.ismethod
-        ):
-            if hasattr(method, "_converter_for"):
-                for classname in method._converter_for:
-                    converters[classname] = method
-
-        self.converters = converters
-
-    def get_converter(self, column: Column) -> Callable[[str, Column], BaseField]:
-        converter = self.find_converter_for_col_type(type(column.type))
+class BaseSQLAModelConverter(BaseModelConverter):
+    def get_converter(self, col_type: Any) -> Callable[..., BaseField]:
+        converter = self.find_converter_for_col_type(type(col_type))
         if converter is not None:
             return converter
         raise NotSupportedColumn(  # pragma: no cover
-            f"Column {column.type} can not be converted automatically. Find the appropriate field manually or provide "
+            f"Column {col_type} can not be converted automatically. Find the appropriate field manually or provide "
             "your custom converter"
         )
 
-    def convert(self, name: str, column: Column) -> BaseField:
-        return self.get_converter(column)(name, column)
+    def convert(self, *args: Any, **kwargs: Any) -> BaseField:
+        return self.get_converter(kwargs.get("type"))(*args, **kwargs)
 
     def find_converter_for_col_type(
         self,
         col_type: Any,
-    ) -> Optional[Callable[[str, Column], BaseField]]:
+    ) -> Optional[Callable[..., BaseField]]:
         types = inspect.getmro(col_type)
 
         # Search by module + name
@@ -112,9 +83,10 @@ class BaseModelConverter:
                 return self.find_converter_for_col_type(impl)
         return None  # pragma: no cover
 
-    def normalize_fields_list(
-        self, fields: Sequence[Any], mapper: Mapper
+    def convert_fields_list(
+        self, *, fields: Sequence[Any], model: Type[Any], **kwargs: Any
     ) -> Sequence[BaseField]:
+        mapper: Mapper = kwargs.get("mapper")  # type: ignore [assignment]
         converted_fields = []
         for field in fields:
             if isinstance(field, BaseField):
@@ -140,14 +112,19 @@ class BaseModelConverter:
                     ), "Multiple-column properties are not supported"
                     column = attr.columns[0]
                     if not column.foreign_keys:
-                        converted_fields.append(self.convert(attr.key, column))
+                        converted_fields.append(
+                            self.convert(name=attr.key, type=column.type, column=column)
+                        )
         return converted_fields
 
 
-class ModelConverter(BaseModelConverter):
+class ModelConverter(BaseSQLAModelConverter):
     @classmethod
-    def _field_common(cls, column: Column) -> Dict[str, Any]:
+    def _field_common(
+        cls, *, name: str, column: Column, **kwargs: Any
+    ) -> Dict[str, Any]:
         return {
+            "name": name,
             "help_text": column.comment,
             "required": (
                 not column.nullable
@@ -158,18 +135,18 @@ class ModelConverter(BaseModelConverter):
         }
 
     @classmethod
-    def _string_common(cls, column: Column) -> Dict[str, Any]:
+    def _string_common(cls, *, type: Any, **kwargs: Any) -> Dict[str, Any]:
         if (
-            isinstance(column.type, String)
-            and isinstance(column.type.length, int)
-            and column.type.length > 0
+            isinstance(type, String)
+            and isinstance(type.length, int)
+            and type.length > 0
         ):
-            return {"maxlength": column.type.length}
+            return {"maxlength": type.length}
         return {}
 
     @classmethod
-    def _file_common(cls, column: Column) -> Dict[str, Any]:
-        return {"multiple": getattr(column.type, "multiple", False)}
+    def _file_common(cls, *, type: Any, **kwargs: Any) -> Dict[str, Any]:
+        return {"multiple": getattr(type, "multiple", False)}
 
     @converts(
         "String",
@@ -183,154 +160,222 @@ class ModelConverter(BaseModelConverter):
         "sqlalchemy_utils.types.ip_address.IPAddressType",
         "sqlalchemy_utils.types.uuid.UUIDType",
     )  # includes Unicode
-    def conv_string(self, name: str, column: Column) -> BaseField:
+    def conv_string(self, *args: Any, **kwargs: Any) -> BaseField:
         return StringField(
-            name, **self._field_common(column), **self._string_common(column)
+            **self._field_common(*args, **kwargs),
+            **self._string_common(*args, **kwargs),
         )
 
     @converts("Text", "LargeBinary", "Binary")  # includes UnicodeText
-    def conv_text(self, name: str, column: Column) -> BaseField:
+    def conv_text(self, *args: Any, **kwargs: Any) -> BaseField:
         return TextAreaField(
-            name, **self._field_common(column), **self._string_common(column)
+            **self._field_common(*args, **kwargs),
+            **self._string_common(*args, **kwargs),
         )
 
-    @converts("Boolean", "BIT")  # includes UnicodeText
-    def conv_boolean(self, name: str, column: Column) -> BaseField:
-        return BooleanField(name, **self._field_common(column))
+    @converts("Boolean", "BIT")
+    def conv_boolean(self, *args: Any, **kwargs: Any) -> BaseField:
+        return BooleanField(
+            **self._field_common(*args, **kwargs),
+        )
 
     @converts("DateTime")
-    def conv_datetime(self, name: str, column: Column) -> BaseField:
-        return DateTimeField(name, **self._field_common(column))
-
-    @converts("Date")
-    def conv_date(self, name: str, column: Column) -> BaseField:
-        return DateField(name, **self._field_common(column))
-
-    @converts("Time")
-    def conv_time(self, name: str, column: Column) -> BaseField:
-        return TimeField(name, **self._field_common(column))
-
-    @converts("Enum")
-    def conv_enum(self, name: str, column: Column) -> BaseField:
-        assert hasattr(column.type, "enum_class")
-        return EnumField(
-            name, enum=column.type.enum_class, **self._field_common(column)
+    def conv_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
+        return DateTimeField(
+            **self._field_common(*args, **kwargs),
         )
 
+    @converts("Date")
+    def conv_date(self, *args: Any, **kwargs: Any) -> BaseField:
+        return DateField(
+            **self._field_common(*args, **kwargs),
+        )
+
+    @converts("Time")
+    def conv_time(self, *args: Any, **kwargs: Any) -> BaseField:
+        return TimeField(
+            **self._field_common(*args, **kwargs),
+        )
+
+    @converts("Enum")
+    def conv_enum(self, *args: Any, **kwargs: Any) -> BaseField:
+        _type = kwargs["type"]
+        assert hasattr(_type, "enum_class")
+        return EnumField(**self._field_common(*args, **kwargs), enum=_type.enum_class)
+
     @converts("Integer")  # includes BigInteger and SmallInteger
-    def conv_integer(self, name: str, column: Column) -> BaseField:
-        unsigned = getattr(column.type, "unsigned", False)
-        extra = self._field_common(column)
+    def conv_integer(self, *args: Any, **kwargs: Any) -> BaseField:
+        unsigned = getattr(kwargs["type"], "unsigned", False)
+        extra = self._field_common(*args, **kwargs)
         if unsigned:
             extra["min"] = 0
-        return IntegerField(name, **extra)
+        return IntegerField(**extra)
 
     @converts("Numeric")  # includes DECIMAL, Float/FLOAT, REAL, and DOUBLE
-    def conv_numeric(self, name: str, column: Column) -> BaseField:
-        if isinstance(column.type, Float) and not column.type.asdecimal:
-            return FloatField(name, **self._field_common(column))
-        return DecimalField(name, **self._field_common(column))
+    def conv_numeric(self, *args: Any, **kwargs: Any) -> BaseField:
+        if isinstance(kwargs["type"], Float) and not kwargs["type"].asdecimal:
+            return FloatField(
+                **self._field_common(*args, **kwargs),
+            )
+        return DecimalField(
+            **self._field_common(*args, **kwargs),
+        )
 
     @converts(
         "sqlalchemy.dialects.mysql.types.YEAR", "sqlalchemy.dialects.mysql.base.YEAR"
     )
-    def conv_mysql_year(self, name: str, column: Column) -> BaseField:
-        return IntegerField(name, **self._field_common(column), min=1901, max=2155)
+    def conv_mysql_year(self, *args: Any, **kwargs: Any) -> BaseField:
+        return IntegerField(**self._field_common(*args, **kwargs), min=1901, max=2155)
 
     @converts("ARRAY")
-    def conv_array(self, name: str, column: Column) -> BaseField:
-        if isinstance(column.type, ARRAY) and (
-            column.type.dimensions is None or column.type.dimensions == 1
+    def conv_array(self, *args: Any, **kwargs: Any) -> BaseField:
+        _type = kwargs["type"]
+        if isinstance(_type, ARRAY) and (
+            _type.dimensions is None or _type.dimensions == 1
         ):
-            column = Column(name, column.type.item_type)
-            return ListField(self.convert(name, column))
+            kwargs.update(
+                {
+                    "column": Column(kwargs["name"], _type.item_type),
+                    "type": _type.item_type,
+                }
+            )
+            return ListField(self.convert(*args, **kwargs))
         raise NotSupportedColumn("Column ARRAY with dimensions != 1 is not supported")
 
     @converts("JSON", "sqlalchemy_utils.types.json.JSONType")
-    def conv_json(self, name: str, column: Column) -> BaseField:
-        return JSONField(name, **self._field_common(column))
+    def conv_json(self, *args: Any, **kwargs: Any) -> BaseField:
+        return JSONField(**self._field_common(*args, **kwargs))
 
     @converts("sqlalchemy_file.types.FileField")
-    def conv_sqla_filefield(self, name: str, column: Column) -> BaseField:
+    def conv_sqla_filefield(self, *args: Any, **kwargs: Any) -> BaseField:
         return FileField(
-            name, **self._field_common(column), **self._file_common(column)
+            **self._field_common(*args, **kwargs), **self._file_common(*args, **kwargs)
         )
 
     @converts("sqlalchemy_file.types.ImageField")
-    def conv_sqla_imagefield(self, name: str, column: Column) -> BaseField:
+    def conv_sqla_imagefield(self, *args: Any, **kwargs: Any) -> BaseField:
         return ImageField(
-            name, **self._field_common(column), **self._file_common(column)
+            **self._field_common(*args, **kwargs), **self._file_common(*args, **kwargs)
         )
 
     @converts("sqlalchemy_utils.types.arrow.ArrowType")
-    def conv_arrow(self, name: str, column: Column) -> BaseField:
-        return ArrowField(name, **self._field_common(column))
+    def conv_arrow(self, *args: Any, **kwargs: Any) -> BaseField:
+        return ArrowField(
+            **self._field_common(*args, **kwargs),
+        )
 
     @converts("sqlalchemy_utils.types.color.ColorType")
-    def conv_color(self, name: str, column: Column) -> BaseField:
-        return ColorField(name, **self._field_common(column))
+    def conv_color(self, *args: Any, **kwargs: Any) -> BaseField:
+        return ColorField(
+            **self._field_common(*args, **kwargs),
+        )
 
     @converts("sqlalchemy_utils.types.email.EmailType")
-    def conv_email(self, name: str, column: Column) -> BaseField:
+    def conv_email(self, *args: Any, **kwargs: Any) -> BaseField:
         return EmailField(
-            name, **self._field_common(column), **self._string_common(column)
+            **self._field_common(*args, **kwargs),
+            **self._string_common(*args, **kwargs),
         )
 
     @converts("sqlalchemy_utils.types.password.PasswordType")
-    def conv_password(self, name: str, column: Column) -> BaseField:
+    def conv_password(self, *args: Any, **kwargs: Any) -> BaseField:
         return PasswordField(
-            name, **self._field_common(column), **self._string_common(column)
+            **self._field_common(*args, **kwargs),
+            **self._string_common(*args, **kwargs),
         )
 
     @converts("sqlalchemy_utils.types.phone_number.PhoneNumberType")
-    def conv_phonenumbers(self, name: str, column: Column) -> BaseField:
+    def conv_phonenumbers(self, *args: Any, **kwargs: Any) -> BaseField:
         return PhoneField(
-            name, **self._field_common(column), **self._string_common(column)
+            **self._field_common(*args, **kwargs),
+            **self._string_common(*args, **kwargs),
         )
 
     @converts("sqlalchemy_utils.types.scalar_list.ScalarListType")
-    def conv_scalar_list(self, name: str, column: Column) -> BaseField:
-        return ListField(StringField(name, **self._field_common(column)))
+    def conv_scalar_list(self, *args: Any, **kwargs: Any) -> BaseField:
+        return ListField(
+            StringField(
+                **self._field_common(*args, **kwargs),
+            )
+        )
 
     @converts("sqlalchemy_utils.types.url.URLType")
-    def conv_url(self, name: str, column: Column) -> BaseField:
-        return URLField(name, **self._field_common(column))
+    def conv_url(self, *args: Any, **kwargs: Any) -> BaseField:
+        return URLField(
+            **self._field_common(*args, **kwargs),
+        )
 
     @converts("sqlalchemy_utils.types.timezone.TimezoneType")
-    def conv_timezone(self, name: str, column: Column) -> BaseField:
+    def conv_timezone(self, *args: Any, **kwargs: Any) -> BaseField:
         return TimeZoneField(
-            name,
-            coerce=column.type.python_type,
-            **self._field_common(column),
+            **self._field_common(*args, **kwargs),
+            coerce=kwargs["type"].python_type,
         )
 
     @converts("sqlalchemy_utils.types.country.CountryType")
-    def conv_country(self, name: str, column: Column) -> BaseField:
-        return CountryField(name, **self._field_common(column))
+    def conv_country(self, *args: Any, **kwargs: Any) -> BaseField:
+        return CountryField(
+            **self._field_common(*args, **kwargs),
+        )
 
     @converts("sqlalchemy_utils.types.currency.CurrencyType")
-    def conv_currency(self, name: str, column: Column) -> BaseField:
-        return CurrencyField(name, **self._field_common(column))
+    def conv_currency(self, *args: Any, **kwargs: Any) -> BaseField:
+        return CurrencyField(
+            **self._field_common(*args, **kwargs),
+        )
 
     @converts("sqlalchemy_utils.types.choice.ChoiceType")
-    def conv_choice(self, name: str, column: Column) -> BaseField:
-        choices = column.type.choices
+    def conv_choice(self, *args: Any, **kwargs: Any) -> BaseField:
+        _type = kwargs["type"]
+        choices = _type.choices
         if isinstance(choices, type) and issubclass(choices, enum.Enum):
             return EnumField(
-                name,
+                **self._field_common(*args, **kwargs),
                 enum=choices,
-                **self._field_common(column),
-                coerce=column.type.python_type,
+                coerce=_type.python_type,
             )
-        return EnumField(name, choices=choices, **self._field_common(column), coerce=column.type.python_type)  # type: ignore
-
-    #
+        return EnumField(
+            **self._field_common(*args, **kwargs),
+            choices=choices,  # type: ignore
+            coerce=_type.python_type,
+        )
 
     @converts("sqlalchemy_utils.types.pg_composite.CompositeType")
-    def conv_composite_type(self, name: str, column: Column) -> BaseField:
+    def conv_composite_type(self, *args: Any, **kwargs: Any) -> BaseField:
+        _type = kwargs["type"]
         fields = []
-        for col in column.type.columns:
-            fields.append(self.convert(col.name, col))
+        field_common = self._field_common(*args, **kwargs)
+        for col in _type.columns:
+            kwargs.update({"name": col.name, "column": col, "type": col.type})
+            fields.append(self.convert(*args, **kwargs))
         return CollectionField(
-            name, fields=fields, required=self._field_common(column)["required"]
+            field_common["name"], fields=fields, required=field_common["required"]
         )
+
+
+# if __name__ == '__main__':
+#     from sqlalchemy import    ( ARRAY,
+#     JSON,
+#     Boolean,
+#     Column,
+#     Date,
+#     DateTime,
+#     Enum,
+#     Float,
+#     ForeignKey,
+#     Integer,
+#     String,
+#     Text,
+#     Time,
+#     TypeDecorator)
+#
+#
+#     class Status(str, enum.Enum):
+#
+#
+#
+#
+#     class Document(Base):
+#
+#
+#
