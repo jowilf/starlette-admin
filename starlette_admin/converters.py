@@ -12,7 +12,6 @@ from typing import (
     Optional,
     Sequence,
     Type,
-    get_origin,
 )
 
 from starlette_admin.exceptions import NotSupportedAnnotation
@@ -32,12 +31,12 @@ from starlette_admin.fields import (
 )
 
 if sys.version_info < (3, 8):
-    from typing import get_args
+    from typing import get_args, get_origin
 else:
     try:
-        from typing_extensions import get_args
+        from typing_extensions import get_args, get_origin
     except ImportError:
-        get_args = None  # type: ignore
+        get_args, get_origin = None, None  # type: ignore
 
 
 def converts(
@@ -148,7 +147,7 @@ class StandardModelConverter(BaseStandardModelConverter):
 
     @classmethod
     def _ensure_get_args_is_not_null(cls, *args: Any, **kwargs: Any) -> None:
-        if not get_args:  # type: ignore [truthy-function]
+        if not get_args or not get_origin:  # type: ignore [truthy-function]
             raise ImportError(  # pragma: no cover
                 f"'typing_extensions' package is required to convert '{kwargs.get('type')}'"
             )
