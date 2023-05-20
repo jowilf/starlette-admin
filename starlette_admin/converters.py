@@ -36,7 +36,7 @@ else:
     try:
         from typing_extensions import get_args, get_origin
     except ImportError:
-        get_args, get_origin = None, None
+        get_args, get_origin = None, None  # type: ignore[assignment]
 
 
 def converts(

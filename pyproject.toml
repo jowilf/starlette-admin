@@ -211,11 +211,11 @@ strict_equality = true
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "starlette_admin.contrib.sqla.helpers"
-warn_unused_ignores = false
-
-[[tool.mypy.overrides]]
-module = "starlette_admin.contrib.sqla.view"
+module = [
+    "starlette_admin.contrib.sqla.helpers",
+    "starlette_admin.contrib.sqla.view",
+    "starlette_admin.converters"
+]
 warn_unused_ignores = false
 
 [tool.hatch.build.targets.wheel]

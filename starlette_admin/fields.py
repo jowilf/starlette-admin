@@ -35,7 +35,7 @@ from starlette_admin.utils.timezones import common_timezones
 try:
     import arrow
 except ImportError:
-    arrow = None  # type: ignore
+    arrow = None  # type: ignore[assignment]
 
 
 @dataclass
