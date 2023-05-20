@@ -2,6 +2,7 @@ import datetime
 import decimal
 import enum
 import inspect
+import sys
 import typing
 from abc import abstractmethod
 from typing import (
@@ -11,7 +12,6 @@ from typing import (
     Optional,
     Sequence,
     Type,
-    get_args,
     get_origin,
 )
 
@@ -30,6 +30,14 @@ from starlette_admin.fields import (
     StringField,
     TimeField,
 )
+
+if sys.version_info < (3, 8):
+    from typing import get_args
+else:
+    try:
+        from typing_extensions import get_args
+    except ImportError:
+        get_args = None  # type: ignore
 
 
 def converts(
@@ -139,6 +147,13 @@ class StandardModelConverter(BaseStandardModelConverter):
     """Converters for python built-in types"""
 
     @classmethod
+    def _ensure_get_args_is_not_null(cls, *args: Any, **kwargs: Any) -> None:
+        if not get_args:  # type: ignore [truthy-function]
+            raise ImportError(  # pragma: no cover
+                f"'typing_extensions' package is required to convert '{kwargs.get('type')}'"
+            )
+
+    @classmethod
     def _standard_type_common(
         cls, *, name: str, required: Optional[bool] = True, **kwargs: Any
     ) -> Dict[str, Any]:
@@ -193,6 +208,7 @@ class StandardModelConverter(BaseStandardModelConverter):
         """Converter for `list` annotation (eg. `list[str]`, `list[int]`)
         `list` will be treated as `list[str]`
         """
+        self._ensure_get_args_is_not_null(*args, **kwargs)
         subtypes = get_args(kwargs.get("type"))
         subtype = subtypes[0] if len(subtypes) > 0 else str
         if inspect.isclass(subtype) and issubclass(subtype, enum.Enum):
@@ -206,11 +222,13 @@ class StandardModelConverter(BaseStandardModelConverter):
     @converts(typing.Union)
     def conv_standard_optional(self, *args: Any, **kwargs: Any) -> BaseField:
         """Support for Optional[type], Union[type, None] or Union[None, type]"""
+        self._ensure_get_args_is_not_null(*args, **kwargs)
         type_args = get_args(kwargs.get("type"))
         if len(type_args) == 2 and type(None) in type_args:
             _sub_type = type_args[0] if type_args[1] is type(None) else type_args[1]
             kwargs.update({"type": _sub_type, "required": False})
             return self.convert(*args, **kwargs)
         raise NotSupportedAnnotation(
-            "Only annotations of the form Optional[type], Union[type, None], or Union[None, type] are supported."
+            f"Cannot convert {kwargs.get('type')}. Only annotations of the form Optional[type], Union[type, None], "
+            f"or Union[None, type] are supported."
         )
