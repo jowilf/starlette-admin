@@ -1,9 +1,6 @@
 import datetime
-import decimal
-import inspect
 import re
 import typing as t
-from enum import Enum
 
 import bson
 import pydantic as pyd
@@ -11,107 +8,8 @@ import pydantic.datetime_parse
 from odmantic import Model, query
 from odmantic.field import (
     FieldProxy,
-    ODMBaseField,
-    ODMEmbedded,
-    ODMEmbeddedGeneric,
-    ODMReference,
 )
 from odmantic.query import QueryExpression
-from pydantic.color import Color
-from pydantic.typing import get_args, get_origin
-from starlette_admin.contrib.odmantic.exceptions import NotSupportedAnnotation
-from starlette_admin.fields import (
-    BaseField,
-    BooleanField,
-    CollectionField,
-    ColorField,
-    DateTimeField,
-    DecimalField,
-    EmailField,
-    EnumField,
-    FloatField,
-    HasOne,
-    IntegerField,
-    JSONField,
-    ListField,
-    StringField,
-    URLField,
-)
-from starlette_admin.helpers import slugify_class_name
-
-annotation_map = {
-    bson.ObjectId: StringField,
-    bool: BooleanField,
-    int: IntegerField,
-    bson.Int64: IntegerField,
-    float: FloatField,
-    bson.Decimal128: DecimalField,
-    decimal.Decimal: DecimalField,
-    str: StringField,
-    t.Pattern: StringField,
-    bson.Regex: StringField,
-    bytes: StringField,
-    bson.Binary: StringField,
-    datetime.datetime: DateTimeField,
-    datetime.timedelta: IntegerField,
-    dict: JSONField,
-    pyd.EmailStr: EmailField,
-    pyd.NameEmail: StringField,
-    Color: ColorField,
-    pyd.AnyUrl: URLField,
-}
-
-
-def convert_odm_field_to_admin_field(  # noqa: C901
-    field: ODMBaseField, field_name: str, annotation: t.Type[t.Any]
-) -> BaseField:
-    admin_field: t.Optional[BaseField] = None
-    _origin = get_origin(annotation)
-    if _origin is t.Union:  # type: ignore
-        """Support for Optional"""
-        return convert_odm_field_to_admin_field(
-            field, field_name, get_args(annotation)[0]
-        )
-    if _origin in annotation_map:
-        admin_field = annotation_map.get(_origin)(field_name)  # type: ignore
-    elif _origin in (list, set) and not isinstance(field, ODMEmbeddedGeneric):
-        child_field = convert_odm_field_to_admin_field(
-            field, field_name, get_args(annotation)[0]
-        )
-        if isinstance(child_field, EnumField):
-            child_field.multiple = True
-            admin_field = child_field
-        else:
-            admin_field = ListField(child_field)
-    elif isinstance(field, (ODMEmbedded, ODMEmbeddedGeneric)):
-        _type = field.model
-        _fields = []
-        for _field_name in list(_type.__odm_fields__.keys()):
-            _fields.append(
-                convert_odm_field_to_admin_field(
-                    _type.__odm_fields__[_field_name],
-                    _field_name,
-                    _type.__annotations__[_field_name],
-                )
-            )
-        admin_field = CollectionField(field_name, fields=_fields)
-        if isinstance(field, ODMEmbeddedGeneric):
-            admin_field = ListField(admin_field)
-    elif isinstance(field, ODMReference):
-        return HasOne(field_name, identity=slugify_class_name(field.model.__name__))
-    elif hasattr(annotation, "__mro__"):
-        types = inspect.getmro(annotation)
-        for _type in types:
-            if issubclass(_type, Enum):
-                admin_field = EnumField(field_name, enum=_type)
-                break
-            if annotation_map.get(_type) is not None:
-                admin_field = annotation_map.get(_type)(field_name)  # type: ignore
-                break
-    if admin_field is None:
-        raise NotSupportedAnnotation(f"{annotation} is not supported")
-    admin_field.required = field.is_required_in_doc() and not field.primary_field  # type: ignore
-    return admin_field
 
 
 def normalize_list(
