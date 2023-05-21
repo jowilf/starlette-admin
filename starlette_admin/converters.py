@@ -30,9 +30,9 @@ from starlette_admin.fields import (
     TimeField,
 )
 
-if sys.version_info >= (3, 8):
+if sys.version_info >= (3, 8):  # pragma: no cover
     from typing import get_args, get_origin
-else:
+else:  # pragma: no cover
     try:
         from typing_extensions import get_args, get_origin
     except ImportError:
@@ -117,8 +117,8 @@ class BaseStandardModelConverter(BaseModelConverter):
     def convert(self, *args: Any, **kwargs: Any) -> BaseField:
         return self.get_converter(kwargs.get("type"))(*args, **kwargs)
 
-    def get_type(self, model: Any, field_name: str) -> Any:
-        return model.__annotations__[field_name]
+    def get_type(self, model: Any, value: Any) -> Any:
+        return model.__annotations__[value]
 
     def convert_fields_list(
         self, *, fields: Sequence[Any], model: Type[Any], **kwargs: Any
@@ -128,14 +128,10 @@ class BaseStandardModelConverter(BaseModelConverter):
             if isinstance(value, BaseField):
                 converted_fields.append(value)
             else:
-                if isinstance(value, str) and hasattr(model, value):
-                    field_name = value
-                else:
-                    raise ValueError(f"Can't find attribute with key {value}")
                 converted_fields.append(
                     self.convert(
-                        name=field_name,
-                        type=self.get_type(model, field_name),
+                        name=value,
+                        type=self.get_type(model, value),
                         model=model,
                     )
                 )

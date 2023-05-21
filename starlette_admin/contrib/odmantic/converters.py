@@ -37,8 +37,10 @@ from starlette_admin.helpers import slugify_class_name
 
 
 class BaseODMModelConverter(StandardModelConverter):
-    def get_type(self, model: Model, field_name: str) -> Any:
-        return model.__odm_fields__[field_name]
+    def get_type(self, model: Model, value: Any) -> Any:
+        if isinstance(value, str) and hasattr(model, value):
+            return model.__odm_fields__[value]
+        raise ValueError(f"Can't find attribute with key {value}")
 
     def convert_fields_list(
         self, *, fields: Sequence[Any], model: Type[Model], **kwargs: Any
