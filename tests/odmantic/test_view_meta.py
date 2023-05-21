@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
+import bson
 import pytest
 from odmantic import EmbeddedModel, Model, Reference
 from pydantic import AnyUrl, EmailStr
@@ -37,10 +38,12 @@ class Status(str, enum.Enum):
 
 class Document(Model):
     int: Optional[int]
+    int64: bson.Int64
     float: float
     bool: Optional[bool]
     datetime: datetime
     decimal: Decimal
+    bson_decimal: bson.Decimal128
     email: EmailStr
     url: AnyUrl
     enum: Optional[Status]
@@ -121,19 +124,22 @@ def test_fields_conversion():
                     StringField("name", required=True),
                     StringField("reason", required=True),
                 ],
+                required=True,
             ),
             required=True,
         ),
-        HasOne("document", identity="document"),
+        HasOne("document", identity="document", required=True),
     ]
 
     assert ModelView(Document).fields == [
         StringField("id", exclude_from_create=True, exclude_from_edit=True),
         IntegerField("int"),
+        IntegerField("int64", required=True),
         FloatField("float", required=True),
         BooleanField("bool"),
         DateTimeField("datetime", required=True),
         DecimalField("decimal", required=True),
+        DecimalField("bson_decimal", required=True),
         EmailField("email", required=True),
         URLField("url", required=True),
         EnumField("enum", enum=Status),
@@ -146,7 +152,8 @@ def test_fields_conversion():
 
 def test_not_supported_annotation():
     with pytest.raises(
-        NotSupportedAnnotation, match=re.escape("tuple[str, ...] is not supported")
+        NotSupportedAnnotation,
+        match=re.escape("Cannot automatically convert 'tuple[str, ...]'"),
     ):
 
         class MyModel(Model):

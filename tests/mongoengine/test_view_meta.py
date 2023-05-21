@@ -140,7 +140,10 @@ def test_invalid_list_field():
 
 
 def test_not_supported_field():
-    with pytest.raises(NotSupportedField, match="Field GeoPointField is not supported"):
+    with pytest.raises(
+        NotSupportedField,
+        match="Field GeoPointField can not be converted automatically",
+    ):
 
         class Doc(me.Document):
             field = me.GeoPointField()
