@@ -95,6 +95,7 @@ nav:
   - Advanced User Guide:
       - Custom Field: 'advanced/custom-field/index.md'
       - Extending BaseModelView: 'advanced/base-model-view/index.md'
+  - Deployment: 'deployment/index.md'
   - Alternatives, Inspiration and Comparisons: 'alternatives/index.md'
   - API Reference:
       - Contrib:
