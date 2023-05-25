@@ -5,24 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2023-05-25
+
+### Added
+
+* Enhance fields conversion logic to support custom converters
+  by [@jowilf](https://github.com/jowilf) in [#191](https://github.com/jowilf/starlette-admin/pull/191)
+* Add deployment section to documentation by [@jowilf](https://github.com/jowilf)
+  in [#195](https://github.com/jowilf/starlette-admin/pull/195)
+
+### Fixed
+
+* Blank Edit Form Displayed for IntegerField with Value 0 by [@jowilf](https://github.com/jowilf)
+  in [#194](https://github.com/jowilf/starlette-admin/pull/194)
+
 ## [0.8.2] - 2023-05-12
 
 ### Added
 
 * Add `allow_paths` parameter to AuthProvider to allow unauthenticated access to specific paths
   by [@jowilf](https://github.com/jowilf)
-  in [187](https://github.com/jowilf/starlette-admin/pull/187)
+  in [#187](https://github.com/jowilf/starlette-admin/pull/187)
 * Allow Unauthenticated Access to `js.cookie.min.js` by [@mixartemev](https://github.com/mixartemev)
-  in [183](https://github.com/jowilf/starlette-admin/pull/183)
+  in [#183](https://github.com/jowilf/starlette-admin/pull/183)
 
 ## [0.8.1] - 2023-04-30
 
 ### Added
 
 * Update fontawesome to 6.4.0 & add missings webfonts by [@jowilf](https://github.com/jowilf)
-  in [176](https://github.com/jowilf/starlette-admin/pull/176)
+  in [#176](https://github.com/jowilf/starlette-admin/pull/176)
 * Allow class level configuration for ModelView identity, name & label by [@jowilf](https://github.com/jowilf)
-  in [178](https://github.com/jowilf/starlette-admin/pull/178)
+  in [#178](https://github.com/jowilf/starlette-admin/pull/178)
 
 ## [0.8.0] - 2023-04-09
 
