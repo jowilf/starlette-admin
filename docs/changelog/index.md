@@ -17,7 +17,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 * Blank Edit Form Displayed for IntegerField with Value 0 by [@jowilf](https://github.com/jowilf)
-  in [#193](https://github.com/jowilf/starlette-admin/pull/193)
+  in [#194](https://github.com/jowilf/starlette-admin/pull/194)
 
 ## [0.8.2] - 2023-05-12
 
