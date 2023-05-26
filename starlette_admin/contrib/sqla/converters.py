@@ -351,31 +351,3 @@ class ModelConverter(BaseSQLAModelConverter):
         return CollectionField(
             field_common["name"], fields=fields, required=field_common["required"]
         )
-
-
-# if __name__ == '__main__':
-#     from sqlalchemy import    ( ARRAY,
-#     JSON,
-#     Boolean,
-#     Column,
-#     Date,
-#     DateTime,
-#     Enum,
-#     Float,
-#     ForeignKey,
-#     Integer,
-#     String,
-#     Text,
-#     Time,
-#     TypeDecorator)
-#
-#
-#     class Status(str, enum.Enum):
-#
-#
-#
-#
-#     class Document(Base):
-#
-#
-#
