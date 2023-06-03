@@ -1,6 +1,7 @@
 import datetime
 
 import arrow
+import pytest
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 from starlette_admin import (
@@ -41,17 +42,23 @@ class PostView(DummyModelView):
     )
 
 
-def test_default_locale():
+@pytest.mark.parametrize(
+    "locale,expected_text",
+    [("en", "New Post"), ("fr", "Créer Post"), ("ru", "Добавить Post")],  # noqa: RUF001
+)
+def test_default_locale(locale, expected_text):
     admin = BaseAdmin(
-        i18n_config=I18nConfig(default_locale="fr", language_switcher=SUPPORTED_LOCALES)
+        i18n_config=I18nConfig(
+            default_locale=locale, language_switcher=SUPPORTED_LOCALES
+        )
     )
     app = Starlette()
     admin.mount_to(app)
     admin.add_view(PostView())
     client = TestClient(app)
     response = client.get("/admin/post/list")
-    assert response.text.count('<html lang="fr">') == 1
-    assert "Créer Post" in response.text
+    assert response.text.count(f'<html lang="{locale}">') == 1
+    assert expected_text in response.text
 
 
 def test_extract_locale_from_cookies():
