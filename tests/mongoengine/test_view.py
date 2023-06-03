@@ -44,7 +44,7 @@ class User(me.Document):
 
 class TestMongoBasic:
     def setup_method(self, method):
-        connect(host=MONGO_URL)
+        connect(host=MONGO_URL, uuidRepresentation="standard")
         with open("./tests/data/products.json") as f:
             for product in json.load(f):
                 Product(**product).save()
