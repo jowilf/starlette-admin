@@ -25,7 +25,7 @@ class Post(me.Document):
 
 class TestEmbeddedDocument:
     def setup_method(self, method):
-        connect(host=MONGO_URL)
+        connect(host=MONGO_URL, uuidRepresentation="standard")
         Post(
             name="Dummy post",
             content="Dummy content",
