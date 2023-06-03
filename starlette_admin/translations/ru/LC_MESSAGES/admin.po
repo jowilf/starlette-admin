@@ -1,7 +1,8 @@
-# Русские переводы для starlette-admin.
-# Авторские права (C) 2022 ОРГАНИЗАЦИЯ
-# Этот файл распространяется по той же лицензии, что и проект starlette-admin.
-# ПЕРВЫЙ АВТОР <EMAIL@ADDRESS>, 2022.
+# Russian translations for starlette-admin.
+# Copyright (C) 2022 ORGANIZATION
+# This file is distributed under the same license as the starlette-admin
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
 #
 msgid ""
 msgstr ""
@@ -182,12 +183,3 @@ msgstr "Вы уверены, что хотите удалить этот эле�
 #: starlette_admin/templates/modals/loading.html:13
 msgid "Loading"
 msgstr "Загрузка"
-
-#~ msgid "Are you sure?"
-#~ msgstr "Вы уверены?"
-
-#~ msgid "Show"
-#~ msgstr "Показать"
-
-#~ msgid "entries"
-#~ msgstr "записи"
