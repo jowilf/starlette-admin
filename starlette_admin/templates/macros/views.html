@@ -55,7 +55,7 @@
                     {% for item in view.views  if item.is_accessible(request) %}
                         {% if (item| is_link) %}
                             <a href="{{ item.url }}" class="dropdown-item" target="{{ item.target }}">{{ item.label }}</a>
-                        {% elif (item| is_custom_view) %}
+                        {% elif (item| is_custom_view) and item.add_to_menu %}
                             <a href="{{ url_for(__name__ ,path=item.path) }}" class="dropdown-item{% if item.is_active(request) %} active fw-bold{% endif %}">{{ item.label }}</a>
                         {% elif (item| is_model) %}
                             <a href="{{ url_for(__name__ ~ ':list', identity=item.identity) }}" class="dropdown-item{% if item.is_active(request) %} active fw-bold {% endif %}">{{ item.label }}</a>

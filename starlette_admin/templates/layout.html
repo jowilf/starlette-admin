@@ -103,7 +103,7 @@
                             {% for view in views if view.is_accessible(request) %}
                                 {% if (view| is_link) %}
                                     {{ macros.extern_link(view) }}
-                                {% elif (view| is_custom_view) %}
+                                {% elif (view| is_custom_view) and view.add_to_menu %}
                                     {{ macros.custom_link(view) }}
                                 {% elif (view| is_model) %}
                                     {{ macros.model_link(view) }}
