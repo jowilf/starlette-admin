@@ -196,7 +196,7 @@ known-third-party = ["starlette_admin"]
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401"]
-"examples/**" = ["N805", "N999"]
+"examples/**" = ["N805", "N999", "RUF012"]
 "tests/**" = ["RUF012"]
 
 [tool.mypy]
