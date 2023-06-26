@@ -60,7 +60,7 @@ test = [
     "backports.zoneinfo; python_version<'3.9'",
     "sqlalchemy-file >=0.4.0, <0.5.0",
     "fasteners ==0.18",
-    "PyMySQL[rsa] >=1.0.2, <1.1.0",
+    "PyMySQL[rsa] >=1.0.2, <1.2.0",
     "psycopg2-binary >=2.9.5, <3.0.0",
     "aiosqlite >=0.17.0, <0.20.0",
     "asyncpg >=0.27.0, <0.28.0",
