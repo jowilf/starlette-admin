@@ -44,7 +44,7 @@ class PostView(DummyModelView):
 
 @pytest.mark.parametrize(
     "locale,expected_text",
-    [("en", "New Post"), ("fr", "Créer Post"), ("ru", "Добавить Post")],  # noqa: RUF001
+    [("en", "New Post"), ("fr", "Créer Post"), ("ru", "Добавить Post")],
 )
 def test_default_locale(locale, expected_text):
     admin = BaseAdmin(
