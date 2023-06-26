@@ -4,6 +4,7 @@ from typing import Any, List
 from sqlalchemy import Column, Enum, Integer, String, Text
 from sqlalchemy.orm import Session
 from starlette.requests import Request
+from starlette.responses import RedirectResponse, Response
 from starlette_admin import action
 from starlette_admin.contrib.sqla import ModelView
 from starlette_admin.exceptions import ActionFailed
@@ -35,6 +36,8 @@ class ArticleView(ModelView):
         "delete",
         "always_failed",
         "no_confirmation",
+        "redirect",
+        "redirect_with_form",
     ]
 
     @action(
@@ -96,3 +99,28 @@ class ArticleView(ModelView):
     )
     async def no_confirmation_action(self, request: Request, pks: List[Any]) -> str:
         return "You have successfully executed an action without confirmation"
+
+    @action(
+        name="redirect",
+        text="Redirect",
+        custom_response=True,
+    )
+    async def redirect_action(self, request: Request, pks: List[Any]) -> Response:
+        return RedirectResponse("https://example.com/")
+
+    @action(
+        name="redirect_with_form",
+        text="Redirect with form",
+        custom_response=True,
+        confirmation="Fill the form",
+        form="""
+            <form>
+                <div class="mt-3">
+                    <input type="text" class="form-control" name="value" placeholder="Enter value">
+                </div>
+            </form>
+            """,
+    )
+    async def redirect_with_form(self, request: Request, pks: List[Any]) -> Response:
+        data = await request.form()
+        return RedirectResponse(f"https://example.com/?value={data['value']}")

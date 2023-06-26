@@ -18,10 +18,8 @@ class EngineMiddleware(BaseHTTPMiddleware):
         if isinstance(self.engine, AIOEngine):
             async with self.engine.session() as session:
                 request.state.session = session
-                response = await call_next(request)
-                return response
+                return await call_next(request)
         else:
             with self.engine.session() as session:
                 request.state.session = session
-                response = await call_next(request)
-                return response
+                return await call_next(request)

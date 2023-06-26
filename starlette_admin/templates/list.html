@@ -38,14 +38,21 @@
                                             <a class="dropdown-item action-item"
                                                type="button"
                                                href="#"
-                                                    {% if action.confirmation %} data-bs-toggle="modal"
+                                                    {% if action.confirmation is not none %}
+                                               data-bs-toggle="modal"
                                                data-bs-target="#modal-action"
-                                               data-confirmation="{{ action.confirmation }}" {% else %}
-                                               data-no-confirmation-action="true" {% endif %}
+                                               data-confirmation="{{ action.confirmation }}"
+                                                    {% else %}
+                                               data-no-confirmation-action="true"
+                                                    {% endif %}
+                                                    {% if action.custom_response %}
+                                               data-custom-response="true"
+                                                    {% endif %}
                                                data-name="{{ action.name }}"
                                                data-submit-btn-text="{{ action.submit_btn_text }}"
                                                data-submit-btn-class="{{ action.submit_btn_class }}"
-                                               data-form="{{ action.form }}">
+                                               data-form="{{ action.form }}"
+                                            >
                                                 {{ action.text }}
                                             </a>
                                         {% endfor %}

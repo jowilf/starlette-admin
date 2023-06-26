@@ -172,7 +172,7 @@ class BaseAdmin:
                 Route(
                     "/api/{identity}/action",
                     self.handle_action,
-                    methods=["POST"],
+                    methods=["GET", "POST"],
                     name="action",
                 ),
                 Route(
@@ -337,8 +337,10 @@ class BaseAdmin:
             if not model.is_accessible(request):
                 raise ActionFailed("Forbidden")
             assert name is not None
-            msg = await model.handle_action(request, pks, name)
-            return JSONResponse({"msg": msg})
+            handler_return = await model.handle_action(request, pks, name)
+            if isinstance(handler_return, Response):
+                return handler_return
+            return JSONResponse({"msg": handler_return})
         except ActionFailed as exc:
             return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
 

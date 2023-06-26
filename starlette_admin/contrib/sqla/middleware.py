@@ -21,13 +21,11 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
         if isinstance(self.engine, AsyncEngine):
             async with AsyncSession(self.engine, expire_on_commit=False) as session:
                 request.state.session = session
-                response = await call_next(request)
-                return response
+                return await call_next(request)
         else:
             with get_session(self.engine) as session:
                 request.state.session = session
-                response = await call_next(request)
-                return response
+                return await call_next(request)
 
 
 @contextmanager
