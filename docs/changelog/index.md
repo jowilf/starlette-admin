@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2023-06-26
+
+### Added
+
+* Added support for Russian language in the web interface by [@nessshon](https://github.com/nessshon)
+  in [#201](https://github.com/jowilf/starlette-admin/pull/201)
+* i18n: Update message catalogs by [@jowilf](https://github.com/jowilf)
+  in [#202](https://github.com/jowilf/starlette-admin/pull/202)
+* Support custom response for batch actions by [@jowilf](https://github.com/jowilf)
+  in [#212](https://github.com/jowilf/starlette-admin/pull/212)
+
+### Fixed
+
+* Fixed [#206](https://github.com/jowilf/starlette-admin/issues/206): Setting `add_to_menu=False` in CustomView still
+  results in the view being displayed in the menu
+
 ## [0.9.0] - 2023-05-25
 
 ### Added
