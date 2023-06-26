@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, Mapper, Session, joinedload
 from sqlalchemy.sql import Select
 from starlette.requests import Request
+from starlette.responses import Response
 from starlette_admin.contrib.sqla.converters import (
     BaseSQLAModelConverter,
     ModelConverter,
@@ -99,7 +100,9 @@ class ModelView(BaseModelView):
         )
         super().__init__()
 
-    async def handle_action(self, request: Request, pks: List[Any], name: str) -> str:
+    async def handle_action(
+        self, request: Request, pks: List[Any], name: str
+    ) -> Union[str, Response]:
         try:
             return await super().handle_action(request, pks, name)
         except SQLAlchemyError as exc:

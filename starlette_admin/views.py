@@ -326,7 +326,9 @@ class BaseModelView(BaseView):
                 actions.append(self._actions.get(action_name))
         return actions
 
-    async def handle_action(self, request: Request, pks: List[Any], name: str) -> str:
+    async def handle_action(
+        self, request: Request, pks: List[Any], name: str
+    ) -> Union[str, Response]:
         """
         Handle action with `name`.
         Raises:
@@ -337,7 +339,13 @@ class BaseModelView(BaseView):
             raise ActionFailed("Invalid action")
         if not await self.is_action_allowed(request, name):
             raise ActionFailed("Forbidden")
-        return await handler(request, pks)
+        handler_return = await handler(request, pks)
+        custom_response = self._actions[name]["custom_response"]
+        if isinstance(handler_return, Response) and not custom_response:
+            raise ActionFailed(
+                "Set custom_response to true, to be able to return custom response"
+            )
+        return handler_return
 
     @action(
         name="delete",

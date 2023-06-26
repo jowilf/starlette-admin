@@ -17,6 +17,7 @@ from typing import List, Any
 
 from starlette.datastructures import FormData
 from starlette.requests import Request
+from starlette.responses import RedirectResponse, Response
 
 from starlette_admin import action
 from starlette_admin.contrib.sqla import ModelView
@@ -24,7 +25,7 @@ from starlette_admin.exceptions import ActionFailed
 
 
 class ArticleView(ModelView):
-    actions = ["make_published", "delete"] # `delete` function is added by default
+    actions = ["make_published", "redirect", "delete"] # `delete` function is added by default
 
     @action(
         name="make_published",
@@ -51,4 +52,22 @@ class ArticleView(ModelView):
             raise ActionFailed("Sorry, We can't proceed this action now.")
         # Display successfully message
         return "{} articles were successfully marked as published".format(len(pks))
+
+    # For custom response
+    @action(
+        name="redirect",
+        text="Redirect",
+        custom_response=True,
+        confirmation="Fill the form",
+        form='''
+        <form>
+            <div class="mt-3">
+                <input type="text" class="form-control" name="value" placeholder="Enter value">
+            </div>
+        </form>
+        '''
+     )
+    async def redirect_action(self, request: Request, pks: List[Any]) -> Response:
+        data = await request.form()
+        return RedirectResponse(f"https://example.com/?value={data['value']}")
 ```
