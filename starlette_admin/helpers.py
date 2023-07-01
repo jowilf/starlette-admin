@@ -1,8 +1,10 @@
 import os
 import re
-from typing import TYPE_CHECKING, Any, Dict, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Sequence, Tuple, Union
 
 from markupsafe import escape
+from starlette.requests import Request
+from starlette.responses import Response
 from starlette_admin._types import RequestAction
 from starlette_admin.exceptions import FormValidationError
 
@@ -104,3 +106,16 @@ def pydantic_error_to_form_validation_errors(exc: Any) -> FormValidationError:
                 _d[loc[i]] = {}
             _d = _d[loc[i]]
     return FormValidationError(errors)
+
+
+def wrap_endpoint_with_kwargs(
+    endpoint: Callable[..., Awaitable[Response]], **kwargs: Any
+) -> Callable[[Request], Awaitable[Response]]:
+    """
+    Wraps an endpoint function with additional keyword arguments.
+    """
+
+    async def wrapper(request: Request) -> Response:
+        return await endpoint(request=request, **kwargs)
+
+    return wrapper

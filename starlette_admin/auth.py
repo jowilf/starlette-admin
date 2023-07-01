@@ -1,14 +1,29 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Sequence
+from typing import TYPE_CHECKING, Optional, Sequence
+
+from starlette.middleware import Middleware
+from starlette.routing import Route
+from starlette.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
+from starlette_admin.exceptions import FormValidationError, LoginFailed
+from starlette_admin.helpers import wrap_endpoint_with_kwargs
+from starlette_admin.i18n import lazy_gettext as _
+
+if TYPE_CHECKING:
+    from starlette_admin.base import BaseAdmin
+
 from urllib.parse import urlencode
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
-from starlette.status import HTTP_303_SEE_OTHER
+from starlette.status import (
+    HTTP_303_SEE_OTHER,
+)
 from starlette.types import ASGIApp
-from starlette_admin.exceptions import LoginFailed
-from starlette_admin.i18n import lazy_gettext as _
 
 
 @dataclass
@@ -17,7 +32,7 @@ class AdminUser:
     photo_url: Optional[str] = None
 
 
-class AuthProvider:
+class BaseAuthProvider(ABC):
     """
     Base class for implementing the Authentication into your admin interface
 
@@ -38,6 +53,54 @@ class AuthProvider:
         self.logout_path = logout_path
         self.allow_paths = allow_paths
 
+    @abstractmethod
+    def setup_admin(self, admin: "BaseAdmin"):
+        raise NotImplementedError()
+
+    def get_middleware(self, admin: "BaseAdmin") -> Middleware:
+        return Middleware(AuthMiddleware, provider=self)
+
+    async def is_authenticated(self, request: Request) -> bool:
+        """
+        This method will be called to validate each incoming request.
+        You can also save the connected user information into the
+        request state and use it later to restrict access to some part
+        of your admin interface
+
+        Returns:
+            True: to accept the request
+            False: to redirect to login page
+
+        Examples:
+            ```python
+            async def is_authenticated(self, request: Request) -> bool:
+                if request.session.get("username", None) in users:
+                    # Save user object in state
+                    request.state.user = my_users_db.get(request.session["username"])
+                    return True
+                return False
+            ```
+        """
+        return False
+
+    def get_admin_user(self, request: Request) -> Optional[AdminUser]:
+        """
+        Override this method to display connected user `name` and/or `profile`
+
+        Returns:
+            AdminUser: The connected user info
+
+        Examples:
+            ```python
+            def get_admin_user(self, request: Request) -> AdminUser:
+                user = request.state.user  # Retrieve current user (previously saved in the request state)
+                return AdminUser(username=user["name"], photo_url=user["photo_url"])
+            ```
+        """
+        return None  # pragma: no cover
+
+
+class AuthProvider(BaseAuthProvider):
     async def login(
         self,
         username: str,
@@ -82,45 +145,6 @@ class AuthProvider:
         """
         raise LoginFailed("Not Implemented")
 
-    async def is_authenticated(self, request: Request) -> bool:
-        """
-        This method will be called to validate each incoming request.
-        You can also save the connected user information into the
-        request state and use it later to restrict access to some part
-        of your admin interface
-
-        Returns:
-            True: to accept the request
-            False: to redirect to login page
-
-        Examples:
-            ```python
-            async def is_authenticated(self, request: Request) -> bool:
-                if request.session.get("username", None) in users:
-                    # Save user object in state
-                    request.state.user = my_users_db.get(request.session["username"])
-                    return True
-                return False
-            ```
-        """
-        return False
-
-    def get_admin_user(self, request: Request) -> Optional[AdminUser]:
-        """
-        Override this method to display connected user `name` and/or `profile`
-
-        Returns:
-            AdminUser: The connected user info
-
-        Examples:
-            ```python
-            def get_admin_user(self, request: Request) -> AdminUser:
-                user = request.state.user  # Retrieve current user (previously save in state)
-                return AdminUser(username=user["name"], photo_url=user["photo_url"])
-            ```
-        """
-        return None  # pragma: no cover
-
     async def logout(self, request: Request, response: Response) -> Response:
         """
         Implement logout logic (clear sessions, cookies, ...) here
@@ -138,12 +162,84 @@ class AuthProvider:
         """
         raise NotImplementedError()
 
+    async def render_login(self, request: Request, admin: "BaseAdmin") -> Response:
+        if request.method == "GET":
+            return admin.templates.TemplateResponse(
+                "login.html",
+                {"request": request, "_is_login_path": True},
+            )
+        form = await request.form()
+        try:
+            return await self.login(
+                form.get("username"),  # type: ignore
+                form.get("password"),  # type: ignore
+                form.get("remember_me") == "on",
+                request,
+                RedirectResponse(
+                    request.query_params.get("next")
+                    or request.url_for(admin.route_name + ":index"),
+                    status_code=HTTP_303_SEE_OTHER,
+                ),
+            )
+        except FormValidationError as errors:
+            return admin.templates.TemplateResponse(
+                "login.html",
+                {"request": request, "form_errors": errors, "_is_login_path": True},
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        except LoginFailed as error:
+            return admin.templates.TemplateResponse(
+                "login.html",
+                {"request": request, "error": error.msg, "_is_login_path": True},
+                status_code=HTTP_400_BAD_REQUEST,
+            )
+
+    async def render_logout(self, request: Request, admin: "BaseAdmin") -> Response:
+        return await self.logout(
+            request,
+            RedirectResponse(
+                request.url_for(admin.route_name + ":index"),
+                status_code=HTTP_303_SEE_OTHER,
+            ),
+        )
+
+    def get_login_route(self, admin: "BaseAdmin") -> Route:
+        """
+        Get the login route for the admin interface.
+        """
+        return Route(
+            self.login_path,
+            wrap_endpoint_with_kwargs(self.render_login, admin=admin),
+            methods=["GET", "POST"],
+        )
+
+    def get_logout_route(self, admin: "BaseAdmin") -> Route:
+        """
+        Get the logout route for the admin interface.
+        """
+        return Route(
+            self.logout_path,
+            wrap_endpoint_with_kwargs(self.render_logout, admin=admin),
+            methods=["GET"],
+        )
+
+    def setup_admin(self, admin: "BaseAdmin"):
+        """
+        Set up the admin interface by adding middleware and routes.
+        """
+        admin.middlewares.append(self.get_middleware(admin=admin))
+        login_route = self.get_login_route(admin=admin)
+        logout_route = self.get_logout_route(admin=admin)
+        login_route.name = "login"
+        logout_route.name = "logout"
+        admin.routes.extend([login_route, logout_route])
+
 
 class AuthMiddleware(BaseHTTPMiddleware):
     def __init__(
         self,
         app: ASGIApp,
-        provider: AuthProvider,
+        provider: "BaseAuthProvider",
         allow_paths: Optional[Sequence[str]] = None,
     ) -> None:
         super().__init__(app)
