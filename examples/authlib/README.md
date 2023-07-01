@@ -11,7 +11,7 @@ cd starlette-admin
 ```
 
 2. Update the credentials in
-   the [config.py](https://github.com/jowilf/starlette-admin/blob/main/examples/auth/config.py) file:
+   the [config.py](https://github.com/jowilf/starlette-admin/blob/main/examples/authlib/config.py) file:
 
 ```python
 AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID", "your-auth0-client-id")
