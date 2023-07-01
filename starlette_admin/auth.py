@@ -54,7 +54,7 @@ class BaseAuthProvider(ABC):
         self.allow_paths = allow_paths
 
     @abstractmethod
-    def setup_admin(self, admin: "BaseAdmin"):
+    def setup_admin(self, admin: "BaseAdmin") -> None:
         raise NotImplementedError()
 
     def get_middleware(self, admin: "BaseAdmin") -> Middleware:
@@ -223,7 +223,7 @@ class AuthProvider(BaseAuthProvider):
             methods=["GET"],
         )
 
-    def setup_admin(self, admin: "BaseAdmin"):
+    def setup_admin(self, admin: "BaseAdmin") -> None:
         """
         Set up the admin interface by adding middleware and routes.
         """
