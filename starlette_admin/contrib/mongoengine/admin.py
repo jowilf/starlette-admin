@@ -1,3 +1,5 @@
+from typing import Generator
+
 import gridfs
 from bson import ObjectId
 from mongoengine.connection import get_db
@@ -22,7 +24,7 @@ class Admin(BaseAdmin):
         super().mount_to(app)
 
 
-def _read_grid_out(grid_out):
+def _read_grid_out(grid_out: gridfs.grid_file.GridOut) -> Generator:
     while True:
         chunk = grid_out.read(
             255 * 1024
