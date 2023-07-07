@@ -22,6 +22,16 @@ class Admin(BaseAdmin):
         super().mount_to(app)
 
 
+def _read_grid_out(grid_out):
+    while True:
+        chunk = grid_out.read(
+            255 * 1024
+        )  # GridOut uses a default chunk size of 255 KB.
+        if not chunk:
+            break
+        yield chunk
+
+
 def _serve_file(request: Request) -> Response:
     pk = request.path_params.get("pk")
     col = request.path_params.get("col")
@@ -30,7 +40,7 @@ def _serve_file(request: Request) -> Response:
     try:
         file = fs.get(ObjectId(pk))
         return StreamingResponse(
-            file,
+            _read_grid_out(file),
             media_type=file.content_type,
             headers={"Content-Disposition": f"attachment;filename={file.filename}"},
         )
