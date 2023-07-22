@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2023-07-22
+
+### Fixed
+
+* Fix [#224](https://github.com/jowilf/starlette-admin/issues/224) by [@jowilf](https://github.com/jowilf)
+  in [#227](https://github.com/jowilf/starlette-admin/pull/227)
+* Fix [#239](https://github.com/jowilf/starlette-admin/issues/239): Order Select2 data by primary key during fetching by
+  [@jowilf](https://github.com/jowilf) in [#241](https://github.com/jowilf/starlette-admin/issues/241)
+
 ## [0.10.0] - 2023-06-26
 
 ### Added
