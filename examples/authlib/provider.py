@@ -44,7 +44,7 @@ class MyAuthProvider(AuthProvider):
         redirect_uri = request.url_for(
             admin.route_name + ":authorize_auth0"
         ).include_query_params(next=request.query_params.get("next"))
-        return await auth0.authorize_redirect(request, redirect_uri)
+        return await auth0.authorize_redirect(request, str(redirect_uri))
 
     async def render_logout(self, request: Request, admin: BaseAdmin) -> Response:
         """Override the default logout to implement custom logic"""
