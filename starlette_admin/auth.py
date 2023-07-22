@@ -55,9 +55,18 @@ class BaseAuthProvider(ABC):
 
     @abstractmethod
     def setup_admin(self, admin: "BaseAdmin") -> None:
+        """
+        This method is an abstract method that must be implemented in subclasses.
+        It allows custom configuration and setup of the admin interface
+        related to authentication and authorization.
+        """
         raise NotImplementedError()
 
     def get_middleware(self, admin: "BaseAdmin") -> Middleware:
+        """
+        This method returns the authentication middleware required for the admin interface
+        to enable authentication
+        """
         return Middleware(AuthMiddleware, provider=self)
 
     async def is_authenticated(self, request: Request) -> bool:
@@ -163,6 +172,7 @@ class AuthProvider(BaseAuthProvider):
         raise NotImplementedError()
 
     async def render_login(self, request: Request, admin: "BaseAdmin") -> Response:
+        """Render the default login page for username & password authentication."""
         if request.method == "GET":
             return admin.templates.TemplateResponse(
                 "login.html",
@@ -195,6 +205,7 @@ class AuthProvider(BaseAuthProvider):
             )
 
     async def render_logout(self, request: Request, admin: "BaseAdmin") -> Response:
+        """Render the default logout page."""
         return await self.logout(
             request,
             RedirectResponse(
@@ -225,7 +236,7 @@ class AuthProvider(BaseAuthProvider):
 
     def setup_admin(self, admin: "BaseAdmin") -> None:
         """
-        Set up the admin interface by adding middleware and routes.
+        Setup the admin interface by adding necessary middleware and routes.
         """
         admin.middlewares.append(self.get_middleware(admin=admin))
         login_route = self.get_login_route(admin=admin)

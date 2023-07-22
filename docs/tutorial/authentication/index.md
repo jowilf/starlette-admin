@@ -1,17 +1,17 @@
 # Authentication & Authorization
 
-*starlette-admin* provides an optional [AuthProvider][starlette_admin.auth.AuthProvider] class for helping you to protect your admin interface from unwanted users.
+To protect your admin interface from unwanted users, you can create an Authentication Provider by extending
+the [AuthProvider][starlette_admin.auth.AuthProvider] class and set `auth_provider` when declaring your admin app
 
+## Username and Password Authentication
 
-## Authentication
+By default, [AuthProvider][starlette_admin.auth.AuthProvider] provides a login form with `username` and `password`
+fields for basic username and password authentication. To fully support this authentication method, you need to
+implement the following methods in your custom Authentication Provider:
 
-To enable authentication in your admin interface, inherit the [AuthProvider][starlette_admin.auth.AuthProvider] class
-and set `auth_provider` when declaring your admin app
-
-The class [AuthProvider][starlette_admin.auth.AuthProvider] has sevarals methods you need to override:
-
-* [is_authenticated][starlette_admin.auth.AuthProvider.is_authenticated]: This method will be called to validate each incoming request.
-* [get_admin_user][starlette_admin.auth.AuthProvider.get_admin_user]: Return connected user `name` and/or `profile`
+* [is_authenticated][starlette_admin.auth.BaseAuthProvider.is_authenticated]: This method will be called to validate
+  each incoming request.
+* [get_admin_user][starlette_admin.auth.BaseAuthProvider.get_admin_user]: Return connected user `name` and/or `profile`
 * [login][starlette_admin.auth.AuthProvider.login]: will be called to validate user credentials.
 * [logout][starlette_admin.auth.AuthProvider.logout]: Will be called to logout (clear sessions, cookies, ...)
 
@@ -36,7 +36,7 @@ users = {
 }
 
 
-class MyAuthProvider(AuthProvider):
+class UsernameAndPasswordProvider(AuthProvider):
     """
     This is only for demo purpose, it's not a better
     way to save and validate user credentials
@@ -85,6 +85,124 @@ class MyAuthProvider(AuthProvider):
         request.session.clear()
         return response
 
+```
+
+For a working example, have a look
+at [`https://github.com/jowilf/starlette-admin/tree/main/examples/auth`](https://github.com/jowilf/starlette-admin/tree/main/examples/auth)
+
+## Custom Authentication flow (OAuth2/OIDC, ...)
+
+If you prefer to use a custom authentication flow, such as OAuth2 or OIDC, you can implement the following methods in
+your custom Authentication Provider:
+
+* [is_authenticated][starlette_admin.auth.BaseAuthProvider.is_authenticated]: This method will be called to validate each incoming request.
+* [get_admin_user][starlette_admin.auth.BaseAuthProvider.get_admin_user]: Return connected user `name` and/or `profile`
+* [render_login][starlette_admin.auth.AuthProvider.render_login]: Override the default behavior to render a custom login page.
+* [render_logout][starlette_admin.auth.AuthProvider.render_logout]: Implement the custom logout logic.
+
+Additionally, you can override these methods depending on your needs:
+
+* [get_middleware][starlette_admin.auth.BaseAuthProvider.get_middleware]: To provide a custom authentication middleware
+  for the admin interface
+* [setup_admin][starlette_admin.auth.BaseAuthProvider.setup_admin]: This method is called during the setup process of
+  the admin interface and allows for custom configuration and setup.
+
+```python
+from typing import Optional
+
+from starlette.datastructures import URL
+from starlette.middleware import Middleware
+from starlette.requests import Request
+from starlette.responses import RedirectResponse, Response
+from starlette.routing import Route
+from starlette_admin import BaseAdmin
+from starlette_admin.auth import AdminUser, AuthMiddleware, AuthProvider
+
+from authlib.integrations.starlette_client import OAuth
+
+from .config import AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN
+
+oauth = OAuth()
+oauth.register(
+    "auth0",
+    client_id=AUTH0_CLIENT_ID,
+    client_secret=AUTH0_CLIENT_SECRET,
+    client_kwargs={
+        "scope": "openid profile email",
+    },
+    server_metadata_url=f"https://{AUTH0_DOMAIN}/.well-known/openid-configuration",
+)
+
+
+class MyAuthProvider(AuthProvider):
+    async def is_authenticated(self, request: Request) -> bool:
+        if request.session.get("user", None) is not None:
+            request.state.user = request.session.get("user")
+            return True
+        return False
+
+    def get_admin_user(self, request: Request) -> Optional[AdminUser]:
+        user = request.state.user
+        return AdminUser(
+            username=user["name"],
+            photo_url=user["picture"],
+        )
+
+    async def render_login(self, request: Request, admin: BaseAdmin):
+        """Override the default login behavior to implement custom logic."""
+        auth0 = oauth.create_client("auth0")
+        redirect_uri = request.url_for(
+            admin.route_name + ":authorize_auth0"
+        ).include_query_params(next=request.query_params.get("next"))
+        return await auth0.authorize_redirect(request, str(redirect_uri))
+
+    async def render_logout(self, request: Request, admin: BaseAdmin) -> Response:
+        """Override the default logout to implement custom logic"""
+        request.session.clear()
+        return RedirectResponse(
+            url=URL(f"https://{AUTH0_DOMAIN}/v2/logout").include_query_params(
+                returnTo=request.url_for(admin.route_name + ":index"),
+                client_id=AUTH0_CLIENT_ID,
+            )
+        )
+
+    async def handle_auth_callback(self, request: Request):
+        auth0 = oauth.create_client("auth0")
+        token = await auth0.authorize_access_token(request)
+        request.session.update({"user": token["userinfo"]})
+        return RedirectResponse(request.query_params.get("next"))
+
+    def setup_admin(self, admin: "BaseAdmin"):
+        super().setup_admin(admin)
+        """and custom authentication callback route"""
+        admin.routes.append(
+            Route(
+                "/auth0/authorize",
+                self.handle_auth_callback,
+                methods=["GET"],
+                name="authorize_auth0",
+            )
+        )
+
+    def get_middleware(self, admin: "BaseAdmin") -> Middleware:
+        return Middleware(
+            AuthMiddleware, provider=self, allow_paths=["/auth0/authorize"]
+        )
+
+```
+
+For a working example, have a look
+at [`https://github.com/jowilf/starlette-admin/tree/main/examples/authlib`](https://github.com/jowilf/starlette-admin/tree/main/examples/authlib)
+
+The AuthProvider can be added at your admin interface as follows:
+
+```python
+admin = Admin(
+    engine,
+    title="Example: Authentication",
+    auth_provider=MyAuthProvider(),
+    middlewares=[Middleware(SessionMiddleware, secret_key=SECRET)],
+)
 ```
 
 ## Authorization
@@ -152,7 +270,3 @@ class ArticleView(ModelView):
         ...
         return "{} articles were successfully marked as published".format(len(pks))
 ```
-
-## Example
-
-For a working example, have a look at [`https://github.com/jowilf/starlette-admin/tree/main/examples/auth`](https://github.com/jowilf/starlette-admin/tree/main/examples/auth)
