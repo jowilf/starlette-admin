@@ -1,0 +1,26 @@
+# docker-compose up
+# docker-compose down
+
+services:
+  app:
+    build: .
+    container_name: python-test
+    volumes:
+      - .:/app/starlette-admin
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+    depends_on:
+      - mongodb
+    networks:
+      - node-network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    networks:
+      - node-network
+
+networks:
+  node-network:
+    driver: bridge

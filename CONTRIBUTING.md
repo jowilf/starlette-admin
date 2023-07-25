@@ -181,7 +181,7 @@ First, add the pre-commit command to your git's pre-commit hooks. This will ensu
 code
 
 ```shell
-pre-commit install
+hatch run pre-commit install
 ```
 
 To make the pull request reviewing easier and keep the version tree clean your pull request should consist of a single
@@ -198,7 +198,7 @@ documentation, but more human friendly documentation might also be needed.
 The documentation is generated using [mkdocs](https://www.mkdocs.org/). To see a preview of any edits you make you can run:
 
 ```shell
-hatch run docs
+hatch run docs:serve
 ```
 and visit the printed address (usually localhost:8080) in your browser
 
