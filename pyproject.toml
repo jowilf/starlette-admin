@@ -7,7 +7,7 @@ name = "starlette-admin"
 description = "Fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 keywords = ["sqlalchemy", "sqlmodel", "mongoengine", "odmantic", "starlette", "fastapi", "admin", "dashboard", "datatables"]
 authors = [
     { name = "Jocelin Hounon", email = "hounonj@gmail.com" },
@@ -48,8 +48,8 @@ test = [
     "pytest >=7.2.0, <7.5.0",
     "pytest-asyncio >=0.20.2, <0.22.0",
     "mypy ==1.4.1",
-    "ruff ==0.0.275",
-    "black ==23.3.0",
+    "ruff ==0.0.280",
+    "black ==23.7.0",
     "httpx >=0.23.3, <0.25.0",
     "coverage >=7.0.0, <7.3.0",
     "SQLAlchemy-Utils >=0.40.0, <0.42.0",
@@ -58,7 +58,7 @@ test = [
     "phonenumbers >=8.13.3, <8.14.0",
     "passlib >=1.7.4, <1.8.0",
     "backports.zoneinfo; python_version<'3.9'",
-    "sqlalchemy-file >=0.4.0, <0.5.0",
+    "sqlalchemy-file >=0.5.0, <0.6.0",
     "fasteners ==0.18",
     "PyMySQL[rsa] >=1.0.2, <1.2.0",
     "psycopg2-binary >=2.9.5, <3.0.0",
@@ -189,7 +189,7 @@ ignore = [
     "E501", # line too long, handled by black
     "N818", # Exception {name} should be named with an Error suffix
 ]
-target-version = "py37"
+target-version = "py38"
 
 [tool.ruff.isort]
 known-third-party = ["starlette_admin"]
@@ -215,7 +215,6 @@ ignore_missing_imports = true
 module = [
     "starlette_admin.contrib.sqla.helpers",
     "starlette_admin.contrib.sqla.view",
-    "starlette_admin.converters"
 ]
 warn_unused_ignores = false
 
