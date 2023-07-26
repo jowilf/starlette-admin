@@ -174,7 +174,7 @@ class MyAuthProvider(AuthProvider):
 
     def setup_admin(self, admin: "BaseAdmin"):
         super().setup_admin(admin)
-        """and custom authentication callback route"""
+        """add custom authentication callback route"""
         admin.routes.append(
             Route(
                 "/auth0/authorize",
