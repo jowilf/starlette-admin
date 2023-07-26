@@ -46,6 +46,7 @@
               limit: 20,
               select2: true,
               where: params.term,
+              order_by: el.data("pk") + " asc"
             };
           },
           processResults: function (data, params) {

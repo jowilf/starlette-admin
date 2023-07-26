@@ -239,6 +239,7 @@ class TextAreaField(StringField):
     rows: int = 6
     class_: str = "field-textarea form-control"
     form_template: str = "forms/textarea.html"
+    display_template: str = "displays/textarea.html"
 
     def input_params(self) -> str:
         return html_params(
