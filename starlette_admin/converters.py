@@ -2,7 +2,6 @@ import datetime
 import decimal
 import enum
 import inspect
-import sys
 import typing
 from abc import abstractmethod
 from typing import (
@@ -12,6 +11,8 @@ from typing import (
     Optional,
     Sequence,
     Type,
+    get_args,
+    get_origin,
 )
 
 from starlette_admin.exceptions import NotSupportedAnnotation
@@ -29,14 +30,6 @@ from starlette_admin.fields import (
     StringField,
     TimeField,
 )
-
-if sys.version_info >= (3, 8):  # pragma: no cover
-    from typing import get_args, get_origin
-else:  # pragma: no cover
-    try:
-        from typing_extensions import get_args, get_origin
-    except ImportError:
-        get_args, get_origin = None, None  # type: ignore[assignment]
 
 
 def converts(
