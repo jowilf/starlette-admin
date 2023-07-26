@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2023-07-26
+
+### Added
+
+* Improve the Authentication Provider to support custom flow such as oauth2/OIDC by [@jowilf](https://github.com/jowilf)
+  in [#221](https://github.com/jowilf/starlette-admin/pull/221).
+
+### Internals
+
+* Drop python 3.7 support by [@jowilf](https://github.com/jowilf)
+  in [#248](https://github.com/jowilf/starlette-admin/pull/248)
+
 ## [0.10.1] - 2023-07-22
 
 ### Fixed
