@@ -2,7 +2,7 @@ from typing import Optional, Sequence, Union
 
 from odmantic import AIOEngine, SyncEngine
 from starlette.middleware import Middleware
-from starlette_admin.auth import AuthProvider
+from starlette_admin.auth import BaseAuthProvider
 from starlette_admin.base import BaseAdmin
 from starlette_admin.contrib.odmantic.middleware import EngineMiddleware
 from starlette_admin.i18n import I18nConfig
@@ -22,7 +22,7 @@ class Admin(BaseAdmin):
         templates_dir: str = "templates",
         statics_dir: Optional[str] = None,
         index_view: Optional[CustomView] = None,
-        auth_provider: Optional[AuthProvider] = None,
+        auth_provider: Optional[BaseAuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
         i18n_config: Optional[I18nConfig] = None,

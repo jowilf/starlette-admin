@@ -1,0 +1,6 @@
+starlette-admin
+sqlalchemy
+uvicorn
+Authlib
+httpx
+itsdangerous

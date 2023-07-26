@@ -21,8 +21,8 @@ from starlette.status import (
 )
 from starlette.templating import Jinja2Templates
 from starlette_admin._types import RequestAction
-from starlette_admin.auth import AuthMiddleware, AuthProvider
-from starlette_admin.exceptions import ActionFailed, FormValidationError, LoginFailed
+from starlette_admin.auth import BaseAuthProvider
+from starlette_admin.exceptions import ActionFailed, FormValidationError
 from starlette_admin.helpers import get_file_icon
 from starlette_admin.i18n import (
     I18nConfig,
@@ -49,7 +49,7 @@ class BaseAdmin:
         templates_dir: str = "templates",
         statics_dir: Optional[str] = None,
         index_view: Optional[CustomView] = None,
-        auth_provider: Optional[AuthProvider] = None,
+        auth_provider: Optional[BaseAuthProvider] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
         i18n_config: Optional[I18nConfig] = None,
@@ -76,7 +76,7 @@ class BaseAdmin:
         self.templates_dir = templates_dir
         self.statics_dir = statics_dir
         self.auth_provider = auth_provider
-        self.middlewares = middlewares
+        self.middlewares = list(middlewares) if middlewares is not None else []
         self.index_view = (
             index_view
             if (index_view is not None)
@@ -120,37 +120,13 @@ class BaseAdmin:
                     "'babel' package is required to use i18n features."
                     "Install it with `pip install starlette-admin[i18n]`"
                 ) from err
-            self.middlewares = (
-                [] if self.middlewares is None else list(self.middlewares)
-            )
             self.middlewares.insert(
                 0, Middleware(LocaleMiddleware, i18n_config=self.i18n_config)
             )
 
     def init_auth(self) -> None:
         if self.auth_provider is not None:
-            self.middlewares = (
-                [] if self.middlewares is None else list(self.middlewares)
-            )
-            self.middlewares.append(
-                Middleware(AuthMiddleware, provider=self.auth_provider)
-            )
-            self.routes.extend(
-                [
-                    Route(
-                        self.auth_provider.login_path,
-                        self._render_login,
-                        methods=["GET", "POST"],
-                        name="login",
-                    ),
-                    Route(
-                        self.auth_provider.logout_path,
-                        self._render_logout,
-                        methods=["GET"],
-                        name="logout",
-                    ),
-                ]
-            )
+            self.auth_provider.setup_admin(self)
 
     def init_routes(self) -> None:
         statics = StaticFiles(directory=self.statics_dir, packages=["starlette_admin"])
@@ -343,49 +319,6 @@ class BaseAdmin:
             return JSONResponse({"msg": handler_return})
         except ActionFailed as exc:
             return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
-
-    async def _render_login(self, request: Request) -> Response:
-        if request.method == "GET":
-            return self.templates.TemplateResponse(
-                "login.html",
-                {"request": request, "_is_login_path": True},
-            )
-        form = await request.form()
-        try:
-            assert self.auth_provider is not None
-            return await self.auth_provider.login(
-                form.get("username"),  # type: ignore
-                form.get("password"),  # type: ignore
-                form.get("remember_me") == "on",
-                request,
-                RedirectResponse(
-                    request.query_params.get("next")
-                    or request.url_for(self.route_name + ":index"),
-                    status_code=HTTP_303_SEE_OTHER,
-                ),
-            )
-        except FormValidationError as errors:
-            return self.templates.TemplateResponse(
-                "login.html",
-                {"request": request, "form_errors": errors, "_is_login_path": True},
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            )
-        except LoginFailed as error:
-            return self.templates.TemplateResponse(
-                "login.html",
-                {"request": request, "error": error.msg, "_is_login_path": True},
-                status_code=HTTP_400_BAD_REQUEST,
-            )
-
-    async def _render_logout(self, request: Request) -> Response:
-        assert self.auth_provider is not None
-        return await self.auth_provider.logout(
-            request,
-            RedirectResponse(
-                request.url_for(self.route_name + ":index"),
-                status_code=HTTP_303_SEE_OTHER,
-            ),
-        )
 
     async def _render_list(self, request: Request) -> Response:
         identity = request.path_params.get("identity")
