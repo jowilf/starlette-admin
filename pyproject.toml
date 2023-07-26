@@ -80,7 +80,7 @@ doc = [
 ]
 dev = [
     "pre-commit >=2.20.0, <4.0.0",
-    "uvicorn >=0.20.0, <0.23.0",
+    "uvicorn >=0.20.0, <0.24.0",
 ]
 
 [tool.hatch.envs.default]
