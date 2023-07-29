@@ -223,7 +223,7 @@ class ModelView(BaseModelView):
 
     async def build_full_text_search_query(self, request: Request, term: str) -> QNode:
         queries = []
-        for field in self.fields:
+        for field in self.get_fields_list(request):
             if (
                 field.searchable
                 and field.name != "id"

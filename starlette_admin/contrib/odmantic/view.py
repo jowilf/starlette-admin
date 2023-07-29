@@ -228,7 +228,7 @@ class ModelView(BaseModelView):
         self, request: Request, term: str
     ) -> QueryExpression:
         _list = []
-        for field in self.fields:
+        for field in self.get_fields_list(request):
             if (
                 field.searchable
                 and field.name != "id"

@@ -8,6 +8,7 @@ from sqlalchemy.orm import InstrumentedAttribute, Mapper, Session, joinedload
 from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette.responses import Response
+from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.converters import (
     BaseSQLAModelConverter,
     ModelConverter,
@@ -165,7 +166,7 @@ class ModelView(BaseModelView):
            ```
         """
         clauses = []
-        for field in self.fields:
+        for field in self.get_fields_list(request):
             if field.searchable and type(field) in [
                 StringField,
                 TextAreaField,
@@ -218,7 +219,7 @@ class ModelView(BaseModelView):
                 )
             stmt = stmt.where(where)  # type: ignore
         stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
-        for field in self.fields:
+        for field in self.get_fields_list(request, RequestAction.LIST):
             if isinstance(field, RelationField):
                 stmt = stmt.options(joinedload(getattr(self.model, field.name)))
         if isinstance(session, AsyncSession):
@@ -233,7 +234,7 @@ class ModelView(BaseModelView):
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: Union[Session, AsyncSession] = request.state.session
         stmt = select(self.model).where(self._pk_column == self._pk_coerce(pk))
-        for field in self.fields:
+        for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField):
                 stmt = stmt.options(joinedload(getattr(self.model, field.name)))
         if isinstance(session, AsyncSession):
@@ -248,7 +249,7 @@ class ModelView(BaseModelView):
     async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
         session: Union[Session, AsyncSession] = request.state.session
         stmt = select(self.model).where(self._pk_column.in_(map(self._pk_coerce, pks)))
-        for field in self.fields:
+        for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField):
                 stmt = stmt.options(joinedload(getattr(self.model, field.name)))
         if isinstance(session, AsyncSession):

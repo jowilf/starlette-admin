@@ -505,7 +505,7 @@ class BaseModelView(BaseView):
         include_select2: bool = False,
     ) -> Dict[str, Any]:
         obj_serialized: Dict[str, Any] = {}
-        for field in self.fields:
+        for field in self.get_fields_list(request, action):
             if isinstance(field, RelationField) and include_relationships:
                 value = getattr(obj, field.name, None)
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
@@ -633,7 +633,7 @@ class BaseModelView(BaseView):
         )
         fields = [
             field.name
-            for field in self.fields
+            for field in self.get_fields_list(request)
             if (
                 not isinstance(field, (RelationField, FileField))
                 and not field.exclude_from_detail
@@ -701,14 +701,7 @@ class BaseModelView(BaseView):
         self, request: Request, action: RequestAction
     ) -> Sequence[str]:
         links = []
-        for field in self.fields:
-            if (
-                (action == RequestAction.LIST and field.exclude_from_list)
-                or (action == RequestAction.DETAIL and field.exclude_from_detail)
-                or (action == RequestAction.CREATE and field.exclude_from_create)
-                or (action == RequestAction.EDIT and field.exclude_from_edit)
-            ):
-                continue
+        for field in self.get_fields_list(request, action):
             for link in field.additional_css_links(request, action) or []:
                 if link not in links:
                     links.append(link)
@@ -718,11 +711,7 @@ class BaseModelView(BaseView):
         self, request: Request, action: RequestAction
     ) -> Sequence[str]:
         links = []
-        for field in self.fields:
-            if (action == RequestAction.CREATE and field.exclude_from_create) or (
-                action == RequestAction.EDIT and field.exclude_from_edit
-            ):
-                continue
+        for field in self.get_fields_list(request, action):
             for link in field.additional_js_links(request, action) or []:
                 if link not in links:
                     links.append(link)
