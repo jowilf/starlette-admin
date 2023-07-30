@@ -259,6 +259,7 @@ class BaseAdmin:
         return wrapper
 
     async def _render_api(self, request: Request) -> Response:
+        request.state.action = RequestAction.LIST
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request):
@@ -305,6 +306,7 @@ class BaseAdmin:
         )
 
     async def handle_action(self, request: Request) -> Response:
+        request.state.action = RequestAction.LIST
         try:
             identity = request.path_params.get("identity")
             pks = request.query_params.getlist("pks")
@@ -321,6 +323,7 @@ class BaseAdmin:
             return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
 
     async def _render_list(self, request: Request) -> Response:
+        request.state.action = RequestAction.LIST
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request):
@@ -336,6 +339,7 @@ class BaseAdmin:
         )
 
     async def _render_detail(self, request: Request) -> Response:
+        request.state.action = RequestAction.DETAIL
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request) or not model.can_view_details(request):
@@ -355,6 +359,7 @@ class BaseAdmin:
         )
 
     async def _render_create(self, request: Request) -> Response:
+        request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request) or not model.can_create(request):
@@ -390,6 +395,7 @@ class BaseAdmin:
         return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_edit(self, request: Request) -> Response:
+        request.state.action = RequestAction.EDIT
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request) or not model.can_edit(request):
@@ -453,11 +459,7 @@ class BaseAdmin:
         action: RequestAction,
     ) -> Dict[str, Any]:
         data = {}
-        for field in model.fields:
-            if (action == RequestAction.EDIT and field.exclude_from_edit) or (
-                action == RequestAction.CREATE and field.exclude_from_create
-            ):
-                continue
+        for field in model.get_fields_list(request, action):
             data[field.name] = await field.parse_form_data(request, form_data, action)
         return data
 
