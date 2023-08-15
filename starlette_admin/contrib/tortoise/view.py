@@ -1,6 +1,9 @@
-import starlette_admin
-from . import types as t, utils
 import asyncio
+
+import starlette_admin
+
+from . import types as t
+from . import utils
 
 
 class BaseModelView(starlette_admin.BaseModelView):
@@ -47,7 +50,7 @@ class BaseModelView(starlette_admin.BaseModelView):
 
     async def delete(self, request, pks: t.Pks) -> t.Optional[int]:
         items = await self.find_by_pks(request, pks)
-        return len(await asyncio.gather(*tuple(map(lambda item: item.delete(), items))))
+        return len(await asyncio.gather(*tuple(item.delete() for item in items)))
 
     async def edit(self, request, pk: t.Pk, data: dict) -> t.TortoiseModel:
         item = await self.find_by_pk(request, pk)

@@ -1,11 +1,12 @@
-from . import types as t
+import starlette_admin.fields as fields
+from tortoise import fields as tfields
 from tortoise.fields.relational import (
     ForeignKeyFieldInstance,
-    OneToOneFieldInstance,
     ManyToManyFieldInstance,
+    OneToOneFieldInstance,
 )
-from tortoise import fields as tfields
-import starlette_admin.fields as fields
+
+from . import types as t
 
 
 def starlette_admin_order_by2tortoise_order_by(order_bys: t.OrderBy):
@@ -35,7 +36,10 @@ def fk_fields(repo: t.TortoiseModel):
 
 def add_id2fk_fields(data: dict, fields: t.Sequence[str]):
     fk_fields_ = set(fields)
-    convert = lambda k: k if k not in fk_fields_ else f"{k}_id"
+
+    def convert(k):
+        return k if k not in fk_fields_ else f"{k}_id"
+
     return {convert(k): v for k, v in data.items()}
 
 
@@ -65,17 +69,15 @@ def related_starlette_field(field_map_item: tuple, **kw):
     starlette_type = tortoise2starlette_admin_fields[field]
     kwargs = {"name": name, "label": name, "required": field.required}
     if isinstance(field, ForeignKeyFieldInstance):
-        kwargs.update(dict(identity=field.model_name.split(".")[-1]))
+        kwargs.update({"identity": field.model_name.split(".")[-1]})
     elif isinstance(field, tfields.CharField):
-        kwargs.update(dict(maxlength=field.max_length))
+        kwargs.update({"maxlength": field.max_length})
     kwargs.update(kw)
     return starlette_type(**kwargs)
 
 
 def tortoise_fields2starlette_fields(model: t.TortoiseModel, **kwargs):
     return tuple(
-        map(
-            lambda i: related_starlette_field(i, kwargs.get(i[0], dict())),
-            model._meta.fields_map.items(),
-        )
+        related_starlette_field(i, kwargs.get(i[0], {}))
+        for i in model._meta.fields_map.items()
     )
