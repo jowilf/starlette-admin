@@ -17,11 +17,11 @@ def starlette_admin_order_by2tortoise_order_by(order_bys: t.OrderBy):
     return tuple(map(convert, order_bys))
 
 
-def remove_keys(item: t.Union[list, dict], iftrue):
+def remove_nones(item: dict):
     return {
-        k: remove_keys(v, iftrue) if isinstance(v, dict) else v
+        k: remove_nones(v) if isinstance(v, dict) else v
         for k, v in item.items()
-        if iftrue(k, v)
+        if v is not None
     }
 
 
@@ -33,8 +33,8 @@ def fk_fields(repo: t.TortoiseModel):
     )
 
 
-def add_id2fk_fields(data: dict, fk_fields: t.Sequence[str]):
-    fk_fields_ = set(fk_fields)
+def add_id2fk_fields(data: dict, fields: t.Sequence[str]):
+    fk_fields_ = set(fields)
     convert = lambda k: k if k not in fk_fields_ else f"{k}_id"
     return {convert(k): v for k, v in data.items()}
 

@@ -30,11 +30,10 @@ class BaseModelView(starlette_admin.BaseModelView):
 
     @classmethod
     def _insert_filters(cls, request, data):
-        data_ = utils.remove_keys(data, iftrue=lambda k, v: v is not None)
-        data_ = utils.add_id2fk_field(
-            data_, cls.repo._meta.fk_fields | cls.repo._meta.o2o_fields
+        return utils.add_id2fk_fields(
+            utils.remove_nones(data),
+            fields=cls.repo._meta.fk_fields | cls.repo._meta.o2o_fields,
         )
-        return data_
 
     async def create(self, request, data: dict) -> t.TortoiseModel:
         data = self._insert_filters(request, data)
