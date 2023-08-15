@@ -1,5 +1,6 @@
 *.pyc
 env*
+venv
 .mypy_cache
 .vscode
 .idea
