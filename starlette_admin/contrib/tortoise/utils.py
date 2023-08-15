@@ -61,7 +61,7 @@ tortoise2starlette_admin_fields = {
 
 
 def related_starlette_field(field_map_item: tuple, **kw):
-    name, field: tfields.Field = field_map_item
+    name, field = field_map_item
     starlette_type = tortoise2starlette_admin_fields[field]
     kwargs = {"name": name, "label": name, "required": field.required}
     if isinstance(field, ForeignKeyFieldInstance):
