@@ -6,6 +6,9 @@ import asyncio
 class BaseModelView(starlette_admin.BaseModelView):
     repo: t.ClassVar[t.Type[t.TortoiseModel]]
 
+    async def count(self, request, where: t.Where = None) -> int:
+        return await self.repo.all().count()
+
     async def find_all(
         self,
         request,
@@ -17,9 +20,9 @@ class BaseModelView(starlette_admin.BaseModelView):
         q = self.repo.all().limit(limit).offset(skip)
         if order_by is not None:
             q.order_by(*utils.starlette_admin_order_by2tortoise_order_by(order_by))
-        return await self._find_all(request, q)
+        return await self._find_all(request, q, where)
 
-    async def _find_all(self, request, query):
+    async def _find_all(self, request, query, where: t.Where):
         return query
 
     async def find_by_pk(self, request, pk: t.Pk) -> t.TortoiseModel:
