@@ -538,8 +538,6 @@ class EnumField(StringField):
         )
 
     def _get_label(self, value: Any, request: Request) -> Any:
-        if isinstance(value, Enum):
-            return value.name.replace("_", " ")
         for v, label in self._get_choices(request):
             if value == v:
                 return label
@@ -548,6 +546,8 @@ class EnumField(StringField):
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
+        if isinstance(value, Enum):
+            value = value.value
         labels = [
             (self._get_label(v, request) if action != RequestAction.EDIT else v)
             for v in (value if self.multiple else [value])
