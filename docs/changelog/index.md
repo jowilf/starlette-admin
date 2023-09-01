@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.2] - 2023-08-31
+
+### Fixed
+
+* Bug Fix: Current Enum Value Not Pre-Selected on Edit by [@jowilf](https://github.com/jowilf)
+  in [#273](https://github.com/jowilf/starlette-admin/pull/273)
+
 ## [0.11.1] - 2023-07-29
 
 ### Fixed
