@@ -175,8 +175,8 @@ class BaseModelView(BaseView):
         name: Name of the view to be displayed
         fields: List of fields
         pk_attr: Primary key field name
-        form_include_pk: Indicate if the primary key should be excluded from create and
-            edit. Default to True
+        form_include_pk (bool): Indicates whether the primary key should be
+            included in create and edit forms. Default to False.
         exclude_fields_from_list: List of fields to exclude in List page.
         exclude_fields_from_detail: List of fields to exclude in Detail page.
         exclude_fields_from_create: List of fields to exclude from creation page.
@@ -185,7 +185,11 @@ class BaseModelView(BaseView):
         sortable_fields: List of sortable fields.
         export_fields: List of fields to include in exports.
         fields_default_sort: Initial order (sort) to apply to the table.
-            eg: `["title", ("price", True)]`.
+            Should be a sequence of field names or a tuple of
+            (field name, True/False to indicate the sort direction).
+            For example:
+            `["title",  ("created_at", False), ("price", True)]` will sort
+             by `title` ascending, `created_at` ascending and `price` descending.
         export_types: A list of available export filetypes. Available
             exports are `['csv', 'excel', 'pdf', 'print']`. Only `pdf` is
             disabled by default.
