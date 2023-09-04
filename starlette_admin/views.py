@@ -185,7 +185,8 @@ class BaseModelView(BaseView):
         sortable_fields: List of sortable fields.
         export_fields: List of fields to include in exports.
         fields_default_sort: Initial order (sort) to apply to the table.
-            Should be a sequence of field names or a tuple of (field name, sort direction).
+            Should be a sequence of field names or a tuple of
+            (field name, True/False to indicate the sort direction).
             For example:
             `["title",  ("created_at", False), ("price", True)]` sorts
              by `title` ascending, `created_at` ascending and `price` descending.
