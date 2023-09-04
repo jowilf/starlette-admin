@@ -188,7 +188,7 @@ class BaseModelView(BaseView):
             Should be a sequence of field names or a tuple of
             (field name, True/False to indicate the sort direction).
             For example:
-            `["title",  ("created_at", False), ("price", True)]` sorts
+            `["title",  ("created_at", False), ("price", True)]` will sort
              by `title` ascending, `created_at` ascending and `price` descending.
         export_types: A list of available export filetypes. Available
             exports are `['csv', 'excel', 'pdf', 'print']`. Only `pdf` is
