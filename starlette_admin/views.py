@@ -204,6 +204,7 @@ class BaseModelView(BaseView):
             Default value is set to `[10, 25, 50, 100]`. Use `-1`to display All
         responsive_table: Enable/Disable [responsive](https://datatables.net/extensions/responsive/)
             extension
+        save_state: Enable/Disable [state saving](https://datatables.net/examples/basic_init/state_save.html)
         list_template: List view template. Default is `list.html`.
         detail_template: Details view template. Default is `details.html`.
         create_template: Edit view template. Default is `edit.html`.
