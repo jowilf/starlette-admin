@@ -253,6 +253,7 @@ $(function () {
   // Datatable instance
   var table = $("#dt").DataTable({
     dom: "r<'table-responsive't><'card-footer d-flex align-items-center'<'m-0'i><'m-0 ms-auto'p>>",
+    stateSave: model.stateSave,
     paging: true,
     lengthChange: true,
     searching: true,
