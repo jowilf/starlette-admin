@@ -235,6 +235,7 @@ class BaseModelView(BaseView):
     page_size: int = 10
     page_size_options: Sequence[int] = [10, 25, 50, 100]
     responsive_table: bool = False
+    save_state: bool = True
     list_template: str = "list.html"
     detail_template: str = "detail.html"
     create_template: str = "create.html"
@@ -737,6 +738,7 @@ class BaseModelView(BaseView):
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,
             "responsiveTable": self.responsive_table,
+            "stateSave": self.save_state,
             "fields": [f.dict() for f in self.get_fields_list(request)],
             "actions": await self.get_all_actions(request),
             "pk": self.pk_attr,

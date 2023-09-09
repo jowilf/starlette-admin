@@ -133,6 +133,7 @@ in your `ModelView` by overridden following options:
 * `column_visibility`: Enable/Disable [column visibility](https://datatables.net/extensions/buttons/built-in#Column-visibility) extension
 * `search_builder`: Enable/Disable [search builder](https://datatables.net/extensions/searchbuilder/) extension
 * `responsive_table`: Enable/Disable [responsive](https://datatables.net/extensions/responsive/) extension
+* `save_state`: Enable/Disable [state saving](https://datatables.net/examples/basic_init/state_save.html)
 
 !!! Example
     ```python
@@ -140,6 +141,7 @@ in your `ModelView` by overridden following options:
         column_visibility = False
         search_builder = False
         responsive_table = True
+        save_state = True
     ```
 
 ## Object Representation
