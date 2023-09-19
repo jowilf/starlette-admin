@@ -17,6 +17,8 @@ from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
+
+import starlette_admin
 from starlette_admin._types import ExportType, RequestAction
 from starlette_admin.actions import action
 from starlette_admin.exceptions import ActionFailed
@@ -28,8 +30,9 @@ from starlette_admin.fields import (
     RelationField,
 )
 from starlette_admin.helpers import extract_fields
-from starlette_admin.i18n import get_locale, ngettext
+from starlette_admin.i18n import get_locale
 from starlette_admin.i18n import lazy_gettext as _
+from starlette_admin.i18n import ngettext
 
 
 class BaseView:
@@ -222,6 +225,7 @@ class BaseModelView(BaseView):
     exclude_fields_from_detail: Sequence[str] = []
     exclude_fields_from_create: Sequence[str] = []
     exclude_fields_from_edit: Sequence[str] = []
+    exclude_actions_from_detail: Sequence[str] = []
     searchable_fields: Optional[Sequence[str]] = None
     sortable_fields: Optional[Sequence[str]] = None
     fields_default_sort: Optional[Sequence[Union[Tuple[str, bool], str]]] = None
@@ -327,6 +331,15 @@ class BaseModelView(BaseView):
     async def get_all_actions(self, request: Request) -> List[Optional[dict]]:
         actions = []
         assert self.actions is not None
+        for action_name in self.actions:
+            if await self.is_action_allowed(request, action_name):
+                actions.append(self._actions.get(action_name))
+        return actions
+
+    async def get_detail_actions(self, request: Request) -> List[Optional[dict]]:
+        """List of actions to be displayed in detail page"""
+        assert self.actions is not None
+        actions = []
         for action_name in self.actions:
             if await self.is_action_allowed(request, action_name):
                 actions.append(self._actions.get(action_name))

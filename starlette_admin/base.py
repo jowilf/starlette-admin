@@ -20,6 +20,7 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from starlette.templating import Jinja2Templates
+
 from starlette_admin._types import RequestAction
 from starlette_admin.auth import BaseAuthProvider
 from starlette_admin.exceptions import ActionFailed, FormValidationError
@@ -30,9 +31,9 @@ from starlette_admin.i18n import (
     get_locale,
     get_locale_display_name,
     gettext,
-    ngettext,
 )
 from starlette_admin.i18n import lazy_gettext as _
+from starlette_admin.i18n import ngettext
 from starlette_admin.views import BaseModelView, BaseView, CustomView, DropDown, Link
 
 
@@ -355,6 +356,8 @@ class BaseAdmin:
                 "model": model,
                 "raw_obj": obj,
                 "obj": await model.serialize(obj, request, RequestAction.DETAIL),
+                "_actions": await model.get_detail_actions(request),
+                "__js_model__": await model._configs(request),
             },
         )
 
