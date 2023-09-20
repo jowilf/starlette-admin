@@ -1,23 +1,22 @@
-{% for action in _actions %}
 <!-- prettier-ignore -->
-<a class="dropdown-item action-item"
+<a class="action-item btn btn-primary btn-block ms-2"
    type="button"
    href="#"
-        {% if action.confirmation is not none %}
+     {% if action.confirmation is not none %}
    data-bs-toggle="modal"
    data-bs-target="#modal-action"
    data-confirmation="{{ action.confirmation }}"
-        {% else %}
+     {% else %}
    data-no-confirmation-action="true"
-        {% endif %}
-        {% if action.custom_response %}
+     {% endif %}
+     {% if action.custom_response %}
    data-custom-response="true"
-        {% endif %}
+     {% endif %}
    data-name="{{ action.name }}"
    data-submit-btn-text="{{ action.submit_btn_text }}"
    data-submit-btn-class="{{ action.submit_btn_class }}"
    data-form="{{ action.form }}"
->
+  >
+  <i class="fa-solid fa-folder-plus me-2"></i>
     {{ action.text }}
 </a>
-{% endfor %}
