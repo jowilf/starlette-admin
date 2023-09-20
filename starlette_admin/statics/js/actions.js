@@ -1,6 +1,6 @@
 function submitAction(name, form, customResponse) {
   let query = new URLSearchParams();
-  query.append("pks", this.location.pathname.split("/").slice(-1)[0]);
+  query.append("pks", id);
   query.append("name", name);
   let url = model.actionUrl + "?" + query.toString();
   if (customResponse) {
