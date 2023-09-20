@@ -1,5 +1,5 @@
 <!-- prettier-ignore -->
-<a class="action-item btn btn-primary btn-block ms-2"
+<a class="action-item btn {{ action.action_btn_class }} btn-block ms-2"
    type="button"
    href="#"
      {% if action.confirmation is not none %}
@@ -17,6 +17,6 @@
    data-submit-btn-class="{{ action.submit_btn_class }}"
    data-form="{{ action.form }}"
   >
-  <i class="fa-solid fa-folder-plus me-2"></i>
+  <i class="{{ action.icon_class }} me-2"></i>
     {{ action.text }}
 </a>

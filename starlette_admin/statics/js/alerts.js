@@ -14,8 +14,9 @@ function successAlert(msg) {
     <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
   </div>
   `).appendTo("#alertContainer");
-  }
-  function dangerAlert(msg) {
+}
+
+function dangerAlert(msg) {
     $("#alertContainer").empty();
     $(`<div
     class="alert alert-danger alert-dismissible m-0"
@@ -31,5 +32,4 @@ function successAlert(msg) {
     <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
   </div>
   `).appendTo("#alertContainer");
-  }
-  
+}
