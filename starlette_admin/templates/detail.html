@@ -163,5 +163,7 @@
     </script>
     <script>var model = {{__js_model__ | tojson | safe}};</script>
     <script type="text/javascript"
+    src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js') }}"></script>
+    <script type="text/javascript"
     src="{{ url_for(__name__ ~ ':statics', path='js/actions.js') }}"></script>
 {% endblock %}
