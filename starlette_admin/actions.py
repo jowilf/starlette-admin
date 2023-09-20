@@ -22,10 +22,11 @@ def action(
         text: Action text
         confirmation: Confirmation text. If not provided, action will be executed
                       unconditionally.
-        action_btn_class: Action button variant (ex. `btn-primary`, `btn-ghost-info`, ...)
+        action_btn_class: Action button variant (ex. `btn-success`, `btn-outline`, ...)
         submit_btn_text: Submit button text
-        submit_btn_class: Submit button variant (ex. `btn-success`, `btn-outline-danger`, ...)
-        icon_class: Icon class (ex. `fa-solid fa-plus`, `fa-regular fa-trash-can`, ...)
+        submit_btn_class: Submit button variant (ex. `button-primary`, `button-ghost-info`,
+                `btn-outline-danger`, ...)
+        icon_class: Icon class (ex. `fa-lite fa-folder`, `fa-duotone fa-circle-right`, ...)
         form: Custom form to collect data from user
         custom_response: Set to True when you want to return a custom Starlette response
             from your action instead of a string.
