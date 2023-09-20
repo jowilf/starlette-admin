@@ -329,8 +329,8 @@ class BaseModelView(BaseView):
         return True
 
     async def get_all_actions(self, request: Request) -> List[Optional[dict]]:
-        actions = []
         assert self.actions is not None
+        actions = []
         for action_name in self.actions:
             if await self.is_action_allowed(request, action_name):
                 actions.append(self._actions.get(action_name))
@@ -341,7 +341,10 @@ class BaseModelView(BaseView):
         assert self.actions is not None
         actions = []
         for action_name in self.actions:
-            if await self.is_action_allowed(request, action_name):
+            if (
+                action_name not in self.exclude_actions_from_detail
+                and await self.is_action_allowed(request, action_name)
+            ):
                 actions.append(self._actions.get(action_name))
         return actions
 
