@@ -7,10 +7,10 @@ def action(
     name: str,
     text: str,
     confirmation: Optional[str] = None,
-    action_btn_class='btn-outline',
+    action_btn_class: Optional[str] = "btn-outline",
     submit_btn_class: Optional[str] = "btn-primary",
     submit_btn_text: Optional[str] = _("Yes, Proceed"),
-    icon_class: Optional[str] = 'fa-solid fa-plus',
+    icon_class: Optional[str] = "fa-solid fa-plus",
     form: Optional[str] = None,
     custom_response: Optional[bool] = False,
 ) -> Callable[[Callable[..., Awaitable[str]]], Any]:

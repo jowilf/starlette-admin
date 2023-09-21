@@ -17,8 +17,6 @@ from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
-
-import starlette_admin
 from starlette_admin._types import ExportType, RequestAction
 from starlette_admin.actions import action
 from starlette_admin.exceptions import ActionFailed
@@ -30,9 +28,8 @@ from starlette_admin.fields import (
     RelationField,
 )
 from starlette_admin.helpers import extract_fields
-from starlette_admin.i18n import get_locale
+from starlette_admin.i18n import get_locale, ngettext
 from starlette_admin.i18n import lazy_gettext as _
-from starlette_admin.i18n import ngettext
 
 
 class BaseView:
