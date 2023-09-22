@@ -245,8 +245,8 @@ class BaseModelView(BaseView):
     create_template: str = "create.html"
     edit_template: str = "edit.html"
     actions: Optional[Sequence[str]] = None
-    additional_js_links: Optional[Sequence[str]] = None
-    additional_css_links: Optional[Sequence[str]] = None
+    additional_js_links: Optional[List[str]] = None
+    additional_css_links: Optional[List[str]] = None
 
     _find_foreign_model: Callable[[str], "BaseModelView"]
 
