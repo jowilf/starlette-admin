@@ -210,6 +210,9 @@ class BaseModelView(BaseView):
         create_template: Edit view template. Default is `edit.html`.
         edit_template: Edit view template. Default is `edit.html`.
         actions: List of actions
+        additional_js_links: A list of additional JavaScript files to include.
+        additional_css_links: A list of additional CSS files to include.
+
 
     """
 
@@ -242,6 +245,8 @@ class BaseModelView(BaseView):
     create_template: str = "create.html"
     edit_template: str = "edit.html"
     actions: Optional[Sequence[str]] = None
+    additional_js_links: Optional[List[str]] = None
+    additional_css_links: Optional[List[str]] = None
 
     _find_foreign_model: Callable[[str], "BaseModelView"]
 
@@ -706,7 +711,7 @@ class BaseModelView(BaseView):
     def _additional_css_links(
         self, request: Request, action: RequestAction
     ) -> Sequence[str]:
-        links = []
+        links = self.additional_css_links or []
         for field in self.get_fields_list(request, action):
             for link in field.additional_css_links(request, action) or []:
                 if link not in links:
@@ -716,7 +721,7 @@ class BaseModelView(BaseView):
     def _additional_js_links(
         self, request: Request, action: RequestAction
     ) -> Sequence[str]:
-        links = []
+        links = self.additional_js_links or []
         for field in self.get_fields_list(request, action):
             for link in field.additional_js_links(request, action) or []:
                 if link not in links:
