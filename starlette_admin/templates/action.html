@@ -1,5 +1,5 @@
 <!-- prettier-ignore -->
-<a class="action-item btn {{ action.action_btn_class }} btn-block ms-2"
+<a class="action-item {% if request.state.action == 'LIST' %} dropdown-item {% else %} btn {% endif %} {{ action.action_btn_class or '' }} ms-2"
    type="button"
    href="#"
      {% if action.confirmation is not none %}
@@ -17,6 +17,8 @@
    data-submit-btn-class="{{ action.submit_btn_class }}"
    data-form="{{ action.form }}"
   >
-  <i class="{{ action.icon_class }} me-2"></i>
+  {% if action.icon_class %}
+    <i class="{{ action.icon_class }} me-2"></i>
+  {% endif %}
     {{ action.text }}
 </a>
