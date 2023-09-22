@@ -181,6 +181,8 @@ class BaseModelView(BaseView):
         exclude_fields_from_detail: List of fields to exclude in Detail page.
         exclude_fields_from_create: List of fields to exclude from creation page.
         exclude_fields_from_edit: List of fields to exclude from editing page.
+        exclude_actions_from_list: List of actions to exclude from List page.
+        exclude_actions_from_detail: List of actions to exclude from Detail page.
         searchable_fields: List of searchable fields.
         sortable_fields: List of sortable fields.
         export_fields: List of fields to include in exports.
@@ -222,6 +224,7 @@ class BaseModelView(BaseView):
     exclude_fields_from_detail: Sequence[str] = []
     exclude_fields_from_create: Sequence[str] = []
     exclude_fields_from_edit: Sequence[str] = []
+    exclude_actions_from_list: Sequence[str] = []
     exclude_actions_from_detail: Sequence[str] = []
     searchable_fields: Optional[Sequence[str]] = None
     sortable_fields: Optional[Sequence[str]] = None
@@ -333,15 +336,18 @@ class BaseModelView(BaseView):
                 actions.append(self._actions.get(action_name))
         return actions
 
-    async def get_detail_actions(self, request: Request) -> List[Optional[dict]]:
-        """List of actions to be displayed in detail page"""
+    async def get_actions(
+        self, request: Request, action: RequestAction
+    ) -> List[Optional[dict]]:
+        """List of actions to be displayed in a given page"""
         assert self.actions is not None
         actions = []
         for action_name in self.actions:
-            if (
-                action_name not in self.exclude_actions_from_detail
-                and await self.is_action_allowed(request, action_name)
-            ):
+            if action_name not in (
+                self.exclude_actions_from_detail
+                if request.state.action == RequestAction.DETAIL
+                else self.exclude_actions_from_list
+            ) and await self.is_action_allowed(request, action_name):
                 actions.append(self._actions.get(action_name))
         return actions
 
