@@ -4,6 +4,7 @@ from typing import (
     Any,
     Awaitable,
     Callable,
+    ClassVar,
     Dict,
     List,
     Optional,
@@ -242,7 +243,7 @@ class BaseModelView(BaseView):
     page_size_options: Sequence[int] = [10, 25, 50, 100]
     responsive_table: bool = False
     save_state: bool = True
-    datatables_options: Dict[str, Any] = {}
+    datatables_options: ClassVar[Dict[str, Any]] = {}
     list_template: str = "list.html"
     detail_template: str = "detail.html"
     create_template: str = "create.html"
