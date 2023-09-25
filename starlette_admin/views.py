@@ -205,6 +205,8 @@ class BaseModelView(BaseView):
         responsive_table: Enable/Disable [responsive](https://datatables.net/extensions/responsive/)
             extension
         save_state: Enable/Disable [state saving](https://datatables.net/examples/basic_init/state_save.html)
+        datatables_options: Dict of [Datatables options](https://datatables.net/reference/option/).
+            These will overwrite any default options set for the datatable.
         list_template: List view template. Default is `list.html`.
         detail_template: Details view template. Default is `details.html`.
         create_template: Edit view template. Default is `edit.html`.
@@ -240,6 +242,7 @@ class BaseModelView(BaseView):
     page_size_options: Sequence[int] = [10, 25, 50, 100]
     responsive_table: bool = False
     save_state: bool = True
+    datatables_options: Dict[str, Any] = {}
     list_template: str = "list.html"
     detail_template: str = "detail.html"
     create_template: str = "create.html"
@@ -758,4 +761,5 @@ class BaseModelView(BaseView):
             "dt_i18n_url": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:statics", path=f"i18n/dt/{locale}.json"
             ),
+            "datatablesOptions": self.datatables_options,
         }
