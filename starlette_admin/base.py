@@ -328,11 +328,13 @@ class BaseAdmin:
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
+        title = model.title(request)
         return self.templates.TemplateResponse(
             model.list_template,
             {
                 "request": request,
                 "model": model,
+                "title" if title else None: title,
                 "_actions": await model.get_all_actions(request),
                 "__js_model__": await model._configs(request),
             },
@@ -348,9 +350,11 @@ class BaseAdmin:
         obj = await model.find_by_pk(request, pk)
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
+        title = model.title(request) or model.name
         return self.templates.TemplateResponse(
             model.detail_template,
             {
+                "title" if title else None: title,
                 "request": request,
                 "model": model,
                 "raw_obj": obj,
@@ -362,12 +366,13 @@ class BaseAdmin:
         request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
+        title = model.title(request)
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
             return self.templates.TemplateResponse(
                 model.create_template,
-                {"request": request, "model": model},
+                {"request": request, "model": model, "title" if title else None: title},
             )
         form = await request.form()
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.CREATE)
@@ -377,6 +382,7 @@ class BaseAdmin:
             return self.templates.TemplateResponse(
                 model.create_template,
                 {
+                    "title" if title else None: title,
                     "request": request,
                     "model": model,
                     "errors": exc.errors,
@@ -402,12 +408,14 @@ class BaseAdmin:
             raise HTTPException(HTTP_403_FORBIDDEN)
         pk = request.path_params.get("pk")
         obj = await model.find_by_pk(request, pk)
+        title = model.title(request)
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
         if request.method == "GET":
             return self.templates.TemplateResponse(
                 model.edit_template,
                 {
+                    "title" if title else None: title,
                     "request": request,
                     "model": model,
                     "raw_obj": obj,
@@ -422,6 +430,7 @@ class BaseAdmin:
             return self.templates.TemplateResponse(
                 model.edit_template,
                 {
+                    "title" if title else None: title,
                     "request": request,
                     "model": model,
                     "errors": exc.errors,
@@ -445,9 +454,12 @@ class BaseAdmin:
         exc: Exception = HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR),
     ) -> Response:
         assert isinstance(exc, HTTPException)
+        identity = request.path_params.get("identity")
+        model = self._find_model_from_identity(identity)
+        title = model.title(request)
         return self.templates.TemplateResponse(
             "error.html",
-            {"request": request, "exc": exc},
+            {"request": request, "exc": exc, "title" if title else None: title},
             status_code=exc.status_code,
         )
 
