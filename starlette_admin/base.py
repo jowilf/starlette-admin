@@ -329,15 +329,17 @@ class BaseAdmin:
         if not model.is_accessible(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         title = model.title(request)
+        config = {
+            "request": request,
+            "model": model,
+            "_actions": await model.get_all_actions(request),
+            "__js_model__": await model._configs(request),
+        }
+        if title:
+            config["title"] = title
         return self.templates.TemplateResponse(
             model.list_template,
-            {
-                "request": request,
-                "model": model,
-                "title" if title else None: title,
-                "_actions": await model.get_all_actions(request),
-                "__js_model__": await model._configs(request),
-            },
+            config,
         )
 
     async def _render_detail(self, request: Request) -> Response:
@@ -351,43 +353,43 @@ class BaseAdmin:
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
         title = model.title(request) or model.name
-        return self.templates.TemplateResponse(
-            model.detail_template,
-            {
-                "title" if title else None: title,
-                "request": request,
-                "model": model,
-                "raw_obj": obj,
-                "obj": await model.serialize(obj, request, RequestAction.DETAIL),
-            },
-        )
+        config = {
+            "request": request,
+            "model": model,
+            "raw_obj": obj,
+            "obj": await model.serialize(obj, request, RequestAction.DETAIL),
+        }
+        if title:
+            config["title"] = title
+        return self.templates.TemplateResponse(model.detail_template, config)
 
     async def _render_create(self, request: Request) -> Response:
         request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         title = model.title(request)
+        config = {"request": request, "model": model}
+        if title:
+            config["title"] = title
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
-            return self.templates.TemplateResponse(
-                model.create_template,
-                {"request": request, "model": model, "title" if title else None: title},
-            )
+            return self.templates.TemplateResponse(model.create_template, config)
         form = await request.form()
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.CREATE)
         try:
             obj = await model.create(request, dict_obj)
         except FormValidationError as exc:
-            return self.templates.TemplateResponse(
-                model.create_template,
+            error_config = config.copy()
+            error_config.update(
                 {
-                    "title" if title else None: title,
-                    "request": request,
-                    "model": model,
                     "errors": exc.errors,
                     "obj": dict_obj,
-                },
+                }
+            )
+            return self.templates.TemplateResponse(
+                model.create_template,
+                error_config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = getattr(obj, model.pk_attr)  # type: ignore
@@ -411,31 +413,30 @@ class BaseAdmin:
         title = model.title(request)
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
+        config = {
+            "request": request,
+            "model": model,
+            "raw_obj": obj,
+            "obj": await model.serialize(obj, request, RequestAction.EDIT),
+        }
+        if title:
+            config["title"] = title
         if request.method == "GET":
-            return self.templates.TemplateResponse(
-                model.edit_template,
-                {
-                    "title" if title else None: title,
-                    "request": request,
-                    "model": model,
-                    "raw_obj": obj,
-                    "obj": await model.serialize(obj, request, RequestAction.EDIT),
-                },
-            )
+            return self.templates.TemplateResponse(model.edit_template, config)
         form = await request.form()
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
         try:
             obj = await model.edit(request, pk, dict_obj)
         except FormValidationError as exc:
-            return self.templates.TemplateResponse(
-                model.edit_template,
+            config.update(
                 {
-                    "title" if title else None: title,
-                    "request": request,
-                    "model": model,
                     "errors": exc.errors,
                     "obj": dict_obj,
-                },
+                }
+            )
+            return self.templates.TemplateResponse(
+                model.edit_template,
+                config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = getattr(obj, model.pk_attr)  # type: ignore
@@ -457,9 +458,12 @@ class BaseAdmin:
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         title = model.title(request)
+        config = {"request": request, "exc": exc}
+        if title:
+            config["title"] = title
         return self.templates.TemplateResponse(
             "error.html",
-            {"request": request, "exc": exc, "title" if title else None: title},
+            config,
             status_code=exc.status_code,
         )
 
