@@ -190,7 +190,7 @@ class BaseAdmin:
         )
         # globals
         templates.env.globals["views"] = self._views
-        templates.env.globals["title"] = self.title
+        templates.env.globals["app_title"] = self.title
         templates.env.globals["is_auth_enabled"] = self.auth_provider is not None
         templates.env.globals["__name__"] = self.route_name
         templates.env.globals["logo_url"] = self.logo_url
@@ -328,18 +328,15 @@ class BaseAdmin:
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
-        title = model.title(request)
-        config = {
-            "request": request,
-            "model": model,
-            "_actions": await model.get_all_actions(request),
-            "__js_model__": await model._configs(request),
-        }
-        if title:
-            config["title"] = title
         return self.templates.TemplateResponse(
             model.list_template,
-            config,
+            {
+                "request": request,
+                "model": model,
+                "title": model.title(request),
+                "_actions": await model.get_all_actions(request),
+                "__js_model__": await model._configs(request),
+            },
         )
 
     async def _render_detail(self, request: Request) -> Response:
@@ -352,25 +349,20 @@ class BaseAdmin:
         obj = await model.find_by_pk(request, pk)
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
-        title = model.title(request) or model.name
         config = {
             "request": request,
+            "title": model.title(request),
             "model": model,
             "raw_obj": obj,
             "obj": await model.serialize(obj, request, RequestAction.DETAIL),
         }
-        if title:
-            config["title"] = title
         return self.templates.TemplateResponse(model.detail_template, config)
 
     async def _render_create(self, request: Request) -> Response:
         request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        title = model.title(request)
-        config = {"request": request, "model": model}
-        if title:
-            config["title"] = title
+        config = {"request": request, "title": model.title(request), "model": model}
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
@@ -410,17 +402,15 @@ class BaseAdmin:
             raise HTTPException(HTTP_403_FORBIDDEN)
         pk = request.path_params.get("pk")
         obj = await model.find_by_pk(request, pk)
-        title = model.title(request)
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
         config = {
             "request": request,
+            "title": model.title(request),
             "model": model,
             "raw_obj": obj,
             "obj": await model.serialize(obj, request, RequestAction.EDIT),
         }
-        if title:
-            config["title"] = title
         if request.method == "GET":
             return self.templates.TemplateResponse(model.edit_template, config)
         form = await request.form()
@@ -457,13 +447,9 @@ class BaseAdmin:
         assert isinstance(exc, HTTPException)
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        title = model.title(request)
-        config = {"request": request, "exc": exc}
-        if title:
-            config["title"] = title
         return self.templates.TemplateResponse(
             "error.html",
-            config,
+            {"request": request, "title": model.title(request), "exc": exc},
             status_code=exc.status_code,
         )
 
