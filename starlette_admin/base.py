@@ -372,8 +372,7 @@ class BaseAdmin:
         try:
             obj = await model.create(request, dict_obj)
         except FormValidationError as exc:
-            error_config = config.copy()
-            error_config.update(
+            config.update(
                 {
                     "errors": exc.errors,
                     "obj": dict_obj,
@@ -381,7 +380,7 @@ class BaseAdmin:
             )
             return self.templates.TemplateResponse(
                 model.create_template,
-                error_config,
+                config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = getattr(obj, model.pk_attr)  # type: ignore
