@@ -33,3 +33,13 @@ function dangerAlert(msg) {
   </div>
   `).appendTo("#alertContainer");
 }
+
+if (localStorage.successAlert){
+    successAlert(localStorage.successAlert)
+    localStorage.removeItem('successAlert')
+}
+
+if (localStorage.dangerAlert){
+  successAlert(localStorage.succesdangerAlertsAlert)
+  localStorage.removeItem('dangerAlert')
+}

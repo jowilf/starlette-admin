@@ -21,7 +21,8 @@ function submitAction(name, form, customResponse) {
         await new Promise((r) => setTimeout(r, 500));
         $("#modal-loading").modal("hide");
         if (response.ok) {
-          successAlert((await response.json())["msg"]);
+          localStorage.successAlert = (await response.json())["msg"];
+          window.location.reload();
         } else {
           if (response.status == 400) {
             return Promise.reject((await response.json())["msg"]);
