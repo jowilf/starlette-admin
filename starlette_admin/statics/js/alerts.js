@@ -40,6 +40,6 @@ if (localStorage.successAlert){
 }
 
 if (localStorage.dangerAlert){
-  successAlert(localStorage.succesdangerAlertsAlert)
+  successAlert(localStorage.dangerAlert)
   localStorage.removeItem('dangerAlert')
 }
