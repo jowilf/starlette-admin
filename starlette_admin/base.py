@@ -349,14 +349,16 @@ class BaseAdmin:
         obj = await model.find_by_pk(request, pk)
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
-        config = {
-            "request": request,
-            "title": model.title(request),
-            "model": model,
-            "raw_obj": obj,
-            "obj": await model.serialize(obj, request, RequestAction.DETAIL),
-        }
-        return self.templates.TemplateResponse(model.detail_template, config)
+        return self.templates.TemplateResponse(
+            model.detail_template,
+            {
+                "request": request,
+                "title": model.title(request),
+                "model": model,
+                "raw_obj": obj,
+                "obj": await model.serialize(obj, request, RequestAction.DETAIL),
+            },
+        )
 
     async def _render_create(self, request: Request) -> Response:
         request.state.action = RequestAction.CREATE
@@ -444,11 +446,9 @@ class BaseAdmin:
         exc: Exception = HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR),
     ) -> Response:
         assert isinstance(exc, HTTPException)
-        identity = request.path_params.get("identity")
-        model = self._find_model_from_identity(identity)
         return self.templates.TemplateResponse(
             "error.html",
-            {"request": request, "title": model.title(request), "exc": exc},
+            {"request": request, "exc": exc},
             status_code=exc.status_code,
         )
 
