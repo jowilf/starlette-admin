@@ -49,7 +49,7 @@ test = [
     "pytest-asyncio >=0.20.2, <0.22.0",
     "mypy ==1.5.1",
     "ruff ==0.0.286",
-    "black ==23.7.0",
+    "black ==23.9.1",
     "httpx >=0.23.3, <0.25.0",
     "coverage >=7.0.0, <7.4.0",
     "SQLAlchemy-Utils >=0.40.0, <0.42.0",
