@@ -342,7 +342,7 @@ class BaseModelView(BaseView):
         assert self.actions is not None
         actions = []
         for action_name in self.actions:
-            if (
+            if await self.is_action_allowed(request, action_name) and (
                 not action
                 or (
                     request.state.action == RequestAction.DETAIL
@@ -352,7 +352,6 @@ class BaseModelView(BaseView):
                     request.state.action == RequestAction.LIST
                     and action_name not in self.exclude_actions_from_list
                 )
-                and await self.is_action_allowed(request, action_name)
             ):
                 actions.append(self._actions.get(action_name))
         return actions
