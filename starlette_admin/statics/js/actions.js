@@ -1,3 +1,13 @@
+  $('a[data-no-confirmation-action="true"]').each(function () {
+    $(this).on("click", function (event) {
+      submitAction(
+        $(this).data("name"),
+        null,
+        $(this).data("custom-response") === true
+      );
+    });
+  });
+  
 function submitAction(name, form, customResponse) {
   let query = new URLSearchParams();
   query.append("pks", id);
