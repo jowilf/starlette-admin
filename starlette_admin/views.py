@@ -328,26 +328,32 @@ class BaseModelView(BaseView):
             return self.can_delete(request)
         return True
 
-    async def get_all_actions(self, request: Request) -> List[Optional[dict]]:
-        assert self.actions is not None
-        actions = []
-        for action_name in self.actions:
-            if await self.is_action_allowed(request, action_name):
-                actions.append(self._actions.get(action_name))
-        return actions
-
-    async def get_actions(
-        self, request: Request, action: RequestAction
+    async def get_all_actions(
+        self, request: Request, action: Optional[RequestAction] = None
     ) -> List[Optional[dict]]:
-        """List of actions to be displayed in a given page"""
+        """
+        Return a List of allowed Batch Action names
+        Optional: pass a RequestAction type to filter by request type (only LIST, DETAIL)
+
+        Args:
+            action: Optional RequestAction type
+            request: Starlette request
+        """
         assert self.actions is not None
         actions = []
         for action_name in self.actions:
-            if action_name not in (
-                self.exclude_actions_from_detail
-                if request.state.action == RequestAction.DETAIL
-                else self.exclude_actions_from_list
-            ) and await self.is_action_allowed(request, action_name):
+            if (
+                not action
+                or (
+                    request.state.action == RequestAction.DETAIL
+                    and action_name not in self.exclude_actions_from_detail
+                )
+                or (
+                    request.state.action == RequestAction.LIST
+                    and action_name not in self.exclude_actions_from_list
+                )
+                and await self.is_action_allowed(request, action_name)
+            ):
                 actions.append(self._actions.get(action_name))
         return actions
 
