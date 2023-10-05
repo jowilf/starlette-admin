@@ -159,6 +159,15 @@ def test_actions_is_available_in_list(client: TestClient, action, expected_count
 
 
 def test_exclude_action_from_list(client: TestClient):
+    response = client.get(
+        "/admin/api/article/action",
+        params={"name": "excluded_from_list", "pks": [2, 3]},
+    )
+    assert response.status_code == 200
+    assert response.json()["msg"] == "Excluded from list"
+
+
+def test_exclude_action_from_list_is_excluded(client: TestClient):
     response = client.get("/admin/article/list")
     assert response.status_code == 200
     assert response.text.count('data-name="excluded_from_list"') == 0
@@ -184,6 +193,15 @@ def test_actions_is_available_in_detail(client: TestClient, action, expected_cou
 
 
 def test_exclude_action_from_detail(client: TestClient):
+    response = client.get(
+        "/admin/api/article/action",
+        params={"name": "excluded_from_detail", "pks": [2, 3]},
+    )
+    assert response.status_code == 200
+    assert response.json()["msg"] == "Excluded from detail"
+
+
+def test_exclude_action_from_detail_is_excluded(client: TestClient):
     response = client.get("/admin/article/detail/1")
     assert response.status_code == 200
     assert response.text.count('data-name="excluded_from_detail"') == 0
