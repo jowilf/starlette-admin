@@ -49,7 +49,7 @@ class ImageField(BaseImageField):
 def _serialize_sqlalchemy_file_library(
     request: Request, value: Any, action: RequestAction, is_multiple: bool
 ) -> Optional[Union[List[Dict[str, Any]], Dict[str, Any]]]:
-    from sqlalchemy_file import File  # type: ignore[attr-defined]
+    from sqlalchemy_file import File
 
     if isinstance(value, File) or (
         isinstance(value, list) and all(isinstance(f, File) for f in value)
