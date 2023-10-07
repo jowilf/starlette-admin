@@ -99,12 +99,14 @@ jobs:
           retention-days: 1
 
   coverage:
+    needs:
+      - tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
           cache: "pip"
       - name: get coverage files
         uses: actions/download-artifact@v3
