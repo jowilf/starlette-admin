@@ -380,6 +380,7 @@ $(function () {
         .container()
         .appendTo("#pageLength_container");
     },
+    ...model.datatablesOptions,
   });
 
   $("#searchInput").on("keyup", function () {
