@@ -91,6 +91,28 @@ jobs:
           MINIO_PORT: 9000
           MINIO_SECURE: false
         run: hatch run test:sqla
+      - name: store coverage files
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: .coverage*
+          retention-days: 1
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+          cache: "pip"
+      - name: get coverage files
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage
+          path: coverage
+      - name: Install Dependencies
+        run: pip install hatch
       - name: Coverage Report
         run: hatch run test:cov
       - name: Upload coverage
