@@ -112,7 +112,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage
-          path: .
       - name: Install Dependencies
         run: pip install hatch
       - name: Coverage Report
