@@ -51,7 +51,6 @@ test = [
     "ruff ==0.0.292",
     "black ==23.9.1",
     "httpx >=0.23.3, <0.25.0",
-    "coverage >=7.0.0, <7.4.0",
     "SQLAlchemy-Utils >=0.40.0, <0.42.0",
     "arrow >=1.2.3, <1.4.0",
     "colour >=0.1.5, <0.2.0",
@@ -72,6 +71,9 @@ test = [
     "itsdangerous >=2.1.2, <2.2.0",
     "pydantic[email] >=1.10.2, <2.0.0",
 ]
+cov = [
+    "coverage[toml] >=7.0.0, <7.4.0"
+]
 doc = [
     "mkdocs >=1.4.2, <2.0.0",
     "mkdocs-material >=9.0.0, <10.0.0",
@@ -87,6 +89,7 @@ dev = [
 features = [
     "i18n",
     "test",
+    "cov",
     "doc",
     "dev"
 ]
@@ -103,6 +106,7 @@ i18n_compile = "pybabel compile -f -D admin -d starlette_admin/translations"
 features = [
     "i18n",
     "test",
+    "cov",
 ]
 [tool.hatch.envs.test.scripts]
 lint = [
@@ -112,11 +116,6 @@ lint = [
 ]
 all = "coverage run -m pytest tests"
 sqla = "coverage run -m pytest tests/sqla"
-cov = [
-    "coverage combine",
-    "coverage report --show-missing",
-    "coverage xml"
-]
 
 [[tool.hatch.envs.test.matrix]]
 sqla_version = ["sqla14", "sqla2"]
@@ -131,6 +130,17 @@ matrix.sqla_version.scripts = [
     { key = "all", value = 'coverage run -m pytest tests --ignore=tests/sqla/test_sqlmodel.py', if = ["sqla2"] },
     { key = "sqla", value = 'coverage run -m pytest tests/sqla --ignore=tests/sqla/test_sqlmodel.py', if = ["sqla2"] },
     { key = "cov", value = '', if = ["sqla14"] }, # run after sqla2 test
+]
+
+[tool.hatch.envs.cov]
+features = [
+    "cov",
+]
+[tool.hatch.envs.cov.scripts]
+report = [
+    "coverage combine",
+    "coverage report --show-missing",
+    "coverage xml"
 ]
 
 [tool.hatch.envs.docs]

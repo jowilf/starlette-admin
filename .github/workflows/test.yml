@@ -112,10 +112,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage
-          path: coverage
+          path: .coverage*
       - name: Install Dependencies
         run: pip install hatch
       - name: Coverage Report
-        run: hatch run test:cov
+        run: hatch run cov:report
       - name: Upload coverage
         uses: codecov/codecov-action@v3
