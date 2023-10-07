@@ -34,27 +34,7 @@
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="actionDropdownButton">
                                         {% for action in _actions %}
-                                            <!-- prettier-ignore -->
-                                            <a class="dropdown-item action-item"
-                                               type="button"
-                                               href="#"
-                                                    {% if action.confirmation is not none %}
-                                               data-bs-toggle="modal"
-                                               data-bs-target="#modal-action"
-                                               data-confirmation="{{ action.confirmation }}"
-                                                    {% else %}
-                                               data-no-confirmation-action="true"
-                                                    {% endif %}
-                                                    {% if action.custom_response %}
-                                               data-custom-response="true"
-                                                    {% endif %}
-                                               data-name="{{ action.name }}"
-                                               data-submit-btn-text="{{ action.submit_btn_text }}"
-                                               data-submit-btn-class="{{ action.submit_btn_class }}"
-                                               data-form="{{ action.form }}"
-                                            >
-                                                {{ action.text }}
-                                            </a>
+                                            {% include "action.html" %}
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -182,6 +162,8 @@
     {% for link in model._additional_js_links(request, "LIST" | ra) %}
         <script type="text/javascript" src="{{ link }}"></script>
     {% endfor %}
+    <script type="text/javascript"
+            src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js') }}"></script>
     <script type="text/javascript"
             src="{{ url_for(__name__ ~ ':statics', path='js/list.js') }}"></script>
 {% endblock %}
