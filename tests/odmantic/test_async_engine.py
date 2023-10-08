@@ -1,12 +1,13 @@
 import json
 import sys
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 from odmantic import AIOEngine, EmbeddedModel, Field, Model
+from requests import Request
 from starlette.applications import Starlette
 from starlette_admin.contrib.odmantic import Admin, ModelView
 
@@ -35,6 +36,32 @@ class User(Model):
     address: Address
     hobbies: List[Hobby]
     birthday: Optional[datetime]
+
+
+class UserView(ModelView):
+    async def before_create(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, User)
+        assert obj.id is not None
+
+    async def after_create(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, User)
+        assert obj.id is not None
+
+    async def before_edit(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, User)
+        assert obj.id is not None
+
+    async def after_edit(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, User)
+        assert obj.id is not None
+
+    async def before_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, User)
+        assert obj.id is not None
+
+    async def after_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, User)
+        assert obj.id is not None
 
 
 @pytest_asyncio.fixture()
@@ -68,7 +95,7 @@ async def prepare_database(aio_engine: AIOEngine):
 async def client(prepare_database, aio_engine: AIOEngine):
     admin = Admin(aio_engine)
     app = Starlette()
-    admin.add_view(ModelView(User))
+    admin.add_view(UserView(User))
     admin.mount_to(app)
     async with AsyncClient(app=app, base_url="http://testserver") as c:
         yield c

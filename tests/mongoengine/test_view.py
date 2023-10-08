@@ -3,10 +3,12 @@ import datetime
 import json
 import tempfile
 from enum import Enum
+from typing import Any
 
 import mongoengine as me
 import pytest
 from mongoengine import connect, disconnect
+from requests import Request
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 from starlette_admin.contrib.mongoengine import Admin, ModelView
@@ -42,6 +44,32 @@ class User(me.Document):
     store = me.ReferenceField("Store")
 
 
+class ProductView(ModelView):
+    async def before_create(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is None
+
+    async def after_create(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def before_edit(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def after_edit(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def before_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def after_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+
 class TestMongoBasic:
     def setup_method(self, method):
         connect(host=MONGO_URL, uuidRepresentation="standard")
@@ -59,7 +87,7 @@ class TestMongoBasic:
     def admin(self):
         admin = Admin()
         admin.add_view(ModelView(Store))
-        admin.add_view(ModelView(Product))
+        admin.add_view(ProductView(Product))
         admin.add_view(ModelView(User))
         return admin
 
