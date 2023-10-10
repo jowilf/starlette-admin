@@ -37,7 +37,7 @@ from starlette_admin.views import BaseModelView
 class ModelView(BaseModelView):
     """A view for managing SQLAlchemy models."""
 
-    sortable_field_mapping: ClassVar[dict[str, InstrumentedAttribute]] = {}
+    sortable_field_mapping: ClassVar[Dict[str, InstrumentedAttribute]] = {}
     """A dictionary for overriding the default model attribute used for sorting.
 
     Example:
