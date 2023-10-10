@@ -4,6 +4,7 @@ from typing import (
     Any,
     Awaitable,
     Callable,
+    ClassVar,
     Dict,
     List,
     Optional,
@@ -187,6 +188,8 @@ class BaseModelView(BaseView):
         exclude_fields_from_detail: List of fields to exclude in Detail page.
         exclude_fields_from_create: List of fields to exclude from creation page.
         exclude_fields_from_edit: List of fields to exclude from editing page.
+        exclude_actions_from_list: List of actions to exclude from List page.
+        exclude_actions_from_detail: List of actions to exclude from Detail page.
         searchable_fields: List of searchable fields.
         sortable_fields: List of sortable fields.
         export_fields: List of fields to include in exports.
@@ -211,6 +214,8 @@ class BaseModelView(BaseView):
         responsive_table: Enable/Disable [responsive](https://datatables.net/extensions/responsive/)
             extension
         save_state: Enable/Disable [state saving](https://datatables.net/examples/basic_init/state_save.html)
+        datatables_options: Dict of [Datatables options](https://datatables.net/reference/option/).
+            These will overwrite any default options set for the datatable.
         list_template: List view template. Default is `list.html`.
         detail_template: Details view template. Default is `details.html`.
         create_template: Edit view template. Default is `edit.html`.
@@ -231,6 +236,8 @@ class BaseModelView(BaseView):
     exclude_fields_from_detail: Sequence[str] = []
     exclude_fields_from_create: Sequence[str] = []
     exclude_fields_from_edit: Sequence[str] = []
+    exclude_actions_from_list: Sequence[str] = []
+    exclude_actions_from_detail: Sequence[str] = []
     searchable_fields: Optional[Sequence[str]] = None
     sortable_fields: Optional[Sequence[str]] = None
     fields_default_sort: Optional[Sequence[Union[Tuple[str, bool], str]]] = None
@@ -246,6 +253,7 @@ class BaseModelView(BaseView):
     page_size_options: Sequence[int] = [10, 25, 50, 100]
     responsive_table: bool = False
     save_state: bool = True
+    datatables_options: ClassVar[Dict[str, Any]] = {}
     list_template: str = "list.html"
     detail_template: str = "detail.html"
     create_template: str = "create.html"
@@ -335,11 +343,31 @@ class BaseModelView(BaseView):
             return self.can_delete(request)
         return True
 
-    async def get_all_actions(self, request: Request) -> List[Optional[dict]]:
-        actions = []
+    async def get_all_actions(
+        self, request: Request, action: Optional[RequestAction] = None
+    ) -> List[Optional[dict]]:
+        """
+        Return a List of allowed Batch Action names
+        Optional: pass a RequestAction type to filter by request type (only LIST, DETAIL)
+
+        Args:
+            action: Optional RequestAction type
+            request: Starlette request
+        """
         assert self.actions is not None
+        actions = []
         for action_name in self.actions:
-            if await self.is_action_allowed(request, action_name):
+            if await self.is_action_allowed(request, action_name) and (
+                not action
+                or (
+                    request.state.action == RequestAction.DETAIL
+                    and action_name not in self.exclude_actions_from_detail
+                )
+                or (
+                    request.state.action == RequestAction.LIST
+                    and action_name not in self.exclude_actions_from_list
+                )
+            ):
                 actions.append(self._actions.get(action_name))
         return actions
 
@@ -764,4 +792,5 @@ class BaseModelView(BaseView):
             "dt_i18n_url": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:statics", path=f"i18n/dt/{locale}.json"
             ),
+            "datatablesOptions": self.datatables_options,
         }

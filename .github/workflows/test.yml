@@ -54,7 +54,7 @@ jobs:
 
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -91,7 +91,30 @@ jobs:
           MINIO_PORT: 9000
           MINIO_SECURE: false
         run: hatch run test:sqla
+      - name: store coverage files
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: .coverage*
+          retention-days: 1
+
+  coverage:
+    needs:
+      - tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - name: get coverage files
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage
+      - name: Install Dependencies
+        run: pip install hatch
       - name: Coverage Report
-        run: hatch run test:cov
+        run: hatch run cov:report
       - name: Upload coverage
         uses: codecov/codecov-action@v3

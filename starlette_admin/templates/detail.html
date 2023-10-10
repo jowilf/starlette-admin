@@ -19,12 +19,15 @@
     {% include "modals/loading.html" %}
     {% include "modals/error.html" %}
     {% include "modals/delete.html" %}
+    {% include "modals/actions.html" %}
+
 {% endblock %}
 {% block content %}
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 <div class="card">
+                    <div id="alertContainer"></div>
                     <div class="card-header">
                         <h3 class="card-title">
                             <strong>#{{ obj[pk] }}</strong>
@@ -49,6 +52,9 @@
                                         </button>
                                     </a>
                                 {% endif %}
+                                {% for action in _actions %}
+                                    {% include "action.html" %}
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
@@ -115,6 +121,7 @@
                 method: "POST",
             }).then(async response => {
                 if (response.ok) {
+                    localStorage.successAlert = "Successfully deleted {{ obj[pk] }}"
                     await new Promise(r => setTimeout(r, 500));
                     $("#modal-loading").modal('hide')
                     window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity)  | safe }}")
@@ -134,4 +141,12 @@
         });
     })
     </script>
+    <script>
+        var model = {{ __js_model__ | tojson | safe }};
+        const id = {{ obj[pk] | tojson | safe }};
+    </script>
+    <script type="text/javascript"
+    src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js') }}"></script>
+    <script type="text/javascript"
+    src="{{ url_for(__name__ ~ ':statics', path='js/actions.js') }}"></script>
 {% endblock %}

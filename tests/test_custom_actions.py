@@ -32,7 +32,11 @@ class ArticleView(DummyModelView):
         "forbidden",
         "invalid_redirect",
         "redirect",
+        "excluded_from_detail",
+        "excluded_from_list",
     ]
+    exclude_actions_from_detail = ["excluded_from_detail"]
+    exclude_actions_from_list = ["excluded_from_list"]
 
     async def is_action_allowed(self, request: Request, name: str) -> bool:
         if name == "forbidden":
@@ -85,6 +89,22 @@ class ArticleView(DummyModelView):
     async def redirect_action(self, request: Request, pks: List[Any]) -> Response:
         return RedirectResponse("https://example.com/")
 
+    @action(
+        name="excluded_from_detail",
+        text="Excluded from detail",
+    )
+    async def excluded_from_detail_action(
+        self, request: Request, pks: List[Any]
+    ) -> str:
+        return "Excluded from detail"
+
+    @action(
+        name="excluded_from_list",
+        text="Excluded from list",
+    )
+    async def excluded_from_list_action(self, request: Request, pks: List[Any]) -> str:
+        return "Excluded from list"
+
 
 @pytest.fixture
 def client() -> TestClient:
@@ -113,6 +133,8 @@ def test_all_actions_is_available_by_default():
             "forbidden",
             "invalid_redirect",
             "redirect",
+            "excluded_from_detail",
+            "excluded_from_list",
         ]
     )
 
@@ -125,12 +147,64 @@ def test_all_actions_is_available_by_default():
         ("always_failed", 1),
         ("forbidden", 0),
         ("redirect", 1),
+        ("invalid_redirect", 1),
+        ("excluded_from_detail", 1),
+        ("excluded_from_list", 0),
     ],
 )
-def test_actions_is_available_in_ui(client: TestClient, action, expected_count):
+def test_actions_is_available_in_list(client: TestClient, action, expected_count):
     response = client.get("/admin/article/list")
     assert response.status_code == 200
     assert response.text.count(f'data-name="{action}"') == expected_count
+
+
+def test_exclude_action_from_list(client: TestClient):
+    response = client.get(
+        "/admin/api/article/action",
+        params={"name": "excluded_from_list", "pks": [2, 3]},
+    )
+    assert response.status_code == 200
+    assert response.json()["msg"] == "Excluded from list"
+
+
+def test_exclude_action_from_list_is_excluded(client: TestClient):
+    response = client.get("/admin/article/list")
+    assert response.status_code == 200
+    assert response.text.count('data-name="excluded_from_list"') == 0
+
+
+@pytest.mark.parametrize(
+    "action, expected_count",
+    [
+        ("make_published", 1),
+        ("delete", 1),
+        ("always_failed", 1),
+        ("forbidden", 0),
+        ("redirect", 1),
+        ("invalid_redirect", 1),
+        ("excluded_from_detail", 0),
+        ("excluded_from_list", 1),
+    ],
+)
+def test_actions_is_available_in_detail(client: TestClient, action, expected_count):
+    response = client.get("/admin/article/detail/1")
+    assert response.status_code == 200
+    assert response.text.count(f'data-name="{action}"') == expected_count
+
+
+def test_exclude_action_from_detail(client: TestClient):
+    response = client.get(
+        "/admin/api/article/action",
+        params={"name": "excluded_from_detail", "pks": [2, 3]},
+    )
+    assert response.status_code == 200
+    assert response.json()["msg"] == "Excluded from detail"
+
+
+def test_exclude_action_from_detail_is_excluded(client: TestClient):
+    response = client.get("/admin/article/detail/1")
+    assert response.status_code == 200
+    assert response.text.count('data-name="excluded_from_detail"') == 0
 
 
 @pytest.mark.parametrize(
