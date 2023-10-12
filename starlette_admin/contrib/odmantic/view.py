@@ -135,7 +135,7 @@ class ModelView(BaseModelView):
         data = await self._arrange_data(request, data)
         try:
             obj = self.model(**data)
-            await self.before_create(request, obj)
+            await self.before_create(request, data, obj)
             if isinstance(session, AIOSession):
                 await session.save(obj)
             else:
@@ -151,7 +151,7 @@ class ModelView(BaseModelView):
         try:
             obj = await self.find_by_pk(request, pk)
             obj.update(data)
-            await self.before_edit(request, obj)
+            await self.before_edit(request, data, obj)
             if isinstance(session, AIOSession):
                 obj = await session.save(obj)
             else:

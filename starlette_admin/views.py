@@ -463,12 +463,15 @@ class BaseModelView(BaseView):
         """
         raise NotImplementedError()
 
-    async def before_create(self, request: Request, obj: Any) -> None:
+    async def before_create(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
         """
         This hook is called before a new item is created.
 
         Args:
             request: The request being processed.
+            data: Dict values contained converted form data.
             obj: The object about to be created.
         """
 
@@ -493,12 +496,15 @@ class BaseModelView(BaseView):
             obj: The newly created object.
         """
 
-    async def before_edit(self, request: Request, obj: Any) -> None:
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
         """
         This hook is called before an item is edited.
 
         Args:
             request: The request being processed.
+            data: Dict values contained converted form data
             obj: The object about to be edited.
         """
 

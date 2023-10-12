@@ -1,6 +1,6 @@
 import enum
 import json
-from typing import Any
+from typing import Any, Dict
 
 import pytest
 import pytest_asyncio
@@ -62,7 +62,9 @@ class User(Base):
 
 
 class ProductView(ModelView):
-    async def before_create(self, request: Request, obj: Any) -> None:
+    async def before_create(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
         assert isinstance(obj, Product)
         assert obj.id is None
 
@@ -70,7 +72,9 @@ class ProductView(ModelView):
         assert isinstance(obj, Product)
         assert obj.id is not None
 
-    async def before_edit(self, request: Request, obj: Any) -> None:
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
         assert isinstance(obj, Product)
         assert obj.id is not None
 

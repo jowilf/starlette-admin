@@ -312,7 +312,7 @@ class ModelView(BaseModelView):
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self._populate_obj(request, self.model(), data)
             session.add(obj)
-            await self.before_create(request, obj)
+            await self.before_create(request, data, obj)
             if isinstance(session, AsyncSession):
                 await session.commit()
                 await session.refresh(obj)
@@ -332,7 +332,7 @@ class ModelView(BaseModelView):
             obj = await self.find_by_pk(request, pk)
             await self._populate_obj(request, obj, data, True)
             session.add(obj)
-            await self.before_edit(request, obj)
+            await self.before_edit(request, data, obj)
             if isinstance(session, AsyncSession):
                 await session.commit()
                 await session.refresh(obj)

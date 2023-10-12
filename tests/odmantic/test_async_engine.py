@@ -1,7 +1,7 @@
 import json
 import sys
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 import pytest
 import pytest_asyncio
@@ -39,7 +39,9 @@ class User(Model):
 
 
 class UserView(ModelView):
-    async def before_create(self, request: Request, obj: Any) -> None:
+    async def before_create(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
         assert isinstance(obj, User)
         assert obj.id is not None
 
@@ -47,7 +49,9 @@ class UserView(ModelView):
         assert isinstance(obj, User)
         assert obj.id is not None
 
-    async def before_edit(self, request: Request, obj: Any) -> None:
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
         assert isinstance(obj, User)
         assert obj.id is not None
 

@@ -99,7 +99,7 @@ class ModelView(BaseModelView):
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
         try:
             obj = await self._populate_obj(request, self.document(), data)
-            await self.before_create(request, obj)
+            await self.before_create(request, data, obj)
             obj.save()
             await self.after_create(request, obj)
             return obj
@@ -110,7 +110,7 @@ class ModelView(BaseModelView):
         try:
             obj = await self.find_by_pk(request, pk)
             obj = await self._populate_obj(request, obj, data, True)
-            await self.before_edit(request, obj)
+            await self.before_edit(request, data, obj)
             obj.save()
             await self.after_edit(request, obj)
             return obj
