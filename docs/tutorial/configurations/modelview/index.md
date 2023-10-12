@@ -212,12 +212,12 @@ hooks to perform actions before or after specific operations such as item creati
 
 The following hooks are available:
 
-- [before_create(request, obj)][starlette_admin.views.BaseModelView.before_create]: Called before a new object is
+- [before_create(request, data, obj)][starlette_admin.views.BaseModelView.before_create]: Called before a new object is
   created
 
 - [after_create(request, obj)][starlette_admin.views.BaseModelView.after_create]: Called after a new object is created
 
-- [before_edit(request, obj)][starlette_admin.views.BaseModelView.before_edit]: Called before an existing object is
+- [before_edit(request, data, obj)][starlette_admin.views.BaseModelView.before_edit]: Called before an existing object is
   updated
 
 - [after_edit(request, obj)][starlette_admin.views.BaseModelView.after_edit]: Called after an existing object is updated
