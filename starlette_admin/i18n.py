@@ -9,7 +9,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette_admin.utils.countries import countries_codes
 
 DEFAULT_LOCALE = "en"
-SUPPORTED_LOCALES = ["en", "fr", "ru"]
+SUPPORTED_LOCALES = ["en", "fr", "ru", "tr"]
 
 try:
     from babel import Locale, dates
