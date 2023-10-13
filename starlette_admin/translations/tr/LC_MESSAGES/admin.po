@@ -182,4 +182,3 @@ msgstr "Bu öğeyi silmek istediğinizden emin misiniz?"
 #: starlette_admin/templates/modals/loading.html:7
 msgid "Loading"
 msgstr "Yükleniyor"
-
