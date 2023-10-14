@@ -104,7 +104,7 @@
 				"empty": "Boş",
 				"equals": "Eşittir",
 				"gt": "Büyüktür",
-				"gte": "Büyük Eşit",
+				"gte": "Büyük Eşittir",
 				"lt": "Küçüktür",
 				"lte": "Küçük Eşittir",
 				"not": "Değildir",
@@ -112,7 +112,7 @@
 				"notEmpty": "Boş Değil"
 			},
 			"string": {
-				"contains": "Koşul",
+				"contains": "İçerir",
 				"empty": "Boş",
 				"endsWith": "İle Biter",
 				"equals": "Eşittir",
