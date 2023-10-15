@@ -151,9 +151,9 @@ dependencies = [
 ]
 [tool.hatch.envs.i18n.scripts]
 init = "python i18n/main.py {args:.}"
-extract = "pybabel extract -F i18n/babel.ini -k _n -o i18n/admin.pot --project starlette-admin starlette_admin"
-update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations -D admin"
-compile = "pybabel compile -f -D admin -d starlette_admin/translations"
+extract = "pybabel extract -F i18n/babel.ini -k _n -o i18n/admin.pot --project starlette-admin starlette_admin {args:.}"
+update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations -D admin {args:.}"
+compile = "pybabel compile -f -D admin -d starlette_admin/translations {args:.}"
 
 [tool.hatch.envs.docs]
 features = [
