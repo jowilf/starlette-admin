@@ -205,7 +205,7 @@ and localization.
 
 #### Current supported locales
 
-The `SUPPORTED_LOCALES` global variable in the [i18n.py](./starlette_admin/i18n.py) module contains the list of locales
+The `SUPPORTED_LOCALES` variable in the [i18n.py](./starlette_admin/i18n.py) module contains the list of locales
 currently supported.
 
 #### Step-By-Step Guide
@@ -221,7 +221,7 @@ hatch run i18n:init --locale <locale>
 # use --help to see all available options
 ```
 
-##### Step 2: Translating Messages
+##### Step 2: Translate Messages
 
 * Update all the `msgstr` keys in the POT file located
   at  `./starlette_admin/translations/<locale>/LC_MESSAGES/admin.po`.
@@ -260,7 +260,7 @@ Example (French):
 
 ##### Step 3: Update the supported locales
 
-Make sure to update the `SUPPORTED_LOCALES` global variable in the [i18n.py](./starlette_admin/i18n.py) module to
+Make sure to update the `SUPPORTED_LOCALES` variable in the [i18n.py](./starlette_admin/i18n.py) module to
 include the new locale.
 
 #### Step 4: Compile the new message catalogs
