@@ -174,7 +174,7 @@ def init_moment_js(locale: str):
 @click.option(
     "--locale",
     prompt="Target locale (e.g., `en`)",
-    help="The locale to initialize language support for.",
+    help="The new locale being added (also the target locale).",
 )
 @click.option(
     "--dt-locale",
@@ -206,7 +206,26 @@ def init(
     flatpickr_locale: Optional[str],
     moment_locale: Optional[str],
 ):
-    """Initialize new Language Support"""
+    """Initialize new Language Support
+
+    This command performs the following actions:
+
+    1. Generates the POT file for the specified locale. The POT file is created at
+    './starlette_admin/translations/{locale}/LC_MESSAGES/admin.po'.
+
+    2. Downloads the DataTables localization file from the DataTables CDN (https://cdn.datatables.net) for the locale
+       specified by `--dt-locale` (or the target locale if not provided) and places it under
+       './starlette_admin/statics/i18n/dt/{locale}.json'.
+
+    3. Downloads the Flatpickr localization file from the Flatpickr CDN (https://cdn.jsdelivr.net/npm/flatpickr) for the
+       locale specified by `--flatpickr-locale` (or the target locale if not provided) and places it under
+       './starlette_admin/statics/i18n/flatpickr/{locale}.json'.
+
+    4. Downloads the Moment.js localization file from the Moment.js CDN (https://cdn.jsdelivr.net/npm/moment) for the
+       locale specified by `--moment-locale` (or the target locale if not provided) and places it under
+       './starlette_admin/statics/i18n/momentjs/{locale}.json'.
+
+    """
     # Prepare arguments for pybabel init
     command_args = [
         "pybabel",
