@@ -13,6 +13,7 @@ SUPPORTED_LOCALES = [
     "en",  # English
     "fr",  # French
     "ru",  # Russian
+    "tr",  # Turkish
 ]
 
 
