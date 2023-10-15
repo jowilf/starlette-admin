@@ -14,42 +14,29 @@
 			"_": "Copied %d rows to clipboard"
 		},
 		"copyTitle": "Copy to Clipboard",
+		"createState": "Create State",
+		"csv": "CSV",
+		"excel": "Excel",
 		"pageLength": {
 			"-1": "Show all rows",
 			"_": "Show %d rows"
 		},
 		"pdf": "PDF",
 		"print": "Print",
-		"csv": "CSV",
-		"excel": "Excel",
-		"updateState": "Update",
-		"stateRestore": "State %d",
-		"savedStates": "Saved States",
-		"renameState": "Rename",
-		"removeState": "Remove",
 		"removeAllStates": "Remove All States",
-		"createState": "Create State"
+		"removeState": "Remove",
+		"renameState": "Rename",
+		"savedStates": "Saved States",
+		"stateRestore": "State %d",
+		"updateState": "Update"
 	},
 	"datetime": {
-		"previous": "Previous",
-		"next": "Next",
-		"hours": "Hour",
-		"minutes": "Minute",
-		"seconds": "Second",
-		"unknown": "-",
 		"amPm": [
 			"am",
 			"pm"
 		],
-		"weekdays": [
-			"Sun",
-			"Mon",
-			"Tue",
-			"Wed",
-			"Thu",
-			"Fri",
-			"Sat"
-		],
+		"hours": "Hour",
+		"minutes": "Minute",
 		"months": [
 			"January",
 			"February",
@@ -63,8 +50,22 @@
 			"October",
 			"November",
 			"December"
+		],
+		"next": "Next",
+		"previous": "Previous",
+		"seconds": "Second",
+		"unknown": "-",
+		"weekdays": [
+			"Sun",
+			"Mon",
+			"Tue",
+			"Wed",
+			"Thu",
+			"Fri",
+			"Sat"
 		]
 	},
+	"decimal": ".",
 	"emptyTable": "No data available in table",
 	"info": "Showing _START_ to _END_ of _TOTAL_ entries",
 	"infoEmpty": "Showing 0 to 0 of 0 entries",
@@ -89,6 +90,14 @@
 		"clearAll": "Reset",
 		"condition": "Condition",
 		"conditions": {
+			"array": {
+				"contains": "Contains",
+				"empty": "Empty",
+				"equals": "Equals",
+				"not": "Not",
+				"notEmpty": "Not Empty",
+				"without": "Without"
+			},
 			"date": {
 				"after": "After",
 				"before": "Before",
@@ -117,19 +126,11 @@
 				"endsWith": "Ends With",
 				"equals": "Equals",
 				"not": "Not",
-				"notEmpty": "Not Empty",
-				"startsWith": "Starts With",
 				"notContains": "Does Not Contain",
-				"notStartsWith": "Does Not Start With",
-				"notEndsWith": "Does Not End With"
-			},
-			"array": {
-				"without": "Without",
 				"notEmpty": "Not Empty",
-				"not": "Not",
-				"contains": "Contains",
-				"empty": "Empty",
-				"equals": "Equals"
+				"notEndsWith": "Does Not End With",
+				"notStartsWith": "Does Not Start With",
+				"startsWith": "Starts With"
 			}
 		},
 		"data": "Data",
@@ -144,21 +145,15 @@
 		},
 		"value": "Value"
 	},
-	"searchPanes": {
-		"clearMessage": "Clear All",
-		"collapse": {
-			"0": "SearchPanes",
-			"_": "SearchPanes (%d)"
-		},
-		"count": "{total}",
-		"countFiltered": "{shown} ({total})",
-		"emptyPanes": "No SearchPanes",
-		"loadMessage": "Loading SearchPanes",
-		"title": "Filters Active - %d",
-		"showMessage": "Show All",
-		"collapseMessage": "Collapse All"
-	},
 	"select": {
+		"cells": {
+			"1": "1 cell selected",
+			"_": "%d cells selected"
+		},
+		"columns": {
+			"1": "1 column selected",
+			"_": "%d columns selected"
+		},
 		"rows": {
 			"1": "1 row selected",
 			"_": "%d rows selected"
@@ -169,10 +164,10 @@
 			"export": "Export"
 		},
 		"conditions": {
-			"false": "False",
-			"true": "True",
 			"empty": "Empty",
-			"notEmpty": "Not Empty"
+			"false": "False",
+			"notEmpty": "Not Empty",
+			"true": "True"
 		}
 	},
 	"thousands": ",",
