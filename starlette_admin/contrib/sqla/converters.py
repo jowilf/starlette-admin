@@ -124,7 +124,6 @@ class ModelConverter(BaseSQLAModelConverter):
     def _field_common(
         cls, *, name: str, column: Column, **kwargs: Any
     ) -> Dict[str, Any]:
-        print(type(column))
         if type(column) is Label:
             return {
                 "name": name,
