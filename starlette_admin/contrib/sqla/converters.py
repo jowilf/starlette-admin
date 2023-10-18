@@ -10,6 +10,7 @@ from sqlalchemy.orm import (
     Mapper,
     RelationshipProperty,
 )
+from sqlalchemy.sql.elements import Label
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
 from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.converters import BaseModelConverter, converts
@@ -123,6 +124,13 @@ class ModelConverter(BaseSQLAModelConverter):
     def _field_common(
         cls, *, name: str, column: Column, **kwargs: Any
     ) -> Dict[str, Any]:
+        print(type(column))
+        if type(column) is Label:
+            return {
+                "name": name,
+                "help_text": name,
+                "required": False,
+            }
         return {
             "name": name,
             "help_text": column.comment,
