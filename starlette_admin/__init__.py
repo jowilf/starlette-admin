@@ -18,6 +18,7 @@ from .fields import (
     EnumField,
     FileField,
     FloatField,
+    FormattedField,
     HasMany,
     HasOne,
     ImageField,
