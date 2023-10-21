@@ -23,15 +23,6 @@ const render = {
   },
   col_1: function (data, type, full, meta) {
     return `<div class="row-actions-container" data-id="${data}">${full._meta.rowActions}</div>`;
-    // return `
-    //   <div class="d-flex">
-    //   <a href="${full._detail_url}" data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-    //           <span class="me-1"><i class="fa-solid fa-eye"></i></span>
-    //     </a>
-    //     <a href="${full._edit_url}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
-    // <span class="me-1"><i class="fa-solid fa-edit"></i></span></a>
-    //     <div>
-    //   `;
   },
   text: function render(data, type, full, meta, fieldOptions) {
     if (data == null) return null_column();

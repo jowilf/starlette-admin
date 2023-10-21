@@ -114,7 +114,6 @@
                     window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity)  | safe }}")
                 else
                     window.location.reload()
-                // table.ajax.reload();
             },
             function (actionName, element, error) {
                 //onError
