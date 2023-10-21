@@ -1257,10 +1257,14 @@ class FormattedField(StringField):
 
     exclude_from_create: Optional[bool] = True
     exclude_from_edit: Optional[bool] = True
+    searchable: Optional[bool] = True
+    orderable: Optional[bool] = True
     func: Optional[Callable[[Request, Any], Any]] = None
     """Function that takes a request and an object and returns a value."""
 
     async def parse_obj(self, request: Request, obj: Any) -> Any:
         assert self.exclude_from_create, "FormattedField must be excluded from create"
         assert self.exclude_from_edit, "FormattedField must be excluded from edit"
+        assert self.searchable, "FormattedField must be searchable"
+        assert self.orderable, "FormattedField must be orderable"
         return self.func(request, obj) if self.func else None
