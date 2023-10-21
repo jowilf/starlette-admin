@@ -115,7 +115,7 @@ def row_action(
     Decorator to add custom row actions to your [ModelView][starlette_admin.views.BaseModelView]
 
     Args:
-        name: Unique action name for the ModelView.
+        name: Unique row action name for the ModelView.
         text: Action text displayed to users.
         confirmation: Confirmation text; if provided, the action will require confirmation.
         action_btn_class: Action button variant (ex. `btn-success`, `btn-outline`, ...)
@@ -187,7 +187,7 @@ def link_row_action(
         row action should simply navigate users to a website or internal page.
 
     Args:
-        name: Unique action name for the ModelView.
+        name: Unique row action name for the ModelView.
         text: Action text displayed to users.
         action_btn_class: Action button variant (ex. `btn-success`, `btn-outline`, ...)
         icon_class: Icon class (ex. `fa-lite fa-folder`, `fa-duotone fa-circle-right`, ...)
