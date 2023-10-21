@@ -122,24 +122,26 @@ class BaseSQLAModelConverter(BaseModelConverter):
 class ModelConverter(BaseSQLAModelConverter):
     @classmethod
     def _field_common(
-        cls, *, name: str, column: Column, **kwargs: Any
+        cls, *, name: str, column: Column | Label, **kwargs: Any
     ) -> Dict[str, Any]:
-        if type(column) is Label:
+        if isinstance(column, Label):
             return {
                 "name": name,
                 "help_text": name,
                 "required": False,
             }
-        return {
-            "name": name,
-            "help_text": column.comment,
-            "required": (
-                not column.nullable
-                and not isinstance(column.type, (Boolean,))
-                and not column.default
-                and not column.server_default
-            ),
-        }
+        if isinstance(column, Column):
+            return {
+                "name": name,
+                "help_text": column.comment,
+                "required": (
+                    not column.nullable
+                    and not isinstance(column.type, (Boolean,))
+                    and not column.default
+                    and not column.server_default
+                ),
+            }
+        raise ValueError(f"Unknown column type {column}")
 
     @classmethod
     def _string_common(cls, *, type: Any, **kwargs: Any) -> Dict[str, Any]:
