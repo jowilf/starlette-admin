@@ -377,3 +377,26 @@ def test_invalid_row_action_list():
 
     with pytest.raises(ValueError, match="Unknown row action with name `invalid`"):
         InvalidArticleView()
+
+
+@pytest.mark.parametrize(
+    "url, params",
+    [
+        ("/admin/api/article/action", {"pks": [2, 3]}),
+        ("/admin/api/article/row-action", {"pk": 2}),
+    ],
+)
+def test_actions_when_model_is_not_accessible(url, params):
+    class InaccessibleArticleView(ArticleView):
+        def is_accessible(self, request: Request) -> bool:
+            return False
+
+    admin = BaseAdmin()
+    app = Starlette()
+    admin.add_view(InaccessibleArticleView)
+    admin.mount_to(app)
+    client = TestClient(app, base_url="http://testserver")
+
+    response = client.get(url, params={"name": "make_published", **params})
+    assert response.status_code == 400
+    assert response.json()["msg"] == "Forbidden"
