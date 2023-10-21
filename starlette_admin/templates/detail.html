@@ -33,29 +33,9 @@
                             <strong>#{{ obj[pk] }}</strong>
                         </h3>
                         <div class="card-actions">
-                            <div class="btn-list">
-                                {% if model.can_delete(request) %}
-                                    <button id="delete-btn"
-                                            type="button"
-                                            class="btn btn-danger btn-block"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#modal-delete">
-                                        <i class="fas fa-trash-alt me-2"></i>
-                                        {{ _("Delete") }}
-                                    </button>
-                                {% endif %}
-                                {% if model.can_edit(request) %}
-                                    <a href="{{ url_for(__name__ ~ ':edit', identity=model.identity,pk=obj[pk]) }}">
-                                        <button type="button" class="btn btn-primary btn-block me-2">
-                                            <i class="fa-solid fa-edit me-2"></i>
-                                            {{ _("Edit") }}
-                                        </button>
-                                    </a>
-                                {% endif %}
-                                {% for action in _actions %}
-                                    {% include "action.html" %}
-                                {% endfor %}
-                            </div>
+                            {% with pk=obj[pk] %}
+                                {% include "row-actions.html" %}
+                            {% endwith %}
                         </div>
                     </div>
                     <div class="card-body">
@@ -108,45 +88,41 @@
 {% block script %}
     {{ super() }}
     <script type="text/javascript"
+            src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for(__name__ ~ ':statics', path='js/actions.js') }}"></script>
+    <script type="text/javascript"
             src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
     {% for link in model._additional_js_links(request, "DETAIL" | ra) %}
         <script type="text/javascript" src="{{ link }}"></script>
     {% endfor %}
     <script>
-    $(function () {
-        $("#modal-delete-btn").click(function () {
-            $("#modal-delete").modal('hide');
-            $("#modal-loading").modal('show');
-            fetch("{{ url_for(__name__ ~ ':action', identity=model.identity)  | safe }}?name=delete&pks={{ obj[pk] }}", {
-                method: "POST",
-            }).then(async response => {
-                if (response.ok) {
-                    localStorage.successAlert = "Successfully deleted {{ obj[pk] }}"
-                    await new Promise(r => setTimeout(r, 500));
-                    $("#modal-loading").modal('hide')
+        var actionManager = new ActionManager(
+            "", // not necessary
+            "{{ url_for(__name__ ~ ':row-action', identity=model.identity)  | safe }}",
+            function (query, element) {
+                // appendQueryParams
+                query.append(
+                    "pk",
+                    "{{ obj[pk] }}"
+                );
+            },
+            function (actionName, element, msg) {
+                // onSuccess
+                localStorage.successAlert = msg;
+                if (actionName === 'delete') // special case for delete row action
                     window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity)  | safe }}")
-                } else {
-                    if (response.status == 400) {
-                        return Promise.reject((await response.json())["msg"]);
-                    }
-                    return Promise.reject("Something went wrong!");
-                }
+                else
+                    window.location.reload()
+                // table.ajax.reload();
+            },
+            function (actionName, element, error) {
+                //onError
+                dangerAlert(error);
+            }
+        );
 
-            }).catch(async (error) => {
-                await new Promise(r => setTimeout(r, 500));
-                $("#modal-loading").modal('hide');
-                $("#error-body").text(error);
-                $("#modal-error").modal('show');
-            });
-        });
-    })
+        actionManager.initNoConfirmationActions();
+        actionManager.initActionModal();
     </script>
-    <script>
-        var model = {{ __js_model__ | tojson | safe }};
-        const id = {{ obj[pk] | tojson | safe }};
-    </script>
-    <script type="text/javascript"
-    src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js') }}"></script>
-    <script type="text/javascript"
-    src="{{ url_for(__name__ ~ ':statics', path='js/actions.js') }}"></script>
 {% endblock %}

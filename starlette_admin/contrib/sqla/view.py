@@ -109,6 +109,14 @@ class ModelView(BaseModelView):
         except SQLAlchemyError as exc:
             raise ActionFailed(str(exc)) from exc
 
+    async def handle_row_action(
+        self, request: Request, pk: Any, name: str
+    ) -> Union[str, Response]:
+        try:
+            return await super().handle_row_action(request, pk, name)
+        except SQLAlchemyError as exc:
+            raise ActionFailed(str(exc)) from exc
+
     def get_list_query(self) -> Select:
         """
         Return a Select expression which is used as base statement for

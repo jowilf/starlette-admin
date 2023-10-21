@@ -1,30 +1,34 @@
-:::starlette_admin.fields.BaseField
-:::starlette_admin.fields.BooleanField
-:::starlette_admin.fields.IntegerField
-:::starlette_admin.fields.DecimalField
-:::starlette_admin.fields.FloatField
-:::starlette_admin.fields.StringField
-:::starlette_admin.fields.TextAreaField
-:::starlette_admin.fields.TinyMCEEditorField
-:::starlette_admin.fields.TagsField
-:::starlette_admin.fields.EmailField
-:::starlette_admin.fields.URLField
-:::starlette_admin.fields.PhoneField
-:::starlette_admin.fields.ColorField
-:::starlette_admin.fields.PasswordField
-:::starlette_admin.fields.EnumField
-:::starlette_admin.fields.TimeZoneField
-:::starlette_admin.fields.CountryField
-:::starlette_admin.fields.CurrencyField
-:::starlette_admin.fields.DateTimeField
-:::starlette_admin.fields.DateField
-:::starlette_admin.fields.TimeField
-:::starlette_admin.fields.ArrowField
-:::starlette_admin.fields.JSONField
-:::starlette_admin.fields.FileField
-:::starlette_admin.fields.ImageField
-:::starlette_admin.fields.RelationField
-:::starlette_admin.fields.HasOne
-:::starlette_admin.fields.HasMany
-:::starlette_admin.fields.ListField
-:::starlette_admin.fields.CollectionField
+:::starlette_admin.fields
+    options:
+        show_root_heading: true
+        members:
+              - BaseField
+              - BooleanField
+              - IntegerField
+              - DecimalField
+              - FloatField
+              - StringField
+              - TextAreaField
+              - TinyMCEEditorField
+              - TagsField
+              - EmailField
+              - URLField
+              - PhoneField
+              - ColorField
+              - PasswordField
+              - EnumField
+              - TimeZoneField
+              - CountryField
+              - CurrencyField
+              - DateTimeField
+              - DateField
+              - TimeField
+              - ArrowField
+              - JSONField
+              - FileField
+              - ImageField
+              - RelationField
+              - HasOne
+              - HasMany
+              - ListField
+              - CollectionField

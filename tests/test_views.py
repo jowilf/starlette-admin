@@ -193,11 +193,16 @@ class TestViews:
         response = client.get("/admin/api/user?select2=true&order_by=id asc")
         data = response.json()
         for value in data["items"]:
-            assert value.get("_select2_selection") is not None
-            assert value.get("_select2_result") is not None
-        assert data["items"][0]["_repr"] == "John Doe"
-        assert data["items"][0]["_select2_selection"] == "<span>John Doe</span>"
-        assert data["items"][0]["_select2_result"] == "<span>John Doe</span>"
+            assert value["_meta"]["select2"]["selection"] is not None
+            assert value["_meta"]["select2"]["result"] is not None
+        assert data["items"][0]["_meta"] == {
+            "detailUrl": "http://testserver/admin/user/detail/1",
+            "repr": "John Doe",
+            "select2": {
+                "selection": "<span>John Doe</span>",
+                "result": "<span>John Doe</span>",
+            },
+        }
 
     def test_async_object_representation(self):
         admin = BaseAdmin()
@@ -208,12 +213,17 @@ class TestViews:
         response = client.get("/admin/api/post?select2=true&order_by=id asc")
         data = response.json()
         for value in data["items"]:
-            assert value.get("_select2_selection") is not None
-            assert value.get("_select2_result") is not None
+            assert value["_meta"]["select2"]["selection"] is not None
+            assert value["_meta"]["select2"]["selection"] is not None
         title = "Dave wasn't exactly sure how he had ended up"
-        assert data["items"][0]["_repr"] == title
-        assert data["items"][0]["_select2_selection"] == f"<span>{title}</span>"
-        assert data["items"][0]["_select2_result"] == f"<span>{title}</span>"
+        assert data["items"][0]["_meta"] == {
+            "detailUrl": "http://testserver/admin/post/detail/1",
+            "repr": title,
+            "select2": {
+                "selection": f"<span>{title}</span>",
+                "result": f"<span>{title}</span>",
+            },
+        }
 
     def test_model_view_create_new(self):
         admin = BaseAdmin()
