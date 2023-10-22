@@ -55,6 +55,9 @@ plugins:
         es:
           name: Español
           build: true
+        tr:
+          name: Türkçe
+          build: true
       nav_translations:
         es:
           Overview: Visión General
@@ -73,6 +76,25 @@ plugins:
           Alternatives, Inspiration and Comparisons: Alternativas, Inspiración y Comparaciones
           API Reference: Referencia de la API
           Changelog: Registro de Cambios
+        tr:
+          Overview: Genel Bakış
+          Tutorial - User Guide: Kılavuz - Kullanıcı Kılavuzu
+          Getting Started: Başlarken
+          Configurations: Konfigürasyonlar
+          Admin: Admin
+          ModelView: ModelView
+          Forms Validations: Form Doğrulamaları
+          Authentication: Kimlik Doğrulama
+          Managing Files: Dosyaları Yönetme
+          Batch Actions: Toplu İşlemler
+          Multiple Admin: Çoklu Admin
+          Advanced User Guide: Gelişmiş Kullanıcı Kılavuzu
+          Custom Field: Özel Alan
+          Extending BaseModelView: BaseModelView'ı Genişletme
+          Deployment: Yayınlama
+          Alternatives, Inspiration and Comparisons: Alternatifler, İlham ve Karşılaştırmalar
+          API Reference: API Referansı
+          Changelog: Değişiklikler Kaydı
 
 watch:
   - starlette_admin
