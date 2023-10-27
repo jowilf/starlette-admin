@@ -22,7 +22,9 @@ class ModelView(BaseModelView):
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
         """Validate data without file fields  relation fields"""
         fields_to_exclude = [
-            f.name for f in self.fields if isinstance(f, (FileField, RelationField))
+            f.name
+            for f in self.get_fields_list(request, request.state.action)
+            if isinstance(f, (FileField, RelationField))
         ]
         self.model.validate(
             {k: v for k, v in data.items() if k not in fields_to_exclude}

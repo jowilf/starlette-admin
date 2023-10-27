@@ -121,12 +121,8 @@ class ModelView(BaseModelView):
         if document is None:
             document = self.document
         if fields is None:
-            fields = self.fields
+            fields = self.get_fields_list(request, request.state.action)
         for field in fields:
-            if (is_edit and field.exclude_from_edit) or (
-                not is_edit and field.exclude_from_create
-            ):
-                continue
             name, value = field.name, data.get(field.name, None)
             me_field = getattr(document, name)
             if isinstance(field, (FileField, ImageField)):
