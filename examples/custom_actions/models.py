@@ -5,9 +5,8 @@ from sqlalchemy import Column, Enum, Integer, String, Text
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
-from starlette_admin import action
+from starlette_admin import action, link_row_action, row_action
 from starlette_admin._types import RowActionsDisplayType
-from starlette_admin.actions import link_row_action, row_action
 from starlette_admin.contrib.sqla import ModelView
 from starlette_admin.exceptions import ActionFailed
 
