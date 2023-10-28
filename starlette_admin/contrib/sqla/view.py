@@ -106,7 +106,7 @@ class ModelView(BaseModelView):
         )
         super().__init__()
 
-    def _setup_primary_key(self):
+    def _setup_primary_key(self) -> None:
         # Detect the primary key attribute of the model
         for key in self.model.__dict__:
             attr = getattr(self.model, key)
