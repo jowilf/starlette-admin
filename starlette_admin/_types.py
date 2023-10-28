@@ -17,6 +17,8 @@ class RequestAction(str, Enum):
     DETAIL = "DETAIL"
     CREATE = "CREATE"
     EDIT = "EDIT"
+    ACTION = "ACTION"
+    ROW_ACTION = "ROW_ACTION"
 
     def is_form(self) -> bool:
         return self.value in [self.CREATE, self.EDIT]
@@ -29,3 +31,8 @@ class ExportType(str, Enum):
     EXCEL = "excel"
     PDF = "pdf"
     PRINT = "print"
+
+
+class RowActionsDisplayType(str, Enum):
+    ICON_LIST = "ICON_LIST"
+    DROPDOWN = "DROPDOWN"

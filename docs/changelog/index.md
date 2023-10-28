@@ -9,10 +9,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+* Row actions by [@jowilf](https://github.com/jowilf) in [#348](https://github.com/jowilf/starlette-admin/pull/348)
+
+
 * Add Support for Custom Sortable Field Mapping in SQLAlchemy ModelView by [@jowilf](https://github.com/jowilf)
   in [#328](https://github.com/jowilf/starlette-admin/pull/328)
 
-!!! usage
+??? usage
+
     ```python
     class Post(Base):
         __tablename__ = "post"
@@ -31,7 +35,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 * Add support for datatables [state saving](https://datatables.net/examples/basic_init/state_save.html)
 
-!!! usage
+??? usage
+
     ```python
     class MyModelView(ModelView):
         save_state = True
