@@ -173,16 +173,15 @@ class ModelView(BaseModelView):
     ) -> Dict[str, Any]:
         arranged_data: Dict[str, Any] = {}
         if fields is None:
-            fields = self.fields
+            fields = self.get_fields_list(request, request.state.action)
         for field in fields:
-            if (is_edit and field.exclude_from_edit) or (
-                not is_edit and field.exclude_from_create
-            ):
-                continue
             name, value = field.name, data.get(field.name, None)
             if isinstance(field, CollectionField) and value is not None:
                 arranged_data[name] = await self._arrange_data(
-                    request, value, is_edit, field.fields
+                    request,
+                    value,
+                    is_edit,
+                    field.get_fields_list(request, request.state.action),
                 )
             elif (
                 isinstance(field, ListField)
@@ -190,7 +189,12 @@ class ModelView(BaseModelView):
                 and value is not None
             ):
                 arranged_data[name] = [
-                    await self._arrange_data(request, v, is_edit, field.field.fields)
+                    await self._arrange_data(
+                        request,
+                        v,
+                        is_edit,
+                        field.field.get_fields_list(request, request.state.action),
+                    )
                     for v in value
                 ]
             elif isinstance(field, HasOne) and value is not None:
