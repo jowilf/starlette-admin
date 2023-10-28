@@ -549,16 +549,6 @@ class BaseModelView(BaseView):
         raise NotImplementedError()
 
     @abstractmethod
-    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
-        """
-        Bulk delete items
-        Parameters:
-            request: The request being processed
-            pks: List of primary keys
-        """
-        raise NotImplementedError()
-
-    @abstractmethod
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         """
         Find one item
@@ -578,6 +568,18 @@ class BaseModelView(BaseView):
         """
         raise NotImplementedError()
 
+    async def before_create(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        """
+        This hook is called before a new item is created.
+
+        Args:
+            request: The request being processed.
+            data: Dict values contained converted form data.
+            obj: The object about to be created.
+        """
+
     @abstractmethod
     async def create(self, request: Request, data: Dict) -> Any:
         """
@@ -589,6 +591,27 @@ class BaseModelView(BaseView):
             Any: Created Item
         """
         raise NotImplementedError()
+
+    async def after_create(self, request: Request, obj: Any) -> None:
+        """
+        This hook is called after a new item is successfully created.
+
+        Args:
+            request: The request being processed.
+            obj: The newly created object.
+        """
+
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        """
+        This hook is called before an item is edited.
+
+        Args:
+            request: The request being processed.
+            data: Dict values contained converted form data
+            obj: The object about to be edited.
+        """
 
     @abstractmethod
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
@@ -602,6 +625,43 @@ class BaseModelView(BaseView):
             Any: Edited Item
         """
         raise NotImplementedError()
+
+    async def after_edit(self, request: Request, obj: Any) -> None:
+        """
+        This hook is called after an item is successfully edited.
+
+        Args:
+            request: The request being processed.
+            obj: The edited object.
+        """
+
+    async def before_delete(self, request: Request, obj: Any) -> None:
+        """
+        This hook is called before an item is deleted.
+
+        Args:
+            request: The request being processed.
+            obj: The object about to be deleted.
+        """
+
+    @abstractmethod
+    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+        """
+        Bulk delete items
+        Parameters:
+            request: The request being processed
+            pks: List of primary keys
+        """
+        raise NotImplementedError()
+
+    async def after_delete(self, request: Request, obj: Any) -> None:
+        """
+        This hook is called after an item is successfully deleted.
+
+        Args:
+            request: The request being processed.
+            obj: The deleted object.
+        """
 
     def can_view_details(self, request: Request) -> bool:
         """Permission for viewing full details of Item. Return True by default"""

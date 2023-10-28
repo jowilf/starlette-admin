@@ -360,12 +360,14 @@ class ModelView(BaseModelView):
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self._populate_obj(request, self.model(), data)
             session.add(obj)
+            await self.before_create(request, data, obj)
             if isinstance(session, AsyncSession):
                 await session.commit()
                 await session.refresh(obj)
             else:
                 await anyio.to_thread.run_sync(session.commit)
                 await anyio.to_thread.run_sync(session.refresh, obj)
+            await self.after_create(request, obj)
             return obj
         except Exception as e:
             return self.handle_exception(e)
@@ -376,13 +378,16 @@ class ModelView(BaseModelView):
             await self.validate(request, data)
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self.find_by_pk(request, pk)
-            session.add(await self._populate_obj(request, obj, data, True))
+            await self._populate_obj(request, obj, data, True)
+            session.add(obj)
+            await self.before_edit(request, data, obj)
             if isinstance(session, AsyncSession):
                 await session.commit()
                 await session.refresh(obj)
             else:
                 await anyio.to_thread.run_sync(session.commit)
                 await anyio.to_thread.run_sync(session.refresh, obj)
+            await self.after_edit(request, obj)
             return obj
         except Exception as e:
             self.handle_exception(e)
@@ -439,12 +444,16 @@ class ModelView(BaseModelView):
         objs = await self.find_by_pks(request, pks)
         if isinstance(session, AsyncSession):
             for obj in objs:
+                await self.before_delete(request, obj)
                 await session.delete(obj)
             await session.commit()
         else:
             for obj in objs:
+                await self.before_delete(request, obj)
                 await anyio.to_thread.run_sync(session.delete, obj)
             await anyio.to_thread.run_sync(session.commit)
+        for obj in objs:
+            await self.after_delete(request, obj)
         return len(objs)
 
     async def build_full_text_search_query(
@@ -468,8 +477,9 @@ class ModelView(BaseModelView):
     def handle_exception(self, exc: Exception) -> None:
         try:
             """Automatically handle sqlalchemy_file error"""
-            sqlalchemy_file = __import__("sqlalchemy_file")
-            if isinstance(exc, sqlalchemy_file.exceptions.ValidationError):
+            from sqlalchemy_file.exceptions import ValidationError
+
+            if isinstance(exc, ValidationError):
                 raise FormValidationError({exc.key: exc.msg})
         except ImportError:  # pragma: no cover
             pass

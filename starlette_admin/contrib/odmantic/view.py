@@ -134,9 +134,14 @@ class ModelView(BaseModelView):
         session: Union[AIOSession, SyncSession] = request.state.session
         data = await self._arrange_data(request, data)
         try:
+            obj = self.model(**data)
+            await self.before_create(request, data, obj)
             if isinstance(session, AIOSession):
-                return await session.save(self.model(**data))
-            return await anyio.to_thread.run_sync(session.save, self.model(**data))
+                await session.save(obj)
+            else:
+                await anyio.to_thread.run_sync(session.save, obj)
+            await self.after_create(request, obj)
+            return obj
         except Exception as e:
             self.handle_exception(e)
 
@@ -144,20 +149,31 @@ class ModelView(BaseModelView):
         session: Union[AIOSession, SyncSession] = request.state.session
         data = await self._arrange_data(request, data, is_edit=True)
         try:
-            instance = await self.find_by_pk(request, pk)
-            instance.update(data)
+            obj = await self.find_by_pk(request, pk)
+            obj.update(data)
+            await self.before_edit(request, data, obj)
             if isinstance(session, AIOSession):
-                return await session.save(instance)
-            return await anyio.to_thread.run_sync(session.save, instance)
+                obj = await session.save(obj)
+            else:
+                obj = await anyio.to_thread.run_sync(session.save, obj)
+            await self.after_edit(request, obj)
+            return obj
         except Exception as e:
             self.handle_exception(e)
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+        objs = await self.find_by_pks(request, pks)
         pks = list(map(ObjectId, pks))
+        for obj in objs:
+            await self.before_delete(request, obj)
         session: Union[AIOSession, SyncSession] = request.state.session
         if isinstance(session, AIOSession):
-            return await session.remove(self.model, self.model.id.in_(pks))  # type: ignore
-        return await anyio.to_thread.run_sync(session.remove, self.model, self.model.id.in_(pks))  # type: ignore
+            deleted_count = await session.remove(self.model, self.model.id.in_(pks))  # type: ignore
+        else:
+            deleted_count = await anyio.to_thread.run_sync(session.remove, self.model, self.model.id.in_(pks))  # type: ignore
+        for obj in objs:
+            await self.after_delete(request, obj)
+        return deleted_count
 
     def handle_exception(self, exc: Exception) -> None:
         if isinstance(exc, ValidationError):
