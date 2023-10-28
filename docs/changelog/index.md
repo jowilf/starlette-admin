@@ -19,6 +19,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+* Fix [#347](https://github.com/jowilf/starlette-admin/issues/347): Detect SQLAlchemy primary key with custom column name by [@jowilf](https://github.com/jowilf)
+  in [#361](https://github.com/jowilf/starlette-admin/pull/361)
+
 * Fix Bug with field access authorization by [@jowilf](https://github.com/jowilf)
   in [#360](https://github.com/jowilf/starlette-admin/pull/360)
 
