@@ -350,11 +350,7 @@ class ModelView(BaseModelView):
         database.
         """
         arranged_data: Dict[str, Any] = {}
-        for field in self.fields:
-            if (is_edit and field.exclude_from_edit) or (
-                not is_edit and field.exclude_from_create
-            ):
-                continue
+        for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField) and data[field.name] is not None:
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
                 if not field.multiple:
@@ -376,11 +372,7 @@ class ModelView(BaseModelView):
         data: Dict[str, Any],
         is_edit: bool = False,
     ) -> Any:
-        for field in self.fields:
-            if (is_edit and field.exclude_from_edit) or (
-                not is_edit and field.exclude_from_create
-            ):
-                continue
+        for field in self.get_fields_list(request, request.state.action):
             name, value = field.name, data.get(field.name, None)
             if isinstance(field, FileField):
                 value, should_be_deleted = value
