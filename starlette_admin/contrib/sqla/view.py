@@ -4,7 +4,12 @@ import anyio.to_thread
 from sqlalchemy import Column, String, cast, func, inspect, or_, select
 from sqlalchemy.exc import NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import InstrumentedAttribute, Mapper, Session, joinedload
+from sqlalchemy.orm import (
+    InstrumentedAttribute,
+    Mapper,
+    Session,
+    joinedload,
+)
 from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette.responses import Response
@@ -65,7 +70,7 @@ class ModelView(BaseModelView):
         self.name = name or self.name or prettify_class_name(self.model.__name__)
         self.icon = icon
         self._pk_column: Column = mapper.primary_key[0]
-        self.pk_attr = self._pk_column.key
+        self._setup_primary_key()
         self._pk_coerce = extract_column_python_type(self._pk_column)
         if self.fields is None or len(self.fields) == 0:
             self.fields = [
@@ -100,6 +105,14 @@ class ModelView(BaseModelView):
             self.fields_default_sort, is_default_sort_list=True
         )
         super().__init__()
+
+    def _setup_primary_key(self):
+        # Detect the primary key attribute of the model
+        for key in self.model.__dict__:
+            attr = getattr(self.model, key)
+            if isinstance(attr, InstrumentedAttribute) and attr.primary_key:
+                self.pk_attr = key
+                return
 
     async def handle_action(
         self, request: Request, pks: List[Any], name: str
