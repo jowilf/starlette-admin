@@ -17,6 +17,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
         save_state = True
     ```
 
+### Fixed
+
+* Fix Bug with field access authorization by [@jowilf](https://github.com/jowilf)
+  in [#360](https://github.com/jowilf/starlette-admin/pull/360)
+
 ## [0.11.2] - 2023-08-31
 
 ### Fixed
