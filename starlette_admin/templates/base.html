@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     {% block head_meta %}{% endblock %}
-    {% block title %}<title>{{ title }}</title>{% endblock %}
+    {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
     <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/tabler.min.css') }}">
     <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/fontawesome.min.css') }}">
     <style>

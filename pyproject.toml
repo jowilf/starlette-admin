@@ -42,7 +42,7 @@ Changelog = "https://jowilf.github.io/starlette-admin/changelog/"
 
 [project.optional-dependencies]
 i18n = [
-    "babel >=2.12.1"
+    "babel >=2.13.0"
 ]
 test = [
     "pytest >=7.2.0, <7.5.0",
@@ -98,9 +98,6 @@ format = [
     "ruff starlette_admin tests --fix",
     "black ."
 ]
-i18n_extract = "pybabel extract -F i18n/babel.ini -k _n -o i18n/admin.pot --project starlette-admin starlette_admin"
-i18n_update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations -D admin"
-i18n_compile = "pybabel compile -f -D admin -d starlette_admin/translations"
 
 [tool.hatch.envs.test]
 features = [
@@ -142,6 +139,20 @@ report = [
     "coverage report --show-missing",
     "coverage xml"
 ]
+
+[tool.hatch.envs.i18n]
+features = [
+    "i18n",
+]
+dependencies = [
+    "click",
+    "requests"
+]
+[tool.hatch.envs.i18n.scripts]
+init = "python i18n/main.py {args:.}"
+extract = "pybabel extract -F i18n/babel.ini -k _n -o i18n/admin.pot --project starlette-admin starlette_admin {args:.}"
+update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations -D admin {args:.}"
+compile = "pybabel compile -f -D admin -d starlette_admin/translations {args:.}"
 
 [tool.hatch.envs.docs]
 features = [

@@ -23,7 +23,7 @@ from starlette.templating import Jinja2Templates
 from starlette_admin._types import RequestAction
 from starlette_admin.auth import BaseAuthProvider
 from starlette_admin.exceptions import ActionFailed, FormValidationError
-from starlette_admin.helpers import get_file_icon
+from starlette_admin.helpers import get_file_icon, not_none
 from starlette_admin.i18n import (
     I18nConfig,
     LocaleMiddleware,
@@ -152,6 +152,12 @@ class BaseAdmin:
                     name="action",
                 ),
                 Route(
+                    "/api/{identity}/row-action",
+                    self.handle_row_action,
+                    methods=["GET", "POST"],
+                    name="row-action",
+                ),
+                Route(
                     "/{identity}/list",
                     self._render_list,
                     methods=["GET"],
@@ -190,7 +196,7 @@ class BaseAdmin:
         )
         # globals
         templates.env.globals["views"] = self._views
-        templates.env.globals["title"] = self.title
+        templates.env.globals["app_title"] = self.title
         templates.env.globals["is_auth_enabled"] = self.auth_provider is not None
         templates.env.globals["__name__"] = self.route_name
         templates.env.globals["logo_url"] = self.logo_url
@@ -235,7 +241,7 @@ class BaseAdmin:
                 ),
             )
         elif isinstance(view, BaseModelView):
-            view._find_foreign_model = lambda i: self._find_model_from_identity(i)
+            view._find_foreign_model = self._find_model_from_identity
             self._models.append(view)
 
     def _find_model_from_identity(self, identity: Optional[str]) -> BaseModelView:
@@ -259,7 +265,6 @@ class BaseAdmin:
         return wrapper
 
     async def _render_api(self, request: Request) -> Response:
-        request.state.action = RequestAction.LIST
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request):
@@ -270,6 +275,7 @@ class BaseAdmin:
         where = request.query_params.get("where")
         pks = request.query_params.getlist("pks")
         select2 = "select2" in request.query_params
+        request.state.action = RequestAction.API if select2 else RequestAction.LIST
         if len(pks) > 0:
             items = await model.find_by_pks(request, pks)
             total = len(items)
@@ -287,35 +293,67 @@ class BaseAdmin:
                 order_by=order_by,
             )
             total = await model.count(request=request, where=where)
+        serialized_items = [
+            (
+                await model.serialize(
+                    item,
+                    request,
+                    RequestAction.API if select2 else RequestAction.LIST,
+                    include_relationships=not select2,
+                    include_select2=select2,
+                )
+            )
+            for item in items
+        ]
+
+        if not select2:
+            # Add row actions for datatables
+            row_actions = await model.get_all_row_actions(request)
+            assert model.pk_attr
+            for serialized_item in serialized_items:
+                serialized_item["_meta"]["rowActions"] = self.templates.get_template(
+                    "row-actions.html"
+                ).render(
+                    _actions=row_actions,
+                    display_type=model.row_actions_display_type,
+                    pk=serialized_item[model.pk_attr],
+                    request=request,
+                    model=model,
+                )
+
         return JSONResponse(
             {
-                "items": [
-                    (
-                        await model.serialize(
-                            item,
-                            request,
-                            RequestAction.API if select2 else RequestAction.LIST,
-                            include_relationships=not select2,
-                            include_select2=select2,
-                        )
-                    )
-                    for item in items
-                ],
+                "items": serialized_items,
                 "total": total,
             }
         )
 
     async def handle_action(self, request: Request) -> Response:
-        request.state.action = RequestAction.LIST
+        request.state.action = RequestAction.ACTION
         try:
             identity = request.path_params.get("identity")
             pks = request.query_params.getlist("pks")
-            name = request.query_params.get("name")
+            name = not_none(request.query_params.get("name"))
             model = self._find_model_from_identity(identity)
             if not model.is_accessible(request):
                 raise ActionFailed("Forbidden")
-            assert name is not None
             handler_return = await model.handle_action(request, pks, name)
+            if isinstance(handler_return, Response):
+                return handler_return
+            return JSONResponse({"msg": handler_return})
+        except ActionFailed as exc:
+            return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
+
+    async def handle_row_action(self, request: Request) -> Response:
+        request.state.action = RequestAction.ROW_ACTION
+        try:
+            identity = request.path_params.get("identity")
+            pk = request.query_params.get("pk")
+            name = not_none(request.query_params.get("name"))
+            model = self._find_model_from_identity(identity)
+            if not model.is_accessible(request):
+                raise ActionFailed("Forbidden")
+            handler_return = await model.handle_row_action(request, pk, name)
             if isinstance(handler_return, Response):
                 return handler_return
             return JSONResponse({"msg": handler_return})
@@ -333,7 +371,8 @@ class BaseAdmin:
             {
                 "request": request,
                 "model": model,
-                "_actions": await model.get_all_actions(request, RequestAction.LIST),
+                "title": model.title(request),
+                "_actions": await model.get_all_actions(request),
                 "__js_model__": await model._configs(request),
             },
         )
@@ -352,11 +391,11 @@ class BaseAdmin:
             model.detail_template,
             {
                 "request": request,
+                "title": model.title(request),
                 "model": model,
                 "raw_obj": obj,
+                "_actions": await model.get_all_row_actions(request),
                 "obj": await model.serialize(obj, request, RequestAction.DETAIL),
-                "_actions": await model.get_all_actions(request, RequestAction.DETAIL),
-                "__js_model__": await model._configs(request),
             },
         )
 
@@ -364,26 +403,25 @@ class BaseAdmin:
         request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
+        config = {"request": request, "title": model.title(request), "model": model}
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
-            return self.templates.TemplateResponse(
-                model.create_template,
-                {"request": request, "model": model},
-            )
+            return self.templates.TemplateResponse(model.create_template, config)
         form = await request.form()
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.CREATE)
         try:
             obj = await model.create(request, dict_obj)
         except FormValidationError as exc:
-            return self.templates.TemplateResponse(
-                model.create_template,
+            config.update(
                 {
-                    "request": request,
-                    "model": model,
                     "errors": exc.errors,
                     "obj": dict_obj,
-                },
+                }
+            )
+            return self.templates.TemplateResponse(
+                model.create_template,
+                config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = getattr(obj, model.pk_attr)  # type: ignore
@@ -406,29 +444,29 @@ class BaseAdmin:
         obj = await model.find_by_pk(request, pk)
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
+        config = {
+            "request": request,
+            "title": model.title(request),
+            "model": model,
+            "raw_obj": obj,
+            "obj": await model.serialize(obj, request, RequestAction.EDIT),
+        }
         if request.method == "GET":
-            return self.templates.TemplateResponse(
-                model.edit_template,
-                {
-                    "request": request,
-                    "model": model,
-                    "raw_obj": obj,
-                    "obj": await model.serialize(obj, request, RequestAction.EDIT),
-                },
-            )
+            return self.templates.TemplateResponse(model.edit_template, config)
         form = await request.form()
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
         try:
             obj = await model.edit(request, pk, dict_obj)
         except FormValidationError as exc:
-            return self.templates.TemplateResponse(
-                model.edit_template,
+            config.update(
                 {
-                    "request": request,
-                    "model": model,
                     "errors": exc.errors,
                     "obj": dict_obj,
-                },
+                }
+            )
+            return self.templates.TemplateResponse(
+                model.edit_template,
+                config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = getattr(obj, model.pk_attr)  # type: ignore

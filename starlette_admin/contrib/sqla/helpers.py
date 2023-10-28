@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, Optional, Sequence
 
 from sqlalchemy import Column, String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
@@ -56,16 +56,6 @@ def build_query(
     if filters:
         return and_(*filters)
     return and_(True)
-
-
-def build_order_clauses(order_list: List[str], model: Any) -> Any:
-    clauses = []
-    for value in order_list:
-        attr_key, order = value.strip().split(maxsplit=1)
-        attr = getattr(model, attr_key, None)
-        if attr is not None:
-            clauses.append(attr.desc() if order.lower() == "desc" else attr)
-    return clauses
 
 
 def normalize_list(

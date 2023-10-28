@@ -43,8 +43,8 @@ class Brand(str, enum.Enum):
 
 class Product(Base):
     __tablename__ = "product"
-    id = Column(Integer, primary_key=True)
-    title = Column(String(100))
+    id = Column("Product / ID", Integer, primary_key=True)
+    title = Column("Product / Title", String(100))
     description = Column(Text)
     price = Column(Float)
     brand = Column(Enum(Brand))

@@ -1,6 +1,17 @@
 import os
 import re
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Sequence, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from markupsafe import escape
 from starlette.requests import Request
@@ -119,3 +130,24 @@ def wrap_endpoint_with_kwargs(
         return await endpoint(request=request, **kwargs)
 
     return wrapper
+
+
+T = TypeVar("T")
+
+
+def not_none(value: Optional[T]) -> T:
+    """
+    Safely retrieve a value that might be None and raise a ValueError if it is None.
+
+    Args:
+        value (Optional[T]): The value that might be None.
+
+    Returns:
+        T: The value if it is not None.
+
+    Raises:
+        ValueError: If the value is None.
+    """
+    if value is not None:
+        return value
+    raise ValueError("Value can not be None")  # pragma: no cover
