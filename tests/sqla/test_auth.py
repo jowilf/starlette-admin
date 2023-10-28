@@ -21,7 +21,7 @@ class Post(Base):
     __tablename__ = "post"
 
     id = Column(Integer, primary_key=True)
-    title = Column(String)
+    title = Column(String(100))
     super_admin_only_field = Column(Integer, default=0)
 
 
