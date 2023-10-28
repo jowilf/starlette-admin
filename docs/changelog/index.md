@@ -9,6 +9,26 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+* Add Support for Custom Sortable Field Mapping in SQLAlchemy ModelView by [@jowilf](https://github.com/jowilf)
+  in [#328](https://github.com/jowilf/starlette-admin/pull/328)
+
+!!! usage
+    ```python
+    class Post(Base):
+        __tablename__ = "post"
+
+        id: Mapped[int] = mapped_column(primary_key=True)
+        title: Mapped[str] = mapped_column()
+        user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+        user: Mapped[User] = relationship(back_populates="posts")
+
+    class PostView(ModelView):
+        sortable_field = ["id", "title", "user"]
+        sortable_field_mapping = {
+            "user": User.age,  # Sort by the age of the related user
+        }
+    ```
+
 * Add support for datatables [state saving](https://datatables.net/examples/basic_init/state_save.html)
 
 !!! usage
