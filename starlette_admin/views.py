@@ -45,6 +45,10 @@ class BaseView:
     label: str = ""
     icon: Optional[str] = None
 
+    def title(self, request: Request) -> str:
+        """Return the title of the view to be displayed in the browser tab"""
+        return self.label
+
     def is_active(self, request: Request) -> bool:
         """Return true if the current view is active"""
         return False
@@ -159,7 +163,9 @@ class CustomView(BaseView):
 
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
         """Default methods to render view. Override this methods to add your custom logic."""
-        return templates.TemplateResponse(self.template_path, {"request": request})
+        return templates.TemplateResponse(
+            self.template_path, {"request": request, "title": self.title(request)}
+        )
 
     def is_active(self, request: Request) -> bool:
         return request.scope["path"] == self.path

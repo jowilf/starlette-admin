@@ -1,4 +1,4 @@
-# Contributing to StarletteAdmin
+# Contributing to *starlette-admin*
 
 First off, thanks for taking the time to contribute! ❤️
 
@@ -22,6 +22,7 @@ community looks forward to your contributions. 🎉
     - [Reporting Bugs](#reporting-bugs)
     - [Suggesting Enhancements](#suggesting-enhancements)
     - [Your First Code Contribution](#your-first-code-contribution)
+    - [Adding support for a new locale](#adding-support-for-a-new-locale)
     - [Improving The Documentation](#improving-the-documentation)
 
 ## Code of Conduct
@@ -104,7 +105,7 @@ Once it's filed:
 
 ### Suggesting Enhancements
 
-This section guides you through submitting an enhancement suggestion for StarletteAdmin, **including completely new
+This section guides you through submitting an enhancement suggestion for *starlette-admin*, **including completely new
 features and minor improvements to existing functionality**. Following these guidelines will help maintainers and the
 community to understand your suggestion and find related suggestions.
 
@@ -133,43 +134,50 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/jowilf
   and Windows, and [this tool](https://github.com/colinkeenan/silentcast)
   or [this tool](https://github.com/GNOME/byzanz) on
   Linux.
-- **Explain why this enhancement would be useful** to most StarletteAdmin users. You may also want to point out the
+- **Explain why this enhancement would be useful** to most *starlette-admin* users. You may also want to point out the
   other projects that solved it better and which could serve as inspiration.
-
 
 ### Your First Code Contribution
 
 #### Setting up the development environment
 
-We assume you are familiar with the general forking and pull request workflow for submitting to open-source projects. A
-complete guides is available [here](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
+Before you start contributing to *starlette-admin*, ensure you have a proper development environment set up. Familiarize
+yourself with the open-source contribution workflow by following the guidelines
+available [here](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
 
-StarletteAdmin uses [hatch](https://hatch.pypa.io/) to manage dependencies and packaging.
+To manage dependencies and packaging for *starlette-admin*, we use [hatch](https://hatch.pypa.io/). Please make sure to
+install it globally.
 
-Make sure hatch is installed globally:
+For example, you can install Hatch using pip:
 
 ```shell
 pip install hatch
 ```
 
-#### Format
+For more detailed installation instructions, refer to the [Hatch documentation](https://hatch.pypa.io/latest/install/)
 
-To ensure code consistency StarletteAdmin uses [black](https://github.com/psf/black)
-and [ruff](https://github.com/charliermarsh/ruff)
+#### Code Linting & Formatting
 
-To clean all your code, run
+To maintain code consistency, ensure proper code formatting, and enforce type safety, *starlette-admin*
+uses [black](https://github.com/psf/black), [mypy](https://mypy-lang.org/)
+and [ruff](https://github.com/charliermarsh/ruff).
+
+Run the following command to format your code:
 
 ```shell
 hatch run format
 ```
 
+To perform linting checks, run:
+
+```shell
+hatch run test:lint
+```
+
 #### Testing
 
-StarletteAdmin uses [pytest](https://docs.pytest.org) for unit testing. To ensure the stability of StarletteAdmin, each
-added feature
-must be tested in a separate unit test.
-
-To run the test suite
+We use [pytest](https://docs.pytest.org) for unit testing. To ensure the stability of *starlette-admin*,
+every new feature must be tested in a separate unit test. Run the test suite to validate your changes:
 
 ```shell
 hatch run test:all
@@ -190,17 +198,99 @@ It is natural that your branch might contain multiple commits, so you will need 
 Instructions can be
 found [here](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/managing-commits/squashing-commits)
 
+### Adding support for a new locale
+
+*starlette-admin* relies on [babel](https://babel.pocoo.org/) for internationalization
+and localization.
+
+#### Current supported locales
+
+The `SUPPORTED_LOCALES` variable in the [i18n.py](./starlette_admin/i18n.py) module contains the list of locales
+currently supported.
+
+#### Step-By-Step Guide
+
+##### Step 1: Initialize the new locale
+
+To add support for a new locale, the first thing to do is to run the initialization script:
+
+```shell
+# replace <locale> by the new locale
+hatch run i18n:init --locale <locale>
+
+# use --help to see all available options
+```
+
+##### Step 2: Translate Messages
+
+* Update all the `msgstr` keys in the POT file located
+  at  `./starlette_admin/translations/<locale>/LC_MESSAGES/admin.po`.
+  Translate these messages to your target language.
+
+Example (French):
+
+```po
+msgid "Are you sure you want to delete selected items?"
+msgstr "Êtes-vous sûr de vouloir supprimer ces éléments?"
+```
+
+* Check and update the generated JSON file for datatables located at `./starlette_admin/statics/i18n/dt/<locale>.json`.
+  Most of
+  the time, you will only need to update the `starlette-admin` key, which is internal to *starlette-admin*
+
+Example (French):
+
+```json5
+{
+    // ...
+    "starlette-admin": {
+        "buttons": {
+            "export": "Export"
+        },
+        "conditions": {
+            "false": "Faux",
+            "true": "Vrai",
+            "empty": "Vide",
+            "notEmpty": "Non vide"
+        }
+    },
+    // ...
+}
+```
+
+##### Step 3: Update the supported locales
+
+Make sure to update the `SUPPORTED_LOCALES` variable in the [i18n.py](./starlette_admin/i18n.py) module to
+include the new locale.
+
+#### Step 4: Compile the new message catalogs
+
+After translating the messages, compile the POT file into a binary MO file using the following command:
+
+```shell
+# replace <locale> by the new locale
+hatch run i18n:compile -l <locale>
+```
+
+#### Step 5: Test the New Locale
+
+To ensure that your new locale can be fully loaded by *starlette-admin*, include the new locale in
+the `test_default_locale`
+unit test in the [test_i18n](./tests/test_i18n.py) module.
+
 ### Improving The Documentation
 
 Please write clear documentation for any new functionality you add. Docstrings will be converted to the API
 documentation, but more human friendly documentation might also be needed.
 
-The documentation is generated using [mkdocs](https://www.mkdocs.org/). To see a preview of any edits you make you can run:
+The documentation is generated using [mkdocs](https://www.mkdocs.org/).
+To preview your documentation locally, run:
 
 ```shell
-hatch run docs
+hatch run docs:serve
 ```
-and visit the printed address (usually localhost:8080) in your browser
+
+and visit http://localhost:8080 in your browser to see a live preview of your documentation.
 
 ## Attribution
 

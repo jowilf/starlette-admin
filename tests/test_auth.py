@@ -1,35 +1,30 @@
 import json
-from typing import Optional
+from typing import Optional, Sequence
 
 import pytest
 from httpx import AsyncClient
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import Response
 from starlette_admin import (
     BaseAdmin,
+    BaseField,
     IntegerField,
+    RequestAction,
     StringField,
     TinyMCEEditorField,
 )
-from starlette_admin.auth import AdminUser, AuthProvider
-from starlette_admin.exceptions import FormValidationError, LoginFailed
+from starlette_admin.auth import AuthProvider
 from starlette_admin.views import CustomView
 
+from tests.auth_provider import MyAuthProvider
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
-
-users = {
-    "admin": ["admin"],
-    "john": ["post:list", "post:detail"],
-    "terry": ["post:list", "post:create", "post:edit"],
-    "doe": [""],
-}
 
 
 class Post(DummyBaseModel):
     title: str
     content: str
     views: Optional[int] = 0
+    super_admin_only_field: Optional[int] = 0
 
 
 class ReportView(CustomView):
@@ -56,11 +51,22 @@ class PostView(DummyModelView):
         StringField("title"),
         TinyMCEEditorField("content"),
         IntegerField("views"),
+        IntegerField("super_admin_only_field"),
     )
     searchable_fields = ("title", "content")
     sortable_fields = ("id", "title", "content", "views")
     db = {}
     seq = 1
+
+    def get_fields_list(
+        self,
+        request: Request,
+        action: RequestAction = RequestAction.LIST,
+    ) -> Sequence[BaseField]:
+        fields = super().get_fields_list(request, action)
+        if "super-admin" not in request.state.user_roles:
+            fields = [f for f in fields if f.name != "super_admin_only_field"]
+        return fields
 
     def is_accessible(self, request: Request) -> bool:
         return (
@@ -69,54 +75,25 @@ class PostView(DummyModelView):
         )
 
     def can_view_details(self, request: Request) -> bool:
-        return "post:detail" in request.state.user_roles
+        return (
+            "super-admin" in request.state.user_roles
+            or "post:detail" in request.state.user_roles
+        )
 
     def can_create(self, request: Request) -> bool:
-        return "post:create" in request.state.user_roles
+        return (
+            "super-admin" in request.state.user_roles
+            or "post:create" in request.state.user_roles
+        )
 
     def can_edit(self, request: Request) -> bool:
-        return "post:edit" in request.state.user_roles
+        return (
+            "super-admin" in request.state.user_roles
+            or "post:edit" in request.state.user_roles
+        )
 
     def can_delete(self, request: Request) -> bool:
         return "admin" in request.state.user_roles
-
-
-class MyAuthProvider(AuthProvider):
-    async def login(
-        self,
-        username: str,
-        password: str,
-        remember_me: bool,
-        request: Request,
-        response: Response,
-    ) -> Response:
-        if len(username) < 3:
-            raise FormValidationError(
-                {"username": "Ensure username has at least 03 characters"}
-            )
-        if username in users and password == "password":
-            response.set_cookie(key="session", value=username)
-            return response
-        raise LoginFailed("Invalid username or password")
-
-    async def is_authenticated(self, request) -> bool:
-        if "session" in request.cookies:
-            username = request.cookies.get("session")
-            user_roles = users.get(username, None)
-            if user_roles is not None:
-                """Save user roles in request state, can be use later,
-                to restrict user actions in admin interface"""
-                request.state.user = username
-                request.state.user_roles = user_roles
-                return True
-        return False
-
-    def get_admin_user(self, request: Request) -> Optional[AdminUser]:
-        return AdminUser(request.state.user)
-
-    async def logout(self, request: Request, response: Response):
-        response.delete_cookie("session")
-        return response
 
 
 class TestAuth:
@@ -201,7 +178,7 @@ class TestAuth:
         assert "session" not in response.cookies
 
 
-class TestAccess:
+class TestViewAccess:
     def setup_method(self, method):
         PostView.db.clear()
         with open("./tests/data/posts.json") as f:
@@ -305,3 +282,95 @@ class TestAccess:
             cookies={"session": "admin"},
         )
         assert response.status_code == 200
+
+
+class TestFieldAccess:
+    def setup_method(self, method):
+        PostView.db.clear()
+        with open("./tests/data/posts.json") as f:
+            for post in json.load(f):
+                del post["tags"]
+                PostView.db[post["id"]] = Post(**post)
+        PostView.seq = len(PostView.db.keys()) + 1
+
+    @pytest.fixture
+    def client(self):
+        admin = BaseAdmin(auth_provider=MyAuthProvider())
+        app = Starlette()
+        admin.add_view(PostView)
+        admin.mount_to(app)
+        return AsyncClient(app=app, base_url="http://testserver")
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "session,expected_value",
+        [
+            ("super-admin", 1),
+            ("terry", 0),
+        ],
+    )
+    async def test_render_create(self, client, session, expected_value):
+        response = await client.get("/admin/post/create", cookies={"session": session})
+        assert response.status_code == 200
+        assert response.text.count('name="super_admin_only_field"') == expected_value
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "session,expected_value",
+        [
+            ("super-admin", 5),
+            ("terry", 0),
+        ],
+    )
+    async def test_create(self, client, session, expected_value):
+        dummy_data = {
+            "title": "Dummy post",
+            "content": "This is a content",
+            "views": 10,
+            "super_admin_only_field": 5,
+        }
+        response = await client.post(
+            "/admin/post/create",
+            data=dummy_data,
+            cookies={"session": session},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert PostView.db[6].super_admin_only_field == expected_value
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "session,expected_value",
+        [
+            ("super-admin", 1),
+            ("terry", 0),
+        ],
+    )
+    async def test_render_edit(self, client, session, expected_value):
+        response = await client.get("/admin/post/edit/1", cookies={"session": session})
+        assert response.status_code == 200
+        assert response.text.count('name="super_admin_only_field"') == expected_value
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "session,expected_value",
+        [
+            ("super-admin", 5),
+            ("terry", 0),
+        ],
+    )
+    async def test_edit(self, client, session, expected_value):
+        dummy_data = {
+            "title": "Dummy post - edit",
+            "content": "This is a content - edit",
+            "views": 8,
+            "super_admin_only_field": 5,
+        }
+        response = await client.post(
+            "/admin/post/edit/1",
+            data=dummy_data,
+            cookies={"session": session},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert PostView.db[1].super_admin_only_field == expected_value

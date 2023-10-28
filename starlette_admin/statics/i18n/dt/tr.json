@@ -1,0 +1,180 @@
+{
+	"aria": {
+		"sortAscending": ": Sütunu artan sıralamak için etkinleştir",
+		"sortDescending": ": Sütunu azalan sıralamak için etkinleştir"
+	},
+	"buttons": {
+		"collection": "Koleksiyon <span class='ui-button-icon-primary ui-icon ui-icon-triangle-1-s'/>",
+		"colvis": "Göster/Gizle",
+		"colvisRestore": "Görünürlüğü eski haline getir",
+		"copy": "Kopyala",
+		"copyKeys": "Ctrl veya u2318 + C tuşlarına basarak tablo verilerini panonuza kopyalayın.<br><br>İptal etmek için bu mesaja tıklayın veya escape tuşuna basın.",
+		"copySuccess": {
+			"1": "Bir satır panoya kopyalandı",
+			"_": "%d satır panoya kopyalandı"
+		},
+		"copyTitle": "Panoya Kopyala",
+		"pageLength": {
+			"-1": "Tüm satırları göster",
+			"_": "%d satır göster"
+		},
+		"pdf": "PDF",
+		"print": "Yazdır",
+		"csv": "CSV",
+		"excel": "Excel",
+		"updateState": "Güncelle",
+		"stateRestore": "Durum %d",
+		"savedStates": "Kaydedilen Durumlar",
+		"renameState": "Yeniden Adlandır",
+		"removeState": "Kaldır",
+		"removeAllStates": "Tüm Durumları Kaldır",
+		"createState": "Durum Oluştur"
+	},
+	"datetime": {
+		"previous": "Önceki",
+		"next": "Sonraki",
+		"hours": "Saat",
+		"minutes": "Dakika",
+		"seconds": "Saniye",
+		"unknown": "-",
+		"amPm": [
+			"ÖÖ",
+			"ÖS"
+		],
+		"weekdays": [
+			"Paz",
+			"Pzt",
+			"Sal",
+			"Çar",
+			"Per",
+			"Cum",
+			"Cmt"
+		],
+		"months": [
+			"Oca",
+			"Şub",
+			"Mar",
+			"Nis",
+			"May",
+			"Haz",
+			"Tem",
+			"Ağu",
+			"Eyl",
+			"Eki",
+			"Kas",
+			"Ara"
+		]
+	},
+	"emptyTable": "Tabloda veri yok",
+	"info": "_START_ ile _END_ arası _TOTAL_ kayıt gösteriliyor",
+	"infoEmpty": "0 ile 0 arası 0 kayıt gösteriliyor",
+	"infoFiltered": "(_MAX_ kayıt içerisinden bulunanlar)",
+	"infoThousands": ",",
+	"lengthMenu": "Sayfada _MENU_ kayıt göster",
+	"loadingRecords": "Yükleniyor...",
+	"paginate": {
+		"first": "İlk",
+		"last": "Son",
+		"next": "Sonraki",
+		"previous": "Önceki"
+	},
+	"processing": "İşleniyor...",
+	"search": "Ara:",
+	"searchBuilder": {
+		"add": "Koşul Ekle",
+		"button": {
+			"0": "<i class=\"fa-solid fa-filter\"></i> Filtre",
+			"_": "<i class=\"fa-solid fa-filter\"></i> Filtre (%d)"
+		},
+		"clearAll": "Sıfırla",
+		"condition": "Koşul",
+		"conditions": {
+			"date": {
+				"after": "Sonra",
+				"before": "Önce",
+				"between": "Arasında",
+				"empty": "Boş",
+				"equals": "Eşittir",
+				"not": "Değildir",
+				"notBetween": "Arasında Değil",
+				"notEmpty": "Boş Değil"
+			},
+			"number": {
+				"between": "Arasında",
+				"empty": "Boş",
+				"equals": "Eşittir",
+				"gt": "Büyüktür",
+				"gte": "Büyük Eşittir",
+				"lt": "Küçüktür",
+				"lte": "Küçük Eşittir",
+				"not": "Değildir",
+				"notBetween": "Arasında Değil",
+				"notEmpty": "Boş Değil"
+			},
+			"string": {
+				"contains": "İçerir",
+				"empty": "Boş",
+				"endsWith": "İle Biter",
+				"equals": "Eşittir",
+				"not": "Değildir",
+				"notEmpty": "Boş Değil",
+				"startsWith": "İle Başlar",
+				"notContains": "İçermez",
+				"notStartsWith": "İle Başlamaz",
+				"notEndsWith": "İle Bitmez"
+			},
+			"array": {
+				"without": "Olmadan",
+				"notEmpty": "Boş Değil",
+				"not": "Değildir",
+				"contains": "İçerir",
+				"empty": "Boş",
+				"equals": "Eşittir"
+			}
+		},
+		"data": "Sütun",
+		"deleteTitle": "Filtreleme kuralını sil",
+		"leftTitle": "Koşulu Dışa Taşı",
+		"logicAnd": "Ve",
+		"logicOr": "Veya",
+		"rightTitle": "Koşulu İçe Taşı",
+		"title": {
+			"0": "Filtre",
+			"_": "Filtre (%d)"
+		},
+		"value": "Değer"
+	},
+	"searchPanes": {
+		"clearMessage": "Tümünü Temizle",
+		"collapse": {
+			"0": "Arama Bölmeleri",
+			"_": "Arama Bölmeleri (%d)"
+		},
+		"count": "{total}",
+		"countFiltered": "{shown} ({total})",
+		"emptyPanes": "Arama Bölmeleri Yok",
+		"loadMessage": "Arama Bölmeleri Yükleniyor...",
+		"title": "Aktif Filtreler - %d",
+		"showMessage": "Tümünü Göster",
+		"collapseMessage": "Tümünü Daralt"
+	},
+	"select": {
+		"rows": {
+			"1": "1 satır seçildi",
+			"_": "%d satır seçildi"
+		}
+	},
+	"starlette-admin": {
+		"buttons": {
+			"export": "Dışarı Aktar"
+		},
+		"conditions": {
+			"false": "Yanlış",
+			"true": "Doğru",
+			"empty": "Boş",
+			"notEmpty": "Boş Değil"
+		}
+	},
+	"thousands": ",",
+	"zeroRecords": "Eşleşen kayıt bulunamadı"
+}
