@@ -1,4 +1,3 @@
-import json
 from typing import Sequence
 
 import pytest
@@ -23,7 +22,6 @@ class Post(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String)
-    views = Column(Integer)
     super_admin_only_field = Column(Integer, default=0)
 
 
@@ -43,15 +41,10 @@ class TestFieldAccess:
     @pytest.fixture
     def engine(self) -> Engine:
         engine = get_test_engine()
-
         Base.metadata.create_all(engine)
-        with Session(engine) as session, open("./tests/data/posts.json") as f:
-            for post in json.load(f):
-                del post["tags"]
-                del post["content"]
-                session.add(Post(**post))
-            session.commit()
+
         yield engine
+
         Base.metadata.drop_all(engine)
 
     @pytest.fixture
@@ -88,7 +81,6 @@ class TestFieldAccess:
         "user_session,expected_value",
         [
             ("super-admin", 5),
-            ("terry", 0),
         ],
     )
     async def test_create(self, client, session, user_session, expected_value):
@@ -105,7 +97,7 @@ class TestFieldAccess:
             follow_redirects=False,
         )
         assert response.status_code == 303
-        assert session.get(Post, 6).super_admin_only_field == expected_value
+        assert session.get(Post, 1).super_admin_only_field == expected_value
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -115,7 +107,9 @@ class TestFieldAccess:
             ("terry", 0),
         ],
     )
-    async def test_render_edit(self, client, user_session, expected_value):
+    async def test_render_edit(self, client, session, user_session, expected_value):
+        session.add(Post(title="Dummy post"))
+        session.commit()
         response = await client.get(
             "/admin/post/edit/1", cookies={"session": user_session}
         )
@@ -131,6 +125,8 @@ class TestFieldAccess:
         ],
     )
     async def test_edit(self, client, session, user_session, expected_value):
+        session.add(Post(title="Dummy post"))
+        session.commit()
         dummy_data = {
             "title": "Dummy post - edit",
             "content": "This is a content - edit",

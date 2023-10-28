@@ -1,4 +1,3 @@
-import json
 from typing import Sequence
 
 import mongoengine as me
@@ -35,9 +34,6 @@ class PostView(ModelView):
 class TestFieldAccess:
     def setup_method(self, method):
         connect(host=MONGO_URL, uuidRepresentation="standard")
-        with open("./tests/data/posts.json") as f:
-            for post in json.load(f):
-                Post(title=post["title"]).save()
 
     def teardown_method(self, method):
         Post.drop_collection()
@@ -103,11 +99,9 @@ class TestFieldAccess:
         ],
     )
     async def test_render_edit(self, client, user_session, expected_value):
-        _id = (
-            Post.objects(title="Dave wasn't exactly sure how he had ended up").get().id
-        )
+        post = Post(title="Dummy post").save()
         response = await client.get(
-            f"/admin/post/edit/{_id}", cookies={"session": user_session}
+            f"/admin/post/edit/{post.id}", cookies={"session": user_session}
         )
         assert response.status_code == 200
         assert response.text.count('name="super_admin_only_field"') == expected_value
@@ -121,9 +115,7 @@ class TestFieldAccess:
         ],
     )
     async def test_edit(self, client, user_session, expected_value):
-        _id = (
-            Post.objects(title="Dave wasn't exactly sure how he had ended up").get().id
-        )
+        post = Post(title="Dummy post").save()
         dummy_data = {
             "title": "Dummy post - edit",
             "content": "This is a content - edit",
@@ -131,10 +123,10 @@ class TestFieldAccess:
             "super_admin_only_field": 5,
         }
         response = await client.post(
-            f"/admin/post/edit/{_id}",
+            f"/admin/post/edit/{post.id}",
             data=dummy_data,
             cookies={"session": user_session},
             follow_redirects=False,
         )
         assert response.status_code == 303
-        assert Post.objects(id=_id).get().super_admin_only_field == expected_value
+        assert Post.objects(id=post.id).get().super_admin_only_field == expected_value

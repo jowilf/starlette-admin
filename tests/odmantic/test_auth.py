@@ -1,4 +1,3 @@
-import json
 from typing import Sequence
 
 import pytest
@@ -33,11 +32,6 @@ class PostView(ModelView):
 class TestFieldAccess:
     @pytest_asyncio.fixture
     async def client(self, sync_engine: SyncEngine):
-        posts = []
-        with open("./tests/data/posts.json") as f:
-            for post in json.load(f):
-                posts.append(Post(title=post["title"]))
-        sync_engine.save_all(posts)
         admin = Admin(sync_engine, auth_provider=MyAuthProvider())
         app = Starlette()
         admin.add_view(PostView(Post))
@@ -103,9 +97,9 @@ class TestFieldAccess:
     async def test_render_edit(
         self, client, user_session, expected_value, sync_engine: SyncEngine
     ):
-        _id = sync_engine.find_one(Post, Post.title == "They rushed out the door.").id
+        post = sync_engine.save(Post(title="Dummy Post"))
         response = await client.get(
-            f"/admin/post/edit/{_id}", cookies={"session": user_session}
+            f"/admin/post/edit/{post.id}", cookies={"session": user_session}
         )
         assert response.status_code == 200
         assert response.text.count('name="super_admin_only_field"') == expected_value
@@ -121,7 +115,7 @@ class TestFieldAccess:
     async def test_edit(
         self, client, user_session, expected_value, sync_engine: SyncEngine
     ):
-        _id = sync_engine.find_one(Post, Post.title == "They rushed out the door.").id
+        post = sync_engine.save(Post(title="Dummy Post"))
         dummy_data = {
             "title": "Dummy post - edit",
             "content": "This is a content - edit",
@@ -129,13 +123,13 @@ class TestFieldAccess:
             "super_admin_only_field": 5,
         }
         response = await client.post(
-            f"/admin/post/edit/{_id}",
+            f"/admin/post/edit/{post.id}",
             data=dummy_data,
             cookies={"session": user_session},
             follow_redirects=False,
         )
         assert response.status_code == 303
         assert (
-            sync_engine.find_one(Post, Post.id == _id).super_admin_only_field
+            sync_engine.find_one(Post, Post.id == post.id).super_admin_only_field
             == expected_value
         )
