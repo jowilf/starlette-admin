@@ -315,7 +315,7 @@ def test_delete_row_action(client: TestClient):
         "/admin/api/article/row-action", params={"name": "delete", "pk": 2}
     )
     assert response.status_code == 200
-    assert response.json()["msg"] == "Item delete successfully"
+    assert response.json()["msg"] == "Item was successfully deleted"
     assert ArticleView.db.get(2, None) is None
 
 
