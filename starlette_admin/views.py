@@ -504,7 +504,7 @@ class BaseModelView(BaseView):
     )
     async def row_action_3_delete(self, request: Request, pk: Any) -> str:
         await self.delete(request, [pk])
-        return gettext("Item delete successfully")
+        return gettext("Item was successfully deleted")
 
     @abstractmethod
     async def find_all(
