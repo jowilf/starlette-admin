@@ -124,11 +124,6 @@ class ModelConverter(BaseSQLAModelConverter):
     def _field_common(
         cls, *, name: str, column: Column | Label, **kwargs: Any
     ) -> Dict[str, Any]:
-        if isinstance(column, Label):
-            return {
-                "name": name,
-                "required": False,
-            }
         if isinstance(column, Column):
             return {
                 "name": name,
@@ -139,6 +134,12 @@ class ModelConverter(BaseSQLAModelConverter):
                     and not column.default
                     and not column.server_default
                 ),
+            }
+        if isinstance(column, Label):
+            return {
+                "name": name,
+                "required": False,
+                "read_only": True,
             }
         raise ValueError(f"Unknown column type {column}")
 
