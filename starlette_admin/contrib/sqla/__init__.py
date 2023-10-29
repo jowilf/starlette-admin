@@ -1,2 +1,2 @@
-from .admin import Admin
-from .view import ModelView
+from .admin import Admin as Admin
+from .view import ModelView as ModelView

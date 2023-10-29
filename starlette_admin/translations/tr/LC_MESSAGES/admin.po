@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: starlette-admin VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-06-02 22:40-0500\n"
+"POT-Creation-Date: 2023-10-28 16:32-0500\n"
 "PO-Revision-Date: 2023-10-13 04:50+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: tr\n"
@@ -19,12 +19,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.13.0\n"
 
-#: starlette_admin/actions.py:10
+#: starlette_admin/actions.py:11 starlette_admin/actions.py:107
 #: starlette_admin/templates/modals/actions.html:12
 msgid "Yes, Proceed"
 msgstr "Evet, Devam Et"
 
-#: starlette_admin/auth.py:16
+#: starlette_admin/auth.py:31
 msgid "Administrator"
 msgstr "Yönetici"
 
@@ -36,42 +36,58 @@ msgstr "Yönetici"
 msgid "Admin"
 msgstr "Yönetici"
 
-#: starlette_admin/base.py:272
+#: starlette_admin/base.py:254
 #, python-format
 msgid "Model with identity %(identity)s not found"
 msgstr "%(identity) kimliğine sahip model bulunamadı"
 
-#: starlette_admin/templates/detail.html:41
 #: starlette_admin/templates/forms/_delete.html:8
-#: starlette_admin/templates/modals/delete.html:25 starlette_admin/views.py:344
+#: starlette_admin/templates/modals/delete.html:25 starlette_admin/views.py:461
+#: starlette_admin/views.py:498
 msgid "Delete"
 msgstr "Sil"
 
-#: starlette_admin/views.py:345
+#: starlette_admin/views.py:462
 msgid "Are you sure you want to delete selected items?"
 msgstr "Seçili öğeleri silmek istediğinizden emin misiniz?"
 
-#: starlette_admin/views.py:346
+#: starlette_admin/views.py:463
 msgid "Yes, delete all"
 msgstr "Evet, tümünü sil"
 
-#: starlette_admin/views.py:351
+#: starlette_admin/views.py:468 starlette_admin/views.py:507
 #, python-format
 msgid "Item was successfully deleted"
 msgid_plural "%(count)d items were successfully deleted"
 msgstr[0] "Öğe başarıyla silindi"
 msgstr[1] "%(count)d öğe başarıyla silindi"
 
-#: starlette_admin/views.py:668
+#: starlette_admin/views.py:476
+msgid "View"
+msgstr ""
+
+#: starlette_admin/templates/edit.html:12 starlette_admin/views.py:488
+msgid "Edit"
+msgstr "Düzenle"
+
+#: starlette_admin/templates/modals/delete.html:15 starlette_admin/views.py:499
+msgid "Are you sure you want to delete this item?"
+msgstr "Bu öğeyi silmek istediğinizden emin misiniz?"
+
+#: starlette_admin/views.py:818
 msgid "All"
 msgstr "Hepsi"
+
+#: starlette_admin/templates/actions.html:6
+msgid "With selected"
+msgstr "Seçili öğeleri"
 
 #: starlette_admin/templates/create.html:12
 msgid "Create"
 msgstr "Oluştur"
 
 #: starlette_admin/templates/create.html:25
-#: starlette_admin/templates/list.html:58
+#: starlette_admin/templates/list.html:34
 #, python-format
 msgid "New %(name)s"
 msgstr "Yeni %(name)s"
@@ -102,16 +118,11 @@ msgstr "Kaydet"
 msgid "Detail"
 msgstr "Detay"
 
-#: starlette_admin/templates/detail.html:48
-#: starlette_admin/templates/edit.html:12
-msgid "Edit"
-msgstr "Düzenle"
-
-#: starlette_admin/templates/detail.html:61
+#: starlette_admin/templates/detail.html:47
 msgid "Attribute"
 msgstr "Özellik"
 
-#: starlette_admin/templates/detail.html:62
+#: starlette_admin/templates/detail.html:48
 msgid "Value"
 msgstr "Değer"
 
@@ -134,11 +145,7 @@ msgstr "Beni ana sayfaya götür"
 msgid "Logout"
 msgstr "Çıkış"
 
-#: starlette_admin/templates/list.html:32
-msgid "With selected"
-msgstr "Seçili öğeleri"
-
-#: starlette_admin/templates/list.html:91
+#: starlette_admin/templates/list.html:67
 msgid "Search"
 msgstr "Ara"
 
@@ -162,6 +169,10 @@ msgstr "Beni hatırla"
 msgid "Sign in"
 msgstr "Giriş yap"
 
+#: starlette_admin/templates/row-actions.html:38
+msgid "Actions"
+msgstr ""
+
 #: starlette_admin/templates/forms/_delete.html:13
 msgid "Checked this to delete current content of this field"
 msgstr "Bu alanın mevcut içeriğini silmek için bunu işaretleyin"
@@ -174,10 +185,6 @@ msgstr "%(label)s seçin"
 #: starlette_admin/templates/forms/list.html:44
 msgid "Add item"
 msgstr "Öğe ekle"
-
-#: starlette_admin/templates/modals/delete.html:15
-msgid "Are you sure you want to delete this item?"
-msgstr "Bu öğeyi silmek istediğinizden emin misiniz?"
 
 #: starlette_admin/templates/modals/loading.html:7
 msgid "Loading"
