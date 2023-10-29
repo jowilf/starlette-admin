@@ -1,5 +1,6 @@
 import enum
 import json
+from typing import Any, Dict
 
 import pytest
 import pytest_asyncio
@@ -21,6 +22,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, declarative_base, relationship
 from sqlalchemy_file.storage import StorageManager
 from starlette.applications import Starlette
+from starlette.requests import Request
 from starlette_admin.contrib.sqla import Admin
 from starlette_admin.contrib.sqla.view import ModelView
 
@@ -41,8 +43,8 @@ class Brand(str, enum.Enum):
 
 class Product(Base):
     __tablename__ = "product"
-    id = Column(Integer, primary_key=True)
-    title = Column(String(100))
+    id = Column("Product / ID", Integer, primary_key=True)
+    title = Column("Product / Title", String(100))
     description = Column(Text)
     price = Column(Float)
     brand = Column(Enum(Brand))
@@ -57,6 +59,36 @@ class User(Base):
     name = Column(String(100), primary_key=True)
     files = Column(sf.FileField(multiple=True))
     products = relationship("Product", back_populates="user")
+
+
+class ProductView(ModelView):
+    async def before_create(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is None
+
+    async def after_create(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def after_edit(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def before_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def after_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
 
 
 class UserView(ModelView):
@@ -98,7 +130,7 @@ def session(engine: Engine) -> Session:
 def admin(engine: Engine):
     admin = Admin(engine)
     admin.add_view(UserView(User))
-    admin.add_view(ModelView(Product))
+    admin.add_view(ProductView(Product))
     return admin
 
 

@@ -42,7 +42,7 @@ Changelog = "https://jowilf.github.io/starlette-admin/changelog/"
 
 [project.optional-dependencies]
 i18n = [
-    "babel >=2.12.1"
+    "babel >=2.13.0"
 ]
 test = [
     "pytest >=7.2.0, <7.5.0",
@@ -145,7 +145,6 @@ features = [
     "i18n",
 ]
 dependencies = [
-    "babel ==2.13.0",
     "click",
     "requests"
 ]
@@ -217,7 +216,7 @@ target-version = "py38"
 known-third-party = ["starlette_admin"]
 
 [tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
+"__init__.py" = ["F401", "PLC0414"]
 "examples/**" = ["N805", "N999", "RUF012"]
 "tests/**" = ["RUF012"]
 

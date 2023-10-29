@@ -96,16 +96,24 @@ class ModelView(BaseModelView):
     ) -> Sequence[me.Document]:
         return self.document.objects(id__in=pks)
 
-    async def create(self, request: Request, data: Dict[str, Any]) -> None:
+    async def create(self, request: Request, data: Dict[str, Any]) -> Any:
         try:
-            return (await self._populate_obj(request, self.document(), data)).save()
+            obj = await self._populate_obj(request, self.document(), data)
+            await self.before_create(request, data, obj)
+            obj.save()
+            await self.after_create(request, obj)
+            return obj
         except Exception as e:
             self.handle_exception(e)
 
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
             obj = await self.find_by_pk(request, pk)
-            return (await self._populate_obj(request, obj, data, True)).save()
+            obj = await self._populate_obj(request, obj, data, True)
+            await self.before_edit(request, data, obj)
+            obj.save()
+            await self.after_edit(request, obj)
+            return obj
         except Exception as e:
             self.handle_exception(e)
 
@@ -121,12 +129,8 @@ class ModelView(BaseModelView):
         if document is None:
             document = self.document
         if fields is None:
-            fields = self.fields
+            fields = self.get_fields_list(request, request.state.action)
         for field in fields:
-            if (is_edit and field.exclude_from_edit) or (
-                not is_edit and field.exclude_from_create
-            ):
-                continue
             name, value = field.name, data.get(field.name, None)
             me_field = getattr(document, name)
             if isinstance(field, (FileField, ImageField)):
@@ -205,7 +209,13 @@ class ModelView(BaseModelView):
         return obj
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
-        return self.document.objects(id__in=pks).delete()
+        objs = self.document.objects(id__in=pks)
+        for obj in objs:
+            await self.before_delete(request, obj)
+        deleted_count = objs.delete()
+        for obj in objs:
+            await self.after_delete(request, obj)
+        return deleted_count
 
     def handle_exception(self, exc: Exception) -> None:
         if isinstance(exc, ValidationError):

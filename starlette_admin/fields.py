@@ -1092,11 +1092,7 @@ class CollectionField(BaseField):
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
         value = {}
-        for field in self.fields:
-            if (action == RequestAction.EDIT and field.exclude_from_edit) or (
-                action == RequestAction.CREATE and field.exclude_from_create
-            ):
-                continue
+        for field in self.get_fields_list(request, action):
             value[field.name] = await field.parse_form_data(request, form_data, action)
         return value
 
@@ -1104,7 +1100,7 @@ class CollectionField(BaseField):
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
         serialized_value: Dict[str, Any] = {}
-        for field in self.fields:
+        for field in self.get_fields_list(request, action):
             name = field.name
             serialized_value[name] = None
             if hasattr(value, name) or (isinstance(value, dict) and name in value):
@@ -1121,13 +1117,13 @@ class CollectionField(BaseField):
         self, request: Request, action: RequestAction
     ) -> List[str]:
         _links = []
-        for f in self.fields:
+        for f in self.get_fields_list(request, action):
             _links.extend(f.additional_css_links(request, action))
         return _links
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         _links = []
-        for f in self.fields:
+        for f in self.get_fields_list(request, action):
             _links.extend(f.additional_js_links(request, action))
         return _links
 

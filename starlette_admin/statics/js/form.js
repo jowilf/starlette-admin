@@ -65,11 +65,11 @@
         minimumInputLength: 0,
         templateResult: function (item) {
           if (!item.id) return "Search...";
-          return $(item._select2_result);
+          return $(item._meta.select2.result);
         },
         templateSelection: function (item) {
           if (!item.id) return "Search...";
-          if (item._select2_selection) return $(item._select2_selection);
+          if (item._meta) return $(item._meta.select2.selection);
           return $(item.text);
         },
       });
@@ -86,7 +86,7 @@
         }).then(function (data) {
           for (obj of data.items) {
             obj.id = obj[el.data("pk")];
-            var option = new Option(obj._select2_selection, obj.id, true, true);
+            var option = new Option(obj._meta.select2.selection, obj.id, true, true);
             el.append(option).trigger("change");
             el.trigger({
               type: "select2:select",

@@ -73,6 +73,35 @@ $(function () {
     }
   })();
 
+  // Actions
+
+  var actionManager = new ActionManager(
+    model.actionUrl,
+    model.rowActionUrl,
+    function (query, element) {
+      // appendQueryParams
+      if (element.data("is-row-action") === true)
+        query.append(
+          "pk",
+          element.closest(".row-actions-container").data("id")
+        );
+      else
+        selectedRows.forEach((s) => {
+          query.append("pks", s);
+        });
+    },
+    function (actionName, element, msg) {
+      // onSuccess
+      if (!element.data("is-row-action")) table.rows().deselect();
+      table.ajax.reload();
+      successAlert(msg);
+    },
+    function (actionName, element, error) {
+      //onError
+      dangerAlert(error);
+    }
+  );
+
   // Buttons declarations
 
   buttons = [];
@@ -380,6 +409,9 @@ $(function () {
         .container()
         .appendTo("#pageLength_container");
     },
+    drawCallback: function (settings) {
+      actionManager.initNoConfirmationActions();
+    },
     ...model.datatablesOptions,
   });
 
@@ -403,81 +435,8 @@ $(function () {
       onSelectChange();
     });
 
-  function submitAction(name, form, customResponse) {
-    let query = new URLSearchParams();
-    selectedRows.forEach((s) => {
-      query.append("pks", s);
-    });
-    query.append("name", name);
-    let url = model.actionUrl + "?" + query.toString();
-    if (customResponse) {
-      if (form) {
-        form.action = url;
-        form.method = "POST";
-        form.submit();
-      } else {
-        window.location.replace(url);
-      }
-    } else {
-      $("#modal-loading").modal("show");
-      fetch(url, {
-        method: form ? "POST" : "GET",
-        body: form ? new FormData(form) : null,
-      })
-        .then(async (response) => {
-          await new Promise((r) => setTimeout(r, 500));
-          $("#modal-loading").modal("hide");
-          if (response.ok) {
-            table.rows().deselect();
-            table.ajax.reload();
-            successAlert((await response.json())["msg"]);
-          } else {
-            if (response.status == 400) {
-              return Promise.reject((await response.json())["msg"]);
-            }
-            return Promise.reject("Something went wrong!");
-          }
-        })
-        .catch(async (error) => {
-          await new Promise((r) => setTimeout(r, 500));
-          dangerAlert(error);
-        });
-    }
-  }
-
-  $('a[data-no-confirmation-action="true"]').each(function () {
-    $(this).on("click", function (event) {
-      submitAction(
-        $(this).data("name"),
-        null,
-        $(this).data("custom-response") === true
-      );
-    });
-  });
-
-  $("#modal-action").on("show.bs.modal", function (event) {
-    let button = $(event.relatedTarget); // Button that triggered the modal
-    let confirmation = button.data("confirmation");
-    let form = button.data("form");
-    let name = button.data("name");
-    let submit_btn_text = button.data("submit-btn-text");
-    let submit_btn_class = button.data("submit-btn-class");
-    let customResponse = button.data("custom-response") === true;
-
-    let modal = $(this);
-    modal.find("#actionConfirmation").text(confirmation);
-    let modalForm = modal.find("#modal-form");
-    modalForm.html(form);
-    let actionSubmit = modal.find("#actionSubmit");
-    actionSubmit.text(submit_btn_text);
-    actionSubmit.removeClass().addClass(`btn ${submit_btn_class}`);
-    actionSubmit.unbind();
-    actionSubmit.on("click", function (event) {
-      const formElements = modalForm.find("form");
-      const form = formElements.length ? formElements.get(0) : null;
-      submitAction(name, form, customResponse);
-    });
-  });
+  actionManager.initNoConfirmationActions();
+  actionManager.initActionModal();
 
   $('[data-toggle="tooltip"]').tooltip();
 });

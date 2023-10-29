@@ -1,5 +1,9 @@
-:::starlette_admin.views.BaseView
-:::starlette_admin.views.DropDown
-:::starlette_admin.views.Link
-:::starlette_admin.views.CustomView
-:::starlette_admin.views.BaseModelView
+:::starlette_admin.views
+    options:
+        show_root_heading: true
+        members:
+          - BaseView
+          - DropDown
+          - Link
+          - CustomView
+          - BaseModelView

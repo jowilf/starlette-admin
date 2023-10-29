@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
@@ -5,6 +7,7 @@ from sqlalchemy import Column, Integer, String, select
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.orm import declarative_base
 from starlette.applications import Starlette
+from starlette.requests import Request
 from starlette_admin.contrib.sqla import Admin, ModelView
 
 from tests.sqla.utils import get_async_test_engine
@@ -19,6 +22,37 @@ class Product(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String(100))
+
+
+class ProductView(ModelView):
+    async def before_create(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is None
+        assert obj.title == "Infinix INBOOK"
+
+    async def after_create(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def after_edit(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def before_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def after_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
 
 
 @pytest_asyncio.fixture()
@@ -41,7 +75,7 @@ async def session(engine: AsyncEngine) -> AsyncSession:
 @pytest_asyncio.fixture
 async def client(engine: AsyncEngine):
     admin = Admin(engine)
-    admin.add_view(ModelView(Product))
+    admin.add_view(ProductView(Product))
     app = Starlette()
     admin.mount_to(app)
     async with AsyncClient(app=app, base_url="http://testserver") as c:
