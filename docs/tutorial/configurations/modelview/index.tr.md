@@ -196,3 +196,29 @@ Yönetim arayüzünde nesnelerin nasıl temsil edileceğini özelleştirmek içi
     ```
 
     ![Custom Select2 rendering](../../../images/tutorial/configurations/modelview/select2_customization.png){ width="300" }
+
+## Hooks - Kancalar
+
+Kancalar, varsayılan CRUD işlevlerini özelleştirmenin ve genişletmenin kolay bir yolunu sunan geri arama fonksiyonlarıdır. Öğe oluşturma, düzenleme veya silme gibi belirli işlemlerden önce veya sonra belirli işlemleri gerçekleştirmek için kancaları kullanabilirsiniz.
+
+Mevcut kancalar şunlardır:
+
+- [before_create(request, data, obj)][starlette_admin.views.BaseModelView.before_create]: Bir nesne oluşturulmadan önce çağrılır
+
+- [after_create(request, obj)][starlette_admin.views.BaseModelView.after_create]: Bir nesne oluşturulduktan sonra çağrılır
+
+- [before_edit(request, data, obj)][starlette_admin.views.BaseModelView.before_edit]: Varolan bir nesne güncellenmeden önce çağrılır
+
+- [after_edit(request, obj)][starlette_admin.views.BaseModelView.after_edit]: Varolan bir nesne güncellendikten sonra çağrılır
+
+- [before_delete(request, obj)][starlette_admin.views.BaseModelView.before_delete]:  Varolan bir nesne silinmeden önce çağrılır
+
+- [after_delete(request, obj)][starlette_admin.views.BaseModelView.after_delete]: Varolan bir nesne silindikten sonra çağrılır
+
+### Örnek
+
+```python
+class OrderView(ModelView):
+    async def after_create(self, request: Request, order: Order):
+        analytics.track_order_created(order)
+```

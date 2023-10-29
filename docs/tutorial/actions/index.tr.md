@@ -1,6 +1,6 @@
 # Toplu İşlemler
 
-Normalde bir objeyi güncellemek için liste sayfasında seçip güncellemelisiniz. Bu çoğu durumda iyi çalışır.
+Normalde bir nesneyi güncellemek için liste sayfasında seçip güncellemelisiniz. Bu çoğu durumda iyi çalışır.
 Ancak, eğer aynı değişikliği birçok nesneye aynı anda yapmanız gerekiyorsa, bu iş akışı oldukça can sıkıcı olabilir.
 
 Bu durumda birçok nesneyi aynı anda güncellemek için bir *özelleştirilmiş toplu işlem* yazabilirsiniz.

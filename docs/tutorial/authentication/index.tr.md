@@ -1,6 +1,5 @@
 # Kimlik Doğrulama ve Yetkilendirme
 
-To protect your admin interface from unwanted users, you can create an Authentication Provider by extending
 Yönetim arayüzünüzü istenmeyen kullanıcılardan korumak için, [AuthProvider][starlette_admin.auth.AuthProvider] sınıfını genişleterek bir `Kimlik Doğrulama Sağlayıcısı` oluşturabilirsiniz ve admin uygulamanızı tanımlarken `auth_provider` özelliğine atayabilirsiniz.
 
 ## Kullanıcı Adı ve Şifre ile Kimlik Koğrulama
@@ -220,18 +219,19 @@ class ReportView(CustomView):
 
 ### [ModelView][starlette_admin.views.BaseModelView] İçin
 
-[ModelView][starlette_admin.views.BaseModelView] içinde, geçerli kullanıcının erişimini kısıtlamak için geçersiz kılınabilecek dört ek metod vardır.
+In [ModelView][starlette_admin.views.BaseModelView], içinde, geçerli kullanıcının erişimini kısıtlamak için aşağıdaki yöntemleri geçersiz kılabilirsiniz:
 
 * `can_view_details`: Bir öğenin tam ayrıntılarını görüntüleme izni.
 * `can_create`: Bir öğeyi oluşturma izni.
 * `can_edit`: Bir öğeyi düzenleme izni.
 * `can_delete`: Bir öğeyi silme izni.
 * `is_action_allowed`: ismi verilen <abbr title="action">toplu işlem</abbr>in izin verilip verilmediğini doğrulayın.
+* `is_row_action_allowed`: ismi verilen <abbr title="action">satır işlem</abbr>inin izin verilip verilmediğini doğrulayın.
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
 from starlette.requests import Request
-from starlette_admin import action
+from starlette_admin import action, row_action
 
 class ArticleView(ModelView):
     exclude_fields_from_list = [Article.body]
@@ -253,6 +253,11 @@ class ArticleView(ModelView):
             return "action_make_published" in request.state.user["roles"]
         return await super().is_action_allowed(request, name)
 
+    async def is_row_action_allowed(self, request: Request, name: str) -> bool:
+        if name == "make_published":
+            return "row_action_make_published" in request.state.user["roles"]
+        return await super().is_row_action_allowed(request, name)
+
     @action(
         name="make_published",
         text="Mark selected articles as published",
@@ -263,4 +268,18 @@ class ArticleView(ModelView):
     async def make_published_action(self, request: Request, pks: List[Any]) -> str:
         ...
         return "{} articles were successfully marked as published".format(len(pks))
+
+
+    @row_action(
+        name="make_published",
+        text="Mark as published",
+        confirmation="Are you sure you want to mark this article as published ?",
+        icon_class="fas fa-check-circle",
+        submit_btn_text="Yes, proceed",
+        submit_btn_class="btn-success",
+        action_btn_class="btn-info",
+    )
+    async def make_published_row_action(self, request: Request, pk: Any) -> str:
+        ...
+        return "The article was successfully marked as published"
 ```
