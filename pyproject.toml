@@ -67,7 +67,7 @@ test = [
     "mongoengine >=0.25.0, <0.28.0",
     "odmantic >=0.9.0,<0.10.0",
     "tinydb >=4.7.0, <4.9.0",
-    "Pillow >=9.4.0, <9.6.0",
+    "Pillow >=9.4.0, <10.2.0",
     "itsdangerous >=2.1.2, <2.2.0",
     "pydantic[email] >=1.10.2, <2.0.0",
 ]
