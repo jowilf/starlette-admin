@@ -124,7 +124,11 @@ class BaseField:
                 fields = ["id", MyCustomField("full_name")]
             ```
         """
-        return self.parse_func(request, obj) if self.parse_func else getattr(obj, self.name, None)
+        return (
+            self.parse_func(request, obj)
+            if self.parse_func
+            else getattr(obj, self.name, None)
+        )
 
     async def serialize_none_value(
         self, request: Request, action: RequestAction
