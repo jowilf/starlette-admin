@@ -127,7 +127,6 @@ class ModelConverter(BaseSQLAModelConverter):
         if isinstance(column, Label):
             return {
                 "name": name,
-                "help_text": name,
                 "required": False,
             }
         if isinstance(column, Column):
