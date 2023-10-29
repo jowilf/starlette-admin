@@ -59,3 +59,14 @@ def test_sqlalchemyerror_in_action(client: TestClient):
         response.json()["msg"]
         == "Multiple rows were found when exactly one was required"
     )
+
+
+def test_sqlalchemyerror_in_row_action(client: TestClient):
+    response = client.post(
+        "/admin/api/article/row-action", params={"name": "delete", "pk": 2}
+    )
+    assert response.status_code == 400
+    assert (
+        response.json()["msg"]
+        == "Multiple rows were found when exactly one was required"
+    )

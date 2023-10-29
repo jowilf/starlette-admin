@@ -40,6 +40,7 @@ class PostView(DummyModelView):
         DateTimeField("created_at"),
         ArrowField("arrow_"),
     )
+    row_actions = []
 
 
 @pytest.mark.parametrize(
@@ -92,7 +93,8 @@ def test_date_formats():
     admin = BaseAdmin(i18n_config=I18nConfig(default_locale="fr"))
     app = Starlette()
     admin.mount_to(app)
-    admin.add_view(PostView())
+    view = PostView()
+    admin.add_view(view)
     client = TestClient(app)
     _arrow = arrow.get("2023-01-06T16:12:16+00:00")
     PostView.db[1] = Post(
@@ -104,17 +106,16 @@ def test_date_formats():
         arrow_=_arrow,
     )
     response = client.get("admin/api/post?pks=1")
-    assert response.json()["items"] == [
-        {
-            "_detail_url": "http://testserver/admin/post/detail/1",
-            "_edit_url": "http://testserver/admin/post/edit/1",
-            "_repr": "1",
-            "arrow_": _arrow.humanize(locale="fr"),
-            "created_at": "6 janv. 2023, 16:12:16",
-            "date": "6 janv. 2023",
-            "id": 1,
-            "time": "16:12:16",
-            "title": "This is important.",
-        }
-    ]
+    assert len(response.json()["items"]) == 1
+    item0 = response.json()["items"][0]
+    del item0["_meta"]
+    assert item0 == {
+        "arrow_": _arrow.humanize(locale="fr"),
+        "created_at": "6 janv. 2023, 16:12:16",
+        "date": "6 janv. 2023",
+        "id": 1,
+        "time": "16:12:16",
+        "title": "This is important.",
+    }
+
     assert client.get("admin/post/edit/1").status_code == 200

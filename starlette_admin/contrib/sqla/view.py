@@ -1,10 +1,15 @@
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from typing import Any, ClassVar, Dict, List, Optional, Sequence, Type, Union
 
 import anyio.to_thread
 from sqlalchemy import Column, String, cast, func, inspect, or_, select
 from sqlalchemy.exc import NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import InstrumentedAttribute, Mapper, Session, joinedload
+from sqlalchemy.orm import (
+    InstrumentedAttribute,
+    Mapper,
+    Session,
+    joinedload,
+)
 from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette.responses import Response
@@ -15,7 +20,6 @@ from starlette_admin.contrib.sqla.converters import (
 )
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.helpers import (
-    build_order_clauses,
     build_query,
     extract_column_python_type,
     normalize_list,
@@ -36,6 +40,30 @@ from starlette_admin.views import BaseModelView
 
 
 class ModelView(BaseModelView):
+    """A view for managing SQLAlchemy models."""
+
+    sortable_field_mapping: ClassVar[Dict[str, InstrumentedAttribute]] = {}
+    """A dictionary for overriding the default model attribute used for sorting.
+
+    Example:
+        ```python
+        class Post(Base):
+            __tablename__ = "post"
+
+            id: Mapped[int] = mapped_column(primary_key=True)
+            title: Mapped[str] = mapped_column()
+            user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+            user: Mapped[User] = relationship(back_populates="posts")
+
+
+        class PostView(ModelView):
+            sortable_field = ["id", "title", "user"]
+            sortable_field_mapping = {
+                "user": User.age,  # Sort by the age of the related user
+            }
+        ```
+    """
+
     def __init__(
         self,
         model: Type[Any],
@@ -65,7 +93,7 @@ class ModelView(BaseModelView):
         self.name = name or self.name or prettify_class_name(self.model.__name__)
         self.icon = icon
         self._pk_column: Column = mapper.primary_key[0]
-        self.pk_attr = self._pk_column.key
+        self._setup_primary_key()
         self._pk_coerce = extract_column_python_type(self._pk_column)
         if self.fields is None or len(self.fields) == 0:
             self.fields = [
@@ -101,11 +129,27 @@ class ModelView(BaseModelView):
         )
         super().__init__()
 
+    def _setup_primary_key(self) -> None:
+        # Detect the primary key attribute of the model
+        for key in self.model.__dict__:
+            attr = getattr(self.model, key)
+            if isinstance(attr, InstrumentedAttribute) and attr.primary_key:
+                self.pk_attr = key
+                return
+
     async def handle_action(
         self, request: Request, pks: List[Any], name: str
     ) -> Union[str, Response]:
         try:
             return await super().handle_action(request, pks, name)
+        except SQLAlchemyError as exc:
+            raise ActionFailed(str(exc)) from exc
+
+    async def handle_row_action(
+        self, request: Request, pk: Any, name: str
+    ) -> Union[str, Response]:
+        try:
+            return await super().handle_row_action(request, pk, name)
         except SQLAlchemyError as exc:
             raise ActionFailed(str(exc)) from exc
 
@@ -218,10 +262,14 @@ class ModelView(BaseModelView):
                     request, where, self.model
                 )
             stmt = stmt.where(where)  # type: ignore
-        stmt = stmt.order_by(*build_order_clauses(order_by or [], self.model))
+        stmt = stmt.order_by(
+            *self.build_order_clauses(request, order_by or [], self.model)
+        )
         for field in self.get_fields_list(request, RequestAction.LIST):
             if isinstance(field, RelationField):
-                stmt = stmt.options(joinedload(getattr(self.model, field.name)))
+                stmt = stmt.outerjoin(getattr(self.model, field.name)).options(
+                    joinedload(getattr(self.model, field.name))
+                )
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
         return (
@@ -312,12 +360,14 @@ class ModelView(BaseModelView):
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self._populate_obj(request, self.model(), data)
             session.add(obj)
+            await self.before_create(request, data, obj)
             if isinstance(session, AsyncSession):
                 await session.commit()
                 await session.refresh(obj)
             else:
                 await anyio.to_thread.run_sync(session.commit)
                 await anyio.to_thread.run_sync(session.refresh, obj)
+            await self.after_create(request, obj)
             return obj
         except Exception as e:
             return self.handle_exception(e)
@@ -328,13 +378,16 @@ class ModelView(BaseModelView):
             await self.validate(request, data)
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self.find_by_pk(request, pk)
-            session.add(await self._populate_obj(request, obj, data, True))
+            await self._populate_obj(request, obj, data, True)
+            session.add(obj)
+            await self.before_edit(request, data, obj)
             if isinstance(session, AsyncSession):
                 await session.commit()
                 await session.refresh(obj)
             else:
                 await anyio.to_thread.run_sync(session.commit)
                 await anyio.to_thread.run_sync(session.refresh, obj)
+            await self.after_edit(request, obj)
             return obj
         except Exception as e:
             self.handle_exception(e)
@@ -350,11 +403,7 @@ class ModelView(BaseModelView):
         database.
         """
         arranged_data: Dict[str, Any] = {}
-        for field in self.fields:
-            if (is_edit and field.exclude_from_edit) or (
-                not is_edit and field.exclude_from_create
-            ):
-                continue
+        for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField) and data[field.name] is not None:
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
                 if not field.multiple:
@@ -376,11 +425,7 @@ class ModelView(BaseModelView):
         data: Dict[str, Any],
         is_edit: bool = False,
     ) -> Any:
-        for field in self.fields:
-            if (is_edit and field.exclude_from_edit) or (
-                not is_edit and field.exclude_from_create
-            ):
-                continue
+        for field in self.get_fields_list(request, request.state.action):
             name, value = field.name, data.get(field.name, None)
             if isinstance(field, FileField):
                 value, should_be_deleted = value
@@ -399,12 +444,16 @@ class ModelView(BaseModelView):
         objs = await self.find_by_pks(request, pks)
         if isinstance(session, AsyncSession):
             for obj in objs:
+                await self.before_delete(request, obj)
                 await session.delete(obj)
             await session.commit()
         else:
             for obj in objs:
+                await self.before_delete(request, obj)
                 await anyio.to_thread.run_sync(session.delete, obj)
             await anyio.to_thread.run_sync(session.commit)
+        for obj in objs:
+            await self.after_delete(request, obj)
         return len(objs)
 
     async def build_full_text_search_query(
@@ -412,11 +461,25 @@ class ModelView(BaseModelView):
     ) -> Any:
         return self.get_search_query(request, term)
 
+    def build_order_clauses(
+        self, request: Request, order_list: List[str], model: Any
+    ) -> Any:
+        clauses = []
+        for value in order_list:
+            attr_key, order = value.strip().split(maxsplit=1)
+            attr = self.sortable_field_mapping.get(
+                attr_key, getattr(model, attr_key, None)
+            )
+            if attr is not None:
+                clauses.append(attr.desc() if order.lower() == "desc" else attr)
+        return clauses
+
     def handle_exception(self, exc: Exception) -> None:
         try:
             """Automatically handle sqlalchemy_file error"""
-            sqlalchemy_file = __import__("sqlalchemy_file")
-            if isinstance(exc, sqlalchemy_file.exceptions.ValidationError):
+            from sqlalchemy_file.exceptions import ValidationError
+
+            if isinstance(exc, ValidationError):
                 raise FormValidationError({exc.key: exc.msg})
         except ImportError:  # pragma: no cover
             pass

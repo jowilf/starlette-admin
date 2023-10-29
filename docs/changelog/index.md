@@ -9,13 +9,54 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+* Add Before and After Hooks for Create, Edit, and Delete Operations by [@jowilf](https://github.com/jowilf)
+  in [#327](https://github.com/jowilf/starlette-admin/pull/327)
+
+* Row actions by [@jowilf](https://github.com/jowilf) in [#348](https://github.com/jowilf/starlette-admin/pull/348)
+
+* Add Support for Custom Sortable Field Mapping in SQLAlchemy ModelView by [@jowilf](https://github.com/jowilf)
+  in [#328](https://github.com/jowilf/starlette-admin/pull/328)
+
+???+ usage
+
+    ```python hl_lines="12"
+    class Post(Base):
+        __tablename__ = "post"
+
+        id: Mapped[int] = mapped_column(primary_key=True)
+        title: Mapped[str] = mapped_column()
+        user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+        user: Mapped[User] = relationship(back_populates="posts")
+
+    class PostView(ModelView):
+        sortable_field = ["id", "title", "user"]
+        sortable_field_mapping = {
+            "user": User.age,  # Sort by the age of the related user
+        }
+    ```
+
 * Add support for datatables [state saving](https://datatables.net/examples/basic_init/state_save.html)
 
-!!! usage
+???+ usage
+
     ```python
     class MyModelView(ModelView):
         save_state = True
     ```
+
+### Fixed
+
+* Fix [#347](https://github.com/jowilf/starlette-admin/issues/347): Detect SQLAlchemy primary key with custom column
+  name by [@jowilf](https://github.com/jowilf)
+  in [#361](https://github.com/jowilf/starlette-admin/pull/361)
+
+* Fix Bug with field access authorization by [@jowilf](https://github.com/jowilf)
+  in [#360](https://github.com/jowilf/starlette-admin/pull/360)
+
+### Internals
+
+* Explicitly export all public functions and classes by [@jowilf](https://github.com/jowilf)
+  in [#362](https://github.com/jowilf/starlette-admin/pull/362)
 
 ## [0.11.2] - 2023-08-31
 
