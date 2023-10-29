@@ -21,7 +21,6 @@ from .fields import EmailField as EmailField
 from .fields import EnumField as EnumField
 from .fields import FileField as FileField
 from .fields import FloatField as FloatField
-from .fields import FormattedField as FormattedField
 from .fields import HasMany as HasMany
 from .fields import HasOne as HasOne
 from .fields import ImageField as ImageField
