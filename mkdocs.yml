@@ -90,7 +90,7 @@ nav:
       - Forms Validations: 'tutorial/validations/index.md'
       - Authentication: 'tutorial/authentication/index.md'
       - Managing Files: 'tutorial/files/index.md'
-      - Batch Actions: 'tutorial/batch-actions/index.md'
+      - Actions: 'tutorial/actions/index.md'
       - Multiple Admin: 'tutorial/multiple-admin/index.md'
   - Advanced User Guide:
       - Custom Field: 'advanced/custom-field/index.md'
@@ -104,7 +104,7 @@ nav:
       - Fields: 'api/fields/index.md'
       - Views: 'api/views/index.md'
       - BaseAdmin: 'api/base-admin/index.md'
-      - AuthProvider: 'api/auth-provider/index.md'
+      - Auth: 'api/auth/index.md'
       - Actions: 'api/actions/index.md'
   - Changelog: 'changelog/index.md'
 

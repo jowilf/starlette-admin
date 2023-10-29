@@ -5,7 +5,7 @@ from sqlalchemy import Column, Enum, Integer, String, Text
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
-from starlette_admin import action
+from starlette_admin import RowActionsDisplayType, action, link_row_action, row_action
 from starlette_admin.contrib.sqla import ModelView
 from starlette_admin.exceptions import ActionFailed
 
@@ -39,6 +39,8 @@ class ArticleView(ModelView):
         "redirect",
         "redirect_with_form",
     ]
+    row_actions = ["view", "edit", "go_to_example", "make_published", "delete"]
+    row_actions_display_type = RowActionsDisplayType.ICON_LIST
 
     @action(
         name="make_published",
@@ -124,3 +126,30 @@ class ArticleView(ModelView):
     async def redirect_with_form(self, request: Request, pks: List[Any]) -> Response:
         data = await request.form()
         return RedirectResponse(f"https://example.com/?value={data['value']}")
+
+    @row_action(
+        name="make_published",
+        text="Mark as published",
+        confirmation="Are you sure you want to mark this article as published ?",
+        icon_class="fas fa-check-circle",
+        submit_btn_text="Yes, proceed",
+        submit_btn_class="btn-success",
+        action_btn_class="btn-info",
+    )
+    async def make_published_row_action(self, request: Request, pk: Any) -> str:
+        session: Session = request.state.session
+        article = await self.find_by_pk(request, pk)
+        if article.status == Status.Published:
+            raise ActionFailed("The article is already marked as published.")
+        article.status = Status.Published
+        session.add(article)
+        session.commit()
+        return "The article was successfully marked as published"
+
+    @link_row_action(
+        name="go_to_example",
+        text="Go to example.com",
+        icon_class="fas fa-arrow-up-right-from-square",
+    )
+    def go_to_example_row_action(self, request: Request, pk: Any) -> str:
+        return f"https://example.com/?pk={pk}"

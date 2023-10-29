@@ -1,5 +1,6 @@
 import inspect
 from abc import abstractmethod
+from collections import OrderedDict
 from typing import (
     Any,
     Awaitable,
@@ -18,8 +19,8 @@ from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
-from starlette_admin._types import ExportType, RequestAction
-from starlette_admin.actions import action
+from starlette_admin._types import ExportType, RequestAction, RowActionsDisplayType
+from starlette_admin.actions import action, link_row_action, row_action
 from starlette_admin.exceptions import ActionFailed
 from starlette_admin.fields import (
     BaseField,
@@ -28,8 +29,8 @@ from starlette_admin.fields import (
     HasOne,
     RelationField,
 )
-from starlette_admin.helpers import extract_fields
-from starlette_admin.i18n import get_locale, ngettext
+from starlette_admin.helpers import extract_fields, not_none
+from starlette_admin.i18n import get_locale, gettext, ngettext
 from starlette_admin.i18n import lazy_gettext as _
 
 
@@ -188,8 +189,6 @@ class BaseModelView(BaseView):
         exclude_fields_from_detail: List of fields to exclude in Detail page.
         exclude_fields_from_create: List of fields to exclude from creation page.
         exclude_fields_from_edit: List of fields to exclude from editing page.
-        exclude_actions_from_list: List of actions to exclude from List page.
-        exclude_actions_from_detail: List of actions to exclude from Detail page.
         searchable_fields: List of searchable fields.
         sortable_fields: List of sortable fields.
         export_fields: List of fields to include in exports.
@@ -236,8 +235,6 @@ class BaseModelView(BaseView):
     exclude_fields_from_detail: Sequence[str] = []
     exclude_fields_from_create: Sequence[str] = []
     exclude_fields_from_edit: Sequence[str] = []
-    exclude_actions_from_list: Sequence[str] = []
-    exclude_actions_from_detail: Sequence[str] = []
     searchable_fields: Optional[Sequence[str]] = None
     sortable_fields: Optional[Sequence[str]] = None
     fields_default_sort: Optional[Sequence[Union[Tuple[str, bool], str]]] = None
@@ -259,8 +256,10 @@ class BaseModelView(BaseView):
     create_template: str = "create.html"
     edit_template: str = "edit.html"
     actions: Optional[Sequence[str]] = None
+    row_actions: Optional[Sequence[str]] = None
     additional_js_links: Optional[List[str]] = None
     additional_css_links: Optional[List[str]] = None
+    row_actions_display_type: RowActionsDisplayType = RowActionsDisplayType.ICON_LIST
 
     _find_foreign_model: Callable[[str], "BaseModelView"]
 
@@ -305,16 +304,28 @@ class BaseModelView(BaseView):
             self.fields_default_sort = [self.pk_attr]  # type: ignore[list-item]
 
         # Actions
-        self._actions: Dict[str, Dict[str, str]] = {}
-        self._handlers: Dict[str, Callable[[Request, Sequence[Any]], Awaitable]] = {}
+        self._actions: Dict[str, Dict[str, str]] = OrderedDict()
+        self._row_actions: Dict[str, Dict[str, str]] = OrderedDict()
+        self._actions_handlers: Dict[
+            str, Callable[[Request, Sequence[Any]], Awaitable]
+        ] = OrderedDict()
+        self._row_actions_handlers: Dict[
+            str, Callable[[Request, Any], Awaitable]
+        ] = OrderedDict()
         self._init_actions()
 
     def is_active(self, request: Request) -> bool:
         return request.path_params.get("identity", None) == self.identity
 
     def _init_actions(self) -> None:
+        self._init_batch_actions()
+        self._init_row_actions()
+        self._validate_actions()
+
+    def _init_batch_actions(self) -> None:
         """
-        Initialize list of actions
+        This method initializes batch and row actions, collects their handlers,
+        and validates that all specified actions exist.
         """
         for _method_name, method in inspect.getmembers(
             self, predicate=inspect.ismethod
@@ -322,12 +333,30 @@ class BaseModelView(BaseView):
             if hasattr(method, "_action"):
                 name = method._action.get("name")
                 self._actions[name] = method._action
-                self._handlers[name] = method
+                self._actions_handlers[name] = method
+
         if self.actions is None:
-            self.actions = list(self._handlers.keys())
-        for action_name in self.actions:
+            self.actions = list(self._actions_handlers.keys())
+
+    def _init_row_actions(self) -> None:
+        for _method_name, method in inspect.getmembers(
+            self, predicate=inspect.ismethod
+        ):
+            if hasattr(method, "_row_action"):
+                name = method._row_action.get("name")
+                self._row_actions[name] = method._row_action
+                self._row_actions_handlers[name] = method
+
+        if self.row_actions is None:
+            self.row_actions = list(self._row_actions_handlers.keys())
+
+    def _validate_actions(self) -> None:
+        for action_name in not_none(self.actions):
             if action_name not in self._actions:
                 raise ValueError(f"Unknown action with name `{action_name}`")
+        for action_name in not_none(self.row_actions):
+            if action_name not in self._row_actions:
+                raise ValueError(f"Unknown row action with name `{action_name}`")
 
     async def is_action_allowed(self, request: Request, name: str) -> bool:
         """
@@ -343,33 +372,47 @@ class BaseModelView(BaseView):
             return self.can_delete(request)
         return True
 
-    async def get_all_actions(
-        self, request: Request, action: Optional[RequestAction] = None
-    ) -> List[Optional[dict]]:
+    async def is_row_action_allowed(self, request: Request, name: str) -> bool:
         """
-        Return a List of allowed Batch Action names
-        Optional: pass a RequestAction type to filter by request type (only LIST, DETAIL)
+        Verify if the row action with `name` is allowed.
+        Override this method to allow or disallow row actions based
+        on some condition.
 
         Args:
-            action: Optional RequestAction type
+            name: Row action name
             request: Starlette request
         """
-        assert self.actions is not None
+        if name == "delete":
+            return self.can_delete(request)
+        if name == "edit":
+            return self.can_edit(request)
+        if name == "view":
+            return self.can_view_details(request)
+        return True
+
+    async def get_all_actions(self, request: Request) -> List[Dict[str, Any]]:
+        """Return a list of allowed batch actions"""
         actions = []
-        for action_name in self.actions:
-            if await self.is_action_allowed(request, action_name) and (
-                not action
-                or (
-                    request.state.action == RequestAction.DETAIL
-                    and action_name not in self.exclude_actions_from_detail
-                )
-                or (
-                    request.state.action == RequestAction.LIST
-                    and action_name not in self.exclude_actions_from_list
-                )
-            ):
-                actions.append(self._actions.get(action_name))
+        for action_name in not_none(self.actions):
+            if await self.is_action_allowed(request, action_name):
+                actions.append(self._actions.get(action_name, {}))
         return actions
+
+    async def get_all_row_actions(self, request: Request) -> List[Dict[str, Any]]:
+        """Return a list of allowed row actions"""
+        row_actions = []
+        for row_action_name in not_none(self.row_actions):
+            if await self.is_row_action_allowed(request, row_action_name):
+                _row_action = self._row_actions.get(row_action_name, {})
+                if (
+                    request.state.action == RequestAction.LIST
+                    and not _row_action.get("exclude_from_list")
+                ) or (
+                    request.state.action == RequestAction.DETAIL
+                    and not _row_action.get("exclude_from_detail")
+                ):
+                    row_actions.append(_row_action)
+        return row_actions
 
     async def handle_action(
         self, request: Request, pks: List[Any], name: str
@@ -379,13 +422,34 @@ class BaseModelView(BaseView):
         Raises:
             ActionFailed: to display meaningfully error
         """
-        handler = self._handlers.get(name, None)
+        handler = self._actions_handlers.get(name, None)
         if handler is None:
             raise ActionFailed("Invalid action")
         if not await self.is_action_allowed(request, name):
             raise ActionFailed("Forbidden")
         handler_return = await handler(request, pks)
         custom_response = self._actions[name]["custom_response"]
+        if isinstance(handler_return, Response) and not custom_response:
+            raise ActionFailed(
+                "Set custom_response to true, to be able to return custom response"
+            )
+        return handler_return
+
+    async def handle_row_action(
+        self, request: Request, pk: Any, name: str
+    ) -> Union[str, Response]:
+        """
+        Handle row action with `name`.
+        Raises:
+            ActionFailed: to display meaningfully error
+        """
+        handler = self._row_actions_handlers.get(name, None)
+        if handler is None:
+            raise ActionFailed("Invalid row action")
+        if not await self.is_row_action_allowed(request, name):
+            raise ActionFailed("Forbidden")
+        handler_return = await handler(request, pk)
+        custom_response = self._row_actions[name]["custom_response"]
         if isinstance(handler_return, Response) and not custom_response:
             raise ActionFailed(
                 "Set custom_response to true, to be able to return custom response"
@@ -406,6 +470,41 @@ class BaseModelView(BaseView):
             "%(count)d items were successfully deleted",
             affected_rows or 0,
         ) % {"count": affected_rows}
+
+    @link_row_action(
+        name="view",
+        text=_("View"),
+        icon_class="fa-solid fa-eye",
+        exclude_from_detail=True,
+    )
+    def row_action_1_view(self, request: Request, pk: Any) -> str:
+        route_name = request.app.state.ROUTE_NAME
+        return str(
+            request.url_for(route_name + ":detail", identity=self.identity, pk=pk)
+        )
+
+    @link_row_action(
+        name="edit",
+        text=_("Edit"),
+        icon_class="fa-solid fa-edit",
+        action_btn_class="btn-primary",
+    )
+    def row_action_2_edit(self, request: Request, pk: Any) -> str:
+        route_name = request.app.state.ROUTE_NAME
+        return str(request.url_for(route_name + ":edit", identity=self.identity, pk=pk))
+
+    @row_action(
+        name="delete",
+        text=_("Delete"),
+        confirmation=_("Are you sure you want to delete this item?"),
+        icon_class="fa-solid fa-trash",
+        submit_btn_text="Yes, delete",
+        submit_btn_class="btn-danger",
+        action_btn_class="btn-danger",
+    )
+    async def row_action_3_delete(self, request: Request, pk: Any) -> str:
+        await self.delete(request, [pk])
+        return gettext("Item was successfully deleted")
 
     @abstractmethod
     async def find_all(
@@ -450,16 +549,6 @@ class BaseModelView(BaseView):
         raise NotImplementedError()
 
     @abstractmethod
-    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
-        """
-        Bulk delete items
-        Parameters:
-            request: The request being processed
-            pks: List of primary keys
-        """
-        raise NotImplementedError()
-
-    @abstractmethod
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         """
         Find one item
@@ -479,6 +568,18 @@ class BaseModelView(BaseView):
         """
         raise NotImplementedError()
 
+    async def before_create(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        """
+        This hook is called before a new item is created.
+
+        Args:
+            request: The request being processed.
+            data: Dict values contained converted form data.
+            obj: The object about to be created.
+        """
+
     @abstractmethod
     async def create(self, request: Request, data: Dict) -> Any:
         """
@@ -490,6 +591,27 @@ class BaseModelView(BaseView):
             Any: Created Item
         """
         raise NotImplementedError()
+
+    async def after_create(self, request: Request, obj: Any) -> None:
+        """
+        This hook is called after a new item is successfully created.
+
+        Args:
+            request: The request being processed.
+            obj: The newly created object.
+        """
+
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        """
+        This hook is called before an item is edited.
+
+        Args:
+            request: The request being processed.
+            data: Dict values contained converted form data
+            obj: The object about to be edited.
+        """
 
     @abstractmethod
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
@@ -503,6 +625,43 @@ class BaseModelView(BaseView):
             Any: Edited Item
         """
         raise NotImplementedError()
+
+    async def after_edit(self, request: Request, obj: Any) -> None:
+        """
+        This hook is called after an item is successfully edited.
+
+        Args:
+            request: The request being processed.
+            obj: The edited object.
+        """
+
+    async def before_delete(self, request: Request, obj: Any) -> None:
+        """
+        This hook is called before an item is deleted.
+
+        Args:
+            request: The request being processed.
+            obj: The object about to be deleted.
+        """
+
+    @abstractmethod
+    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+        """
+        Bulk delete items
+        Parameters:
+            request: The request being processed
+            pks: List of primary keys
+        """
+        raise NotImplementedError()
+
+    async def after_delete(self, request: Request, obj: Any) -> None:
+        """
+        This hook is called after an item is successfully deleted.
+
+        Args:
+            request: The request being processed.
+            obj: The deleted object.
+        """
 
     def can_view_details(self, request: Request) -> bool:
         """Permission for viewing full details of Item. Return True by default"""
@@ -550,17 +709,17 @@ class BaseModelView(BaseView):
         include_select2: bool = False,
     ) -> Dict[str, Any]:
         obj_serialized: Dict[str, Any] = {}
+        obj_meta: Dict[str, Any] = {}
         for field in self.get_fields_list(request, action):
             if isinstance(field, RelationField) and include_relationships:
                 value = getattr(obj, field.name, None)
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
-                assert foreign_model.pk_attr is not None
                 if value is None:
                     obj_serialized[field.name] = None
                 elif isinstance(field, HasOne):
                     if action == RequestAction.EDIT:
                         obj_serialized[field.name] = getattr(
-                            value, foreign_model.pk_attr
+                            value, not_none(foreign_model.pk_attr)
                         )
                     else:
                         obj_serialized[field.name] = await foreign_model.serialize(
@@ -569,7 +728,7 @@ class BaseModelView(BaseView):
                 else:
                     if action == RequestAction.EDIT:
                         obj_serialized[field.name] = [
-                            getattr(v, foreign_model.pk_attr) for v in value
+                            getattr(v, not_none(foreign_model.pk_attr)) for v in value
                         ]
                     else:
                         obj_serialized[field.name] = [
@@ -584,23 +743,21 @@ class BaseModelView(BaseView):
                     value, field, action, request
                 )
         if include_select2:
-            obj_serialized["_select2_selection"] = await self.select2_selection(
-                obj, request
-            )
-            obj_serialized["_select2_result"] = await self.select2_result(obj, request)
-        obj_serialized["_repr"] = await self.repr(obj, request)
-        assert self.pk_attr is not None
-        pk = getattr(obj, self.pk_attr)
-        obj_serialized[self.pk_attr] = obj_serialized.get(
-            self.pk_attr, str(pk)  # Make sure the primary key is always available
+            obj_meta["select2"] = {
+                "selection": await self.select2_selection(obj, request),
+                "result": await self.select2_result(obj, request),
+            }
+        obj_meta["repr"] = await self.repr(obj, request)
+        pk = getattr(obj, not_none(self.pk_attr))
+        obj_serialized[not_none(self.pk_attr)] = obj_serialized.get(
+            not_none(self.pk_attr),
+            str(pk),  # Make sure the primary key is always available
         )
         route_name = request.app.state.ROUTE_NAME
-        obj_serialized["_detail_url"] = str(
+        obj_meta["detailUrl"] = str(
             request.url_for(route_name + ":detail", identity=self.identity, pk=pk)
         )
-        obj_serialized["_edit_url"] = str(
-            request.url_for(route_name + ":edit", identity=self.identity, pk=pk)
-        )
+        obj_serialized["_meta"] = obj_meta
         return obj_serialized
 
     async def repr(self, obj: Any, request: Request) -> str:
@@ -780,7 +937,6 @@ class BaseModelView(BaseView):
             "responsiveTable": self.responsive_table,
             "stateSave": self.save_state,
             "fields": [f.dict() for f in self.get_fields_list(request)],
-            "actions": await self.get_all_actions(request),
             "pk": self.pk_attr,
             "locale": locale,
             "apiUrl": request.url_for(
@@ -788,6 +944,9 @@ class BaseModelView(BaseView):
             ),
             "actionUrl": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:action", identity=self.identity
+            ),
+            "rowActionUrl": request.url_for(
+                f"{request.app.state.ROUTE_NAME}:row-action", identity=self.identity
             ),
             "dt_i18n_url": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:statics", path=f"i18n/dt/{locale}.json"

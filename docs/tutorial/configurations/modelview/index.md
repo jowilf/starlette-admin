@@ -204,3 +204,32 @@ fields.
     ```
 
     ![Custom Select2 rendering](../../../images/tutorial/configurations/modelview/select2_customization.png){ width="300" }
+
+## Hooks
+
+Hooks are callback functions that give you an easy way to customize and extend the default CRUD functions. You can use
+hooks to perform actions before or after specific operations such as item creation, editing, or deletion.
+
+The following hooks are available:
+
+- [before_create(request, data, obj)][starlette_admin.views.BaseModelView.before_create]: Called before a new object is
+  created
+
+- [after_create(request, obj)][starlette_admin.views.BaseModelView.after_create]: Called after a new object is created
+
+- [before_edit(request, data, obj)][starlette_admin.views.BaseModelView.before_edit]: Called before an existing object is
+  updated
+
+- [after_edit(request, obj)][starlette_admin.views.BaseModelView.after_edit]: Called after an existing object is updated
+
+- [before_delete(request, obj)][starlette_admin.views.BaseModelView.before_delete]:  Called before an object is deleted
+
+- [after_delete(request, obj)][starlette_admin.views.BaseModelView.after_delete]: Called after an object is deleted
+
+### Example
+
+```python
+class OrderView(ModelView):
+    async def after_create(self, request: Request, order: Order):
+        analytics.track_order_created(order)
+```

@@ -22,15 +22,7 @@ const render = {
     return '<input class="form-check-input dt-checkboxes" type="checkbox">';
   },
   col_1: function (data, type, full, meta) {
-    return `
-      <div class="d-flex">
-      <a href="${full._detail_url}" data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-              <span class="me-1"><i class="fa-solid fa-eye"></i></span>
-        </a>
-        <a href="${full._edit_url}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
-    <span class="me-1"><i class="fa-solid fa-edit"></i></span></a>
-        <div>
-      `;
+    return `<div class="row-actions-container" data-id="${data}">${full._meta.rowActions}</div>`;
   },
   text: function render(data, type, full, meta, fieldOptions) {
     if (data == null) return null_column();
@@ -111,11 +103,11 @@ const render = {
     if (!data) return null_column();
     if (Array.isArray(data) && data.length == 0) return empty_column();
     data = Array.isArray(data) ? data : [data];
-    if (type != "display") return data.map((d) => d._repr).join(",");
+    if (type != "display") return data.map((d) => d._meta.repr).join(",");
     return `<div class="d-flex flex-row">${data
       .map(
         (e) =>
-          `<a class='mx-1 btn-link' href="${e._detail_url}"><span class='m-1 py-1 px-2 badge bg-blue-lt lead d-inline-block text-truncate' data-toggle="tooltip" data-placement="bottom" title='${e._repr}'  style="max-width: 20em;">${e._repr}</span></a>`
+          `<a class='mx-1 btn-link' href="${e._meta.detailUrl}"><span class='m-1 py-1 px-2 badge bg-blue-lt lead d-inline-block text-truncate' data-toggle="tooltip" data-placement="bottom" title='${e._meta.repr}'  style="max-width: 20em;">${e._meta.repr}</span></a>`
       )
       .join("")}</div>`;
   },
