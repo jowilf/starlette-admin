@@ -2,6 +2,7 @@ __version__ = "0.11.2"
 
 from ._types import ExportType as ExportType
 from ._types import RequestAction as RequestAction
+from ._types import RowActionsDisplayType as RowActionsDisplayType
 from .actions import action as action
 from .actions import link_row_action as link_row_action
 from .actions import row_action as row_action
