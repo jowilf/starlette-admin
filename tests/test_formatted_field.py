@@ -6,7 +6,6 @@ from starlette.testclient import TestClient
 from starlette_admin import (
     BaseAdmin,
     DateField,
-    FormattedField,
     IntegerField,
     StringField,
 )
@@ -27,12 +26,12 @@ class PersonView(DummyModelView):
         StringField("first_name"),
         StringField("last_name"),
         DateField("date_of_birth"),
-        FormattedField(
+        StringField(
             "full_name",
             label="Full Name",
             func=lambda request, obj: f"{obj.first_name} {obj.last_name}",
         ),
-        FormattedField(
+        IntegerField(
             "age",
             label="Age",
             func=lambda request, obj: (datetime.date.today() - obj.date_of_birth).days

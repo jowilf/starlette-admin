@@ -85,6 +85,7 @@ class BaseField:
     label_template: str = "forms/_label.html"
     display_template: str = "displays/text.html"
     error_class = "is-invalid"
+    parse_func: Optional[Callable[[Request, Any], Any]] = None
 
     def __post_init__(self) -> None:
         if self.label is None:
@@ -123,7 +124,7 @@ class BaseField:
                 fields = ["id", MyCustomField("full_name")]
             ```
         """
-        return getattr(obj, self.name, None)
+        return self.parse_func(request, obj) if self.parse_func else getattr(obj, self.name, None)
 
     async def serialize_none_value(
         self, request: Request, action: RequestAction
@@ -1223,48 +1224,3 @@ class ListField(BaseField):
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         return self.field.additional_js_links(request, action)
-
-
-@dataclass
-class FormattedField(StringField):
-    """
-    This field is used to represent a field that is not tied to a model attribute but is calculated from other attributes.
-
-    !!!usage
-        ```python
-        class User:
-            id: Optional[int]
-            first_name: str
-            last_name: str
-            date_of_birth: date
-
-        class ModelView(BaseModelView):
-            fields = [
-                User.id,
-                FormattedField(
-                    "full_name",
-                    label="Full Name",
-                    func=lambda request, obj: f"{obj.first_name} {obj.last_name}",
-                ),
-                FormattedField(
-                    "age",
-                    label="Age",
-                    func=lambda request, obj: (date.today() - obj.date_of_birth).days // 365,
-                ),
-            ]
-        ```
-    """
-
-    exclude_from_create: Optional[bool] = True
-    exclude_from_edit: Optional[bool] = True
-    searchable: Optional[bool] = True
-    orderable: Optional[bool] = True
-    func: Optional[Callable[[Request, Any], Any]] = None
-    """Function that takes a request and an object and returns a value."""
-
-    async def parse_obj(self, request: Request, obj: Any) -> Any:
-        assert self.exclude_from_create, "FormattedField must be excluded from create"
-        assert self.exclude_from_edit, "FormattedField must be excluded from edit"
-        assert self.searchable, "FormattedField must be searchable"
-        assert self.orderable, "FormattedField must be orderable"
-        return self.func(request, obj) if self.func else None

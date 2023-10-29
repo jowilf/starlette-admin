@@ -37,7 +37,6 @@ from .fields import TextAreaField as TextAreaField
 from .fields import TimeField as TimeField
 from .fields import TimeZoneField as TimeZoneField
 from .fields import TinyMCEEditorField as TinyMCEEditorField
-from .fields import FormattedField as FormattedField
 from .fields import URLField as URLField
 from .i18n import I18nConfig as I18nConfig
 from .views import BaseModelView as BaseModelView
