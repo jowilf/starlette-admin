@@ -225,19 +225,21 @@ class ReportView(CustomView):
     When view is inaccessible, it does not appear in menu structure
 
 ### For [ModelView][starlette_admin.views.BaseModelView]
-In [ModelView][starlette_admin.views.BaseModelView], there is four additional methods you can override
-to restrict access to current user.
+
+In [ModelView][starlette_admin.views.BaseModelView], you can override the following methods to restrict access to
+the current connected user.
 
 * `can_view_details`: Permission for viewing full details of Items
 * `can_create`: Permission for creating new Items
 * `can_edit`: Permission for editing Items
 * `can_delete`: Permission for deleting Items
-* `is_action_allowed`:  verify if action with `name` is allowed.
+* `is_action_allowed`:  verify if the action with `name` is allowed.
+* `is_row_action_allowed`:  verify if the row action with `name` is allowed.
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
 from starlette.requests import Request
-from starlette_admin import action
+from starlette_admin import action, row_action
 
 class ArticleView(ModelView):
     exclude_fields_from_list = [Article.body]
@@ -259,6 +261,11 @@ class ArticleView(ModelView):
             return "action_make_published" in request.state.user["roles"]
         return await super().is_action_allowed(request, name)
 
+    async def is_row_action_allowed(self, request: Request, name: str) -> bool:
+        if name == "make_published":
+            return "row_action_make_published" in request.state.user["roles"]
+        return await super().is_row_action_allowed(request, name)
+
     @action(
         name="make_published",
         text="Mark selected articles as published",
@@ -269,4 +276,18 @@ class ArticleView(ModelView):
     async def make_published_action(self, request: Request, pks: List[Any]) -> str:
         ...
         return "{} articles were successfully marked as published".format(len(pks))
+
+
+    @row_action(
+        name="make_published",
+        text="Mark as published",
+        confirmation="Are you sure you want to mark this article as published ?",
+        icon_class="fas fa-check-circle",
+        submit_btn_text="Yes, proceed",
+        submit_btn_class="btn-success",
+        action_btn_class="btn-info",
+    )
+    async def make_published_row_action(self, request: Request, pk: Any) -> str:
+        ...
+        return "The article was successfully marked as published"
 ```

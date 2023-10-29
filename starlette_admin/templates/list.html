@@ -24,20 +24,9 @@
                         <div id="btn_container" class="card-title"></div>
                         <div class="card-actions">
                             <div class="btn-list">
-                                <div class="dropdown" id="actions-dropdown" style="display: none">
-                                    <button type="button"
-                                            class="btn dropdown-toggle"
-                                            data-bs-toggle="dropdown"
-                                            id="actionDropdownButton">
-                                        {{ _("With selected") }} (<span class="actions-selected-counter">0</span
-                                    >)
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="actionDropdownButton">
-                                        {% for action in _actions %}
-                                            {% include "action.html" %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
+
+                                {% include "actions.html" %}
+
                                 {% if model.can_create(request) %}
                                     <a href="{{ url_for(__name__ ~ ':create', identity=model.identity) }}"
                                        class="btn btn-primary btn-block ms-2">
@@ -164,6 +153,8 @@
     {% endfor %}
     <script type="text/javascript"
             src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for(__name__ ~ ':statics', path='js/actions.js') }}"></script>
     <script type="text/javascript"
             src="{{ url_for(__name__ ~ ':statics', path='js/list.js') }}"></script>
 {% endblock %}

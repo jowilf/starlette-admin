@@ -7,7 +7,6 @@ def action(
     name: str,
     text: str,
     confirmation: Optional[str] = None,
-    action_btn_class: Optional[str] = None,
     submit_btn_class: Optional[str] = "btn-primary",
     submit_btn_text: Optional[str] = _("Yes, Proceed"),
     icon_class: Optional[str] = None,
@@ -15,7 +14,7 @@ def action(
     custom_response: Optional[bool] = False,
 ) -> Callable[[Callable[..., Awaitable[str]]], Any]:
     """
-    Use this decorator to add custom actions to your [ModelView][starlette_admin.views.BaseModelView]
+    Decorator to add custom batch actions to your [ModelView][starlette_admin.views.BaseModelView]
 
     Args:
         name: unique action name for your ModelView
@@ -88,12 +87,136 @@ def action(
             "name": name,
             "text": text,
             "confirmation": confirmation,
+            "submit_btn_text": submit_btn_text,
+            "submit_btn_class": submit_btn_class,
+            "icon_class": icon_class,
+            "form": form if form is not None else "",
+            "custom_response": custom_response,
+        }
+        return f
+
+    return wrap
+
+
+def row_action(
+    name: str,
+    text: str,
+    confirmation: Optional[str] = None,
+    action_btn_class: Optional[str] = None,
+    submit_btn_class: Optional[str] = "btn-primary",
+    submit_btn_text: Optional[str] = _("Yes, Proceed"),
+    icon_class: Optional[str] = None,
+    form: Optional[str] = None,
+    custom_response: Optional[bool] = False,
+    exclude_from_list: bool = False,
+    exclude_from_detail: bool = False,
+) -> Callable[[Callable[..., Awaitable[str]]], Any]:
+    """
+    Decorator to add custom row actions to your [ModelView][starlette_admin.views.BaseModelView]
+
+    Args:
+        name: Unique row action name for the ModelView.
+        text: Action text displayed to users.
+        confirmation: Confirmation text; if provided, the action will require confirmation.
+        action_btn_class: Action button variant (ex. `btn-success`, `btn-outline`, ...)
+        submit_btn_class: Submit button variant (ex. `btn-primary`, `btn-ghost-info`, `btn-outline-danger`, ...)
+        submit_btn_text: Text for the submit button.
+        icon_class: Icon class (ex. `fa-lite fa-folder`, `fa-duotone fa-circle-right`, ...)
+        form: Custom HTML to collect data from the user.
+        custom_response: Set to True when you want to return a custom Starlette response
+            from your action instead of a string.
+        exclude_from_list: Set to True to exclude the action from the list view.
+        exclude_from_detail: Set to True to exclude the action from the detail view.
+
+
+    !!! usage
+        ```python
+        @row_action(
+            name="make_published",
+            text="Mark as published",
+            confirmation="Are you sure you want to mark this article as published ?",
+            icon_class="fas fa-check-circle",
+            submit_btn_text="Yes, proceed",
+            submit_btn_class="btn-success",
+            action_btn_class="btn-info",
+        )
+        async def make_published_row_action(self, request: Request, pk: Any) -> str:
+            session: Session = request.state.session
+            article = await self.find_by_pk(request, pk)
+            if article.status == Status.Published:
+                raise ActionFailed("The article is already marked as published.")
+            article.status = Status.Published
+            session.add(article)
+            session.commit()
+            return f"The article was successfully marked as published."
+        ```
+    """
+
+    def wrap(f: Callable[..., Awaitable[str]]) -> Callable[..., Awaitable[str]]:
+        f._row_action = {  # type: ignore
+            "name": name,
+            "text": text,
+            "confirmation": confirmation,
             "action_btn_class": action_btn_class,
             "submit_btn_text": submit_btn_text,
             "submit_btn_class": submit_btn_class,
             "icon_class": icon_class,
             "form": form if form is not None else "",
             "custom_response": custom_response,
+            "exclude_from_list": exclude_from_list,
+            "exclude_from_detail": exclude_from_detail,
+        }
+        return f
+
+    return wrap
+
+
+def link_row_action(
+    name: str,
+    text: str,
+    action_btn_class: Optional[str] = None,
+    icon_class: Optional[str] = None,
+    exclude_from_list: bool = False,
+    exclude_from_detail: bool = False,
+) -> Callable[[Callable[..., str]], Any]:
+    """
+    Decorator to add custom row link actions to a ModelView for URL redirection.
+
+    !!! note
+        This decorator is designed to create row actions that redirect to a URL, making it ideal for cases where a
+        row action should simply navigate users to a website or internal page.
+
+    Args:
+        name: Unique row action name for the ModelView.
+        text: Action text displayed to users.
+        action_btn_class: Action button variant (ex. `btn-success`, `btn-outline`, ...)
+        icon_class: Icon class (ex. `fa-lite fa-folder`, `fa-duotone fa-circle-right`, ...)
+        exclude_from_list: Set to True to exclude the action from the list view.
+        exclude_from_detail: Set to True to exclude the action from the detail view.
+
+
+    !!! usage
+        ```python
+        @link_row_action(
+            name="go_to_example",
+            text="Go to example.com",
+            icon_class="fas fa-arrow-up-right-from-square",
+        )
+        def go_to_example_row_action(self, request: Request, pk: Any) -> str:
+            return f"https://example.com/?pk={pk}"
+        ```
+
+    """
+
+    def wrap(f: Callable[..., str]) -> Callable[..., str]:
+        f._row_action = {  # type: ignore
+            "name": name,
+            "text": text,
+            "action_btn_class": action_btn_class,
+            "icon_class": icon_class,
+            "is_link": True,
+            "exclude_from_list": exclude_from_list,
+            "exclude_from_detail": exclude_from_detail,
         }
         return f
 
