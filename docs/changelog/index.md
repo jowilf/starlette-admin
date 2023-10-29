@@ -53,7 +53,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Fix Bug with field access authorization by [@jowilf](https://github.com/jowilf)
   in [#360](https://github.com/jowilf/starlette-admin/pull/360)
 
-### Internal
+### Internals
 
 * Explicitly export all public functions and classes by [@jowilf](https://github.com/jowilf)
   in [#362](https://github.com/jowilf/starlette-admin/pull/362)
