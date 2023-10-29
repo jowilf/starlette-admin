@@ -21,6 +21,7 @@ from .fields import EmailField as EmailField
 from .fields import EnumField as EnumField
 from .fields import FileField as FileField
 from .fields import FloatField as FloatField
+from .fields import FormattedField as FormattedField
 from .fields import HasMany as HasMany
 from .fields import HasOne as HasOne
 from .fields import ImageField as ImageField
@@ -37,7 +38,6 @@ from .fields import TextAreaField as TextAreaField
 from .fields import TimeField as TimeField
 from .fields import TimeZoneField as TimeZoneField
 from .fields import TinyMCEEditorField as TinyMCEEditorField
-from .fields import FormattedField as FormattedField
 from .fields import URLField as URLField
 from .i18n import I18nConfig as I18nConfig
 from .views import BaseModelView as BaseModelView
