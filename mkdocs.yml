@@ -86,7 +86,7 @@ plugins:
           Forms Validations: Form Doğrulamaları
           Authentication: Kimlik Doğrulama
           Managing Files: Dosyaları Yönetme
-          Batch Actions: Toplu İşlemler
+          Actions: İşlemler
           Multiple Admin: Çoklu Admin
           Advanced User Guide: Gelişmiş Kullanıcı Kılavuzu
           Custom Field: Özel Alan
