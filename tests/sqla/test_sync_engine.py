@@ -1,5 +1,6 @@
 import enum
 import json
+import os
 from typing import Any, Dict
 
 import pytest
@@ -542,9 +543,25 @@ async def test_create_with_relationships(client: AsyncClient, session: Session):
     assert response.status_code == 200
 
 
-async def test_sortable_field_mapping(client: AsyncClient):
+@pytest.mark.skipif(
+    os.environ["SQLA_ENGINE"].startswith("postgresql"),
+    reason="Skip because postgresql consider NULLS FIRST by default for DESC order",
+)
+async def test_sortable_field_mapping_1(client: AsyncClient, session: Session):
     response = await client.get("/admin/api/product?limit=2&order_by=user desc")
     data = response.json()
     assert data["total"] == 5
     assert len(data["items"]) == 2
-    assert ["Huawei P30", "OPPOF19", "IPhone 9"] == [x["title"] for x in data["items"]]
+    assert ["Huawei P30", "OPPOF19"] == [x["title"] for x in data["items"]]
+
+
+@pytest.mark.skipif(
+    not os.environ["SQLA_ENGINE"].startswith("postgresql"),
+    reason="Skip because mysql and sqlite consider NULLS LAST by default for DESC order",
+)
+async def test_sortable_field_mapping_2(client: AsyncClient, session: Session):
+    response = await client.get("/admin/api/product?limit=2&order_by=user asc")
+    data = response.json()
+    assert data["total"] == 5
+    assert len(data["items"]) == 2
+    assert ["OPPOF19", "Huawei P30"] == [x["title"] for x in data["items"]]
