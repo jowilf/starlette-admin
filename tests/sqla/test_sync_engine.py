@@ -115,6 +115,7 @@ def engine(fake_image) -> Engine:
         users = [
             User(name="Doe", files=[sf.File("Hello", filename="hello.txt")]),
             User(name="Terry", files=[]),
+            User(name="admin"),
         ]
         products[3].user = users[0]
         products[4].user = users[1]
@@ -457,7 +458,7 @@ async def test_edit_with_multiple_files(
     client: AsyncClient, session: Session, fake_image_content
 ):
     response = await client.post(
-        "/admin/user/edit/Doe",
+        "/admin/user/edit/admin",
         data={
             "name": "John",
             "products": [2, 3],
