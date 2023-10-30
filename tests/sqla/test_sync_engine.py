@@ -543,8 +543,8 @@ async def test_create_with_relationships(client: AsyncClient, session: Session):
 
 
 async def test_sortable_field_mapping(client: AsyncClient):
-    response = await client.get("/admin/api/product?limit=3&order_by=user desc")
+    response = await client.get("/admin/api/product?limit=2&order_by=user desc")
     data = response.json()
     assert data["total"] == 5
-    assert len(data["items"]) == 3
+    assert len(data["items"]) == 2
     assert ["Huawei P30", "OPPOF19", "IPhone 9"] == [x["title"] for x in data["items"]]
