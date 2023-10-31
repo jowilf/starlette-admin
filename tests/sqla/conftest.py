@@ -1,7 +1,15 @@
 import base64
+import os
 import tempfile
 
 import pytest
+
+os.environ["SQLA_ENGINE"] = os.environ.get(
+    "SQLA_ENGINE", "sqlite:///test.db?check_same_thread=False"
+)
+os.environ["SQLA_ASYNC_ENGINE"] = os.environ.get(
+    "SQLA_ASYNC_ENGINE", "sqlite+aiosqlite:////tmp/test.db?check_same_thread=False"
+)
 
 
 @pytest.fixture
