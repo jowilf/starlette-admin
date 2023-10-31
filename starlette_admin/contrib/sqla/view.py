@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     InstrumentedAttribute,
     Mapper,
+    RelationshipProperty,
     Session,
     joinedload,
 )
@@ -35,7 +36,7 @@ from starlette_admin.fields import (
     TextAreaField,
     URLField,
 )
-from starlette_admin.helpers import prettify_class_name, slugify_class_name
+from starlette_admin.helpers import not_none, prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
 
@@ -262,14 +263,10 @@ class ModelView(BaseModelView):
                     request, where, self.model
                 )
             stmt = stmt.where(where)  # type: ignore
-        stmt = stmt.order_by(
-            *self.build_order_clauses(request, order_by or [], self.model)
-        )
+        stmt = self.build_order_clauses(request, order_by or [], stmt)
         for field in self.get_fields_list(request, RequestAction.LIST):
             if isinstance(field, RelationField):
-                stmt = stmt.outerjoin(getattr(self.model, field.name)).options(
-                    joinedload(getattr(self.model, field.name))
-                )
+                stmt = stmt.options(joinedload(getattr(self.model, field.name)))
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
         return (
@@ -462,17 +459,22 @@ class ModelView(BaseModelView):
         return self.get_search_query(request, term)
 
     def build_order_clauses(
-        self, request: Request, order_list: List[str], model: Any
-    ) -> Any:
-        clauses = []
+        self, request: Request, order_list: List[str], stmt: Select
+    ) -> Select:
         for value in order_list:
             attr_key, order = value.strip().split(maxsplit=1)
-            attr = self.sortable_field_mapping.get(
-                attr_key, getattr(model, attr_key, None)
+            model_attr = getattr(self.model, attr_key, None)
+            if model_attr is not None and isinstance(
+                model_attr.property, RelationshipProperty
+            ):
+                stmt = stmt.outerjoin(model_attr)
+            sorting_attr = self.sortable_field_mapping.get(attr_key, model_attr)
+            stmt = stmt.order_by(
+                not_none(sorting_attr).desc()
+                if order.lower() == "desc"
+                else sorting_attr
             )
-            if attr is not None:
-                clauses.append(attr.desc() if order.lower() == "desc" else attr)
-        return clauses
+        return stmt
 
     def handle_exception(self, exc: Exception) -> None:
         try:
