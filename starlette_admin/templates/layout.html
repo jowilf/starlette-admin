@@ -18,6 +18,8 @@
                     </button>
                     <h1 class="navbar-brand navbar-brand-autodark">
                         <a class="brand-link" href="{{ url_for(__name__ ~ ':index') }}">
+                            {% set logo_url = current_user.logo_url if current_user and current_user.logo_url else logo_url %}
+                            {% set app_title = current_user.app_title if current_user and current_user.app_title else app_title %}
                             {% if logo_url %}
                                 <img src="{{ logo_url }}"
                                      width="110"

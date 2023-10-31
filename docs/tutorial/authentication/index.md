@@ -76,10 +76,21 @@ class UsernameAndPasswordProvider(AuthProvider):
 
     def get_admin_user(self, request: Request) -> AdminUser:
         user = request.state.user  # Retrieve current user
+        # Update app title according to current_user
+        custom_app_title = "Hello, " + user["name"] + "!"
         photo_url = None
         if user["avatar"] is not None:
             photo_url = request.url_for("static", path=user["avatar"])
-        return AdminUser(username=user["name"], photo_url=photo_url)
+        # Update logo url according to current_user
+        custom_logo_url = None
+        if user.get("company_logo_url", None):
+            custom_logo_url = request.url_for("static", path="avatar.png")
+        return AdminUser(
+            username=user["name"],
+            photo_url=photo_url,
+            logo_url=custom_logo_url,
+            app_title=custom_app_title,
+        )
 
     async def logout(self, request: Request, response: Response) -> Response:
         request.session.clear()

@@ -30,6 +30,8 @@ from starlette.types import ASGIApp
 class AdminUser:
     username: str = field(default_factory=lambda: _("Administrator"))
     photo_url: Optional[str] = None
+    logo_url: Optional[str] = None
+    app_title: Optional[str] = None
 
 
 class BaseAuthProvider(ABC):
