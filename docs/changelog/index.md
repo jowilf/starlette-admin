@@ -11,9 +11,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 * Add Before and After Hooks for Create, Edit, and Delete Operations by [@jowilf](https://github.com/jowilf)
   in [#327](https://github.com/jowilf/starlette-admin/pull/327)
-
-* Row actions by [@jowilf](https://github.com/jowilf) in [#348](https://github.com/jowilf/starlette-admin/pull/348)
-
+* Feature: Row actions by [@jowilf](https://github.com/jowilf) & [@mrharpo](https://github.com/mrharpo)
+  in [#348](https://github.com/jowilf/starlette-admin/pull/348)
+  and [#302](https://github.com/jowilf/starlette-admin/pull/302)
 * Add Support for Custom Sortable Field Mapping in SQLAlchemy ModelView by [@jowilf](https://github.com/jowilf)
   in [#328](https://github.com/jowilf/starlette-admin/pull/328)
 
@@ -35,6 +35,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
         }
     ```
 
+* Allow the page title customization from the ModelView by [@mrharpo](https://github.com/mrharpo)
+  in [#311](https://github.com/jowilf/starlette-admin/pull/311)
+* Add support for custom DataTables options by [@mrharpo](https://github.com/mrharpo)
+  in [#308](https://github.com/jowilf/starlette-admin/pull/308)
 * Add support for datatables [state saving](https://datatables.net/examples/basic_init/state_save.html)
 
 ???+ usage
