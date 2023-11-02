@@ -35,6 +35,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
         }
     ```
 
+* Add support for Turkish language by [@hasansezertasan](https://github.com/hasansezertasan)
+  in [#330](https://github.com/jowilf/starlette-admin/pull/330).
 * Allow the page title customization from the ModelView by [@mrharpo](https://github.com/mrharpo)
   in [#311](https://github.com/jowilf/starlette-admin/pull/311)
 * Add support for custom DataTables options by [@mrharpo](https://github.com/mrharpo)
