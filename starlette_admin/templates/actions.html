@@ -27,7 +27,7 @@
                {% if action.form %}
                    data-form="{{ action.form }}"
                {% elif action.fields %}
-                   data-form='{% for field in action.fields %} {% include field.label_template %} {% include field.form_template %} {% endfor %}'
+                   data-form='<form><div class="card-body border-bottom py-3">{% for field in action.fields %}{% include field.label_template %}{% include field.form_template %}{% endfor %}</div></form>'
                {% else %}
                    data-form=""
                {% endif %}
