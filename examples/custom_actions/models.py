@@ -140,7 +140,9 @@ class ArticleView(ModelView):
             </form>
             """,
     )
-    async def redirect_with_form_action(self, request: Request, pks: List[Any]) -> Response:
+    async def redirect_with_form_action(
+        self, request: Request, pks: List[Any]
+    ) -> Response:
         data = await request.form()
         return RedirectResponse(f"https://example.com/?value={data['value']}")
 
