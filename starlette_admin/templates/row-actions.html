@@ -15,7 +15,13 @@
         {% endif %}
         data-submit-btn-text="{{ action.submit_btn_text }}"
         data-submit-btn-class="{{ action.submit_btn_class }}"
-        data-form="{{ action.form }}"
+        {% if action.form %}
+            data-form="{{ action.form }}"
+        {% elif action.fields %}
+            data-form='{% for field in action.fields %}{% include field.label_template %}{% include field.form_template %}{% endfor %}'
+        {% else %}
+            data-form=""
+        {% endif %}
     {% endif %}
     data-is-row-action="true"
     data-name="{{ action.name }}"
