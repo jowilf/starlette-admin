@@ -205,7 +205,7 @@
       let config = $(this).attr("config");
       config = JSON.parse(config);
       new SimpleMDE({
-          element: this, 
+          element: this,
           ...config
       });
     });

@@ -31,13 +31,13 @@ from .fields import NumberField as NumberField
 from .fields import PasswordField as PasswordField
 from .fields import PhoneField as PhoneField
 from .fields import RelationField as RelationField
+from .fields import SimpleMDEField as SimpleMDEField
 from .fields import StringField as StringField
 from .fields import TagsField as TagsField
 from .fields import TextAreaField as TextAreaField
 from .fields import TimeField as TimeField
 from .fields import TimeZoneField as TimeZoneField
 from .fields import TinyMCEEditorField as TinyMCEEditorField
-from .fields import SimpleMDEField as SimpleMDEField
 from .fields import URLField as URLField
 from .i18n import I18nConfig as I18nConfig
 from .views import BaseModelView as BaseModelView

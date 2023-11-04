@@ -281,11 +281,12 @@ class TinyMCEEditorField(TextAreaField):
             ]
         return []
 
+
 @dataclass
 class SimpleMDEField(TextAreaField):
     """A field that provides a Markdown editor for long text content using the
     [SimpleMDE](https://simplemde.com/) library.
-    
+
     This field can be used as an alternative to the [TextAreaField][starlette_admin.fields.TextAreaField]
     to provide a more sophisticated editor for user input.
 
@@ -297,6 +298,7 @@ class SimpleMDEField(TextAreaField):
         autofocus: Enable autofocus
         other_options: Other options to pass to SimpleMDE
     """
+
     class_: str = "field-simplemde form-control"
     display_template: str = "displays/simplemde.html"
     form_template: str = "forms/simplemde.html"
@@ -316,7 +318,9 @@ class SimpleMDEField(TextAreaField):
             ]
         return []
 
-    def additional_css_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
         if action.is_form():
             return [
                 f"https://cdn.jsdelivr.net/npm/simplemde@{self.version}/dist/simplemde.min.css",
@@ -324,13 +328,15 @@ class SimpleMDEField(TextAreaField):
         return []
 
     def config(self):
-        return json.dumps({
-            "spellChecker": self.spell_checker,
-            "status": self.status,
-            "hideIcons": self.hide_icons,
-            "autofocus": self.autofocus,
-            **self.other_options
-        })
+        return json.dumps(
+            {
+                "spellChecker": self.spell_checker,
+                "status": self.status,
+                "hideIcons": self.hide_icons,
+                "autofocus": self.autofocus,
+                **self.other_options,
+            }
+        )
 
 
 @dataclass

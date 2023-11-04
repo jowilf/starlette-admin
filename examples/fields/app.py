@@ -1,19 +1,15 @@
-from sqlalchemy import create_engine
-from starlette.applications import Starlette
-from starlette.responses import HTMLResponse
-from starlette.routing import Route
-from starlette_admin.contrib.sqla import Admin
 from sqlalchemy import (
     Column,
     Integer,
     Text,
+    create_engine,
 )
 from sqlalchemy.orm import declarative_base
-from starlette_admin.contrib.sqla import ModelView
-from starlette_admin.fields import IntegerField, TinyMCEEditorField, SimpleMDEField
-
-
-
+from starlette.applications import Starlette
+from starlette.responses import HTMLResponse
+from starlette.routing import Route
+from starlette_admin.contrib.sqla import Admin, ModelView
+from starlette_admin.fields import IntegerField, SimpleMDEField, TinyMCEEditorField
 
 Base = declarative_base()
 
@@ -42,7 +38,7 @@ class FieldView(ModelView):
             label="SimpleMDEField",
         ),
     ]
- 
+
 
 engine = create_engine(
     "sqlite:///db.sqlite3",
