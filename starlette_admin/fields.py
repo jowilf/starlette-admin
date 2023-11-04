@@ -286,7 +286,6 @@ class TinyMCEEditorField(TextAreaField):
     toolbar: str = "undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat"
     content_style: str = "body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }"
     other_options: Dict[str, Any] = dc_field(default_factory=dict)
-    
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
