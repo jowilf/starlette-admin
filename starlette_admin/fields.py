@@ -266,12 +266,27 @@ class TinyMCEEditorField(TextAreaField):
     Parameters:
         version_tinymce: TinyMCE version
         version_tinymce_jquery: TinyMCE jQuery version
+        height: Height of the editor
+        menubar: Show/hide the menubar in the editor
+        statusbar: Show/hide the statusbar in the editor
+        toolbar: Toolbar options to show in the editor
+        content_style: CSS style to apply to the editor content
+        other_options: Other options to pass to TinyMCE
     """
 
     class_: str = "field-tinymce-editor form-control"
     display_template: str = "displays/tinymce.html"
+    form_template: str = "forms/tinymce.html"
     version_tinymce: str = "6.4"
     version_tinymce_jquery: str = "2.0"
+    # Config options
+    height: int = 300
+    menubar: Union[bool, str] = False
+    statusbar: bool = False
+    toolbar: str = "undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat"
+    content_style: str = "body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }"
+    other_options: Dict[str, Any] = dc_field(default_factory=dict)
+    
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
@@ -280,6 +295,18 @@ class TinyMCEEditorField(TextAreaField):
                 f"https://cdn.jsdelivr.net/npm/@tinymce/tinymce-jquery@{self.version_tinymce_jquery}/dist/tinymce-jquery.min.js",
             ]
         return []
+
+    def config(self):
+        return json.dumps(
+            {
+                "height": self.height,
+                "menubar": self.menubar,
+                "statusbar": self.statusbar,
+                "toolbar": self.toolbar,
+                "content_style": self.content_style,
+                **self.other_options,
+            }
+        )
 
 
 @dataclass
