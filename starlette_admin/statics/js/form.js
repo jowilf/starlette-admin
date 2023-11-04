@@ -199,6 +199,30 @@
     });
 
     // end TinyMCEEditorField integration
+
+    // CKEditor5Field integration
+    $(".field-ckeditor5", element).each(function(){
+      let config = $(this).attr("config");
+      config = JSON.parse(config);
+      ClassicEditor
+      .create(
+        this,
+        config,
+      )
+      .catch( error => {
+          console.error( error );
+      } );
+
+    });
+    // end CKEditor5Field integration
+
+    // CKEditor4Field integration
+    $(".field-ckeditor4", element).each(function(){
+      let config = $(this).attr("config");
+      config = JSON.parse(config);
+      CKEDITOR.replace(this, config);
+    });
+    // end CKEditor5Field integration
   }
 
   $(function () {
