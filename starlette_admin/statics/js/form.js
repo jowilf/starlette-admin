@@ -199,6 +199,18 @@
     });
 
     // end TinyMCEEditorField integration
+
+    // SimpleMDE integration
+    $(".field-simplemde", element).each(function(){
+      let config = $(this).attr("config");
+      config = JSON.parse(config);
+      new SimpleMDE({
+          element: this, 
+          ...config
+      });
+    });
+    // end SimpleMDE integration
+
   }
 
   $(function () {
