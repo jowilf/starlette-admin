@@ -302,7 +302,7 @@ class SimpleMDEField(TextAreaField):
     status: bool = False
     hide_icons: List[str] = dc_field(default_factory=list)
     autofocus: bool = True
-    other_options: dict = dc_field(default_factory=dict)
+    other_options: Dict[str, Any] = dc_field(default_factory=dict)
     """For more options, see the [SimpleMDE](https://simplemde.com/)"""
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
