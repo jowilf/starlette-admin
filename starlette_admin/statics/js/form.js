@@ -216,13 +216,6 @@
     });
     // end CKEditor5Field integration
 
-    // CKEditor4Field integration
-    $(".field-ckeditor4", element).each(function(){
-      let config = $(this).attr("config");
-      config = JSON.parse(config);
-      CKEDITOR.replace(this, config);
-    });
-    // end CKEditor5Field integration
   }
 
   $(function () {

@@ -277,42 +277,6 @@ class TinyMCEEditorField(TextAreaField):
 
 
 @dataclass
-class CKEditor4Field(TextAreaField):
-    """A field that provides a WYSIWYG editor for long text content using the
-     [CKEditor4](https://ckeditor.com/) library.
-
-    This field can be used as an alternative to the [TextAreaField][starlette_admin.fields.TextAreaField]
-    to provide a more sophisticated editor for user input.
-
-    Parameters:
-        version: CKEditor4 version
-        distribution: CKEditor4 distribution
-        height: Editor height
-
-    """
-
-    class_: str = "field-ckeditor4 form-control"
-    display_template: str = "displays/ckeditor4.html"
-    form_template: str = "forms/ckeditor4.html"
-    version: str = "4.22.1"
-    distribution: str = "standard"
-
-    height: Union[int, str] = 300
-    other_options: Dict[str, Any] = dc_field(default_factory=dict)
-    """For more options, see the [CKEditor 4 API docs](https://ckeditor.com/docs/ckeditor4/latest/api/CKEDITOR_config.html)"""
-
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
-        if action.is_form():
-            return [
-                f"https://cdn.ckeditor.com/{self.version}/{self.distribution}/ckeditor.js",
-            ]
-        return []
-
-    def config(self) -> str:
-        return json.dumps({"height": self.height, **self.other_options})
-
-
-@dataclass
 class CKEditor5Field(TextAreaField):
     """A field that provides a WYSIWYG editor for long text content using the
      [CKEditor5](https://ckeditor.com/) library.

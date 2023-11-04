@@ -10,7 +10,6 @@ from .base import BaseAdmin as BaseAdmin
 from .fields import ArrowField as ArrowField
 from .fields import BaseField as BaseField
 from .fields import BooleanField as BooleanField
-from .fields import CKEditor4Field as CKEditor4Field
 from .fields import CKEditor5Field as CKEditor5Field
 from .fields import CollectionField as CollectionField
 from .fields import ColorField as ColorField
