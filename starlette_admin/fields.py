@@ -296,7 +296,7 @@ class TinyMCEEditorField(TextAreaField):
             ]
         return []
 
-    def config(self):
+    def config(self) -> str:
         return json.dumps(
             {
                 "height": self.height,
