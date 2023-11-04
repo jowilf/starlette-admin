@@ -12,7 +12,7 @@ users = {
     },
     "johndoe": {
         "name": "John Doe",
-        "avatar": None, # user avatar is optional
+        "avatar": None,  # user avatar is optional
         "roles": ["read", "create", "edit", "action_make_published"],
     },
     "viewer": {"name": "Viewer", "avatar": None, "roles": ["read"]},
