@@ -338,8 +338,7 @@ class CKEditor5Field(TextAreaField):
         return []
 
     def config(self) -> str:
-        return json.dumps({
-        })
+        return json.dumps({})
 
 
 @dataclass
