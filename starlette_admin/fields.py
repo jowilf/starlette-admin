@@ -309,10 +309,7 @@ class CKEditor4Field(TextAreaField):
         return []
 
     def config(self) -> str:
-        return json.dumps({
-            "height": self.height,
-            **self.other_options
-        })
+        return json.dumps({"height": self.height, **self.other_options})
 
 
 @dataclass
