@@ -277,7 +277,7 @@ class TinyMCEEditorField(TextAreaField):
 
 
 @dataclass
-class SimpleMDEField(TextAreaField):
+class SimpleMDEField(BaseField):
     """A field that provides a Markdown editor for long text content using the
     [SimpleMDE](https://simplemde.com/) library.
 
@@ -297,13 +297,26 @@ class SimpleMDEField(TextAreaField):
     display_template: str = "displays/simplemde.html"
     form_template: str = "forms/simplemde.html"
     version: str = "1.11.2"
-    # Config options
+    placeholder: str = ""
     spell_checker: bool = False
     status: bool = False
     hide_icons: List[str] = dc_field(default_factory=list)
     autofocus: bool = True
-    other_options: Dict[str, Any] = dc_field(default_factory=dict)
+    options: Dict[str, Any] = dc_field(default_factory=dict)
     """For more options, see the [SimpleMDE](https://simplemde.com/)"""
+
+    def __post_init__(self) -> None:
+        if self.options.get('placeholder', None) is None:
+            self.options['placeholder'] = self.placeholder
+        if self.options.get('spellChecker', None) is None:
+            self.options['spellChecker'] = self.spell_checker
+        if self.options.get('status', None) is None:
+            self.options['status'] = self.status
+        if self.options.get('hideIcons', None) is None:
+            self.options['hideIcons'] = self.hide_icons
+        if self.options.get('autofocus', None) is None:
+            self.options['autofocus'] = self.autofocus
+        super().__post_init__()
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
@@ -320,17 +333,6 @@ class SimpleMDEField(TextAreaField):
                 f"https://cdn.jsdelivr.net/npm/simplemde@{self.version}/dist/simplemde.min.css",
             ]
         return []
-
-    def config(self) -> str:
-        return json.dumps(
-            {
-                "spellChecker": self.spell_checker,
-                "status": self.status,
-                "hideIcons": self.hide_icons,
-                "autofocus": self.autofocus,
-                **self.other_options,
-            }
-        )
 
 
 @dataclass

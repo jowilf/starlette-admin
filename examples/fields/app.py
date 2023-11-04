@@ -88,6 +88,9 @@ class FieldView(ModelView):
         SimpleMDEField(
             name="simplemde",
             label="SimpleMDEField",
+            placeholder="SimpleMDEField Placeholder",
+            hide_icons=True,
+            spell_checker=True,
         ),
         StringField(
             name="text",
