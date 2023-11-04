@@ -115,6 +115,7 @@ Access your admin interface in your browser at [http://localhost:8000/admin](htt
 - [jsoneditor](https://github.com/josdejong/jsoneditor)
 - [fontawesome](https://fontawesome.com/)
 - [TinyMCE](https://www.tiny.cloud/)
+- [CKEditor5](https://ckeditor.com/)
 
 ## Contributing
 
