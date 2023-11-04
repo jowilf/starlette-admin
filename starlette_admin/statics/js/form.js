@@ -200,7 +200,7 @@
 
     // end TinyMCEEditorField integration
 
-    // SimpleMDE integration
+    // SimpleMDEField integration
     $(".field-simplemde", element).each(function(){
       let config = $(this).attr("config");
       config = JSON.parse(config);
@@ -209,7 +209,7 @@
           ...config
       });
     });
-    // end SimpleMDE integration
+    // end SimpleMDEField integration
 
   }
 

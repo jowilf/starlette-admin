@@ -262,18 +262,75 @@ class TinyMCEEditorField(TextAreaField):
 
     This field can be used as an alternative to the [TextAreaField][starlette_admin.fields.TextAreaField]
     to provide a more sophisticated editor for user input.
+
+    Parameters:
+        version_tinymce: TinyMCE version
+        version_tinymce_jquery: TinyMCE jQuery version
     """
 
     class_: str = "field-tinymce-editor form-control"
     display_template: str = "displays/tinymce.html"
+    version_tinymce: str = "6.4"
+    version_tinymce_jquery: str = "2.0"
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
-                "https://cdn.jsdelivr.net/npm/tinymce@6.4/tinymce.min.js",
-                "https://cdn.jsdelivr.net/npm/@tinymce/tinymce-jquery@2.0/dist/tinymce-jquery.min.js",
+                f"https://cdn.jsdelivr.net/npm/tinymce@{self.version_tinymce}/tinymce.min.js",
+                f"https://cdn.jsdelivr.net/npm/@tinymce/tinymce-jquery@{self.version_tinymce_jquery}/dist/tinymce-jquery.min.js",
             ]
         return []
+
+@dataclass
+class SimpleMDEField(TextAreaField):
+    """A field that provides a Markdown editor for long text content using the
+    [SimpleMDE](https://simplemde.com/) library.
+    
+    This field can be used as an alternative to the [TextAreaField][starlette_admin.fields.TextAreaField]
+    to provide a more sophisticated editor for user input.
+
+    Parameters:
+        version: SimpleMDE version
+        spell_checker: Enable spell checker
+        status: Show status bar at the bottom
+        hide_icons: Hide icons from toolbar
+        autofocus: Enable autofocus
+        other_options: Other options to pass to SimpleMDE
+    """
+    class_: str = "field-simplemde form-control"
+    display_template: str = "displays/simplemde.html"
+    form_template: str = "forms/simplemde.html"
+    version: str = "1.11.2"
+    # Config options
+    spell_checker: bool = False
+    status: bool = False
+    hide_icons: List[str] = dc_field(default_factory=list)
+    autofocus: bool = True
+    other_options: dict = dc_field(default_factory=dict)
+    """For more options, see the [SimpleMDE](https://simplemde.com/)"""
+
+    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.is_form():
+            return [
+                f"https://cdn.jsdelivr.net/npm/simplemde@{self.version}/dist/simplemde.min.js",
+            ]
+        return []
+
+    def additional_css_links(self, request: Request, action: RequestAction) -> List[str]:
+        if action.is_form():
+            return [
+                f"https://cdn.jsdelivr.net/npm/simplemde@{self.version}/dist/simplemde.min.css",
+            ]
+        return []
+
+    def config(self):
+        return json.dumps({
+            "spellChecker": self.spell_checker,
+            "status": self.status,
+            "hideIcons": self.hide_icons,
+            "autofocus": self.autofocus,
+            **self.other_options
+        })
 
 
 @dataclass
