@@ -30,6 +30,10 @@ from starlette.types import ASGIApp
 class AdminUser:
     username: str = field(default_factory=lambda: _("Administrator"))
     photo_url: Optional[str] = None
+
+
+@dataclass
+class AdminConfig:
     logo_url: Optional[str] = None
     app_title: Optional[str] = None
 
@@ -93,6 +97,32 @@ class BaseAuthProvider(ABC):
             ```
         """
         return False
+
+    def get_admin_config(self, request: Request) -> Optional[AdminConfig]:
+        """
+        Override this method to display custom `logo_url` and/or `app_title`
+
+        Returns:
+            AdminConfig: The admin interface config
+
+        Examples:
+            ```python
+            def get_admin_config(self, request: Request) -> AdminConfig:
+                user = request.state.user  # Retrieve current user (previously saved in the request state)
+                return AdminConfig(
+                    logo_url=request.url_for("static", path=user["company_logo_url"]),
+                )
+            ```
+
+            ```python
+            def get_admin_config(self, request: Request) -> AdminConfig:
+                user = request.state.user  # Retrieve current user (previously saved in the request state)
+                return AdminConfig(
+                    app_title="Hello, " + user["name"] + "!",
+                )
+            ```
+        """
+        return None  # pragma: no cover
 
     def get_admin_user(self, request: Request) -> Optional[AdminUser]:
         """

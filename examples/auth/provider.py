@@ -1,6 +1,6 @@
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette_admin.auth import AdminUser, AuthProvider
+from starlette_admin.auth import AdminConfig, AdminUser, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 
 users = {
@@ -12,7 +12,7 @@ users = {
     },
     "johndoe": {
         "name": "John Doe",
-        "avatar": None,
+        "avatar": None, # user avatar is optional
         "roles": ["read", "create", "edit", "action_make_published"],
     },
     "viewer": {"name": "Viewer", "avatar": None, "roles": ["read"]},
@@ -57,23 +57,25 @@ class MyAuthProvider(AuthProvider):
 
         return False
 
-    def get_admin_user(self, request: Request) -> AdminUser:
+    def get_admin_config(self, request: Request) -> AdminConfig:
         user = request.state.user  # Retrieve current user
         # Update app title according to current_user
         custom_app_title = "Hello, " + user["name"] + "!"
-        photo_url = None
-        if user["avatar"] is not None:
-            photo_url = request.url_for("static", path=user["avatar"])
         # Update logo url according to current_user
         custom_logo_url = None
         if user.get("company_logo_url", None):
-            custom_logo_url = request.url_for("static", path="avatar.png")
-        return AdminUser(
-            username=user["name"],
-            photo_url=photo_url,
-            logo_url=custom_logo_url,
+            custom_logo_url = request.url_for("static", path=user["company_logo_url"])
+        return AdminConfig(
             app_title=custom_app_title,
+            logo_url=custom_logo_url,
         )
+
+    def get_admin_user(self, request: Request) -> AdminUser:
+        user = request.state.user  # Retrieve current user
+        photo_url = None
+        if user["avatar"] is not None:
+            photo_url = request.url_for("static", path=user["avatar"])
+        return AdminUser(username=user["name"], photo_url=photo_url)
 
     async def logout(self, request: Request, response: Response) -> Response:
         request.session.clear()
