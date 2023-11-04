@@ -10,6 +10,7 @@
               - StringField
               - TextAreaField
               - TinyMCEEditorField
+              - SimpleMDEField
               - TagsField
               - EmailField
               - URLField
