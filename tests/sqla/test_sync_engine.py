@@ -1,5 +1,6 @@
 import enum
 import json
+import os
 from typing import Any, Dict
 
 import pytest
@@ -62,6 +63,9 @@ class User(Base):
 
 
 class ProductView(ModelView):
+    sortable_fields = ["id", "title", "price", "user"]
+    sortable_field_mapping = {"user": User.name}
+
     async def before_create(
         self, request: Request, data: Dict[str, Any], obj: Any
     ) -> None:
@@ -109,7 +113,14 @@ def engine(fake_image) -> Engine:
                 products.append(Product(**product))
         products[0].image = sf.File(fake_image, filename="image.png")
         session.add_all(products)
-        session.add(User(name="Doe", files=[sf.File("Hello", filename="hello.txt")]))
+        users = [
+            User(name="Doe", files=[sf.File("Hello", filename="hello.txt")]),
+            User(name="Terry", files=[]),
+            User(name="admin"),
+        ]
+        products[3].user = users[0]
+        products[4].user = users[1]
+        session.add_all(users)
         session.commit()
 
     yield engine
@@ -448,10 +459,10 @@ async def test_edit_with_multiple_files(
     client: AsyncClient, session: Session, fake_image_content
 ):
     response = await client.post(
-        "/admin/user/edit/Doe",
+        "/admin/user/edit/admin",
         data={
             "name": "John",
-            "products": [2, 4],
+            "products": [2, 3],
         },
         files=[
             ("files", ("new1.txt", fake_image_content, "text/plain")),
@@ -463,7 +474,7 @@ async def test_edit_with_multiple_files(
     assert response.status_code == 303
     stmt = select(User).where(User.name == "John")
     user = session.execute(stmt).scalar_one()
-    assert [x.id for x in user.products] == [2, 4]
+    assert [x.id for x in user.products] == [2, 3]
     assert len(user.files) == 3
     assert [x.filename for x in user.files] == [
         "new1.txt",
@@ -530,3 +541,27 @@ async def test_create_with_relationships(client: AsyncClient, session: Session):
     # Test rendering
     response = await client.get("/admin/api/product?pks=%d" % product.id)
     assert response.status_code == 200
+
+
+@pytest.mark.skipif(
+    os.environ["SQLA_ENGINE"].startswith("postgresql"),
+    reason="Skip because postgresql consider NULLS FIRST by default for DESC order",
+)
+async def test_sortable_field_mapping_1(client: AsyncClient, session: Session):
+    response = await client.get("/admin/api/product?limit=2&order_by=user desc")
+    data = response.json()
+    assert data["total"] == 5
+    assert len(data["items"]) == 2
+    assert ["Huawei P30", "OPPOF19"] == [x["title"] for x in data["items"]]
+
+
+@pytest.mark.skipif(
+    not os.environ["SQLA_ENGINE"].startswith("postgresql"),
+    reason="Skip because mysql and sqlite consider NULLS LAST by default for DESC order",
+)
+async def test_sortable_field_mapping_2(client: AsyncClient, session: Session):
+    response = await client.get("/admin/api/product?limit=2&order_by=user asc")
+    data = response.json()
+    assert data["total"] == 5
+    assert len(data["items"]) == 2
+    assert ["OPPOF19", "Huawei P30"] == [x["title"] for x in data["items"]]
