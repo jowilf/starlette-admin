@@ -321,7 +321,7 @@ class SimpleMDEField(TextAreaField):
             ]
         return []
 
-    def config(self):
+    def config(self) -> str:
         return json.dumps(
             {
                 "spellChecker": self.spell_checker,
