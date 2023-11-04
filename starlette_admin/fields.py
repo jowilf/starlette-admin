@@ -306,16 +306,16 @@ class SimpleMDEField(BaseField):
     """For more options, see the [SimpleMDE](https://simplemde.com/)"""
 
     def __post_init__(self) -> None:
-        if self.options.get('placeholder', None) is None:
-            self.options['placeholder'] = self.placeholder
-        if self.options.get('spellChecker', None) is None:
-            self.options['spellChecker'] = self.spell_checker
-        if self.options.get('status', None) is None:
-            self.options['status'] = self.status
-        if self.options.get('hideIcons', None) is None:
-            self.options['hideIcons'] = self.hide_icons
-        if self.options.get('autofocus', None) is None:
-            self.options['autofocus'] = self.autofocus
+        if self.options.get("placeholder", None) is None:
+            self.options["placeholder"] = self.placeholder
+        if self.options.get("spellChecker", None) is None:
+            self.options["spellChecker"] = self.spell_checker
+        if self.options.get("status", None) is None:
+            self.options["status"] = self.status
+        if self.options.get("hideIcons", None) is None:
+            self.options["hideIcons"] = self.hide_icons
+        if self.options.get("autofocus", None) is None:
+            self.options["autofocus"] = self.autofocus
         super().__post_init__()
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
