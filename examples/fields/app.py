@@ -2,9 +2,9 @@ import datetime
 import enum
 
 from sqlalchemy import (
+    JSON,
     Column,
     DateTime,
-    JSON,
     Enum,
     Integer,
     Text,
@@ -15,7 +15,21 @@ from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
 from starlette_admin.contrib.sqla import Admin, ModelView
-from starlette_admin.fields import DateTimeField, IntegerField, SimpleMDEField, TinyMCEEditorField, URLField, EmailField, PhoneField, ColorField, PasswordField, EnumField, JSONField, TextAreaField, StringField
+from starlette_admin.fields import (
+    ColorField,
+    DateTimeField,
+    EmailField,
+    EnumField,
+    IntegerField,
+    JSONField,
+    PasswordField,
+    PhoneField,
+    SimpleMDEField,
+    StringField,
+    TextAreaField,
+    TinyMCEEditorField,
+    URLField,
+)
 
 Base = declarative_base()
 
@@ -24,6 +38,7 @@ class ExampleEnum(str, enum.Enum):
     OPTION_1 = "Option 1"
     OPTION_2 = "Option 2"
     OPTION_3 = "Option 3"
+
 
 class Field(Base):
     __tablename__ = "field"
