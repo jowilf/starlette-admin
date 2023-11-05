@@ -179,13 +179,13 @@
     // TinyMCEEditorField integration
 
     $(".field-tinymce-editor", element).each(function(){
-      let config = $(this).attr("config");
-      config = JSON.parse(config);
+      let options = $(this).attr("options");
+      options = JSON.parse(options);
       if (localStorage.getItem("tablerTheme") === "dark") {
-        config.skin = "oxide-dark";
-        config.content_css = "dark";
+        options.skin = "oxide-dark";
+        options.content_css = "dark";
       }
-      $(this).tinymce(config);
+      $(this).tinymce(options);
     });
 
     // end TinyMCEEditorField integration
