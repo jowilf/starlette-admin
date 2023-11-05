@@ -337,6 +337,7 @@ class SimpleMDEField(BaseField):
     def input_params(self) -> str:
         return html_params({"options": json.dumps(self.options)})
 
+
 @dataclass
 class NumberField(StringField):
     """This field is used to represent the value of properties
