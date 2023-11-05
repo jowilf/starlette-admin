@@ -300,7 +300,6 @@ class TinyMCEEditorField(TextAreaField):
             self.options["content_style"] = self.content_style
         super().__post_init__()
 
-
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
@@ -311,7 +310,6 @@ class TinyMCEEditorField(TextAreaField):
 
     def input_params(self) -> str:
         return html_params({"options": json.dumps(self.options)})
-
 
 
 @dataclass
