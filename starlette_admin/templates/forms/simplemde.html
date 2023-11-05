@@ -1,7 +1,6 @@
 <div class="{% if error %}{{ field.error_class }}{% endif %}">
     <textarea name="{{ field.id }}" data-bs-toggle="autosize" class="{{ field.class_ }}
             {% if error %}{{ field.error_class }}{% endif %}" {{ field.input_params() | safe }}
-            options="{{ field.options | tojson }}"
     >{% if data %}{{ data }}{% endif %}</textarea>
     {% if field.help_text %}
         <small class="form-hint">{{ field.help_text }}</small>
