@@ -202,12 +202,9 @@
 
     // CKEditor5Field integration
     $(".field-ckeditor5", element).each(function(){
-      let config = $(this).attr("config");
-      config = JSON.parse(config);
       ClassicEditor
       .create(
         this,
-        config,
       )
       .catch( error => {
           console.error( error );

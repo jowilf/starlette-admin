@@ -277,7 +277,7 @@ class TinyMCEEditorField(TextAreaField):
 
 
 @dataclass
-class CKEditor5Field(TextAreaField):
+class CKEditor5Field(BaseField):
     """A field that provides a WYSIWYG editor for long text content using the
      [CKEditor5](https://ckeditor.com/) library.
 
@@ -298,8 +298,20 @@ class CKEditor5Field(TextAreaField):
             ]
         return []
 
-    def config(self) -> str:
-        return json.dumps({})
+
+    def additional_css_links(
+        self, request: Request, action: RequestAction
+    ) -> List[str]:
+        if action.is_form():
+            return [
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="css/ckeditor5.css",
+                    )
+                )
+            ]
+        return []
 
 
 @dataclass
