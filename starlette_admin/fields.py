@@ -298,7 +298,6 @@ class CKEditor5Field(BaseField):
             ]
         return []
 
-
     def additional_css_links(
         self, request: Request, action: RequestAction
     ) -> List[str]:
