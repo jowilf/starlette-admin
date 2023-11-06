@@ -64,7 +64,7 @@ msgstr[1] "%(count)d öğe başarıyla silindi"
 
 #: starlette_admin/views.py:476
 msgid "View"
-msgstr ""
+msgstr "Görüntüle"
 
 #: starlette_admin/templates/edit.html:12 starlette_admin/views.py:488
 msgid "Edit"
@@ -171,7 +171,7 @@ msgstr "Giriş yap"
 
 #: starlette_admin/templates/row-actions.html:38
 msgid "Actions"
-msgstr ""
+msgstr "İşlemler"
 
 #: starlette_admin/templates/forms/_delete.html:13
 msgid "Checked this to delete current content of this field"
