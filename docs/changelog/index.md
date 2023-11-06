@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+* Fixed a regression caused by [#361](https://github.com/jowilf/starlette-admin/pull/361) where SQLAlchemy models with
+  Mixin Classes raises AttributeError by [@hasansezertasan](https://github.com/hasansezertasan)
+  in [#385](https://github.com/jowilf/starlette-admin/pull/385)
+
 ## [0.12.0] - 2023-11-07
 
 ### Added
@@ -58,7 +62,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   name by [@jowilf](https://github.com/jowilf)
   in [#361](https://github.com/jowilf/starlette-admin/pull/361)
 
-* Fix a bug with field access authorization where restricted users could not modify a partial list of fields in an
+* Fixed a bug with field access authorization where restricted users could not modify a partial list of fields in an
   entity by [@jowilf](https://github.com/jowilf) in [#360](https://github.com/jowilf/starlette-admin/pull/360)
 
 ### Internals
