@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.12.1] - 2023-11-07
+
 * Fixed a regression caused by [#361](https://github.com/jowilf/starlette-admin/pull/361) where SQLAlchemy models with
   Mixin Classes raises AttributeError by [@hasansezertasan](https://github.com/hasansezertasan)
   in [#385](https://github.com/jowilf/starlette-admin/pull/385)
