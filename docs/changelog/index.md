@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.12.0] - 2023-11-07
+
 ### Added
 
 * Add Before and After Hooks for Create, Edit, and Delete Operations by [@jowilf](https://github.com/jowilf)
@@ -188,13 +190,20 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-* Setup i18n and Add French translations by [@jowilf](https://github.com/jowilf) in [#74](https://github.com/jowilf/starlette-admin/pull/74)
-* Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starlette_admin.fields.CountryField], [CurrencyField][starlette_admin.fields.CurrencyField] & [ArrowField][starlette_admin.fields.ArrowField]
+* Setup i18n and Add French translations by [@jowilf](https://github.com/jowilf)
+  in [#74](https://github.com/jowilf/starlette-admin/pull/74)
+*
+
+Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starlette_admin.fields.CountryField], [CurrencyField][starlette_admin.fields.CurrencyField] & [ArrowField][starlette_admin.fields.ArrowField]
+
 * Add support for [sqlalchemy_utils](https://github.com/kvesteri/sqlalchemy-utils) data types
-* Add SQLAlchemy 2 support by  [@jowilf](https://github.com/jowilf) in [#113](https://github.com/jowilf/starlette-admin/pull/113)
-* Add support for initial order (sort) to apply to the table by [@jowilf](https://github.com/jowilf) in [#115](https://github.com/jowilf/starlette-admin/pull/115)
+* Add SQLAlchemy 2 support by  [@jowilf](https://github.com/jowilf)
+  in [#113](https://github.com/jowilf/starlette-admin/pull/113)
+* Add support for initial order (sort) to apply to the table by [@jowilf](https://github.com/jowilf)
+  in [#115](https://github.com/jowilf/starlette-admin/pull/115)
 
 !!! usage
+
     ```python
     class User:
         id: int
@@ -207,54 +216,68 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
     admin.add_view(UserView(User))
     ```
+
 ### Fixed
 
-* Fix [#69](https://github.com/jowilf/starlette-admin/issues/69) : Return `HTTP_422_UNPROCESSABLE_ENTITY` when form data is not valid
+* Fix [#69](https://github.com/jowilf/starlette-admin/issues/69) : Return `HTTP_422_UNPROCESSABLE_ENTITY` when form data
+  is not valid
 
 ### Deprecated
 
 * `EnumField.from_enum("status", Status)` is deprecated. Use `EnumField("status", enum=Status)` instead.
-* `EnumField.from_choices("language", [('cpp', 'C++'), ('py', 'Python')])` is deprecated. Use `EnumField("name", choices=[('cpp', 'C++'), ('py', 'Python')])` instead.
+* `EnumField.from_choices("language", [('cpp', 'C++'), ('py', 'Python')])` is deprecated.
+  Use `EnumField("name", choices=[('cpp', 'C++'), ('py', 'Python')])` instead.
 
 ## [0.5.5] - 2023-03-06
 
 ### Fixed
 
-* Fix [#116](https://github.com/jowilf/starlette-admin/issues/116) : Internal Server Error when login credentials are wrong by [@jowilf](https://github.com/jowilf) in [#117](https://github.com/jowilf/starlette-admin/pull/117)
+* Fix [#116](https://github.com/jowilf/starlette-admin/issues/116) : Internal Server Error when login credentials are
+  wrong by [@jowilf](https://github.com/jowilf) in [#117](https://github.com/jowilf/starlette-admin/pull/117)
 
 ## [0.5.4] - 2023-03-03
 
 ### Fixed
 
-* Fix [#99](https://github.com/jowilf/starlette-admin/issues/99) : Show error message when an error occur on `delete` action (detail view).
+* Fix [#99](https://github.com/jowilf/starlette-admin/issues/99) : Show error message when an error occur on `delete`
+  action (detail view).
 
 ### Added
 
-* Display meaningfully error message when SQLAlchemyError occur during action execution by [@jowilf](https://github.com/jowilf) and [@dolamroth](https://github.com/dolamroth) in [#105](https://github.com/jowilf/starlette-admin/pull/105)
+* Display meaningfully error message when SQLAlchemyError occur during action execution
+  by [@jowilf](https://github.com/jowilf) and [@dolamroth](https://github.com/dolamroth)
+  in [#105](https://github.com/jowilf/starlette-admin/pull/105)
 
 ## [0.5.3] - 2023-02-25
 
 ### Fixed
 
-* Fix Bug with SQLAlchemy column converters by [@jowilf](https://github.com/jowilf) in [#103](https://github.com/jowilf/starlette-admin/pull/103)
+* Fix Bug with SQLAlchemy column converters by [@jowilf](https://github.com/jowilf)
+  in [#103](https://github.com/jowilf/starlette-admin/pull/103)
 
 ## [0.5.2] - 2022-12-29
 
 ### Fixed
 
-* Fix Bug with `search_format` params for [DateField][starlette_admin.fields.DateField] and [TimeField][starlette_admin.fields.TimeField] by [@jowilf](https://github.com/jowilf) & [@ihuro](https://github.com/ihuro) in [#68](https://github.com/jowilf/starlette-admin/pull/68) & [#71](https://github.com/jowilf/starlette-admin/pull/71)
+* Fix Bug with `search_format` params for [DateField][starlette_admin.fields.DateField]
+  and [TimeField][starlette_admin.fields.TimeField]
+  by [@jowilf](https://github.com/jowilf) & [@ihuro](https://github.com/ihuro)
+  in [#68](https://github.com/jowilf/starlette-admin/pull/68) & [#71](https://github.com/jowilf/starlette-admin/pull/71)
 
 ## [0.5.1] - 2022-12-27
 
 ### Fixed
 
-* Fix Bug with `sqlalchemy.dialects.postgresql.base.UUID` column by [@jowilf](https://github.com/jowilf) in [#65](https://github.com/jowilf/starlette-admin/pull/65)
+* Fix Bug with `sqlalchemy.dialects.postgresql.base.UUID` column by [@jowilf](https://github.com/jowilf)
+  in [#65](https://github.com/jowilf/starlette-admin/pull/65)
 
 ## [0.5.0] - 2022-12-17
 
 ### Added
 
-* Introduce [`AdminUser`][starlette_admin.auth.AuthProvider.get_admin_user] and add navbar to show the current [`AdminUser`][starlette_admin.auth.AuthProvider.get_admin_user] information (`username` and `photo`) by [@jowilf](https://github.com/jowilf) in [#49](https://github.com/jowilf/starlette-admin/pull/49)
+* Introduce [`AdminUser`][starlette_admin.auth.AuthProvider.get_admin_user] and add navbar to show the
+  current [`AdminUser`][starlette_admin.auth.AuthProvider.get_admin_user] information (`username` and `photo`)
+  by [@jowilf](https://github.com/jowilf) in [#49](https://github.com/jowilf/starlette-admin/pull/49)
 
 ### Internals
 
@@ -266,8 +289,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-* Custom batch actions by [@jowilf](https://github.com/jowilf) in [#44](https://github.com/jowilf/starlette-admin/pull/44)
-* Add `get_list_query`, `get_count_query` and `get_search_query` methods to SQLAlchemy backend that can be inherited for customization by [@jowilf](https://github.com/jowilf) in [#47](https://github.com/jowilf/starlette-admin/pull/47)
+* Custom batch actions by [@jowilf](https://github.com/jowilf)
+  in [#44](https://github.com/jowilf/starlette-admin/pull/44)
+* Add `get_list_query`, `get_count_query` and `get_search_query` methods to SQLAlchemy backend that can be inherited for
+  customization by [@jowilf](https://github.com/jowilf) in [#47](https://github.com/jowilf/starlette-admin/pull/47)
 
 ### Internals
 
@@ -280,19 +305,22 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-* Fix Datatables warning when primary key is not included in `fields` by [@jowilf](https://github.com/jowilf) in [#23](https://github.com/jowilf/starlette-admin/issues/23)
+* Fix Datatables warning when primary key is not included in `fields` by [@jowilf](https://github.com/jowilf)
+  in [#23](https://github.com/jowilf/starlette-admin/issues/23)
 
 ### Docs
 
-* Add spanish translation for `docs/index.md` by [@rafnixg](https://github.com/rafnixg) in [#35](https://github.com/jowilf/starlette-admin/pull/35)
+* Add spanish translation for `docs/index.md` by [@rafnixg](https://github.com/rafnixg)
+  in [#35](https://github.com/jowilf/starlette-admin/pull/35)
 
 ### Internals
 
-* Use Ruff for linting by [@jowilf](https://github.com/jowilf) in [#29](https://github.com/jowilf/starlette-admin/pull/29)
+* Use Ruff for linting by [@jowilf](https://github.com/jowilf)
+  in [#29](https://github.com/jowilf/starlette-admin/pull/29)
 * Migrate to Hatch by [@jowilf](https://github.com/jowilf) in [#30](https://github.com/jowilf/starlette-admin/pull/30)
 * Setup pre-commit by [@jowilf](https://github.com/jowilf) in [#33](https://github.com/jowilf/starlette-admin/pull/33)
-* Add support for Python 3.11 in test suite by [@jowilf](https://github.com/jowilf) in [#34](https://github.com/jowilf/starlette-admin/pull/34)
-
+* Add support for Python 3.11 in test suite by [@jowilf](https://github.com/jowilf)
+  in [#34](https://github.com/jowilf/starlette-admin/pull/34)
 
 ## [0.3.1] - 2022-11-22
 
@@ -300,8 +328,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-* Fix Regression on SQLModel backend: Duplicate instances when creating or updating a model with relationships in [#23](https://github.com/jowilf/starlette-admin/issues/23)
-
+* Fix Regression on SQLModel backend: Duplicate instances when creating or updating a model with relationships
+  in [#23](https://github.com/jowilf/starlette-admin/issues/23)
 
 ## [0.3.0] - 2022-11-21
 
@@ -312,6 +340,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Changes in `ModelView` definition
 
 === "Now"
+
     ```python
     class Post:
         id: int
@@ -321,6 +350,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     ```
 
 === "Before"
+
     ```python
     class Post:
         id: int
@@ -337,10 +367,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Changes in `CustomView` definition
 
 === "Now"
+
     ```python
     admin.add_view(CustomView(label="Home", icon="fa fa-home", path="/home", template_path="home.html"))
     ```
+
 === "Before"
+
     ```python
     class HomeView(CustomView):
         label = "Home"
@@ -352,12 +385,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     ```
 
 * Changes in `Link` definition
+
 === "Now"
+
     ```python
     admin.add_view(Link(label="Back to Home", icon="fa fa-home", url="/", target = "_blank"))
     ```
 
 === "Before"
+
     ```python
     class BackToHome(Link):
         label = "Back to Home"
@@ -374,7 +410,9 @@ These changes are inspired from *Flask-admin* and are introduced to help reduce 
 * Add `ListField`
 * Add support for [Odmantic](https://art049.github.io/odmantic/)
 * Add support for datatables [responsive extensions](https://datatables.net/extensions/responsive/)
+
 !!! usage
+
     ```python
     class MyModelView(ModelView):
         responsive_table = True
@@ -395,8 +433,7 @@ These changes are inspired from *Flask-admin* and are introduced to help reduce 
 
 ### Fixed
 
-*  Null support for EnumField in [#17](https://github.com/jowilf/starlette-admin/pull/17)
-
+* Null support for EnumField in [#17](https://github.com/jowilf/starlette-admin/pull/17)
 
 ## [0.2.1] - 2022-09-19
 
@@ -406,7 +443,6 @@ These changes are inspired from *Flask-admin* and are introduced to help reduce 
 
 * Fix SearchBuilder not working with dates (SQLAlchemy) in [#15](https://github.com/jowilf/starlette-admin/pull/15)
 
-
 ## [0.2.0] - 2022-09-14
 
 ---
@@ -414,7 +450,6 @@ These changes are inspired from *Flask-admin* and are introduced to help reduce 
 ### Changed
 
 * Date & Time input now use Flatpickr in [#10](https://github.com/jowilf/starlette-admin/pull/10)
-
 
 ## [0.1.1] - 2022-09-09
 
