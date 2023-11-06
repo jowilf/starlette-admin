@@ -132,16 +132,13 @@ class ModelView(BaseModelView):
 
     def _setup_primary_key(self) -> None:
         # Detect the primary key attribute of the model
-        mapper: Mapper = inspect(self.model)  # type: ignore
-        for key, attr in mapper._props.items():  # type: ignore
-            if not hasattr(attr, "columns"):
-                continue
-            if self._pk_column is attr.columns[0]:
+        for key in self.model.__dict__:
+            attr = getattr(self.model, key)
+            if isinstance(attr, InstrumentedAttribute) and getattr(
+                attr, "primary_key", False
+            ):
                 self.pk_attr = key
                 return
-        raise InvalidModelError(
-            f"Cannot find primary key attribute for model {self.model.__name__}"
-        )
 
     async def handle_action(
         self, request: Request, pks: List[Any], name: str
