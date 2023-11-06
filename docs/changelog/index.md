@@ -58,8 +58,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   name by [@jowilf](https://github.com/jowilf)
   in [#361](https://github.com/jowilf/starlette-admin/pull/361)
 
-* Fix Bug with field access authorization by [@jowilf](https://github.com/jowilf)
-  in [#360](https://github.com/jowilf/starlette-admin/pull/360)
+* Fix a bug with field access authorization where restricted users could not modify a partial list of fields in an
+  entity by [@jowilf](https://github.com/jowilf) in [#360](https://github.com/jowilf/starlette-admin/pull/360)
 
 ### Internals
 
