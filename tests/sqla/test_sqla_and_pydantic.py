@@ -29,19 +29,21 @@ pytestmark = pytest.mark.asyncio
 Base = declarative_base()
 
 
-class User(Base):
+class IDMixin:
+    id = Column(Integer, primary_key=True)
+
+
+class User(Base, IDMixin):
     __tablename__ = "user"
 
-    id = Column(Integer, primary_key=True)
     name = Column(String(100))
 
     todos = relationship("Todo", back_populates="user")
 
 
-class Todo(Base):
+class Todo(Base, IDMixin):
     __tablename__ = "todo"
 
-    id = Column(Integer, primary_key=True)
     todo = Column(String(255))
     completed = Column(Boolean)
     deadline = Column(DateTime)
