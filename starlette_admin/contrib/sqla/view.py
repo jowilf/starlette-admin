@@ -93,7 +93,7 @@ class ModelView(BaseModelView):
         )
         self.name = name or self.name or prettify_class_name(self.model.__name__)
         self.icon = icon
-        self._pk_column: Column = mapper.primary_key[0]
+        self._pk_column: Column = next(iter(mapper.local_table.primary_key))  # type: ignore
         self._setup_primary_key()
         self._pk_coerce = extract_column_python_type(self._pk_column)
         if self.fields is None or len(self.fields) == 0:
@@ -134,7 +134,9 @@ class ModelView(BaseModelView):
         # Detect the primary key attribute of the model
         for key in self.model.__dict__:
             attr = getattr(self.model, key)
-            if isinstance(attr, InstrumentedAttribute) and attr.primary_key:
+            if isinstance(attr, InstrumentedAttribute) and getattr(
+                attr, "primary_key", False
+            ):
                 self.pk_attr = key
                 return
 
