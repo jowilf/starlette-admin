@@ -47,7 +47,7 @@ class MyAuthProvider(AuthProvider):
     def get_admin_user(self, request: Request) -> Optional[AdminUser]:
         return AdminUser(request.state.user)
 
-    def get_admin_config(self, request: Request) -> AdminConfig | None:
+    def get_admin_config(self, request: Request) -> Optional[AdminConfig]:
         return AdminConfig(app_title=f"Welcome {request.state.user}!")
 
     async def logout(self, request: Request, response: Response):
