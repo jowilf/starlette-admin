@@ -9,7 +9,6 @@ from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
 from sqlalchemy.sql import ClauseElement
 
 
-
 def __is_null(latest_attr: InstrumentedAttribute) -> Any:
     if isinstance(latest_attr.property, RelationshipProperty):
         if isinstance(latest_attr.impl, ScalarObjectAttributeImpl):

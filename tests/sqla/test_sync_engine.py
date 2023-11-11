@@ -248,30 +248,39 @@ async def test_api_query5(client: AsyncClient):
     data = response.json()
     assert data["total"] == 4
 
-@pytest.mark.parametrize('resource,where,total',
-                         [
-                             ('user',('{"and":[{"products": {"is_null": {}}}]}'),1),
-                             ('user',('{"and":[{"products": {"is_not_null": {}}}]}'),2),
-                             ('user',
-                              ('{"and":[{"products": {"is_not_null": {}}},{"name": {"eq": "Doe"}}]}'),
-                               1,
-                             ),
-                             ('user',
-                              ('{"or":[{"products": {"is_not_null": {}}},{"name": {"eq": "admin"}}]}'),
-                              3,
-                             ),
-                             ('product',('{"and":[{"user": {"is_not_null": {}}}]}'),2),
-                             ('product',('{"and":[{"user": {"is_null": {}}}]}'),3),
-                             ('product',
-                              ('{"and":[{"user": {"is_not_null": {}}},{"title": {"eq": "OPPOF19"}}]}'),
-                              1,
-                             ),
-                             ('product',
-                              ('{"or":[{"user": {"is_not_null": {}}},{"title": {"eq": "OPPOF19"}}]}'),
-                              2,
-                             ),
-                         ])
-async def test_api_query6(client: AsyncClient, resource: str, where: tuple[str], total: int):
+
+@pytest.mark.parametrize(
+    "resource,where,total",
+    [
+        ("user", ('{"and":[{"products": {"is_null": {}}}]}'), 1),
+        ("user", ('{"and":[{"products": {"is_not_null": {}}}]}'), 2),
+        (
+            "user",
+            ('{"and":[{"products": {"is_not_null": {}}},{"name": {"eq": "Doe"}}]}'),
+            1,
+        ),
+        (
+            "user",
+            ('{"or":[{"products": {"is_not_null": {}}},{"name": {"eq": "admin"}}]}'),
+            3,
+        ),
+        ("product", ('{"and":[{"user": {"is_not_null": {}}}]}'), 2),
+        ("product", ('{"and":[{"user": {"is_null": {}}}]}'), 3),
+        (
+            "product",
+            ('{"and":[{"user": {"is_not_null": {}}},{"title": {"eq": "OPPOF19"}}]}'),
+            1,
+        ),
+        (
+            "product",
+            ('{"or":[{"user": {"is_not_null": {}}},{"title": {"eq": "OPPOF19"}}]}'),
+            2,
+        ),
+    ],
+)
+async def test_api_query6(
+    client: AsyncClient, resource: str, where: tuple[str], total: int
+):
     response = await client.get(f"/admin/api/{resource}?where={where}")
     data = response.json()
     assert data["total"] == total
