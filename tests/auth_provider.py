@@ -2,7 +2,7 @@ from typing import Optional
 
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette_admin.auth import AdminUser, AuthProvider
+from starlette_admin.auth import AdminConfig, AdminUser, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 
 users = {
@@ -46,6 +46,11 @@ class MyAuthProvider(AuthProvider):
 
     def get_admin_user(self, request: Request) -> Optional[AdminUser]:
         return AdminUser(request.state.user)
+
+    def get_admin_config(self, request: Request) -> AdminConfig | None:
+        return AdminConfig(
+            app_title=f"Welcome {request.state.user}!"
+        )            
 
     async def logout(self, request: Request, response: Response):
         response.delete_cookie("session")

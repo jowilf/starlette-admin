@@ -204,6 +204,7 @@ class TestViewAccess:
         assert response.status_code == 403
         response = await client.get("/admin/report", cookies={"session": "admin"})
         assert response.status_code == 200
+        assert 'Welcome admin!' in response.text
 
     @pytest.mark.asyncio
     async def test_access_model_view_list(self, client: AsyncClient):
