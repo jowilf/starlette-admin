@@ -48,9 +48,7 @@ class MyAuthProvider(AuthProvider):
         return AdminUser(request.state.user)
 
     def get_admin_config(self, request: Request) -> AdminConfig | None:
-        return AdminConfig(
-            app_title=f"Welcome {request.state.user}!"
-        )            
+        return AdminConfig(app_title=f"Welcome {request.state.user}!")
 
     async def logout(self, request: Request, response: Response):
         response.delete_cookie("session")
