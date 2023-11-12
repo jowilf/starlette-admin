@@ -1,6 +1,6 @@
 # Çoklu Admin
 
-Uygulamanıza farklı veya aynı görünümlere sahip birden fazla yönetim arayüzü ekleyebilirsiniz. Bunu yönetmek için, farklı `base_url` ve `route_name` kullanmanız yeterlidir.
+Uygulamanıza farklı veya aynı görünümlere sahip birden fazla yönetici arayüzü ekleyebilirsiniz. Bunu yönetmek için, farklı `base_url` ve `route_name` kullanmanız yeterlidir.
 
 ```python
 from starlette.applications import Starlette

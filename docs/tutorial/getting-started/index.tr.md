@@ -2,7 +2,7 @@
 
 ## Çalıştırma
 
-Boş bir yönetim arayüzünü uygulamanızda çalıştırmak için ilk adım:
+Boş bir yönetici arayüzünü uygulamanızda çalıştırmak için ilk adım:
 
 === "SQLAlchemy"
 
@@ -46,7 +46,7 @@ Boş bir yönetim arayüzünü uygulamanızda çalıştırmak için ilk adım:
 
 ### ModelView - Model Görünümü
 
-`ModelView`ler, herhangi bir modeli yönetmek için özelleştirilmiş yönetim sayfaları eklemenizi sağlar.
+`ModelView`ler, herhangi bir modeli yönetmek için özelleştirilmiş yönetici sayfaları eklemenizi sağlar.
 
 === "SQLAlchemy"
 
@@ -184,7 +184,7 @@ admin.add_view(
 
 ## Uygulamanıza Admin'i Bağlayın
 
-Son adım, yönetim arayüzlerini uygulamanıza bağlamaktır:
+Son adım, yönetici arayüzlerini uygulamanıza bağlamaktır:
 
 === "SQLAlchemy"
 
@@ -266,4 +266,4 @@ Son adım, yönetim arayüzlerini uygulamanıza bağlamaktır:
     admin.mount_to(app)
     ```
 
-Yönetim arayüzüne tarayıcınız üzerinden [http://localhost:8000/admin](http://localhost:8000/admin) adresine giderek erişebilirsiniz.
+Yönetici arayüzüne tarayıcınız üzerinden [http://localhost:8000/admin](http://localhost:8000/admin) adresine giderek erişebilirsiniz.

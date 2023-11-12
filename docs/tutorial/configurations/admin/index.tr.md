@@ -1,6 +1,6 @@
 # Admin Konfigürasyonu
 
-Yönetim arayüzünüzü özelleştirmek için birçok seçenek mevcuttur.
+Yönetici arayüzünüzü özelleştirmek için birçok seçenek mevcuttur.
 
 ```python
 admin = Admin(
@@ -21,9 +21,9 @@ admin = Admin(
 
 ## Parametreler
 
-* `title`: Yönetim arayüzü başlığı.
-* `base_url`: Yönetim arayüzünün başlangıç URL'i.
-* `route_name`: Bağlanmış yönetim arayüzü ismi.
+* `title`: Yönetici arayüzü başlığı.
+* `base_url`: Yönetici arayüzünün başlangıç URL'i.
+* `route_name`: Bağlanmış yönetici arayüzü ismi.
 * `logo_url`: Başlık yerine kullanılacak logonun URL'i.
 * `login_logo_url`: Bu değeri atarsanız, giriş sayfasında `logo_url` yerine kullanılacaktır.
 * `statics_dir`: Dosya özelinde <abbr title="static">statik</abbr> dosyalar için kullanılacak dizin.

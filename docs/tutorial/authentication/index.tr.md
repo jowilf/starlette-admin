@@ -1,6 +1,6 @@
 # Kimlik Doğrulama ve Yetkilendirme
 
-Yönetim arayüzünüzü istenmeyen kullanıcılardan korumak için, [AuthProvider][starlette_admin.auth.AuthProvider] sınıfını genişleterek bir `Kimlik Doğrulama Sağlayıcısı` oluşturabilirsiniz ve admin uygulamanızı tanımlarken `auth_provider` özelliğine atayabilirsiniz.
+Yönetici arayüzünüzü istenmeyen kullanıcılardan korumak için, [AuthProvider][starlette_admin.auth.AuthProvider] sınıfını genişleterek bir `Kimlik Doğrulama Sağlayıcısı` oluşturabilirsiniz ve admin uygulamanızı tanımlarken `auth_provider` özelliğine atayabilirsiniz.
 
 ## Kullanıcı Adı ve Şifre ile Kimlik Koğrulama
 
@@ -96,8 +96,8 @@ OAuth2 veya OIDC gibi özelleştirilmiş bir kimlik doğrulama akışı kullanma
 
 Bunlarla birlikte ihtiyaçlarınıza bağlı olarak aşağıdaki yöntemleri geçersiz kılabilirsiniz:
 
-* [get_middleware][starlette_admin.auth.BaseAuthProvider.get_middleware]: Yönetim arayüzü için özel bir kimlik doğrulama ara yazılımı sağlamak için kullanılır.
-* [setup_admin][starlette_admin.auth.BaseAuthProvider.setup_admin]: Yönetim arayüzünün kurulum aşamasında çağrılır ve özel konfigürasyonlar ve kurulum için kullanılır.
+* [get_middleware][starlette_admin.auth.BaseAuthProvider.get_middleware]: Yönetici arayüzü için özel bir kimlik doğrulama ara yazılımı sağlamak için kullanılır.
+* [setup_admin][starlette_admin.auth.BaseAuthProvider.setup_admin]: Yönetici arayüzünün kurulum aşamasında çağrılır ve özel konfigürasyonlar ve kurulum için kullanılır.
 
 ```python
 from typing import Optional
@@ -185,7 +185,7 @@ class MyAuthProvider(AuthProvider):
 
 Çalışan bir örnek için [`https://github.com/jowilf/starlette-admin/tree/main/examples/authlib`](https://github.com/jowilf/starlette-admin/tree/main/examples/authlib) sayfasına bakabilirsiniz.
 
-`AuthProvider` aşağıdaki gibi yönetim arayüzünüze eklenebilir:
+`AuthProvider` aşağıdaki gibi yönetici arayüzünüze eklenebilir:
 
 ```python
 admin = Admin(

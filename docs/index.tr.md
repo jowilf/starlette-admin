@@ -1,6 +1,6 @@
 # Genel Bakış
 
-*Starlette-Admin* Starlette/FastApi uygulamaları için hızlı, güzel ve genişletilebilir bir yönetim arayüzü framework'üdür.
+*Starlette-Admin* Starlette/FastApi uygulamaları için hızlı, güzel ve genişletilebilir bir yönetici arayüzü çatısıdır.
 
 <p align="center">
 <a href="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml">
@@ -40,7 +40,7 @@
 - CSV/EXCEL/PDF ve Tarayıcı Yazdırma ile veriyi dışa aktarın
 - <abbr title="Authentication">Kimlik Doğrulama</abbr>
 - <abbr title="Authorization">Yetkilendirme</abbr>
-- Dosyaları yönetimi
+- Dosya yönetimi
 - Özelleştirilmiş görünümler
 - Özelleştirilmiş toplu işlemler
 - Desteklenen ORM'ler
@@ -101,7 +101,7 @@ admin.add_view(ModelView(Post))
 admin.mount_to(app)
 ```
 
-Yönetim arayüzüne tarayıcınız üzerinden [http://localhost:8000/admin](http://localhost:8000/admin) adresine giderek erişebilirsiniz.
+Yönetici arayüzüne tarayıcınız üzerinden [http://localhost:8000/admin](http://localhost:8000/admin) adresine giderek erişebilirsiniz.
 
 ## Üçüncü taraf
 
@@ -119,4 +119,4 @@ Yönetim arayüzüne tarayıcınız üzerinden [http://localhost:8000/admin](htt
 
 ## Katkıda Bulunma
 
-Katılımınızı bekliyoruz! Başlamadan önce lütfen [katkıda bulunma rehberimizi](https://github.com/jowilf/starlette-admin/blob/main/CONTRIBUTING.md) okuyun.
+Katkılarınızı bekliyoruz! Başlamadan önce lütfen [katkıda bulunma rehberimizi](https://github.com/jowilf/starlette-admin/blob/main/CONTRIBUTING.md) okuyun.

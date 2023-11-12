@@ -6,7 +6,7 @@ En sık kullanılan seçenekler şunlardır:
 
 ## Fields - Alanlar
 
-Yönetim görünümünde hangi alanların dahil edileceğini belirlemek için ModelView sınıfının `fields` özelliğini kullanabilirsiniz.
+Yönetici görünümünde hangi alanların dahil edileceğini belirlemek için ModelView sınıfının `fields` özelliğini kullanabilirsiniz.
 
 ```Python hl_lines="21"
 from sqlalchemy import JSON, Column, Integer, String, Text, create_engine
@@ -144,14 +144,14 @@ Liste sayfasındaki sayfalandırma seçenekleri konfigüre edilebilir. Kullanıl
 
 ## Object Representation - Nesne Temsili
 
-*sarlette-admin* yönetim arayüzünde nesnelerin nasıl temsil edileceğini özelleştirmek için iki yöntem mevcuttur:
+*sarlette-admin* yönetici arayüzünde nesnelerin nasıl temsil edileceğini özelleştirmek için iki yöntem mevcuttur:
 
 ### `__admin_repr__`
 
-Yönetim arayüzünde nesnelerin nasıl temsil edileceğini özelleştirmek için model sınıflarında kullanılabilen özel bir metoddur. Varsayılan olarak yalnızca nesnenin birincil anahtar özelliğinin değeri görüntülenir. Bununla birlikte, `__admin_repr__` metodunu kullanarak, nesneyi yönetim arayüzünde daha iyi temsil edebilecek bir `str` döndürebilirsiniz.
+Yönetici arayüzünde nesnelerin nasıl temsil edileceğini özelleştirmek için model sınıflarında kullanılabilen özel bir metoddur. Varsayılan olarak yalnızca nesnenin birincil anahtar özelliğinin değeri görüntülenir. Bununla birlikte, `__admin_repr__` metodunu kullanarak, nesneyi yönetici arayüzünde daha iyi temsil edebilecek bir `str` döndürebilirsiniz.
 
 !!! example "Örnek"
-    Aşağıdaki `User` modeli için örnek uygulama, yönetim arayüzünde kullanıcının birincil anahtar yerine tam adını gösterir:
+    Aşağıdaki `User` modeli için örnek uygulama, yönetici arayüzünde kullanıcının birincil anahtar yerine tam adını gösterir:
 
     ```python
     class User:
