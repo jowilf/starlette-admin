@@ -1,7 +1,7 @@
 import enum
 import json
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import pytest
 import pytest_asyncio
@@ -279,7 +279,7 @@ async def test_api_query5(client: AsyncClient):
     ],
 )
 async def test_api_query6(
-    client: AsyncClient, resource: str, where: tuple[str], total: int
+    client: AsyncClient, resource: str, where: Tuple[str], total: int
 ):
     response = await client.get(f"/admin/api/{resource}?where={where}")
     data = response.json()
