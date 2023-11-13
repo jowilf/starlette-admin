@@ -250,40 +250,59 @@ async def test_api_query5(client: AsyncClient):
 
 
 @pytest.mark.parametrize(
-    "resource,where,total",
+    "resource,where,expected",
     [
-        ("user", ('{"and":[{"products": {"is_null": {}}}]}'), 1),
-        ("user", ('{"and":[{"products": {"is_not_null": {}}}]}'), 2),
+        (
+            "user",
+            ('{"and":[{"products": {"is_null": {}}}]}'),
+            {"total": 1, "name": ["admin"]},
+        ),
+        (
+            "user",
+            ('{"and":[{"products": {"is_not_null": {}}}]}'),
+            {"total": 2, "name": ["Doe", "Terry"]},
+        ),
         (
             "user",
             ('{"and":[{"products": {"is_not_null": {}}},{"name": {"eq": "Doe"}}]}'),
-            1,
+            {"total": 1, "name": ["Doe"]},
         ),
         (
             "user",
             ('{"or":[{"products": {"is_not_null": {}}},{"name": {"eq": "admin"}}]}'),
-            3,
+            {"total": 3, "name": ["Doe", "admin", "Terry"]},
         ),
-        ("product", ('{"and":[{"user": {"is_not_null": {}}}]}'), 2),
-        ("product", ('{"and":[{"user": {"is_null": {}}}]}'), 3),
+        (
+            "product",
+            ('{"and":[{"user": {"is_not_null": {}}}]}'),
+            {"total": 2, "title": ["OPPOF19", "Huawei P30"]},
+        ),
+        (
+            "product",
+            ('{"and":[{"user": {"is_null": {}}}]}'),
+            {"total": 3, "title": ["IPhone 9", "Samsung Universe 9", "IPhone X"]},
+        ),
         (
             "product",
             ('{"and":[{"user": {"is_not_null": {}}},{"title": {"eq": "OPPOF19"}}]}'),
-            1,
+            {"total": 1, "title": ["OPPOF19"]},
         ),
         (
             "product",
             ('{"or":[{"user": {"is_not_null": {}}},{"title": {"eq": "OPPOF19"}}]}'),
-            2,
+            {"total": 2, "title": ["OPPOF19", "Huawei P30"]},
         ),
     ],
 )
 async def test_api_query6(
-    client: AsyncClient, resource: str, where: Tuple[str], total: int
+    client: AsyncClient, resource: str, where: Tuple[str], expected: Dict[str, Any]
 ):
     response = await client.get(f"/admin/api/{resource}?where={where}")
     data = response.json()
-    assert data["total"] == total
+    result_key = list(expected.keys())[1]
+
+    assert data["total"] == expected["total"]
+    assert set(expected[result_key]) == {x[result_key] for x in data["items"]}
 
 
 async def test_detail(client: AsyncClient):
