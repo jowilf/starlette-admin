@@ -277,7 +277,7 @@ class TinyMCEEditorField(TextAreaField):
 
 
 @dataclass
-class SimpleMDEField(BaseField):
+class SimpleMDEField(TextAreaField):
     """A field that provides a Markdown editor for long text content using the
     [SimpleMDE](https://simplemde.com/) library.
 
