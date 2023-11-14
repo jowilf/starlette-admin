@@ -202,8 +202,8 @@
 
     // SimpleMDEField integration
     $(".field-simplemde", element).each(function(){
-      let options = $(this).attr("options");
-      options = JSON.parse(options);
+      let dataOptions = $(this).attr("data-options");
+      dataOptions = JSON.parse(dataOptions);
       new SimpleMDE({
           element: this,
           ...options
