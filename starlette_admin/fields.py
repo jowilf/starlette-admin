@@ -335,7 +335,7 @@ class SimpleMDEField(BaseField):
         return []
 
     def input_params(self) -> str:
-        return html_params({"options": json.dumps(self.options)})
+        return html_params({"data-options": json.dumps(self.options)})
 
 
 @dataclass
