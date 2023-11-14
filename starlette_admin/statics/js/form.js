@@ -206,7 +206,7 @@
       dataOptions = JSON.parse(dataOptions);
       new SimpleMDE({
           element: this,
-          ...options
+          ...dataOptions
       });
     });
     // end SimpleMDEField integration
