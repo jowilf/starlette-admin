@@ -290,19 +290,18 @@ class SimpleMDEField(TextAreaField):
         status: Show status bar at the bottom
         hide_icons: Hide icons from toolbar
         autofocus: Enable autofocus
-        other_options: Other options to pass to SimpleMDE
+        data_options: Other options to pass to SimpleMDE
     """
 
     class_: str = "field-simplemde form-control"
     display_template: str = "displays/tinymce.html"
-    form_template: str = "forms/textarea.html"
     version: str = "1.11.2"
     placeholder: str = ""
     spell_checker: bool = False
     status: bool = False
     hide_icons: List[str] = dc_field(default_factory=list)
     autofocus: bool = True
-    options: Dict[str, Any] = dc_field(default_factory=dict)
+    data_options: Dict[str, Any] = dc_field(default_factory=dict)
     """For more options, see the [SimpleMDE](https://simplemde.com/)"""
 
     def __post_init__(self) -> None:
@@ -325,17 +324,17 @@ class SimpleMDEField(TextAreaField):
         return []
 
     def input_params(self) -> str:
-        if self.options.get("placeholder", None) is None:
-            self.options["placeholder"] = self.placeholder
-        if self.options.get("spellChecker", None) is None:
-            self.options["spellChecker"] = self.spell_checker
-        if self.options.get("status", None) is None:
-            self.options["status"] = self.status
-        if self.options.get("hideIcons", None) is None:
-            self.options["hideIcons"] = self.hide_icons
-        if self.options.get("autofocus", None) is None:
-            self.options["autofocus"] = self.autofocus
-        return html_params({"data-options": json.dumps(self.options)})
+        if self.data_options.get("placeholder", None) is None:
+            self.data_options["placeholder"] = self.placeholder
+        if self.data_options.get("spellChecker", None) is None:
+            self.data_options["spellChecker"] = self.spell_checker
+        if self.data_options.get("status", None) is None:
+            self.data_options["status"] = self.status
+        if self.data_options.get("hideIcons", None) is None:
+            self.data_options["hideIcons"] = self.hide_icons
+        if self.data_options.get("autofocus", None) is None:
+            self.data_options["autofocus"] = self.autofocus
+        return html_params({"data-options": json.dumps(self.data_options)})
 
 
 @dataclass
