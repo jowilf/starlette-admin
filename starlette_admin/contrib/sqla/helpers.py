@@ -3,8 +3,27 @@ from typing import Any, Callable, Dict, Optional, Sequence
 from sqlalchemy import Column, String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
     InstrumentedAttribute,
+    RelationshipProperty,
 )
+from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
 from sqlalchemy.sql import ClauseElement
+
+
+def __is_null(latest_attr: InstrumentedAttribute) -> Any:
+    if isinstance(latest_attr.property, RelationshipProperty):
+        if isinstance(latest_attr.impl, ScalarObjectAttributeImpl):
+            return ~latest_attr.has()
+        return ~latest_attr.any()
+    return latest_attr.is_(None)
+
+
+def __is_not_null(latest_attr: InstrumentedAttribute) -> Any:
+    if isinstance(latest_attr.property, RelationshipProperty):
+        if isinstance(latest_attr.impl, ScalarObjectAttributeImpl):
+            return latest_attr.has()
+        return latest_attr.any()
+    return latest_attr.is_not(None)
+
 
 OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
     "eq": lambda f, v: f == v,
@@ -23,8 +42,8 @@ OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
     "not_contains": lambda f, v: not_(cast(f, String).contains(v)),
     "is_false": lambda f, v: f == false(),
     "is_true": lambda f, v: f == true(),
-    "is_null": lambda f, v: f.is_(None),
-    "is_not_null": lambda f, v: f.is_not(None),
+    "is_null": lambda f, v: __is_null(f),
+    "is_not_null": lambda f, v: __is_not_null(f),
     "between": lambda f, v: f.between(*v),
     "not_between": lambda f, v: not_(f.between(*v)),
 }
