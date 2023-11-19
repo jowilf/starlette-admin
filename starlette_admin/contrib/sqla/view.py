@@ -1,8 +1,8 @@
-from typing import Any, ClassVar, Dict, List, Optional, Sequence, Type, Union
+from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import anyio.to_thread
-from sqlalchemy import Column, String, cast, func, inspect, or_, select
-from sqlalchemy.exc import NoInspectionAvailable, SQLAlchemyError
+from sqlalchemy import String, and_, cast, func, inspect, or_, select, tuple_
+from sqlalchemy.exc import DBAPIError, NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     InstrumentedAttribute,
@@ -14,12 +14,14 @@ from sqlalchemy.orm import (
 from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette.responses import Response
+from starlette_admin import BaseField
 from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.converters import (
     BaseSQLAModelConverter,
     ModelConverter,
 )
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
+from starlette_admin.contrib.sqla.fields import MultiplePKField
 from starlette_admin.contrib.sqla.helpers import (
     build_query,
     extract_column_python_type,
@@ -37,6 +39,7 @@ from starlette_admin.fields import (
     URLField,
 )
 from starlette_admin.helpers import not_none, prettify_class_name, slugify_class_name
+from starlette_admin.tools import iterdecode
 from starlette_admin.views import BaseModelView
 
 
@@ -80,10 +83,6 @@ class ModelView(BaseModelView):
             raise InvalidModelError(  # noqa B904
                 f"Class {model.__name__} is not a SQLAlchemy model."
             )
-        assert len(mapper.primary_key) == 1, (
-            "Multiple PK columns not supported, A possible solution is to override "
-            "BaseModelView class and put your own logic "
-        )
         self.model = model
         self.identity = (
             identity or self.identity or slugify_class_name(self.model.__name__)
@@ -93,17 +92,18 @@ class ModelView(BaseModelView):
         )
         self.name = name or self.name or prettify_class_name(self.model.__name__)
         self.icon = icon
-        self._pk_column: Column = next(iter(mapper.local_table.primary_key))  # type: ignore
-        self._setup_primary_key()
-        self._pk_coerce = extract_column_python_type(self._pk_column)
         if self.fields is None or len(self.fields) == 0:
             self.fields = [
                 self.model.__dict__[f].key
                 for f in self.model.__dict__
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
+        self._setup_primary_key(mapper)
         self.fields = (converter or ModelConverter()).convert_fields_list(
             fields=self.fields, model=self.model, mapper=mapper
+        )
+        self.pk_field: BaseField = next(
+            f for f in self.fields if f.name == self.pk_attr
         )
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
         self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
@@ -130,15 +130,34 @@ class ModelView(BaseModelView):
         )
         super().__init__()
 
-    def _setup_primary_key(self) -> None:
+    def _setup_primary_key(self, mapper: Mapper) -> None:
         # Detect the primary key attribute of the model
+        _pk_attrs = []
+        self._pk_column: Union[
+            Tuple[InstrumentedAttribute, ...], InstrumentedAttribute
+        ] = ()
+        self._pk_coerce: Union[Tuple[type, ...], type] = ()
         for key in self.model.__dict__:
             attr = getattr(self.model, key)
             if isinstance(attr, InstrumentedAttribute) and getattr(
                 attr, "primary_key", False
             ):
-                self.pk_attr = key
-                return
+                _pk_attrs.append(key)
+        if len(_pk_attrs) > 1:
+            self._pk_column = tuple(getattr(self.model, attr) for attr in _pk_attrs)
+            self._pk_coerce = tuple(
+                extract_column_python_type(c) for c in self._pk_column
+            )
+            pk_field = MultiplePKField(_pk_attrs)
+            self.pk_attr = pk_field.name
+            self.fields.append(pk_field)  # type: ignore[attr-defined]
+        else:
+            assert (
+                len(_pk_attrs) == 1
+            ), f"No primary key found in model {self.model.__name__}"
+            self.pk_attr = _pk_attrs[0]
+            self._pk_column = getattr(self.model, _pk_attrs[0])
+            self._pk_coerce = extract_column_python_type(self._pk_column)  # type: ignore[arg-type]
 
     async def handle_action(
         self, request: Request, pks: List[Any], name: str
@@ -194,7 +213,7 @@ class ModelView(BaseModelView):
                         return super().get_count_query().where(Post.published == true())
             ```
         """
-        return select(func.count(self._pk_column))
+        return select(func.count("*")).select_from(self.model)
 
     def get_search_query(self, request: Request, term: str) -> Any:
         """
@@ -280,7 +299,19 @@ class ModelView(BaseModelView):
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: Union[Session, AsyncSession] = request.state.session
-        stmt = select(self.model).where(self._pk_column == self._pk_coerce(pk))
+        if isinstance(self._pk_column, tuple):
+            """Handle composite primary keys"""
+            assert isinstance(self._pk_coerce, tuple)
+            clause = and_(
+                _pk_col == _coerce(_pk)
+                for _pk_col, _coerce, _pk in zip(
+                    self._pk_column, self._pk_coerce, iterdecode(pk)  # type: ignore[type-var,arg-type]
+                )
+            )
+        else:
+            assert isinstance(self._pk_coerce, type)
+            clause = self._pk_column == self._pk_coerce(pk)
+        stmt = select(self.model).where(clause)
         for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField):
                 stmt = stmt.options(joinedload(getattr(self.model, field.name)))
@@ -295,18 +326,70 @@ class ModelView(BaseModelView):
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
         session: Union[Session, AsyncSession] = request.state.session
-        stmt = select(self.model).where(self._pk_column.in_(map(self._pk_coerce, pks)))
-        for field in self.get_fields_list(request, request.state.action):
-            if isinstance(field, RelationField):
-                stmt = stmt.options(joinedload(getattr(self.model, field.name)))
-        if isinstance(session, AsyncSession):
-            return (await session.execute(stmt)).scalars().unique().all()
-        return (
-            (await anyio.to_thread.run_sync(session.execute, stmt))
-            .scalars()
-            .unique()
-            .all()
-        )
+
+        has_multiple_pks = isinstance(self._pk_column, tuple)
+
+        async def execute(use_composite_in: bool = True) -> Sequence[Any]:
+            if has_multiple_pks:
+                """Handle composite primary keys"""
+                clause = await self._get_multiple_pks_in_clause(pks, use_composite_in)
+            else:
+                clause = self._pk_column.in_(map(self._pk_coerce, pks))  # type: ignore
+            stmt = select(self.model).where(clause)
+            for field in self.get_fields_list(request, request.state.action):
+                if isinstance(field, RelationField):
+                    stmt = stmt.options(joinedload(getattr(self.model, field.name)))
+            if isinstance(session, AsyncSession):
+                return (await session.execute(stmt)).scalars().unique().all()
+            return (
+                (await anyio.to_thread.run_sync(session.execute, stmt))
+                .scalars()
+                .unique()
+                .all()
+            )
+
+        try:
+            return await execute()
+        except DBAPIError:
+            if has_multiple_pks:
+                return await execute(False)
+            raise
+
+    async def _get_multiple_pks_in_clause(
+        self, pks: List[Any], use_composite_in: bool
+    ) -> Any:
+        """
+        For models with multiple primary keys, pks will be a list of comma-separated
+        values representing the multiple primary key columns.
+
+        E.g. for a model with primary keys (id1, id2):
+            pks = ["val1,val2", "val3,val4"]
+        """
+        assert isinstance(self._pk_coerce, tuple)
+        decoded_pks = tuple(iterdecode(pk) for pk in pks)
+        if use_composite_in:
+            """
+            This will generate a query like:
+            WHERE (id1, id2) IN ((val1, val2), (val2, val3))
+
+            However the composite IN construct is not supported by all backends
+            """
+            return tuple_(*self._pk_column).in_(
+                tuple(self._pk_coerce[i](v) for i, v in enumerate(pk))
+                for pk in decoded_pks
+            )
+        """
+        When the composite IN construct is not supported this query will be generated:
+        WHERE (id1 == val1 AND id2 == val2) OR (id1 == val3 AND id2 == val4)
+        """
+        clauses = []
+        for decoded_pk in decoded_pks:
+            clauses.append(
+                and_(
+                    self._pk_coerce[i](value) for i, value in enumerate(decoded_pk)  # type: ignore[type-var,arg-type]
+                )
+            )
+        return or_(*clauses)
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
         """
@@ -477,6 +560,9 @@ class ModelView(BaseModelView):
                 else sorting_attr
             )
         return stmt
+
+    async def get_pk_value(self, request: Request, obj: Any) -> Any:
+        return await self.pk_field.parse_obj(request, obj)
 
     def handle_exception(self, exc: Exception) -> None:
         try:
