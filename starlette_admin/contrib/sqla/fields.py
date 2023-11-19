@@ -21,11 +21,13 @@ class MultiplePKField(StringField):
     def __init__(self, pk_attrs: Sequence[str]):
         self.pk_attrs = pk_attrs
         name = ",".join(pk_attrs)
-        super().__init__(name)
-        self.exclude_from_list = True
-        self.exclude_from_detail = True
-        self.exclude_from_edit = True
-        self.exclude_from_create = True
+        super().__init__(
+            name,
+            exclude_from_list=True,
+            exclude_from_detail=True,
+            exclude_from_edit=True,
+            exclude_from_create=True,
+        )
 
     async def parse_obj(self, request: Request, obj: Any) -> Any:
         """Encode the primary keys values into a single string"""

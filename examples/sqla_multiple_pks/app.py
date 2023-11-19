@@ -14,7 +14,6 @@ from .views import CourseView, EnrollmentView, StudentView
 
 def init_database() -> None:
     first_run = not os.path.exists(DATABASE_FILE)
-    print("hellooooo")
     Base.metadata.create_all(engine)
     if first_run:
         fill_db()
