@@ -28,7 +28,7 @@ class EnrollmentView(ModelView):
     fields = [
         "student",
         "course",
-        # "date_enrolled",
+        "date_enrolled",
         EnumField("grade", choices=GRADES, select2=False),
         "instructor_comments",
     ]

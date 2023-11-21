@@ -1,7 +1,16 @@
 from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import anyio.to_thread
-from sqlalchemy import String, and_, cast, func, inspect, or_, select, tuple_
+from sqlalchemy import (
+    String,
+    and_,
+    cast,
+    func,
+    inspect,
+    or_,
+    select,
+    tuple_,
+)
 from sqlalchemy.exc import DBAPIError, NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
@@ -98,7 +107,7 @@ class ModelView(BaseModelView):
                 for f in self.model.__dict__
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
-        self._setup_primary_key(mapper)
+        self._setup_primary_key()
         self.fields = (converter or ModelConverter()).convert_fields_list(
             fields=self.fields, model=self.model, mapper=mapper
         )
@@ -130,8 +139,8 @@ class ModelView(BaseModelView):
         )
         super().__init__()
 
-    def _setup_primary_key(self, mapper: Mapper) -> None:
-        # Detect the primary key attribute of the model
+    def _setup_primary_key(self) -> None:
+        # Detect the primary key attribute(s) of the model
         _pk_attrs = []
         self._pk_column: Union[
             Tuple[InstrumentedAttribute, ...], InstrumentedAttribute
@@ -300,10 +309,22 @@ class ModelView(BaseModelView):
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: Union[Session, AsyncSession] = request.state.session
         if isinstance(self._pk_column, tuple):
-            """Handle composite primary keys"""
+            """
+            For composite primary keys, the pk parameter is a comma-separated string
+            representing the values of each primary key attribute.
+
+            For example, if the model has two primary keys (id1, id2):
+            - the `pk` will be: "val1,val2"
+            - the generated query: (id1 == val1 AND id2 == val2)
+            """
             assert isinstance(self._pk_coerce, tuple)
             clause = and_(
-                _pk_col == _coerce(_pk)
+                (
+                    _pk_col == _coerce(_pk)
+                    if _coerce is not bool
+                    else _pk_col
+                    == (_pk == "True")  # to avoid bool("False") which is True
+                )
                 for _pk_col, _coerce, _pk in zip(
                     self._pk_column, self._pk_coerce, iterdecode(pk)  # type: ignore[type-var,arg-type]
                 )
@@ -325,68 +346,83 @@ class ModelView(BaseModelView):
         )
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
-        session: Union[Session, AsyncSession] = request.state.session
-
         has_multiple_pks = isinstance(self._pk_column, tuple)
-
-        async def execute(use_composite_in: bool = True) -> Sequence[Any]:
-            if has_multiple_pks:
-                """Handle composite primary keys"""
-                clause = await self._get_multiple_pks_in_clause(pks, use_composite_in)
-            else:
-                clause = self._pk_column.in_(map(self._pk_coerce, pks))  # type: ignore
-            stmt = select(self.model).where(clause)
-            for field in self.get_fields_list(request, request.state.action):
-                if isinstance(field, RelationField):
-                    stmt = stmt.options(joinedload(getattr(self.model, field.name)))
-            if isinstance(session, AsyncSession):
-                return (await session.execute(stmt)).scalars().unique().all()
-            return (
-                (await anyio.to_thread.run_sync(session.execute, stmt))
-                .scalars()
-                .unique()
-                .all()
-            )
-
         try:
-            return await execute()
+            return await self._exec_find_by_pks(request, pks)
         except DBAPIError:
             if has_multiple_pks:
-                return await execute(False)
+                # Retry for multiple primary keys in case of an error related to the composite IN construct
+                return await self._exec_find_by_pks(request, pks, False)
             raise
+
+    async def _exec_find_by_pks(
+        self, request: Request, pks: List[Any], use_composite_in: bool = True
+    ) -> Sequence[Any]:
+        session: Union[Session, AsyncSession] = request.state.session
+        has_multiple_pks = isinstance(self._pk_column, tuple)
+
+        if has_multiple_pks:
+            """Handle composite primary keys"""
+            clause = await self._get_multiple_pks_in_clause(pks, use_composite_in)
+        else:
+            clause = self._pk_column.in_(map(self._pk_coerce, pks))  # type: ignore
+        stmt = select(self.model).where(clause)
+        for field in self.get_fields_list(request, request.state.action):
+            if isinstance(field, RelationField):
+                stmt = stmt.options(joinedload(getattr(self.model, field.name)))
+        if isinstance(session, AsyncSession):
+            return (await session.execute(stmt)).scalars().unique().all()
+        return (
+            (await anyio.to_thread.run_sync(session.execute, stmt))
+            .scalars()
+            .unique()
+            .all()
+        )
 
     async def _get_multiple_pks_in_clause(
         self, pks: List[Any], use_composite_in: bool
     ) -> Any:
         """
-        For models with multiple primary keys, pks will be a list of comma-separated
-        values representing the multiple primary key columns.
+        Constructs the WHERE clause for models with multiple primary keys.
 
-        E.g. for a model with primary keys (id1, id2):
-            pks = ["val1,val2", "val3,val4"]
+        Args:
+            pks: A list of comma-separated values
+                Example: ["val1,val2", "val3,val4"]
+            use_composite_in: A flag indicating whether to use the composite IN construct.
+
+        The generated query depends on the value of `use_composite_in`:
+
+        - When `use_composite_in` is True:
+            WHERE (id1, id2) IN ((val1, val2), (val3, val4))
+
+            Note: The composite IN construct may not be supported by all database backends.
+
+        - When `use_composite_in` is False:
+            WHERE (id1 == val1 AND id2 == val2) OR (id1 == val3 AND id2 == val4)
         """
         assert isinstance(self._pk_coerce, tuple)
         decoded_pks = tuple(iterdecode(pk) for pk in pks)
         if use_composite_in:
-            """
-            This will generate a query like:
-            WHERE (id1, id2) IN ((val1, val2), (val2, val3))
-
-            However the composite IN construct is not supported by all backends
-            """
             return tuple_(*self._pk_column).in_(
-                tuple(self._pk_coerce[i](v) for i, v in enumerate(pk))
-                for pk in decoded_pks
+                tuple(
+                    (_coerce(_pk) if _coerce is not bool else _pk == "True")
+                    for _coerce, _pk in zip(
+                        self._pk_coerce, decoded_pk  # type: ignore[type-var,arg-type]
+                    )
+                )
+                for decoded_pk in decoded_pks
             )
-        """
-        When the composite IN construct is not supported this query will be generated:
-        WHERE (id1 == val1 AND id2 == val2) OR (id1 == val3 AND id2 == val4)
-        """
         clauses = []
         for decoded_pk in decoded_pks:
             clauses.append(
                 and_(
-                    self._pk_coerce[i](value) for i, value in enumerate(decoded_pk)  # type: ignore[type-var,arg-type]
+                    _pk_col == _coerce(_pk)
+                    if _coerce is not bool
+                    else _pk_col
+                    == (_pk == "True")  # to avoid bool("False") which is True
+                    for _pk_col, _coerce, _pk in zip(
+                        self._pk_column, self._pk_coerce, decoded_pk  # type: ignore[type-var,arg-type]
+                    )
                 )
             )
         return or_(*clauses)

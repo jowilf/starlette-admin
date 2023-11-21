@@ -1,2 +1,2 @@
-DATABASE_FILE = "sample_db2.sqlite"
+DATABASE_FILE = "sample_db.sqlite"
 ENGINE_URI = "sqlite:///" + DATABASE_FILE

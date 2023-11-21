@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from sqlalchemy import ForeignKey, Text
@@ -37,6 +38,7 @@ class Enrollment(Base):
     course_id: Mapped[int] = mapped_column(ForeignKey("course.id"), primary_key=True)
 
     grade: Mapped[str]
+    date_enrolled: Mapped[datetime.date] = mapped_column(default=datetime.date.today)
     instructor_comments: Mapped[str] = mapped_column(Text)
 
     student: Mapped["Student"] = relationship(back_populates="enrollments")

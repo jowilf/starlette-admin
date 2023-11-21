@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 
 def get_test_engine() -> Engine:
-    return create_engine(os.environ["SQLA_ENGINE"])
+    return create_engine(os.environ["SQLA_ENGINE"], echo=True)
 
 
 def get_async_test_engine() -> AsyncEngine:
