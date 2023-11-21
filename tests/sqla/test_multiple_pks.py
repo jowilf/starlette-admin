@@ -25,10 +25,10 @@ Base = declarative_base()
 class Record(Base):
     __tablename__ = "record"
 
-    id1 = Column(String, primary_key=True)
+    id1 = Column(String(20), primary_key=True)
     id2 = Column(Integer, primary_key=True)
     id3 = Column(Boolean, primary_key=True)
-    name = Column(String)
+    name = Column(String(50))
 
 
 @pytest.fixture
@@ -98,7 +98,7 @@ async def test_create(client: AsyncClient, session: Session):
     response = await client.post(
         "/admin/record/create",
         data={
-            "id1": "second,record",
+            "id1": "second.record",
             "id2": 2,
             "id3": "on",
             "name": "2nd record",
@@ -109,7 +109,7 @@ async def test_create(client: AsyncClient, session: Session):
 
     stmt = select(Record).where(
         and_(
-            Record.id1 == "second,record",
+            Record.id1 == "second.record",
             Record.id2 == 2,
             Record.id3 == true(),
         )
