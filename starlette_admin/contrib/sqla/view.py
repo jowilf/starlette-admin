@@ -349,9 +349,11 @@ class ModelView(BaseModelView):
         has_multiple_pks = isinstance(self._pk_column, tuple)
         try:
             return await self._exec_find_by_pks(request, pks)
-        except DBAPIError:
+        except DBAPIError:  # pragma: no cover
             if has_multiple_pks:
                 # Retry for multiple primary keys in case of an error related to the composite IN construct
+                # This section is intentionally not covered by the test suite because SQLite, MySQL, and
+                # PostgreSQL support composite IN construct.
                 return await self._exec_find_by_pks(request, pks, False)
             raise
 
@@ -396,6 +398,7 @@ class ModelView(BaseModelView):
             WHERE (id1, id2) IN ((val1, val2), (val3, val4))
 
             Note: The composite IN construct may not be supported by all database backends.
+                Read https://docs.sqlalchemy.org/en/latest/core/sqlelement.html#sqlalchemy.sql.expression.tuple_
 
         - When `use_composite_in` is False:
             WHERE (id1 == val1 AND id2 == val2) OR (id1 == val3 AND id2 == val4)
@@ -412,20 +415,22 @@ class ModelView(BaseModelView):
                 )
                 for decoded_pk in decoded_pks
             )
-        clauses = []
-        for decoded_pk in decoded_pks:
-            clauses.append(
-                and_(
-                    _pk_col == _coerce(_pk)
-                    if _coerce is not bool
-                    else _pk_col
-                    == (_pk == "True")  # to avoid bool("False") which is True
-                    for _pk_col, _coerce, _pk in zip(
-                        self._pk_column, self._pk_coerce, decoded_pk  # type: ignore[type-var,arg-type]
+        else:  # noqa: RET505, pragma: no cover
+            clauses = []
+            for decoded_pk in decoded_pks:
+                clauses.append(
+                    and_(
+                        _pk_col == _coerce(_pk)
+                        if _coerce is not bool
+                        else (
+                            _pk_col == (_pk == "True")
+                        )  # to avoid bool("False") which is True
+                        for _pk_col, _coerce, _pk in zip(
+                            self._pk_column, self._pk_coerce, decoded_pk  # type: ignore[type-var,arg-type]
+                        )
                     )
                 )
-            )
-        return or_(*clauses)
+            return or_(*clauses)
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
         """
