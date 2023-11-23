@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, Optional, Sequence
 
-from sqlalchemy import Column, String, and_, cast, false, not_, or_, true
+from sqlalchemy import String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
     InstrumentedAttribute,
     RelationshipProperty,
@@ -114,8 +114,8 @@ def normalize_list(
     return _new_list
 
 
-def extract_column_python_type(column: Column) -> type:
+def extract_column_python_type(attr: InstrumentedAttribute) -> type:
     try:
-        return column.type.python_type
+        return attr.type.python_type
     except NotImplementedError:
         return str
