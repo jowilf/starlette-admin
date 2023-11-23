@@ -2,6 +2,9 @@
 {% import "macros/views.html" as macros with context %}
 {% if (not _is_login_path ) and is_auth_enabled %}
     {% set current_user = (request | get_admin_user) %}
+    {% set config = (request | get_admin_config) %}
+    {% set logo_url = config.logo_url if config and config.logo_url else logo_url %}
+    {% set app_title = config.app_title if config and config.app_title else app_title %}
 {% endif %}
 {% block body %}
     <div class="page">
