@@ -1,11 +1,37 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.exceptions import NotSupportedValue
 from starlette_admin.fields import FileField as BaseFileField
 from starlette_admin.fields import ImageField as BaseImageField
+from starlette_admin.fields import StringField
+from starlette_admin.tools import iterencode
+
+
+@dataclass(init=False)
+class MultiplePKField(StringField):
+    """Virtual field to represent multiple primary keys as a single field.
+
+    This field joins the values of multiple primary key columns into a
+    single string, encoding/decoding each value.
+    """
+
+    def __init__(self, pk_attrs: Sequence[str]):
+        self.pk_attrs = pk_attrs
+        name = ",".join(pk_attrs)
+        super().__init__(
+            name,
+            exclude_from_list=True,
+            exclude_from_detail=True,
+            exclude_from_edit=True,
+            exclude_from_create=True,
+        )
+
+    async def parse_obj(self, request: Request, obj: Any) -> Any:
+        """Encode the primary keys values into a single string"""
+        return iterencode(str(getattr(obj, n)) for n in self.name.split(","))
 
 
 @dataclass
