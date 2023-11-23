@@ -79,7 +79,7 @@
           url: el.data("url"),
           data: {
             select2: true,
-            pks: String(data).split(","),
+            pks: data,
           },
           traditional: true,
           dataType: "json",

@@ -718,8 +718,8 @@ class BaseModelView(BaseView):
                     obj_serialized[field.name] = None
                 elif isinstance(field, HasOne):
                     if action == RequestAction.EDIT:
-                        obj_serialized[field.name] = getattr(
-                            value, not_none(foreign_model.pk_attr)
+                        obj_serialized[field.name] = await foreign_model.get_pk_value(
+                            request, value
                         )
                     else:
                         obj_serialized[field.name] = await foreign_model.serialize(
@@ -728,7 +728,8 @@ class BaseModelView(BaseView):
                 else:
                     if action == RequestAction.EDIT:
                         obj_serialized[field.name] = [
-                            getattr(v, not_none(foreign_model.pk_attr)) for v in value
+                            (await foreign_model.get_pk_value(request, obj))
+                            for obj in value
                         ]
                     else:
                         obj_serialized[field.name] = [
@@ -748,10 +749,10 @@ class BaseModelView(BaseView):
                 "result": await self.select2_result(obj, request),
             }
         obj_meta["repr"] = await self.repr(obj, request)
-        pk = getattr(obj, not_none(self.pk_attr))
+        pk = await self.get_pk_value(request, obj)
         obj_serialized[not_none(self.pk_attr)] = obj_serialized.get(
             not_none(self.pk_attr),
-            str(pk),  # Make sure the primary key is always available
+            pk,  # Make sure the primary key is always available
         )
         route_name = request.app.state.ROUTE_NAME
         obj_meta["detailUrl"] = str(
@@ -784,11 +785,9 @@ class BaseModelView(BaseView):
                     return f"{self.last_name} {self.first_name}"
             ```
         """
-        repr_method = getattr(
-            obj,
-            "__admin_repr__",
-            lambda request: str(getattr(obj, self.pk_attr)),  # type: ignore[arg-type]
-        )
+        repr_method = getattr(obj, "__admin_repr__", None)
+        if repr_method is None:
+            return str(await self.get_pk_value(request, obj))
         if inspect.iscoroutinefunction(repr_method):
             return await repr_method(request)
         return repr_method(request)
@@ -871,6 +870,9 @@ class BaseModelView(BaseView):
 
         """
         return await self.select2_result(obj, request)
+
+    async def get_pk_value(self, request: Request, obj: Any) -> Any:
+        return getattr(obj, not_none(self.pk_attr))
 
     def _length_menu(self) -> Any:
         return [

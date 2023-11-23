@@ -8,7 +8,7 @@
             class="form-control {{ 'field-has-one' if not field.many else 'field-has-many' }} {% if error %}is-invalid{% endif %}"
             data-url="{{ url_for(__name__ ~ ':api', identity=foreign_model.identity) }}"
             data-pk="{{ fpk }}"
-            {% if data %}data-initial="{{ (data if field.multiple else [data]) |join(',') }}" {% endif %}
+            {% if data %}data-initial="{{ (data if field.multiple else [data]) |tojson }}" {% endif %}
             {% if field.multiple %}multiple{% endif %}>
     </select>
     {% if field.help_text %}

@@ -79,7 +79,7 @@ async def test_create(client: AsyncClient, session: Session):
     )
     assert response.status_code == 303
     stmt = select(Todo).where(Todo.todo == "Do something nice for someone I care about")
-    todo = session.execute(stmt).scalar_one()
+    todo = session.exec(stmt).one()
     assert todo is not None
 
 
@@ -120,7 +120,7 @@ async def test_edit(client: AsyncClient, session: Session):
     )
     assert response.status_code == 303
     stmt = select(Todo).where(Todo.todo == "End magic things")
-    todo = session.execute(stmt).scalar_one()
+    todo = session.exec(stmt).one()
     assert todo is not None
     assert todo.id == 1
     assert todo.deadline == datetime(2022, 2, 1)
@@ -176,7 +176,7 @@ async def test_create_with_has_one_relationships(client: AsyncClient, session: S
     )
     assert response.status_code == 303
     stmt = select(Todo).where(Todo.todo == "Do something nice for someone I care about")
-    todo = session.execute(stmt).scalar_one()
+    todo = session.exec(stmt).one()
     assert todo.user.name == "John Doe"
 
 
@@ -203,7 +203,7 @@ async def test_edit_with_has_one_relationships(client: AsyncClient, session: Ses
     )
     assert response.status_code == 303
     stmt = select(Todo).where(Todo.todo == "Do some magic")
-    todo = session.execute(stmt).scalar_one()
+    todo = session.exec(stmt).one()
     assert todo.user.name == "Tommy Sharp"
 
 
@@ -221,7 +221,7 @@ async def test_create_with_has_many_relationships(
     )
     assert response.status_code == 303
     stmt = select(User).where(User.name == "John Doe")
-    user = session.execute(stmt).scalar_one()
+    user = session.exec(stmt).one()
     assert len(user.todos) == 2
     assert sorted([t.todo for t in user.todos]) == [
         "Do some magic",
