@@ -1,7 +1,7 @@
 import enum
 import json
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import pytest
 import pytest_asyncio
@@ -247,6 +247,62 @@ async def test_api_query5(client: AsyncClient):
     response = await client.get(f"/admin/api/product?where={where}&order_by=price asc")
     data = response.json()
     assert data["total"] == 4
+
+
+@pytest.mark.parametrize(
+    "resource,where,expected",
+    [
+        (
+            "user",
+            ('{"and":[{"products": {"is_null": {}}}]}'),
+            {"total": 1, "name": ["admin"]},
+        ),
+        (
+            "user",
+            ('{"and":[{"products": {"is_not_null": {}}}]}'),
+            {"total": 2, "name": ["Doe", "Terry"]},
+        ),
+        (
+            "user",
+            ('{"and":[{"products": {"is_not_null": {}}},{"name": {"eq": "Doe"}}]}'),
+            {"total": 1, "name": ["Doe"]},
+        ),
+        (
+            "user",
+            ('{"or":[{"products": {"is_not_null": {}}},{"name": {"eq": "admin"}}]}'),
+            {"total": 3, "name": ["Doe", "admin", "Terry"]},
+        ),
+        (
+            "product",
+            ('{"and":[{"user": {"is_not_null": {}}}]}'),
+            {"total": 2, "title": ["OPPOF19", "Huawei P30"]},
+        ),
+        (
+            "product",
+            ('{"and":[{"user": {"is_null": {}}}]}'),
+            {"total": 3, "title": ["IPhone 9", "Samsung Universe 9", "IPhone X"]},
+        ),
+        (
+            "product",
+            ('{"and":[{"user": {"is_not_null": {}}},{"title": {"eq": "OPPOF19"}}]}'),
+            {"total": 1, "title": ["OPPOF19"]},
+        ),
+        (
+            "product",
+            ('{"or":[{"user": {"is_not_null": {}}},{"title": {"eq": "OPPOF19"}}]}'),
+            {"total": 2, "title": ["OPPOF19", "Huawei P30"]},
+        ),
+    ],
+)
+async def test_api_query6(
+    client: AsyncClient, resource: str, where: Tuple[str], expected: Dict[str, Any]
+):
+    response = await client.get(f"/admin/api/{resource}?where={where}")
+    data = response.json()
+    result_key = list(expected.keys())[1]
+
+    assert data["total"] == expected["total"]
+    assert set(expected[result_key]) == {x[result_key] for x in data["items"]}
 
 
 async def test_detail(client: AsyncClient):
