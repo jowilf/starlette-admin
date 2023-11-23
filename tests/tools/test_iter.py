@@ -32,8 +32,14 @@ def test_iterdecode(input_value, expected_output):
     assert result == tuple(expected_output)
 
 
-def test_iterencode_iterdecode_inverse():
-    original_data = ["value.nested,1", "value,2", "value.3", "value4"]
-    encoded_data = iterencode(original_data)
+@pytest.mark.parametrize(
+    "data",
+    [
+        ["value1", "value2", "value3"],
+        ["value.nested,1", "value,2", "value.3", "value4"],
+    ],
+)
+def test_iterencode_iterdecode_inverse(data):
+    encoded_data = iterencode(data)
     decoded_data = iterdecode(encoded_data)
-    assert decoded_data == tuple(original_data)
+    assert decoded_data == tuple(data)
