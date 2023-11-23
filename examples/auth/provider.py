@@ -1,17 +1,18 @@
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette_admin.auth import AdminUser, AuthProvider
+from starlette_admin.auth import AdminConfig, AdminUser, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 
 users = {
     "admin": {
         "name": "Administrator",
         "avatar": "avatar.png",
+        "company_logo_url": "avatar.png",
         "roles": ["read", "create", "edit", "delete", "action_make_published"],
     },
     "johndoe": {
         "name": "John Doe",
-        "avatar": None,
+        "avatar": None,  # user avatar is optional
         "roles": ["read", "create", "edit", "action_make_published"],
     },
     "viewer": {"name": "Viewer", "avatar": None, "roles": ["read"]},
@@ -55,6 +56,19 @@ class MyAuthProvider(AuthProvider):
             return True
 
         return False
+
+    def get_admin_config(self, request: Request) -> AdminConfig:
+        user = request.state.user  # Retrieve current user
+        # Update app title according to current_user
+        custom_app_title = "Hello, " + user["name"] + "!"
+        # Update logo url according to current_user
+        custom_logo_url = None
+        if user.get("company_logo_url", None):
+            custom_logo_url = request.url_for("static", path=user["company_logo_url"])
+        return AdminConfig(
+            app_title=custom_app_title,
+            logo_url=custom_logo_url,
+        )
 
     def get_admin_user(self, request: Request) -> AdminUser:
         user = request.state.user  # Retrieve current user

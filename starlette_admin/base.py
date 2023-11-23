@@ -213,6 +213,9 @@ class BaseAdmin:
         templates.env.filters["get_admin_user"] = (
             self.auth_provider.get_admin_user if self.auth_provider else None
         )
+        templates.env.filters["get_admin_config"] = (
+            self.auth_provider.get_admin_config if self.auth_provider else None
+        )
         templates.env.filters["tojson"] = lambda data: json.dumps(data, default=str)
         templates.env.filters["file_icon"] = get_file_icon
         templates.env.filters[
@@ -424,7 +427,7 @@ class BaseAdmin:
                 config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        pk = getattr(obj, model.pk_attr)  # type: ignore
+        pk = await model.get_pk_value(request, obj)
         url = request.url_for(self.route_name + ":list", identity=model.identity)
         if form.get("_continue_editing", None) is not None:
             url = request.url_for(
@@ -469,7 +472,7 @@ class BaseAdmin:
                 config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        pk = getattr(obj, model.pk_attr)  # type: ignore
+        pk = await model.get_pk_value(request, obj)
         url = request.url_for(self.route_name + ":list", identity=model.identity)
         if form.get("_continue_editing", None) is not None:
             url = request.url_for(
