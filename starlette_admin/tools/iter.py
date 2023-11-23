@@ -2,7 +2,7 @@
 Functions to encode and decode sequences to/from strings using custom escaping rules.
 Useful for dealing with objects with multiple primary keys.
 
-Originally copied from: https://github.com/flask-admin/flask-admin/blob/master/flask_admin/tools.py
+Copied from: https://github.com/flask-admin/flask-admin/blob/master/flask_admin/tools.py
 
 """
 from typing import Iterable, Tuple
