@@ -11,7 +11,8 @@ implement the following methods in your custom Authentication Provider:
 
 * [is_authenticated][starlette_admin.auth.BaseAuthProvider.is_authenticated]: This method will be called to validate
   each incoming request.
-* [get_admin_user][starlette_admin.auth.BaseAuthProvider.get_admin_user]: Return connected user `name` and/or `profile`
+* [get_admin_user][starlette_admin.auth.BaseAuthProvider.get_admin_user]: Return connected user `name` and/or `avatar`
+* [get_admin_config][starlette_admin.auth.BaseAuthProvider.get_admin_config]: Return `logo_url` or `app_title` according to connected user or any other condition.
 * [login][starlette_admin.auth.AuthProvider.login]: will be called to validate user credentials.
 * [logout][starlette_admin.auth.AuthProvider.logout]: Will be called to logout (clear sessions, cookies, ...)
 
@@ -25,6 +26,7 @@ users = {
     "admin": {
         "name": "Admin",
         "avatar": "admin.png",
+        "company_logo_url": "admin.png",
         "roles": ["read", "create", "edit", "delete", "action_make_published"],
     },
     "johndoe": {
@@ -73,6 +75,19 @@ class UsernameAndPasswordProvider(AuthProvider):
             return True
 
         return False
+
+    def get_admin_config(self, request: Request) -> AdminConfig:
+        user = request.state.user  # Retrieve current user
+        # Update app title according to current_user
+        custom_app_title = "Hello, " + user["name"] + "!"
+        # Update logo url according to current_user
+        custom_logo_url = None
+        if user.get("company_logo_url", None):
+            custom_logo_url = request.url_for("static", path=user["company_logo_url"])
+        return AdminConfig(
+            app_title=custom_app_title,
+            logo_url=custom_logo_url,
+        )
 
     def get_admin_user(self, request: Request) -> AdminUser:
         user = request.state.user  # Retrieve current user
