@@ -23,7 +23,6 @@ def action(
         text: Action text
         confirmation: Confirmation text. If not provided, action will be executed
                       unconditionally.
-        action_btn_class: Action button variant (ex. `btn-success`, `btn-outline`, ...)
         submit_btn_text: Submit button text
         submit_btn_class: Submit button variant (ex. `btn-primary`, `btn-ghost-info`,
                 `btn-outline-danger`, ...)
@@ -123,7 +122,7 @@ def row_action(
         name: Unique row action name for the ModelView.
         text: Action text displayed to users.
         confirmation: Confirmation text; if provided, the action will require confirmation.
-        action_btn_class: Action button variant (ex. `btn-success`, `btn-outline`, ...)
+        action_btn_class: Action button variant for detail page (ex. `btn-success`, `btn-outline`, ...)
         submit_btn_class: Submit button variant (ex. `btn-primary`, `btn-ghost-info`, `btn-outline-danger`, ...)
         submit_btn_text: Text for the submit button.
         icon_class: Icon class (ex. `fa-lite fa-folder`, `fa-duotone fa-circle-right`, ...)
@@ -196,7 +195,7 @@ def link_row_action(
     Args:
         name: Unique row action name for the ModelView.
         text: Action text displayed to users.
-        action_btn_class: Action button variant (ex. `btn-success`, `btn-outline`, ...)
+        action_btn_class: Action button variant for detail page (ex. `btn-success`, `btn-outline`, ...)
         icon_class: Icon class (ex. `fa-lite fa-folder`, `fa-duotone fa-circle-right`, ...)
         exclude_from_list: Set to True to exclude the action from the list view.
         exclude_from_detail: Set to True to exclude the action from the detail view.

@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.12.2] - 2023-11-13
+
+* Fixed issue where "Empty" and "Not Empty" filters raised NotImplementedError on SQLAlchemy relationship attributes
+  by [@whchi](https://github.com/whchi) in [#394](https://github.com/jowilf/starlette-admin/pull/394)
+
 ## [0.12.1] - 2023-11-07
 
 * Fixed a regression caused by [#361](https://github.com/jowilf/starlette-admin/pull/361) where SQLAlchemy models with
