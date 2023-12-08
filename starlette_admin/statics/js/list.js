@@ -435,6 +435,10 @@ $(function () {
       onSelectChange();
     });
 
+  table.on("stateSaveParams.dt", function (e, settings, data) {
+    data.search.search = "";
+  });
+
   actionManager.initNoConfirmationActions();
   actionManager.initActionModal();
 
