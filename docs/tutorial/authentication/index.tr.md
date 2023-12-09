@@ -8,6 +8,7 @@ Yönetici arayüzünüzü istenmeyen kullanıcılardan korumak için, [AuthProvi
 
 * [is_authenticated][starlette_admin.auth.BaseAuthProvider.is_authenticated]: Bu metod, gelen her isteği doğrulamak için çağrılacaktır.
 * [get_admin_user][starlette_admin.auth.BaseAuthProvider.get_admin_user]: Bağlı olan kullanıcı `adı` ve/veya `profil` bilgisini döndürür.
+* [get_admin_config][starlette_admin.auth.BaseAuthProvider.get_admin_config]: Bağlı olan kullanıcıya göre veya başka koşullara göre `logo_url` veya `app_title` bilgisini döndürür.
 * [login][starlette_admin.auth.AuthProvider.login]: kullanıcı kimlik bilgilerini doğrulamak için çağrılacaktır.
 * [logout][starlette_admin.auth.AuthProvider.logout]: çıkış yapmak için çağrılacaktır (oturumları, çerezleri temizleme, ...)
 
@@ -21,6 +22,7 @@ users = {
     "admin": {
         "name": "Admin",
         "avatar": "admin.png",
+        "company_logo_url": "admin.png",
         "roles": ["read", "create", "edit", "delete", "action_make_published"],
     },
     "johndoe": {
@@ -69,6 +71,19 @@ class UsernameAndPasswordProvider(AuthProvider):
             return True
 
         return False
+
+    def get_admin_config(self, request: Request) -> AdminConfig:
+        user = request.state.user  # Geçerli kullanıcı
+        # Bağlı kullanıcıya göre uygulama başlığını güncelleyin
+        custom_app_title = "Hello, " + user["name"] + "!"
+        # Bağlı kullanıcıya göre logo url'ini güncelleyin
+        custom_logo_url = None
+        if user.get("company_logo_url", None):
+            custom_logo_url = request.url_for("static", path=user["company_logo_url"])
+        return AdminConfig(
+            app_title=custom_app_title,
+            logo_url=custom_logo_url,
+        )
 
     def get_admin_user(self, request: Request) -> AdminUser:
         user = request.state.user  # Geçerli kullanıcı
