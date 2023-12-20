@@ -201,4 +201,3 @@ msgstr "Добавить элемент"
 #: starlette_admin/templates/modals/loading.html:7
 msgid "Loading"
 msgstr "Загрузка"
-
