@@ -33,7 +33,7 @@
                     <input type="text"
                            name="username"
                            class="form-control {% if form_errors and form_errors.has('username') %}is-invalid{% endif %}"
-                           placeholder="{{ _('Enter username') }}"
+                           placeholder="{{ _('Username') }}"
                            autocomplete="off"/>
                     {% if form_errors and form_errors.has('username') %}
                         <div class="invalid-feedback">{{ form_errors.msg('username') }}</div>
