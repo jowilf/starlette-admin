@@ -80,7 +80,7 @@ def resolve_proxy(model: t.Type[Model], proxy_name: str) -> t.Optional[FieldProx
     for v in _list:
         if m is not None:
             m = getattr(m, v, None)  # type: ignore
-    return m  # type: ignore
+    return m  # type: ignore[return-value]
 
 
 def _check_value(v: t.Any, proxy: t.Optional[FieldProxy]) -> t.Any:
