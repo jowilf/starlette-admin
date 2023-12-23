@@ -17,12 +17,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+* Update AuthMiddleware for Compatibility with Starlette >= 0.33 by [@jowilf](https://github.com/jowilf)
+  in [#427](https://github.com/jowilf/starlette-admin/pull/427)
 * Fixes actions docstrings
   by [@mrharpo](https://github.com/mrharpo)
   in [#401](https://github.com/jowilf/starlette-admin/pull/401)
-
-* Update AuthMiddleware for Compatibility with Starlette >= 0.33 by [@jowilf](https://github.com/jowilf)
-  in [#427](https://github.com/jowilf/starlette-admin/pull/427)
 
 ## [0.12.2] - 2023-11-13
 
