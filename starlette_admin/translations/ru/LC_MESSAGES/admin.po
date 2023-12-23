@@ -169,7 +169,6 @@ msgid "Password"
 msgstr "Пароль"
 
 #: starlette_admin/templates/login.html:47
-#, fuzzy
 msgid "Enter password"
 msgstr "Введите пароль" # google translate
 

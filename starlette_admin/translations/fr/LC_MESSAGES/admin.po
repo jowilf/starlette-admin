@@ -167,7 +167,6 @@ msgid "Password"
 msgstr "Mot de passe"
 
 #: starlette_admin/templates/login.html:47
-#, fuzzy
 msgid "Enter password"
 msgstr "Entrez le mot de passe"
 

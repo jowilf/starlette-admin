@@ -158,7 +158,6 @@ msgid "Username"
 msgstr "Kullanıcı adı"
 
 #: starlette_admin/templates/login.html:36
-#, fuzzy
 msgid "Enter username"
 msgstr "Kullanıcı adı"
 
@@ -167,7 +166,6 @@ msgid "Password"
 msgstr "Şifre"
 
 #: starlette_admin/templates/login.html:47
-#, fuzzy
 msgid "Enter password"
 msgstr "Şifre"
 
