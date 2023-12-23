@@ -113,14 +113,14 @@ class ModelView(BaseModelView):
         q = await self._build_query(request, where)
         if isinstance(session, AIOSession):
             return await session.count(self.model, q)
-        return await anyio.to_thread.run_sync(session.count, self.model, q)
+        return await anyio.to_thread.run_sync(session.count, self.model, q)  # type: ignore[arg-type]
 
     async def find_by_pk(self, request: Request, pk: Any) -> Any:
         session: Union[AIOSession, SyncSession] = request.state.session
         if isinstance(session, AIOSession):
             return await session.find_one(self.model, self.model.id == ObjectId(pk))
         return await anyio.to_thread.run_sync(
-            session.find_one, self.model, self.model.id == ObjectId(pk)
+            session.find_one, self.model, self.model.id == ObjectId(pk)  # type: ignore[arg-type]
         )
 
     async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
@@ -139,7 +139,7 @@ class ModelView(BaseModelView):
             if isinstance(session, AIOSession):
                 await session.save(obj)
             else:
-                await anyio.to_thread.run_sync(session.save, obj)
+                await anyio.to_thread.run_sync(session.save, obj)  # type: ignore[arg-type]
             await self.after_create(request, obj)
             return obj
         except Exception as e:
@@ -155,7 +155,7 @@ class ModelView(BaseModelView):
             if isinstance(session, AIOSession):
                 obj = await session.save(obj)
             else:
-                obj = await anyio.to_thread.run_sync(session.save, obj)
+                obj = await anyio.to_thread.run_sync(session.save, obj)  # type: ignore[arg-type]
             await self.after_edit(request, obj)
             return obj
         except Exception as e:
