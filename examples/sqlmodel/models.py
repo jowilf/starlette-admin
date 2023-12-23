@@ -20,7 +20,7 @@ class User(SQLModel, table=True):
     id: Optional[int] = Field(primary_key=True)
     full_name: str = Field(min_length=3, index=True)
     sex: Optional[str] = Field(
-        sa_column=Column(Enum(Gender)), default=Gender.UNKNOWN, index=True
+        sa_column=Column(Enum(Gender), index=True), default=Gender.UNKNOWN
     )
 
     posts: List["Post"] = Relationship(back_populates="publisher")

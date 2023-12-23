@@ -22,7 +22,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.mysql import INTEGER, YEAR
 from sqlalchemy.dialects.postgresql import BIT, INET, MACADDR, UUID
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import column_property, declarative_base, relationship
 from starlette_admin import (
     BooleanField,
     DateField,
@@ -102,6 +102,7 @@ class Other(Base):
     year = Column(YEAR)
     macaddr = Column(MACADDR)
     inet = Column(INET)
+    cp = column_property(macaddr + ";" + inet)
 
 
 class UserView(ModelView):
@@ -197,6 +198,7 @@ def test_other_fields_conversion():
         IntegerField("year", min=1901, max=2155),
         StringField("macaddr"),
         StringField("inet"),
+        StringField("cp", exclude_from_edit=True, exclude_from_create=True),
     ]
 
 

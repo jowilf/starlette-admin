@@ -90,7 +90,6 @@ async def test_find_by_pks(client: AsyncClient, session: Session):
     )
     assert response.status_code == 200
     data = response.json()
-    print(session.execute(select(Record)).all())
     assert {"1st record", "3rd record"} == {x["name"] for x in data["items"]}
 
 

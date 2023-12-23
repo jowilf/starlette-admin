@@ -7,6 +7,24 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+* Add support for SQLAlchemy `column_property` by [@jowilf](https://github.com/jowilf)
+  in [#402](https://github.com/jowilf/starlette-admin/pull/402)
+* Add support for SQLAlchemy Models with Multiple Primary Keys by [@jowilf](https://github.com/jowilf)
+  in [#402](https://github.com/jowilf/starlette-admin/pull/402)
+* Adds `AdminConfig` to override `app_title` and `logo_url` in the templates
+  by [@hasansezertasan](https://github.com/hasansezertasan)
+  in [#374](https://github.com/jowilf/starlette-admin/pull/374)
+
+### Fixed
+
+* Update AuthMiddleware for Compatibility with Starlette >= 0.33 by [@jowilf](https://github.com/jowilf)
+  in [#427](https://github.com/jowilf/starlette-admin/pull/427)
+* Fixes actions docstrings
+  by [@mrharpo](https://github.com/mrharpo)
+  in [#401](https://github.com/jowilf/starlette-admin/pull/401)
+
 ## [0.12.2] - 2023-11-13
 
 * Fixed issue where "Empty" and "Not Empty" filters raised NotImplementedError on SQLAlchemy relationship attributes
