@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional, Sequence
 
+from packaging import version
+from starlette import __version__ as starlette_version
 from starlette.middleware import Middleware
 from starlette.routing import Route
 from starlette.status import (
@@ -305,7 +307,15 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        if request.scope["path"] not in self.allow_paths and not (
+        request_path = request.scope["path"]
+        if version.parse(starlette_version) >= version.parse("0.33"):
+            """In Starlette version 0.33, there's a change in the implementation
+            of request.scope["path"], which impacts this middleware. Discussions about
+            this issue can be found at https://github.com/encode/starlette/discussions/2361.
+            The following line provides a temporary fix to address this change.
+            """
+            request_path = request_path[len(request.scope["route_root_path"]) :]
+        if request_path not in self.allow_paths and not (
             await self.provider.is_authenticated(request)
         ):
             return RedirectResponse(
