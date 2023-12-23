@@ -160,9 +160,8 @@ msgid "Username"
 msgstr "Имя пользователя"
 
 #: starlette_admin/templates/login.html:36
-#, fuzzy
 msgid "Enter username"
-msgstr "Имя пользователя"
+msgstr "Введите имя пользователя"  # Google Translate
 
 #: starlette_admin/templates/login.html:43
 msgid "Password"
@@ -170,7 +169,7 @@ msgstr "Пароль"
 
 #: starlette_admin/templates/login.html:47
 msgid "Enter password"
-msgstr "Введите пароль" # google translate
+msgstr "Введите пароль" # Google Translate
 
 #: starlette_admin/templates/login.html:56
 msgid "Remember me"
