@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.13.0-rc1] - 2023-12-23
+
 ### Added
 
 * Add support for SQLAlchemy `column_property` by [@jowilf](https://github.com/jowilf)
