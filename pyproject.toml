@@ -200,6 +200,7 @@ select = [
     "RET", # flake8-return,
     "RUF", # Ruff-specific rules
     "SIM", # flake8-simplify
+    "T20", # flake8-print
     "UP", # pyupgrade
     "W", # pycodestyle warnings
 ]
