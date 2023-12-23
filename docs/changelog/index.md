@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+* Update AuthMiddleware for Compatibility with Starlette >= 0.33 by [@jowilf](https://github.com/jowilf)
+  in [#427](https://github.com/jowilf/starlette-admin/pull/427)
+
 ## [0.12.2] - 2023-11-13
 
 * Fixed issue where "Empty" and "Not Empty" filters raised NotImplementedError on SQLAlchemy relationship attributes
