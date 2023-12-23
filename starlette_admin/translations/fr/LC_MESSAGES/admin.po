@@ -158,9 +158,8 @@ msgid "Username"
 msgstr "Nom d'utilisateur"
 
 #: starlette_admin/templates/login.html:36
-#, fuzzy
 msgid "Enter username"
-msgstr "Nom d'utilisateur"
+msgstr "Entrez le nom d'utilisateur"
 
 #: starlette_admin/templates/login.html:43
 msgid "Password"
