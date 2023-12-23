@@ -169,7 +169,7 @@ msgstr "Mot de passe"
 #: starlette_admin/templates/login.html:47
 #, fuzzy
 msgid "Enter password"
-msgstr "Mot de passe"
+msgstr "Entrez le mot de passe"
 
 #: starlette_admin/templates/login.html:56
 msgid "Remember me"
