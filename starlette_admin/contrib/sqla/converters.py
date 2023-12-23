@@ -343,7 +343,7 @@ class ModelConverter(BaseSQLAModelConverter):
             )
         return EnumField(
             **self._field_common(*args, **kwargs),
-            choices=choices,  # type: ignore
+            choices=choices,
             coerce=_type.python_type,
         )
 
