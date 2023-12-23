@@ -318,6 +318,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if request_path not in self.allow_paths and not (
             await self.provider.is_authenticated(request)
         ):
+            # TODO: Improve the implementation in the future to eliminate the need for request.scope['path']
             return RedirectResponse(
                 "{url}?{query_params}".format(
                     url=request.url_for(request.app.state.ROUTE_NAME + ":login"),
