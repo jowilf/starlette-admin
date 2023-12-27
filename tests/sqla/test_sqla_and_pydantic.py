@@ -132,9 +132,13 @@ async def test_create_validation_error(client: AsyncClient, session: Session):
     assert (
         '<div class="invalid-feedback">ensure this value has at least 10'
         " characters</div>" in response.text
+        or '<div class="invalid-feedback">String should have at least 10'  # pydantic v2
+        " characters</div>" in response.text
     )
     assert (
         '<div class="invalid-feedback">none is not an allowed value</div>'
+        in response.text
+        or '<div class="invalid-feedback">Input should be a valid datetime</div>'  # pydantic v2
         in response.text
     )
 
@@ -178,9 +182,13 @@ async def test_edit_validation_error(client: AsyncClient, session: Session):
     assert (
         '<div class="invalid-feedback">ensure this value has at least 10'
         " characters</div>" in response.text
+        or '<div class="invalid-feedback">String should have at least 10'  # pydantic v2
+        " characters</div>" in response.text
     )
     assert (
         '<div class="invalid-feedback">none is not an allowed value</div>'
+        in response.text
+        or '<div class="invalid-feedback">Input should be a valid datetime</div>'  # pydantic v2
         in response.text
     )
 
