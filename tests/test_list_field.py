@@ -1,6 +1,8 @@
 from typing import List
 
 import pytest
+from packaging.version import parse as parse_version
+from pydantic import VERSION as PYDANTIC_VERSION
 from pydantic import BaseModel, Field, HttpUrl
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
@@ -14,6 +16,12 @@ from starlette_admin import (
 )
 
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
+
+if parse_version(PYDANTIC_VERSION) >= parse_version("2"):
+    pytest.skip(
+        "This test case is incompatible with pydantic v2",
+        allow_module_level=True,
+    )
 
 
 class ExtraItem(BaseModel):
