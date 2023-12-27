@@ -33,7 +33,7 @@
                     <input type="text"
                            name="username"
                            class="form-control {% if form_errors and form_errors.has('username') %}is-invalid{% endif %}"
-                           placeholder="Enter username"
+                           placeholder="{{ _('Username') }}"
                            autocomplete="off"/>
                     {% if form_errors and form_errors.has('username') %}
                         <div class="invalid-feedback">{{ form_errors.msg('username') }}</div>
@@ -44,7 +44,7 @@
                     <input type="password"
                            name="password"
                            class="form-control {% if form_errors and form_errors.has('password') %}is-invalid{% endif %}"
-                           placeholder="Password"
+                           placeholder="{{ _('Password') }}"
                            autocomplete="off"/>
                     {% if form_errors and form_errors.has('password') %}
                         <div class="invalid-feedback">{{ form_errors.msg('password') }}</div>
