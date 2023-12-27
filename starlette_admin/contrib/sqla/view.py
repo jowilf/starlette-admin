@@ -480,6 +480,7 @@ class ModelView(BaseModelView):
         """
         Inherit this method to validate your data before creating.
         """
+
     async def validate_edit(self, request: Request, data: Dict[str, Any]) -> None:
         """
         Inherit this method to validate your data before editing.
