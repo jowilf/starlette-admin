@@ -10,6 +10,7 @@ from sqlalchemy.orm import (
     Mapper,
     RelationshipProperty,
 )
+from sqlalchemy.sql.elements import ColumnElement, Label
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
 from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.converters import BaseModelConverter, converts
@@ -121,8 +122,14 @@ class BaseSQLAModelConverter(BaseModelConverter):
 class ModelConverter(BaseSQLAModelConverter):
     @classmethod
     def _field_common(
-        cls, *, name: str, column: Column, **kwargs: Any
+        cls, *, name: str, column: ColumnElement, **kwargs: Any
     ) -> Dict[str, Any]:
+        if isinstance(column, Label):
+            return {
+                "name": column.key,
+                "exclude_from_edit": True,
+                "exclude_from_create": True,
+            }
         return {
             "name": name,
             "help_text": column.comment,
@@ -336,7 +343,7 @@ class ModelConverter(BaseSQLAModelConverter):
             )
         return EnumField(
             **self._field_common(*args, **kwargs),
-            choices=choices,  # type: ignore
+            choices=choices,
             coerce=_type.python_type,
         )
 
