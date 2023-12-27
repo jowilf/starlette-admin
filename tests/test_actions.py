@@ -230,7 +230,6 @@ def test_row_actions_are_available_in_api_meta_data(
 ):
     response = client.get("/admin/api/article")
     assert response.status_code == 200
-    print(response.json())
     assert (
         response.json()["items"][0]["_meta"]["rowActions"].count(
             f'data-name="{row_action}"'
