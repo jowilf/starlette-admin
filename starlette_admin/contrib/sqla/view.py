@@ -476,10 +476,19 @@ class ModelView(BaseModelView):
 
         """
 
+    async def validate_create(self, request: Request, data: Dict[str, Any]) -> None:
+        """
+        Inherit this method to validate your data before creating.
+        """
+    async def validate_edit(self, request: Request, data: Dict[str, Any]) -> None:
+        """
+        Inherit this method to validate your data before editing.
+        """
+
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
         try:
             data = await self._arrange_data(request, data)
-            await self.validate(request, data)
+            await self.validate_create(request, data)
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self._populate_obj(request, self.model(), data)
             session.add(obj)
@@ -498,7 +507,7 @@ class ModelView(BaseModelView):
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
             data = await self._arrange_data(request, data, True)
-            await self.validate(request, data)
+            await self.validate_edit(request, data)
             session: Union[Session, AsyncSession] = request.state.session
             obj = await self.find_by_pk(request, pk)
             await self._populate_obj(request, obj, data, True)
