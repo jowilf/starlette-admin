@@ -273,7 +273,7 @@ class TinyMCEEditorField(TextAreaField):
         statusbar: Show/hide the statusbar in the editor
         toolbar: Toolbar options to show in the editor
         content_style: CSS style to apply to the editor content
-        other_options: Other options to pass to TinyMCE
+        data_options: Other options to pass to TinyMCE
     """
 
     class_: str = "field-tinymce-editor form-control"
@@ -286,21 +286,8 @@ class TinyMCEEditorField(TextAreaField):
     statusbar: bool = False
     toolbar: str = "undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat"
     content_style: str = "body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }"
-    options: Dict[str, Any] = dc_field(default_factory=dict)
+    data_options: Dict[str, Any] = dc_field(default_factory=dict)
     """For more options, see the [TinyMCE | Configuration](https://www.tiny.cloud/docs-3x/reference/Configuration3x/)"""
-
-    def __post_init__(self) -> None:
-        if self.options.get("height", None) is None:
-            self.options["height"] = self.height
-        if self.options.get("menubar", None) is None:
-            self.options["menubar"] = self.menubar
-        if self.options.get("statusbar", None) is None:
-            self.options["statusbar"] = self.statusbar
-        if self.options.get("toolbar", None) is None:
-            self.options["toolbar"] = self.toolbar
-        if self.options.get("content_style", None) is None:
-            self.options["content_style"] = self.content_style
-        super().__post_init__()
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
@@ -311,7 +298,17 @@ class TinyMCEEditorField(TextAreaField):
         return []
 
     def input_params(self) -> str:
-        return html_params({"options": json.dumps(self.options)})
+        if self.data_options.get("height", None) is None:
+            self.data_options["height"] = self.height
+        if self.data_options.get("menubar", None) is None:
+            self.data_options["menubar"] = self.menubar
+        if self.data_options.get("statusbar", None) is None:
+            self.data_options["statusbar"] = self.statusbar
+        if self.data_options.get("toolbar", None) is None:
+            self.data_options["toolbar"] = self.toolbar
+        if self.data_options.get("content_style", None) is None:
+            self.data_options["content_style"] = self.content_style
+        return html_params({"data_options": json.dumps(self.data_options)})
 
 
 @dataclass
