@@ -108,6 +108,7 @@ class BaseField:
         However, this function can be overridden to provide custom logic for computing the value of a field.
 
         ??? Example
+
             ```py
             # Suppose we have a `User` model with `id`, `first_name`, and `last_name` fields.
             # We define a custom field called `MyCustomField` to compute the full name of the user:
@@ -145,6 +146,7 @@ class BaseField:
         """Formats a value for sending to the frontend based on the current request action.
 
         !!! important
+
             Make sure this value is JSON Serializable for RequestAction.LIST and RequestAction.API
 
         Args:
@@ -530,7 +532,7 @@ class EnumField(StringField):
     It takes a python `enum.Enum` class or a list of *(value, label)* pairs.
     It can also be a list of only values, in which case the value is used as the label.
     Example:
-        ```Python
+        ```python
         class Status(str, enum.Enum):
             NEW = "new"
             ONGOING = "ongoing"
@@ -543,7 +545,7 @@ class EnumField(StringField):
             fields = [EnumField("status", enum=Status)]
         ```
 
-        ```Python
+        ```python
         class MyModel:
             language: str
 
@@ -1019,6 +1021,7 @@ class RelationField(BaseField):
     between your models.
 
     !!! important
+
         It is important to add both models in your admin interface.
 
     Parameters:
@@ -1026,6 +1029,7 @@ class RelationField(BaseField):
 
 
     ??? Example
+
         ```py
         class Author:
             id: Optional[int]
@@ -1115,7 +1119,8 @@ class HasMany(RelationField):
 class CollectionField(BaseField):
     """
     This field represents a collection of others fields. Can be used to represent embedded mongodb document.
-    !!!usage
+    !!! usage
+
     ```python
      CollectionField("config", fields=[StringField("key"), IntegerField("value", help_text="multiple of 5")]),
     ```
@@ -1195,7 +1200,8 @@ class ListField(BaseField):
     Encapsulate an ordered list of multiple instances of the same field type,
     keeping data as a list.
 
-    !!!usage
+    !!! usage
+
         ```python
         class MyModel:
             id: Optional[int]

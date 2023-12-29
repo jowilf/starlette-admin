@@ -139,7 +139,6 @@ class HomeView(CustomView):
 admin.add_view(HomeView(label="Home", icon="fa fa-home", path="/home"))
 ```
 
-
 ### Link
 
 Use [Link][starlette_admin.views.Link] to add arbitrary hyperlinks to the menu

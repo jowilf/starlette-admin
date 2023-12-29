@@ -19,7 +19,6 @@ admin = Admin(
 )
 ```
 
-
 ## Parameters
 
 * `title`: Admin title.
