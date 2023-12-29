@@ -222,7 +222,7 @@ class ModelView(BaseModelView):
                         return super().get_count_query().where(Post.published == true())
             ```
         """
-        return select(func.count("*")).select_from(self.model)
+        return select(func.count()).select_from(self.model)
 
     def get_search_query(self, request: Request, term: str) -> Any:
         """
