@@ -29,9 +29,10 @@ class BookView(ModelView):
 
 admin.add_view(BookView(Book))
 ```
-!!! note
-    You can also use `multiple=True` to save multiple files.
 
+!!! note
+
+    You can also use `multiple=True` to save multiple files.
 
 ## MongoEngine
 
