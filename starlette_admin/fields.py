@@ -279,7 +279,7 @@ class TinyMCEEditorField(TextAreaField):
 
 
 @dataclass
-class CKEditor5Field(BaseField):
+class CKEditor5Field(TextAreaField):
     """A field that provides a WYSIWYG editor for long text content using the
      [CKEditor5](https://ckeditor.com/) library.
 
@@ -288,8 +288,7 @@ class CKEditor5Field(BaseField):
     """
 
     class_: str = "field-ckeditor5 form-control"
-    display_template: str = "displays/ckeditor5.html"
-    form_template: str = "forms/ckeditor5.html"
+    display_template: str = "displays/tinymce.html"
     version: str = "40.0.0"
     distribution: str = "classic"
 
