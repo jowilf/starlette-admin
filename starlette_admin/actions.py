@@ -34,6 +34,7 @@ def action(
 
 
     !!! usage
+
         ```python
         class ArticleView(ModelView):
             actions = ['make_published', 'redirect']
@@ -135,6 +136,7 @@ def row_action(
 
 
     !!! usage
+
         ```python
         @row_action(
             name="make_published",
@@ -189,6 +191,7 @@ def link_row_action(
     Decorator to add custom row link actions to a ModelView for URL redirection.
 
     !!! note
+
         This decorator is designed to create row actions that redirect to a URL, making it ideal for cases where a
         row action should simply navigate users to a website or internal page.
 
@@ -202,6 +205,7 @@ def link_row_action(
 
 
     !!! usage
+
         ```python
         @link_row_action(
             name="go_to_example",
