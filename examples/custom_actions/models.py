@@ -70,13 +70,6 @@ class ArticleView(ModelView):
         text="Increase views",
         confirmation="Are you sure you want to increase the number of views of selected articles ?",
         submit_btn_text="Submit",
-        # form="""
-        # <form>
-        #     <div class="mt-3">
-        #         <input type="number" class="form-control" name="value" placeholder="Enter value" min="1" max="1000">
-        #     </div>
-        # </form>
-        # """,
         fields=[
             IntegerField(
                 name="value",
