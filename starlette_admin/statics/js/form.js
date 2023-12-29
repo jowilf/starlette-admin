@@ -179,8 +179,7 @@
     // TinyMCEEditorField integration
 
     $(".field-tinymce-editor", element).each(function(){
-      let options = $(this).attr("options");
-      options = JSON.parse(options);
+      let options = $(this).data("options");
       if (localStorage.getItem("tablerTheme") === "dark") {
         options.skin = "oxide-dark";
         options.content_css = "dark";

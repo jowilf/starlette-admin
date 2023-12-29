@@ -308,7 +308,7 @@ class TinyMCEEditorField(TextAreaField):
             self.data_options["toolbar"] = self.toolbar
         if self.data_options.get("content_style", None) is None:
             self.data_options["content_style"] = self.content_style
-        return html_params({"data_options": json.dumps(self.data_options)})
+        return html_params({"data-options": json.dumps(self.data_options)})
 
 
 @dataclass
