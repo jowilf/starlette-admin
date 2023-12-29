@@ -202,11 +202,10 @@
 
     // SimpleMDEField integration
     $(".field-simplemde", element).each(function(){
-      let dataOptions = $(this).attr("data-options");
-      dataOptions = JSON.parse(dataOptions);
+      let options = $(this).data("options");
       new SimpleMDE({
           element: this,
-          ...dataOptions
+          ...options
       });
     });
     // end SimpleMDEField integration
