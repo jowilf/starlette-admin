@@ -236,7 +236,9 @@ class ReportView(CustomView):
     def is_accessible(self, request: Request) -> bool:
         return "admin" in request.state.user["roles"]
 ```
+
 !!! important
+
     When view is inaccessible, it does not appear in menu structure
 
 ### For [ModelView][starlette_admin.views.BaseModelView]

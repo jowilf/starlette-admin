@@ -222,7 +222,7 @@ class ModelView(BaseModelView):
                         return super().get_count_query().where(Post.published == true())
             ```
         """
-        return select(func.count("*")).select_from(self.model)
+        return select(func.count()).select_from(self.model)
 
     def get_search_query(self, request: Request, term: str) -> Any:
         """
@@ -271,7 +271,7 @@ class ModelView(BaseModelView):
             stmt = stmt.where(where)  # type: ignore
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalar_one()
-        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalar_one()
+        return (await anyio.to_thread.run_sync(session.execute, stmt)).scalar_one()  # type: ignore[arg-type]
 
     async def find_all(
         self,
@@ -300,7 +300,7 @@ class ModelView(BaseModelView):
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
         return (
-            (await anyio.to_thread.run_sync(session.execute, stmt))
+            (await anyio.to_thread.run_sync(session.execute, stmt))  # type: ignore[arg-type]
             .scalars()
             .unique()
             .all()
@@ -339,7 +339,7 @@ class ModelView(BaseModelView):
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().one_or_none()
         return (
-            (await anyio.to_thread.run_sync(session.execute, stmt))
+            (await anyio.to_thread.run_sync(session.execute, stmt))  # type: ignore[arg-type]
             .scalars()
             .unique()
             .one_or_none()
@@ -375,7 +375,7 @@ class ModelView(BaseModelView):
         if isinstance(session, AsyncSession):
             return (await session.execute(stmt)).scalars().unique().all()
         return (
-            (await anyio.to_thread.run_sync(session.execute, stmt))
+            (await anyio.to_thread.run_sync(session.execute, stmt))  # type: ignore[arg-type]
             .scalars()
             .unique()
             .all()
@@ -488,8 +488,8 @@ class ModelView(BaseModelView):
                 await session.commit()
                 await session.refresh(obj)
             else:
-                await anyio.to_thread.run_sync(session.commit)
-                await anyio.to_thread.run_sync(session.refresh, obj)
+                await anyio.to_thread.run_sync(session.commit)  # type: ignore[arg-type]
+                await anyio.to_thread.run_sync(session.refresh, obj)  # type: ignore[arg-type]
             await self.after_create(request, obj)
             return obj
         except Exception as e:
@@ -508,8 +508,8 @@ class ModelView(BaseModelView):
                 await session.commit()
                 await session.refresh(obj)
             else:
-                await anyio.to_thread.run_sync(session.commit)
-                await anyio.to_thread.run_sync(session.refresh, obj)
+                await anyio.to_thread.run_sync(session.commit)  # type: ignore[arg-type]
+                await anyio.to_thread.run_sync(session.refresh, obj)  # type: ignore[arg-type]
             await self.after_edit(request, obj)
             return obj
         except Exception as e:
@@ -573,8 +573,8 @@ class ModelView(BaseModelView):
         else:
             for obj in objs:
                 await self.before_delete(request, obj)
-                await anyio.to_thread.run_sync(session.delete, obj)
-            await anyio.to_thread.run_sync(session.commit)
+                await anyio.to_thread.run_sync(session.delete, obj)  # type: ignore[arg-type]
+            await anyio.to_thread.run_sync(session.commit)  # type: ignore[arg-type]
         for obj in objs:
             await self.after_delete(request, obj)
         return len(objs)

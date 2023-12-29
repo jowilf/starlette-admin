@@ -9,7 +9,7 @@ Here are some of the most commonly used options:
 
 You can use the `fields` property of the ModelView class to customize which fields are included in the admin view.
 
-```Python hl_lines="21"
+```python hl_lines="21"
 from sqlalchemy import JSON, Column, Integer, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from starlette.applications import Starlette
@@ -50,12 +50,13 @@ view. These options include:
 * `exclude_fields_from_create`: List of fields to exclude from the creation page.
 * `exclude_fields_from_edit`: List of fields to exclude from the editing page.\
 
-```Python
+```python
 class PostView(ModelView):
     exclude_fields_from_list = [Post.content, Post.tags]
 ```
 
 !!! note
+
     For more advanced use cases, you can override
     the [ModelView.get_fields_list()][starlette_admin.views.BaseModelView.get_fields_list] function.
 
@@ -68,7 +69,8 @@ Several options are available to specify which fields can be sorted or searched.
 * `fields_default_sort` for initial order (sort) to apply to the table
 
 !!! Usage
-    ```Python
+
+    ```python
     class PostView(ModelView):
         sortable_fields = [Post.id, "title"]
         searchable_fields = [Post.id, Post.title, "tags"]
@@ -86,7 +88,8 @@ You can specify the export options for each ModelView using the following attrib
   exports are `['csv', 'excel', 'pdf', 'print']`. By default, only `pdf` is disabled.
 
 !!! Example
-    ```Python
+
+    ```python
     from starlette_admin import ExportType
 
     class PostView(ModelView):
@@ -103,9 +106,9 @@ The pagination options in the list page can be configured. The available options
 * `page_size_options`: Pagination choices displayed in List page.  Default value is set to `[10, 25, 50, 100]`.
      Use `-1`to display All
 
-
 !!! Example
-    ```Python
+
+    ```python
     class PostView(ModelView):
         page_size = 5
         page_size_options = [5, 10, 25, 50, -1]
@@ -120,7 +123,8 @@ The template files are built using Jinja2 and can be completely overridden in th
 * `edit_template`: Edit view template. Default is `edit.html`.
 
 !!! Example
-    ```Python
+
+    ```python
     class PostView(ModelView):
         detail_template = "post_detail.html"
     ```
@@ -136,6 +140,7 @@ in your `ModelView` by overridden following options:
 * `save_state`: Enable/Disable [state saving](https://datatables.net/examples/basic_init/state_save.html)
 
 !!! Example
+
     ```python
     class PostView(ModelView):
         column_visibility = False
@@ -155,6 +160,7 @@ interface. By default, only the value of the object's primary key attribute is d
 `__admin_repr__`, you can return a string that better represents the object in the admin interface.
 
 !!! Example
+
     For example, the following implementation for a `User` model will display the user's full name instead of their primary
     key in the admin interface:
 
@@ -170,7 +176,6 @@ interface. By default, only the value of the object's primary key attribute is d
 
     ![Custom Object representation](../../../images/tutorial/configurations/modelview/object_text_representation.png){ width="200" }
 
-
 ### `__admin_select2_repr__`
 
 This method is similar to `__admin_repr__`, but it returns an HTML string that is used to display the object in
@@ -178,9 +183,11 @@ a `select2` widget. By default, all the object's attributes allowed for detail p
 fields.
 
 !!! note
+
     The returned value should be valid HTML.
 
 !!! danger
+
     Escape your database value to avoid Cross-Site Scripting (XSS) attack.
     You can use Jinja2 Template render with `autoescape=True`.
     For more information, visit [OWASP website](https://owasp.org/www-community/attacks/xss/)
