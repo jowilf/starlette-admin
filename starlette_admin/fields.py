@@ -278,7 +278,6 @@ class TinyMCEEditorField(TextAreaField):
 
     class_: str = "field-tinymce-editor form-control"
     display_template: str = "displays/tinymce.html"
-    form_template: str = "forms/tinymce.html"
     version_tinymce: str = "6.4"
     version_tinymce_jquery: str = "2.0"
     height: int = 300
