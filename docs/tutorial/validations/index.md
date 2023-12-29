@@ -16,7 +16,7 @@ capabilities using Python's type hints.
 To automatically validate submitted data with Pydantic, you only need to define a Pydantic model and
 use `starlette_admin.contrib.sqla.ext.pydantic.ModelView`
 
-!!!Example
+!!! Example
 
     ```python
     from starlette_admin.contrib.sqla.ext.pydantic import ModelView
@@ -53,7 +53,8 @@ use `starlette_admin.contrib.sqla.ext.pydantic.ModelView`
 
 You can also create your own validation functions to enforce specific data requirements.
 
-!!!Example
+!!! Example
+
     ```python
     from starlette_admin.contrib.sqla import ModelView
     from starlette_admin.exceptions import FormValidationError
@@ -83,8 +84,8 @@ You can also create your own validation functions to enforce specific data requi
     ![SQLAlchemy Form Validations](../../images/validations/sqla.png)
 
 ??? info
-    Full example available [here](https://github.com/jowilf/starlette-admin/tree/main/examples/sqla)
 
+    Full example available [here](https://github.com/jowilf/starlette-admin/tree/main/examples/sqla)
 
 ## SQLModel
 
@@ -92,6 +93,7 @@ With SQLModel, validating your data is made easy. Once you've defined your model
 automatically validated.
 
 !!! Example
+
     ```python
     from sqlmodel import SQLModel, Field
     from pydantic import validator
@@ -113,9 +115,8 @@ automatically validated.
     ![SQLModel Form Validations](../../images/validations/sqlmodel.png)
 
 ??? info
+
     Full example available [here](https://github.com/jowilf/starlette-admin/tree/main/examples/sqlmodel)
-
-
 
 ## Odmantic
 
@@ -123,6 +124,7 @@ Validation of submitted data is handled seamlessly by Odmantic. Any data that yo
 validated automatically.
 
 !!! Example
+
     ```python
     from typing import List, Optional
 
@@ -147,16 +149,16 @@ validated automatically.
 
     ![SQLModel Form Validations](../../images/validations/odmantic.png)
 
-
 ??? info
-    Full example available [here](https://github.com/jowilf/starlette-admin/tree/main/examples/odmantic)
 
+    Full example available [here](https://github.com/jowilf/starlette-admin/tree/main/examples/odmantic)
 
 ## MongoEngine
 
 The submitted data will be automatically validated according to your model definition.
 
 !!! Example
+
     ```python
     import mongoengine as db
 
@@ -175,4 +177,5 @@ The submitted data will be automatically validated according to your model defin
     ![SQLModel Form Validations](../../images/validations/mongoengine.png)
 
 ??? info
+
     Full example available [here](https://github.com/jowilf/starlette-admin/tree/main/examples/mongoengine)
