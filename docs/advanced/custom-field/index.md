@@ -4,6 +4,7 @@
 according to your need.
 
 !!! important
+
     Before creating a new field, try first to extend the existing ones. They are flexible enough to fit most use cases.
 
 The first step is to define a new class, which derives from [BaseField][starlette_admin.fields.BaseField] or any others fields to customize it
@@ -28,7 +29,9 @@ read [Datatables documentation](https://datatables.net/reference/option/columns.
 the admin class
 
 !!! Example
+
     This is simple example with SQLAlchemy backend
+
     ```python
     from starlette_admin.contrib.sqla import Admin as BaseAdmin
 
@@ -47,7 +50,9 @@ the admin class
       },
     });
     ```
+
 !!! note
+
     `fieldOptions` is your field as javascript object. Your field attributes is serialized into
     javascript object by using dataclass `asdict` function.
 
@@ -74,6 +79,7 @@ These jinja2 variables are available:
 * `action`: `EDIT` or `CREATE`
 
 !!! Example
+
     ```html title="forms/custom.html"
     <div class="{%if error%}is-invalid{%endif%}">
         <input id="{{field.id}}" name="{{field.id}}" ... />
@@ -85,6 +91,7 @@ These jinja2 variables are available:
     <div class="invalid-feedback">{{error}}</div>
     {%endif%}
     ```
+
 ```python
 from starlette_admin import BaseField
 from dataclasses import dataclass
@@ -104,11 +111,12 @@ These jinja2 variables are available:
 * `field`: Your field instance
 * `data`: value to display
 
-
 !!! Example
+
     ```html title="displays/custom.html"
     <span>Hello {{data}}</span>
     ```
+
 ```python
 from starlette_admin import BaseField
 from dataclasses import dataclass
@@ -127,7 +135,6 @@ For data processing you will need to override two functions:
 * `process_form_data`:  Will be call when converting field value into python dict object
 * `serialize_field_value`: Will be call when serializing value to send through the API. This is the same data
 you will get in your *render* function
-
 
 ```python
 from dataclasses import dataclass
@@ -154,7 +161,6 @@ class CustomField(BaseField):
         return super().dict()
 
 ```
-
 
 !!! important
     Override `dict` function to get control of the options which is available in javascript.

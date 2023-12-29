@@ -53,6 +53,7 @@ class PostView(BaseModelView):
 ```
 
 !!! important
+
      `identity` is used to identify the model associated to this view and should be unique.
 
 ## Primary key
@@ -97,6 +98,7 @@ Finally, you need to implement these CRUD methods:
 * [delete()][starlette_admin.BaseModelView.delete]
 
 ## Full example
+
 ```python
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Union
@@ -221,5 +223,4 @@ class PostView(BaseModelView):
                 del db[int(pk)]
                 cnt += 1
         return cnt
-
 ```

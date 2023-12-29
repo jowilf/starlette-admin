@@ -67,7 +67,7 @@ class DropDown(BaseView):
     Group views inside a dropdown
 
     Example:
-        ```Python
+        ```python
         admin.add_view(
             DropDown(
                 "Resources",
@@ -108,7 +108,7 @@ class Link(BaseView):
     Add arbitrary hyperlinks to the menu
 
     Example:
-        ```Python
+        ```python
         admin.add_view(Link(label="Home Page", icon="fa fa-link", url="/"))
         ```
     """
@@ -139,7 +139,7 @@ class CustomView(BaseView):
         add_to_menu: Display to menu or not
 
     Example:
-        ```Python
+        ```python
         admin.add_view(CustomView(label="Home", icon="fa fa-home", path="/home", template_path="home.html"))
         ```
     """
@@ -686,6 +686,7 @@ class BaseModelView(BaseView):
         Format output value for each field.
 
         !!! important
+
             The returned value should be json serializable
 
         Parameters:
@@ -802,9 +803,11 @@ class BaseModelView(BaseView):
         HTML-formatted string.
 
         !!! note
+
             The returned value should be valid HTML.
 
         !!! danger
+
             Escape your database value to avoid Cross-Site Scripting (XSS) attack.
             You can use Jinja2 Template render with `autoescape=True`.
             For more information [click here](https://owasp.org/www-community/attacks/xss/)
@@ -857,9 +860,11 @@ class BaseModelView(BaseView):
         By default, it simply calls `select2_result()`.
 
         !!! note
+
             The returned value should be valid HTML.
 
         !!! danger
+
             Escape your database value to avoid Cross-Site Scripting (XSS) attack.
             You can use Jinja2 Template render with `autoescape=True`.
             For more information [click here](https://owasp.org/www-community/attacks/xss/)
