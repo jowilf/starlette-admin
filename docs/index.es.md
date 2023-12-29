@@ -96,6 +96,7 @@ admin.add_view(ModelView(Post))
 # Montar admin a tu app
 admin.mount_to(app)
 ```
+
 Acceda a su interfaz de administrador en su navegador en [http://localhost:8000/admin](http://localhost:8000/admin)
 
 ## Terceros
