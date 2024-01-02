@@ -195,4 +195,3 @@ msgstr "Ajouter un élément"
 #: starlette_admin/templates/modals/loading.html:7
 msgid "Loading"
 msgstr "Chargement"
-

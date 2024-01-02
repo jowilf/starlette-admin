@@ -195,4 +195,3 @@ msgstr "Öğe ekle"
 #: starlette_admin/templates/modals/loading.html:7
 msgid "Loading"
 msgstr "Yükleniyor"
-
