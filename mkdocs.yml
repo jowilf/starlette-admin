@@ -6,6 +6,9 @@ repo_url: https://github.com/jowilf/starlette-admin
 edit_uri: https://github.com/jowilf/starlette-admin/tree/main/docs
 theme:
   name: material
+  favicon: assets/favicon.ico
+  icon:
+    logo: material/database-settings
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -46,33 +49,6 @@ plugins:
           rendering:
             show_root_heading: true
             show_source: true
-  - i18n:
-      default_language: en
-      languages:
-        en:
-          name: English
-          build: false
-        es:
-          name: Español
-          build: true
-      nav_translations:
-        es:
-          Overview: Visión General
-          Tutorial - User Guide: Tutoriales - Guía de Usuario
-          Getting Started: Empezando
-          Configurations: Configuraciones
-          Admin: Admin
-          ModelView: ModelView
-          Forms Validations: Validación de Formularios
-          Authentication: Autenticación
-          Managing Files: Administrando Archivos
-          Multiple Admin: Multiples Admin
-          Advanced User Guide: Guía de Usuario Avanzada
-          Custom Field: Campos Personalizados
-          Extending BaseModelView: Extendiendo BaseModelView
-          Alternatives, Inspiration and Comparisons: Alternativas, Inspiración y Comparaciones
-          API Reference: Referencia de la API
-          Changelog: Registro de Cambios
 
 watch:
   - starlette_admin
@@ -81,8 +57,10 @@ extra_css:
   - stylesheets/extra.css
 
 nav:
-  - Overview: 'index.md'
-  - Tutorial - User Guide:
+  - Home: 'index.md'
+  - Tutorials:
+      - Overview: 'tutorials/index.md'
+      - Building a Simple Todo Application: 'tutorials/basic/index.md'
       - Getting Started: 'tutorial/getting-started/index.md'
       - Configurations:
           - Admin: 'tutorial/configurations/admin/index.md'
