@@ -39,6 +39,23 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="ms-auto text-muted">
+                            <div class="ms-2 d-inline-block">
+                                <div class="input-icon">
+                                    <span class="input-icon-addon">
+                                        <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <circle cx="10" cy="10" r="7"></circle>
+                                            <line x1="21" y1="21" x2="15" y2="15"></line>
+                                        </svg>
+                                    </span>
+                                    <input type="search" id="searchInput" value="" class="form-control" placeholder="Search..." aria-label="Search in table">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
                         {% block details_table %}
                             <div class="table-responsive">
                                 <table class="table table-bordered table-vcenter table-mobile-md">
@@ -48,7 +65,7 @@
                                         <th>{{ _("Value") }}</th>
                                     </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="tableContent">
                                     {% for field in model.get_fields_list(request, 'DETAIL' | ra) %}
                                         <tr>
                                             <td data-label="Attribute">
@@ -123,5 +140,13 @@
 
         actionManager.initNoConfirmationActions();
         actionManager.initActionModal();
+        $(document).ready(function(){
+            $("#searchInput").on("keyup", function() {
+              var value = $(this).val().toLowerCase();
+              $("#tableContent tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+              });
+            });
+          });
     </script>
 {% endblock %}
