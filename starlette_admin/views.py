@@ -667,6 +667,10 @@ class BaseModelView(BaseView):
         """Permission for viewing full details of Item. Return True by default"""
         return True
 
+    def can_view_list(self, request: Request) -> bool:
+        """Permission for viewing list of Items. Return True by default"""
+        return True
+
     def can_create(self, request: Request) -> bool:
         """Permission for creating new Items. Return True by default"""
         return True

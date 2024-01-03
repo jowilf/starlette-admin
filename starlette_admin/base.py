@@ -367,7 +367,7 @@ class BaseAdmin:
         request.state.action = RequestAction.LIST
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        if not model.is_accessible(request):
+        if not model.is_accessible(request) or not model.can_view_list(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         return self.templates.TemplateResponse(
             model.list_template,
