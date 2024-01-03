@@ -41,10 +41,12 @@ class BaseView:
     Attributes:
         label: Label of the view to be displayed.
         icon: Icon to be displayed for this model in the admin. Only FontAwesome names are supported.
+        add_to_menu: Display to menu or not
     """
 
     label: str = ""
     icon: Optional[str] = None
+    add_to_menu: bool = True
 
     def title(self, request: Request) -> str:
         """Return the title of the view to be displayed in the browser tab"""
