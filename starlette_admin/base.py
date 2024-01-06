@@ -507,6 +507,7 @@ class BaseAdmin:
         return data
 
     def mount_to(self, app: Starlette) -> None:
+        """Mounts the admin instance onto a Starlette app."""
         admin_app = Starlette(
             routes=self.routes,
             middleware=self.middlewares,

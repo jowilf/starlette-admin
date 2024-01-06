@@ -1,6 +1,5 @@
 from typing import Optional
 
-import uvicorn
 from sqlalchemy import create_engine
 from sqlmodel import Field, SQLModel
 from starlette.applications import Starlette
@@ -19,7 +18,7 @@ SQLModel.metadata.create_all(engine)
 
 app = Starlette()  # or app = FastAPI()
 
-# Create admin
+# Create an empty admin interface
 admin = Admin(engine, title="Tutorials: Basic")
 
 # Add view
@@ -27,6 +26,3 @@ admin.add_view(ModelView(Todo, icon="fas fa-list"))
 
 # Mount admin to your app
 admin.mount_to(app)
-
-if __name__ == "__main__":
-    uvicorn.run(app)

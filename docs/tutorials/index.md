@@ -13,7 +13,3 @@ Before diving into the tutorials, ensure you meet the following prerequisites:
     * [SQLModel](https://sqlmodel.tiangolo.com/)
     * [MongoEngine](http://mongoengine.org/)
     * [ODMantic](https://github.com/art049/odmantic/)
-
-## Tutorials List
-
-1. [Building a Simple Todo Application](./basic/index.md)

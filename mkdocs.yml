@@ -60,7 +60,7 @@ nav:
   - Home: 'index.md'
   - Tutorials:
       - Overview: 'tutorials/index.md'
-      - Building a Simple Todo Application: 'tutorials/basic/index.md'
+      - Building your first admin panel: 'tutorials/basic/index.md'
       - Getting Started: 'tutorial/getting-started/index.md'
       - Configurations:
           - Admin: 'tutorial/configurations/admin/index.md'
