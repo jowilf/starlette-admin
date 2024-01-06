@@ -19,7 +19,7 @@ implement the following methods in your custom Authentication Provider:
 ```python
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette_admin.auth import AdminUser, AuthProvider
+from starlette_admin.auth import AdminConfig, AdminUser, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 
 users = {
