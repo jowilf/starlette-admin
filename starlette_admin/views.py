@@ -689,6 +689,22 @@ class BaseModelView(BaseView):
         """Permission for deleting Items. Return True by default"""
         return True
 
+    def create_cancel_redirect_url(self, request: Request) -> str:
+        """Return redirect url after canceling create page"""
+        return str(request.url_for(f"{request.app.state.ROUTE_NAME}:list", identity=self.identity))
+
+    def edit_cancel_redirect_url(self, request: Request) -> str:
+        """Return redirect url after canceling edit page"""
+        return str(request.url_for(f"{request.app.state.ROUTE_NAME}:list", identity=self.identity))
+
+    def create_redirect_url(self, request: Request, obj: Any) -> str:
+        """Return redirect url after saving item"""
+        return str(request.url_for(f"{request.app.state.ROUTE_NAME}:list", identity=self.identity))
+
+    def edit_redirect_url(self, request: Request, obj: Any) -> str:
+        """Return redirect url after saving item"""
+        return str(request.url_for(f"{request.app.state.ROUTE_NAME}:list", identity=self.identity))
+
     async def serialize_field_value(
         self, value: Any, field: BaseField, action: RequestAction, request: Request
     ) -> Any:
