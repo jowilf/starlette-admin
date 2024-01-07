@@ -527,4 +527,12 @@ Change the title and save. You'll see the updated title in the list.
 
 ![Edit view](../../assets/images/tutorials/basic/edit.png)
 
-## Recap
+## Next Steps
+
+You now have a basic admin interface for your Todo app.
+
+Some next tutorials to continue learning:
+
+- To be continued...
+
+The final source code is available on GitHub at [...]()
