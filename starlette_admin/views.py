@@ -667,9 +667,7 @@ class BaseModelView(BaseView):
 
     def get_detail_card_title(self, request: Request, obj: Any) -> str:
         """Return the title of the detail card"""
-        return gettext("Details of #%(pk)s") % {
-            "pk": obj[self.pk_attr]
-        }
+        return gettext("Details of #%(pk)s") % {"pk": obj[self.pk_attr]}
 
     def get_create_card_title(self, request: Request) -> str:
         """Return the title of the create card"""
