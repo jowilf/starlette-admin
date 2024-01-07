@@ -665,6 +665,20 @@ class BaseModelView(BaseView):
             obj: The deleted object.
         """
 
+    def get_detail_card_title(self, request: Request, obj: Any) -> str:
+        """Return the title of the detail card"""
+        return gettext("Details of #%(pk)s") % {
+            "pk": obj[self.pk_attr]
+        }
+
+    def get_create_card_title(self, request: Request) -> str:
+        """Return the title of the create card"""
+        return gettext("New %(name)s") % {"name": self.name}
+
+    def get_edit_card_title(self, request: Request, obj: Any) -> str:
+        """Return the title of the edit card"""
+        return gettext("Edit #%(pk)s") % {"pk": obj[self.pk_attr]}
+
     def can_view_details(self, request: Request) -> bool:
         """Permission for viewing full details of Item. Return True by default"""
         return True
@@ -693,7 +707,7 @@ class BaseModelView(BaseView):
         """Permission for deleting Items. Return True by default"""
         return True
 
-    def create_cancel_redirect_url(self, request: Request) -> str:
+    def get_create_cancel_redirect_url(self, request: Request) -> str:
         """Return redirect url after canceling create page"""
         return str(
             request.url_for(
@@ -701,7 +715,7 @@ class BaseModelView(BaseView):
             )
         )
 
-    def edit_cancel_redirect_url(self, request: Request) -> str:
+    def get_edit_cancel_redirect_url(self, request: Request) -> str:
         """Return redirect url after canceling edit page"""
         return str(
             request.url_for(
@@ -709,7 +723,7 @@ class BaseModelView(BaseView):
             )
         )
 
-    def create_redirect_url(self, request: Request, obj: Any) -> str:
+    def get_create_redirect_url(self, request: Request, obj: Any) -> str:
         """Return redirect url after saving item"""
         return str(
             request.url_for(
@@ -717,7 +731,7 @@ class BaseModelView(BaseView):
             )
         )
 
-    def edit_redirect_url(self, request: Request, obj: Any) -> str:
+    def get_edit_redirect_url(self, request: Request, obj: Any) -> str:
         """Return redirect url after saving item"""
         return str(
             request.url_for(

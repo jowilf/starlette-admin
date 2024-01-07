@@ -435,7 +435,7 @@ class BaseAdmin:
         elif form.get("_add_another", None) is not None:
             url = request.url
         else:
-            url = model.create_redirect_url(request, obj)
+            url = model.get_create_redirect_url(request, obj)
         return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_edit(self, request: Request) -> Response:
@@ -481,7 +481,7 @@ class BaseAdmin:
         elif form.get("_add_another", None) is not None:
             url = request.url_for(self.route_name + ":create", identity=model.identity)
         else:
-            url = model.edit_redirect_url(request, obj)
+            url = model.get_edit_redirect_url(request, obj)
         return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_error(

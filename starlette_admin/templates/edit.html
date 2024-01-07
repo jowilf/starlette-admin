@@ -24,7 +24,7 @@
                         <div class="card-header">
                             <div class="container-fluid">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h3 class="card-title">{{ _("Edit %(name)s", name=model.name ) }}</h3>
+                                    <h3 class="card-title">{{ model.get_edit_card_title(request, obj) }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -42,7 +42,7 @@
                         </div>
                         <div class="card-footer text-black">
                             <div class="btn-list ms-auto justify-content-end">
-                                <a href="{{ model.edit_cancel_redirect_url(request) }}"
+                                <a href="{{ model.get_edit_cancel_redirect_url(request) }}"
                                 class="btn btn-danger">{{ _("Cancel") }}</a>
                                 {% if model.can_save_and_add_another(request) %}
                                 <button type="submit" name="_add_another"
