@@ -46,10 +46,12 @@
                                 class="btn btn-danger">{{ _("Cancel") }}</a>
                                 {% if model.can_save_and_add_another(request) %}
                                 <button type="submit" name="_add_another"
-                                        class="btn">{{ _("Save and add another") }}</button>
+                                class="btn">{{ _("Save and add another") }}</button>
                                 {% endif %}
+                                {% if model.can_save_and_continue_editing(request) %}
                                 <button type="submit" name="_continue_editing"
-                                        class="btn">{{ _("Save and continue editing") }}</button>
+                                class="btn">{{ _("Save and continue editing") }}</button>
+                                {% endif %}
                                 <button type="submit" class="btn btn-success">{{ _("Save") }}</button>
                             </div>
                         </div>
