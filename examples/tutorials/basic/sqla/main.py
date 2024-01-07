@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 from starlette.applications import Starlette
 from starlette_admin.contrib.sqla import Admin, ModelView
 
@@ -30,3 +30,14 @@ admin.add_view(ModelView(Todo, icon="fas fa-list"))
 
 # Mount admin to your app
 admin.mount_to(app)
+
+with Session(engine) as session:
+    session.add_all(
+        [
+            Todo(title="Buy groceries for the week", done=True),
+            Todo(title="Complete 30 minutes of cardio", done=False),
+            Todo(title="Write a blog post", done=True),
+            Todo(title="Star the Starlette-Admin repo", done=False),
+        ]
+    )
+    session.commit()
