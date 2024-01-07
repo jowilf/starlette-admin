@@ -694,7 +694,7 @@ class BaseModelView(BaseView):
         return self.can_create(request)
 
     def can_save_and_continue_editing(self, request: Request) -> bool:
-        """Permission for saving and continue editing Items. Returns `can_create` by default"""
+        """Permission for saving and continue editing Items. Returns `can_edit` by default"""
         return self.can_edit(request)
 
     def can_edit(self, request: Request) -> bool:
