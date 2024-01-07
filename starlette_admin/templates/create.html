@@ -42,7 +42,7 @@
                             <div class="btn-list ms-auto justify-content-end">
                                 <a href="{{ url_for(__name__ ~ ':list', identity=model.identity) }}"
                                    class="btn btn-danger">{{ _("Cancel") }}</a>
-                                {% if model.can_create(request) %}
+                                {% if model.can_save_and_add_another(request) %}
                                 <button type="submit" name="_add_another"
                                         class="btn">{{ _("Save and add another") }}</button>
                                 {% endif %}

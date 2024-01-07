@@ -677,6 +677,10 @@ class BaseModelView(BaseView):
         """Permission for creating new Items. Return True by default"""
         return True
 
+    def can_save_and_add_another(self, request: Request) -> bool:
+        """Permission for saving and adding another Items. Returns `can_create` by default"""
+        return self.can_create(request)
+
     def can_edit(self, request: Request) -> bool:
         """Permission for editing Items. Return True by default"""
         return True
