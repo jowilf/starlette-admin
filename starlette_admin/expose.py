@@ -1,4 +1,5 @@
-from typing import Any, Awaitable, Callable, Optional, Optional, List, Sequence
+from typing import Any, Awaitable, Callable, List, Optional, Sequence
+
 from starlette.middleware import Middleware
 from starlette.routing import get_name
 
@@ -27,6 +28,7 @@ def expose(
 
         ```
     """
+
     def wrap(f: Callable[..., Awaitable[str]]) -> Callable[..., Awaitable[str]]:
         f._route = {
             "path": path,
@@ -36,4 +38,5 @@ def expose(
             "middleware": middleware,
         }
         return f
+
     return wrap
