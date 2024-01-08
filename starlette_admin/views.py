@@ -16,6 +16,7 @@ from typing import (
 )
 
 from jinja2 import Template
+from starlette.datastructures import URL
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
@@ -32,7 +33,6 @@ from starlette_admin.fields import (
 from starlette_admin.helpers import extract_fields, not_none
 from starlette_admin.i18n import get_locale, gettext, ngettext
 from starlette_admin.i18n import lazy_gettext as _
-from starlette.datastructures import URL
 
 
 class BaseView:
