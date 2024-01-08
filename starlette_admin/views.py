@@ -46,6 +46,7 @@ class BaseView:
 
     label: str = ""
     icon: Optional[str] = None
+    routes: List[Union[Route, Mount]] = []
 
     def title(self, request: Request) -> str:
         """Return the title of the view to be displayed in the browser tab"""
@@ -61,6 +62,22 @@ class BaseView:
         Return True if current user can access this view
         """
         return True
+
+    def _init_routes(self) -> None:
+        for _method_name, method in inspect.getmembers(
+            self, predicate=inspect.ismethod
+        ):
+            if hasattr(method, "_route"):
+                route = method._route
+                self.routes.append(
+                    Route(
+                        path=route["path"],
+                        endpoint=method,
+                        methods=route["methods"],
+                        name=route["name"],
+                        include_in_schema=route["include_in_schema"],
+                    )
+                )
 
 
 class DropDown(BaseView):
@@ -162,6 +179,9 @@ class CustomView(BaseView):
         self.name = name
         self.methods = methods
         self.add_to_menu = add_to_menu
+
+        # Expose
+        self._init_routes()
 
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
         """Default methods to render view. Override this methods to add your custom logic."""
@@ -316,7 +336,6 @@ class BaseModelView(BaseView):
         self._init_actions()
 
         # Expose
-        self.routes: List[Union[Route, Mount]] = []
         self._init_routes()
 
     def is_active(self, request: Request) -> bool:
@@ -355,22 +374,6 @@ class BaseModelView(BaseView):
         if self.row_actions is None:
             self.row_actions = list(self._row_actions_handlers.keys())
 
-    def _init_routes(self) -> None:
-        for _method_name, method in inspect.getmembers(
-            self, predicate=inspect.ismethod
-        ):
-            if hasattr(method, "_route"):
-                route = method._route
-                self.routes.append(
-                    Route(
-                        path=route["path"],
-                        endpoint=method,
-                        methods=route["methods"],
-                        name=route["name"],
-                        include_in_schema=route["include_in_schema"],
-                        middleware=route["middleware"],
-                    )
-                )
 
     def _validate_actions(self) -> None:
         for action_name in not_none(self.actions):

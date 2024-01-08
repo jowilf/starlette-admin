@@ -507,6 +507,9 @@ class BaseAdmin:
         return data
 
     def mount_to(self, app: Starlette) -> None:
+        for view in self._views:
+            if view.routes:
+                self.routes.extend(view.routes)
         admin_app = Starlette(
             routes=self.routes,
             middleware=self.middlewares,
