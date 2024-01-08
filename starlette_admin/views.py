@@ -694,6 +694,10 @@ class BaseModelView(BaseView):
         """Permission for deleting Items. Return True by default"""
         return True
 
+    def create_button_visible(self, request: Request) -> bool:
+        """Return True if create button should be visible. Returns `can_create` by default"""
+        return self.can_create(request)
+
     def get_detail_card_title(self, request: Request, obj: Any) -> str:
         """Return the title of the detail card"""
         return gettext("#%(pk)s") % {"pk": obj[self.pk_attr]}

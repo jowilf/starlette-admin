@@ -27,7 +27,7 @@
 
                                 {% include "actions.html" %}
 
-                                {% if model.can_create(request) %}
+                                {% if model.can_create(request) and model.create_button_visible(request) %}
                                     <a href="{{ url_for(__name__ ~ ':create', identity=model.identity) }}"
                                        class="btn btn-primary btn-block ms-2">
                                         <i class="fa-solid fa-plus me-2"></i>
