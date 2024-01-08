@@ -361,8 +361,16 @@ class BaseModelView(BaseView):
         ):
             if hasattr(method, "_route"):
                 route = method._route
-                route["endpoint"] = method
-                self.routes.append(route)
+                self.routes.append(
+                    Route(
+                        path=route["path"],
+                        endpoint=method,
+                        methods=route["methods"],
+                        name=route["name"],
+                        include_in_schema=route["include_in_schema"],
+                        middleware=route["middleware"],
+                    )
+                )
 
     def _validate_actions(self) -> None:
         for action_name in not_none(self.actions):
