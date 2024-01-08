@@ -374,7 +374,6 @@ class BaseModelView(BaseView):
         if self.row_actions is None:
             self.row_actions = list(self._row_actions_handlers.keys())
 
-
     def _validate_actions(self) -> None:
         for action_name in not_none(self.actions):
             if action_name not in self._actions:
