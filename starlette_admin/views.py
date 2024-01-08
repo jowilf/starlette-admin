@@ -1,5 +1,6 @@
 import inspect
 from abc import abstractmethod
+from starlette.routing import Mount, Route
 from collections import OrderedDict
 from typing import (
     Any,
@@ -314,6 +315,10 @@ class BaseModelView(BaseView):
         ] = OrderedDict()
         self._init_actions()
 
+        # Expose
+        self.routes: List[Union[Route, Mount]] = []
+        self._init_routes()
+
     def is_active(self, request: Request) -> bool:
         return request.path_params.get("identity", None) == self.identity
 
@@ -349,6 +354,15 @@ class BaseModelView(BaseView):
 
         if self.row_actions is None:
             self.row_actions = list(self._row_actions_handlers.keys())
+
+    def _init_routes(self) -> None:
+        for _method_name, method in inspect.getmembers(
+            self, predicate=inspect.ismethod
+        ):
+            if hasattr(method, "_route"):
+                route = method._route
+                route["endpoint"] = method
+                self.routes.append(route)
 
     def _validate_actions(self) -> None:
         for action_name in not_none(self.actions):
