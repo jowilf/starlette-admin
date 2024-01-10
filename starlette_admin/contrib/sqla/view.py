@@ -184,6 +184,30 @@ class ModelView(BaseModelView):
         except SQLAlchemyError as exc:
             raise ActionFailed(str(exc)) from exc
 
+    def get_one_query(self) -> Select:
+        """
+        Return a Select expression which is used as base statement for
+        [find_by_pk][starlette_admin.views.BaseModelView.find_by_pk] method.
+
+        Examples:
+            ```python hl_lines="3-4"
+            class PostView(ModelView):
+
+                    def get_one_query(self):
+                        return super().get_one_query().where(Post.published == true())
+
+                    def get_count_query(self):
+                        return super().get_count_query().where(Post.published == true())
+            ```
+
+        If you override this method, don't forget to also override
+        [get_count_query][starlette_admin.contrib.sqla.ModelView.get_count_query],
+        for displaying the correct item count in the list view and
+        [get_list_query][starlette_admin.contrib.sqla.ModelView.get_list_query],
+        for displaying the correct list of items in the list view.
+        """
+        return select(self.model)
+
     def get_list_query(self) -> Select:
         """
         Return a Select expression which is used as base statement for
@@ -202,7 +226,9 @@ class ModelView(BaseModelView):
 
         If you override this method, don't forget to also override
         [get_count_query][starlette_admin.contrib.sqla.ModelView.get_count_query],
-        for displaying the correct item count in the list view.
+        for displaying the correct item count in the list view and
+        [get_one_query][starlette_admin.contrib.sqla.ModelView.get_one_query],
+        for displaying the correct item in the detail view.
         """
         return select(self.model)
 
@@ -221,6 +247,12 @@ class ModelView(BaseModelView):
                     def get_count_query(self):
                         return super().get_count_query().where(Post.published == true())
             ```
+
+        If you override this method, don't forget to also override
+        [get_list_query][starlette_admin.contrib.sqla.ModelView.get_list_query],
+        for displaying the correct list of items in the list view and
+        [get_one_query][starlette_admin.contrib.sqla.ModelView.get_one_query],
+        for displaying the correct item in the detail view.
         """
         return select(func.count()).select_from(self.model)
 
@@ -332,7 +364,7 @@ class ModelView(BaseModelView):
         else:
             assert isinstance(self._pk_coerce, type)
             clause = self._pk_column == self._pk_coerce(pk)
-        stmt = select(self.model).where(clause)
+        stmt = self.get_one_query().where(clause)
         for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField):
                 stmt = stmt.options(joinedload(getattr(self.model, field.name)))
