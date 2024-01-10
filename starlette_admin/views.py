@@ -695,7 +695,7 @@ class BaseModelView(BaseView):
         return self.can_create(request)
 
     def create_button_visible(self, request: Request) -> bool:
-        """Return True if create button should be visible. Returns `can_create` by default"""
+        """Return True if 'Create' button should be visible. Returns `can_create` by default"""
         return self.can_create(request)
 
     def get_detail_card_title(self, request: Request, obj: Any) -> str:
