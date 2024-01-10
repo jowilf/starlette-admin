@@ -691,7 +691,7 @@ class BaseModelView(BaseView):
         return self.can_edit(request)
 
     def can_save_and_add_another(self, request: Request) -> bool:
-        """Return True if 'Save and add another' button should be visible. Returns `can_edit` by default"""
+        """Return True if 'Save and add another' button should be visible. Returns `can_create` by default"""
         return self.can_create(request)
 
     def create_button_visible(self, request: Request) -> bool:
