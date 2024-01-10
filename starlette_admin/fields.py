@@ -307,7 +307,7 @@ class CKEditor5Field(TextAreaField):
                 str(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
-                        path="css/ckeditor5.css"
+                        path="css/ckeditor5.css",
                     )
                 )
             ]
