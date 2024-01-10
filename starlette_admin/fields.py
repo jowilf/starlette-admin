@@ -304,8 +304,11 @@ class CKEditor5Field(TextAreaField):
     ) -> List[str]:
         if action.is_form():
             return [
-                request.url_for(
-                    f"{request.app.state.ROUTE_NAME}:statics", path="css/ckeditor5.css"
+                str(
+                    request.url_for(
+                        f"{request.app.state.ROUTE_NAME}:statics",
+                        path="css/ckeditor5.css"
+                    )
                 )
             ]
         return []
