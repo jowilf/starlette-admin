@@ -710,23 +710,23 @@ class BaseModelView(BaseView):
         """Return the title of the edit card"""
         return gettext("Edit #%(pk)s") % {"pk": obj[self.pk_attr]}
 
-    def get_create_cancel_redirect_url(self, request: Request) -> URL:
-        """Return redirect url after canceling create page"""
-        route_name = request.app.state.ROUTE_NAME
-        return request.url_for(f"{route_name}:list", identity=self.identity)
-
-    def get_edit_cancel_redirect_url(self, request: Request) -> URL:
-        """Return redirect url after canceling edit page"""
-        route_name = request.app.state.ROUTE_NAME
-        return request.url_for(f"{route_name}:list", identity=self.identity)
-
     def get_create_redirect_url(self, request: Request, obj: Any) -> URL:
         """Return redirect url after saving item"""
         route_name = request.app.state.ROUTE_NAME
         return request.url_for(f"{route_name}:list", identity=self.identity)
 
+    def get_create_cancel_redirect_url(self, request: Request) -> URL:
+        """Return redirect url after canceling create page"""
+        route_name = request.app.state.ROUTE_NAME
+        return request.url_for(f"{route_name}:list", identity=self.identity)
+
     def get_edit_redirect_url(self, request: Request, obj: Any) -> URL:
         """Return redirect url after saving item"""
+        route_name = request.app.state.ROUTE_NAME
+        return request.url_for(f"{route_name}:list", identity=self.identity)
+
+    def get_edit_cancel_redirect_url(self, request: Request) -> URL:
+        """Return redirect url after canceling edit page"""
         route_name = request.app.state.ROUTE_NAME
         return request.url_for(f"{route_name}:list", identity=self.identity)
 
