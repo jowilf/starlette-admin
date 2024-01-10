@@ -678,21 +678,21 @@ class BaseModelView(BaseView):
         """Permission for creating new Items. Return True by default"""
         return True
 
-    def can_save_and_add_another(self, request: Request) -> bool:
-        """Permission for saving and adding another Items. Returns `can_create` by default"""
-        return self.can_create(request)
-
     def can_edit(self, request: Request) -> bool:
         """Permission for editing Items. Return True by default"""
         return True
 
-    def can_save_and_continue_editing(self, request: Request) -> bool:
-        """Permission for saving and continue editing Items. Returns `can_edit` by default"""
-        return self.can_edit(request)
-
     def can_delete(self, request: Request) -> bool:
         """Permission for deleting Items. Return True by default"""
         return True
+
+    def can_save_and_continue_editing(self, request: Request) -> bool:
+        """Return True if 'Save and continue editing' button should be visible. Returns `can_edit` by default"""
+        return self.can_edit(request)
+
+    def can_save_and_add_another(self, request: Request) -> bool:
+        """Return True if 'Save and add another' button should be visible. Returns `can_edit` by default"""
+        return self.can_create(request)
 
     def create_button_visible(self, request: Request) -> bool:
         """Return True if create button should be visible. Returns `can_create` by default"""
