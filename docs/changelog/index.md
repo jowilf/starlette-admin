@@ -9,7 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-* Support custom TinyMCE configuration by [@hasansezertasan](https://github.com/hasansezertasan)
+* Refactor TinyMCEEditorField: support custom TinyMCE configuration by [@hasansezertasan](https://github.com/hasansezertasan)
   in [#380](https://github.com/jowilf/starlette-admin/pull/380)
 
 ## [0.13.0-rc1] - 2023-12-23
