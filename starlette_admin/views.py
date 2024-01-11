@@ -698,7 +698,7 @@ class BaseModelView(BaseView):
         """Return True if 'Create' button should be visible. Returns `can_create` by default"""
         return self.can_create(request)
 
-    def get_detail_card_title(self, request: Request, obj: Any) -> str:
+    def get_detail_card_title(self, request: Request, obj: Dict[str, Any]) -> str:
         """Return the title of the detail card"""
         return gettext("#%(pk)s") % {"pk": obj[self.pk_attr]}
 
@@ -706,7 +706,7 @@ class BaseModelView(BaseView):
         """Return the title of the create card"""
         return gettext("New %(name)s") % {"name": self.name}
 
-    def get_edit_card_title(self, request: Request, obj: Any) -> str:
+    def get_edit_card_title(self, request: Request, obj: Dict[str, Any]) -> str:
         """Return the title of the edit card"""
         return gettext("Edit #%(pk)s") % {"pk": obj[self.pk_attr]}
 
