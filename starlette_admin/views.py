@@ -725,7 +725,7 @@ class BaseModelView(BaseView):
         route_name = request.app.state.ROUTE_NAME
         return request.url_for(f"{route_name}:list", identity=self.identity)
 
-    def get_edit_cancel_redirect_url(self, request: Request) -> URL:
+    def get_edit_cancel_redirect_url(self, request: Request, obj: Dict[str, Any]) -> URL:
         """Return redirect url after canceling edit page"""
         route_name = request.app.state.ROUTE_NAME
         return request.url_for(f"{route_name}:list", identity=self.identity)

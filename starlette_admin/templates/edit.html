@@ -42,7 +42,7 @@
                         </div>
                         <div class="card-footer text-black">
                             <div class="btn-list ms-auto justify-content-end">
-                                <a href="{{ model.get_edit_cancel_redirect_url(request) }}"
+                                <a href="{{ model.get_edit_cancel_redirect_url(request, obj) }}"
                                 class="btn btn-danger">{{ _("Cancel") }}</a>
                                 {% if model.can_save_and_add_another(request) %}
                                 <button type="submit" name="_add_another"
