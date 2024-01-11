@@ -264,18 +264,60 @@ class TinyMCEEditorField(TextAreaField):
 
     This field can be used as an alternative to the [TextAreaField][starlette_admin.fields.TextAreaField]
     to provide a more sophisticated editor for user input.
+
+    Parameters:
+        version_tinymce: TinyMCE version
+        version_tinymce_jquery: TinyMCE jQuery version
+        height: Height of the editor
+        menubar: Show/hide the menubar in the editor
+        statusbar: Show/hide the statusbar in the editor
+        toolbar: Toolbar options to show in the editor
+        content_style: CSS style to apply to the editor content
+        extra_options: Other options to pass to TinyMCE
     """
 
     class_: str = "field-tinymce-editor form-control"
     display_template: str = "displays/tinymce.html"
+    version_tinymce: str = "6.4"
+    version_tinymce_jquery: str = "2.0"
+    height: int = 300
+    menubar: Union[bool, str] = False
+    statusbar: bool = False
+    toolbar: str = (
+        "undo redo | formatselect | bold italic backcolor | alignleft aligncenter"
+        " alignright alignjustify | bullist numlist outdent indent | removeformat"
+    )
+    content_style: str = (
+        "body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe"
+        " UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px;"
+        " -webkit-font-smoothing: antialiased; }"
+    )
+    extra_options: Dict[str, Any] = dc_field(default_factory=dict)
+    """For more options, see the [TinyMCE | Documentation](https://www.tiny.cloud/docs/tinymce/6/)"""
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
-                "https://cdn.jsdelivr.net/npm/tinymce@6.4/tinymce.min.js",
-                "https://cdn.jsdelivr.net/npm/@tinymce/tinymce-jquery@2.0/dist/tinymce-jquery.min.js",
+                f"https://cdn.jsdelivr.net/npm/tinymce@{self.version_tinymce}/tinymce.min.js",
+                f"https://cdn.jsdelivr.net/npm/@tinymce/tinymce-jquery@{self.version_tinymce_jquery}/dist/tinymce-jquery.min.js",
             ]
         return []
+
+    def input_params(self) -> str:
+        _options = {
+            "height": self.height,
+            "menubar": self.menubar,
+            "statusbar": self.statusbar,
+            "toolbar": self.toolbar,
+            "content_style": self.content_style,
+            **self.extra_options,
+        }
+
+        return (
+            super().input_params()
+            + " "
+            + html_params({"data-options": json.dumps(_options)})
+        )
 
 
 @dataclass
