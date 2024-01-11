@@ -292,7 +292,7 @@ class SimpleMDEField(TextAreaField):
         status: Show status bar at the bottom
         hide_icons: Hide icons from toolbar
         autofocus: Enable autofocus
-        data_options: Other options to pass to SimpleMDE
+        extra_options: Other options to pass to SimpleMDE
     """
 
     class_: str = "field-simplemde form-control"
@@ -303,7 +303,7 @@ class SimpleMDEField(TextAreaField):
     status: bool = False
     hide_icons: List[str] = dc_field(default_factory=list)
     autofocus: bool = True
-    data_options: Dict[str, Any] = dc_field(default_factory=dict)
+    extra_options: Dict[str, Any] = dc_field(default_factory=dict)
     """For more options, see the [SimpleMDE](https://simplemde.com/)"""
 
     def __post_init__(self) -> None:
@@ -326,17 +326,20 @@ class SimpleMDEField(TextAreaField):
         return []
 
     def input_params(self) -> str:
-        if self.data_options.get("placeholder", None) is None:
-            self.data_options["placeholder"] = self.placeholder
-        if self.data_options.get("spellChecker", None) is None:
-            self.data_options["spellChecker"] = self.spell_checker
-        if self.data_options.get("status", None) is None:
-            self.data_options["status"] = self.status
-        if self.data_options.get("hideIcons", None) is None:
-            self.data_options["hideIcons"] = self.hide_icons
-        if self.data_options.get("autofocus", None) is None:
-            self.data_options["autofocus"] = self.autofocus
-        return html_params({"data-options": json.dumps(self.data_options)})
+        _options = {
+            "placeholder": self.placeholder,
+            "spellChecker": self.spell_checker,
+            "status": self.status,
+            "hideIcons": self.hide_icons,
+            "autofocus": self.autofocus,
+            **self.extra_options,
+        }
+
+        return (
+            super().input_params()
+            + " "
+            + html_params({"data-options": json.dumps(_options)})
+        )
 
 
 @dataclass
