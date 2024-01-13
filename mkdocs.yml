@@ -59,7 +59,7 @@ extra_css:
 nav:
   - Home: 'index.md'
   - Tutorials:
-      - Overview: 'tutorials/index.md'
+      - Introduction: 'tutorials/index.md'
       - Building your first admin panel: 'tutorials/basic/index.md'
       - Getting Started: 'tutorial/getting-started/index.md'
       - Configurations:
