@@ -61,21 +61,20 @@ nav:
   - Tutorials:
       - Introduction: 'tutorials/index.md'
       - Building your first admin panel: 'tutorials/basic/index.md'
-      - Getting Started: 'tutorial/getting-started/index.md'
-      - Configurations:
-          - Admin: 'tutorial/configurations/admin/index.md'
-          - ModelView: 'tutorial/configurations/modelview/index.md'
+  - Usage:
+      - Admin: 'tutorial/configurations/admin/index.md'
+      - ModelView: 'tutorial/configurations/modelview/index.md'
+  - How-to guides:
       - Forms Validations: 'tutorial/validations/index.md'
       - Authentication: 'tutorial/authentication/index.md'
       - Managing Files: 'tutorial/files/index.md'
       - Actions: 'tutorial/actions/index.md'
       - Multiple Admin: 'tutorial/multiple-admin/index.md'
-  - Advanced User Guide:
       - Custom Field: 'advanced/custom-field/index.md'
       - Extending BaseModelView: 'advanced/base-model-view/index.md'
-  - Deployment: 'deployment/index.md'
-  - Alternatives, Inspiration and Comparisons: 'alternatives/index.md'
-  - API Reference:
+      - Deployment: 'deployment/index.md'
+  # - Alternatives, Inspiration and Comparisons: 'alternatives/index.md'
+  - Reference:
       - Contrib:
           - SQLAlchemy:
               - ModelView: 'api/contrib/sqlalchemy/modelview/index.md'
