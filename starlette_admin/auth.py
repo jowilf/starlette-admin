@@ -318,7 +318,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 if version.parse(starlette_version) >= version.parse("0.35")
                 else "route_root_path"
             )
-            request_path = request_path[len(request.scope.get("root_path")) :]
+            request_path = request_path[len(request.scope.get("root_path")) :]  # type: ignore[arg-type]
+
         if request_path not in self.allow_paths and not (
             await self.provider.is_authenticated(request)
         ):
