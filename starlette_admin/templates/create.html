@@ -68,8 +68,8 @@
 {% endblock %}
 {% block script %}
     {{ super() }}
+    <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/form.js') }}"></script>
     {% for link in model._additional_js_links(request, "CREATE" | ra) %}
         <script type="text/javascript" src="{{ link }}"></script>
     {% endfor %}
-    <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/form.js') }}"></script>
 {% endblock %}
