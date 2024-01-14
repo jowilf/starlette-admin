@@ -45,7 +45,7 @@ i18n = [
 ]
 test = [
     "pytest >=7.2.0, <7.5.0",
-    "pytest-asyncio >=0.20.2, <0.22.0",
+    "pytest-asyncio >=0.20.2, <0.24.0",
     "mypy ==1.8.0",
     "ruff ==0.1.9",
     "black ==23.12.1",
