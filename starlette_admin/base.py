@@ -129,10 +129,8 @@ class BaseAdmin:
             self.auth_provider.setup_admin(self)
 
     def init_routes(self) -> None:
-        statics = StaticFiles(directory=self.statics_dir, packages=["starlette_admin"])
         self.routes.extend(
             [
-                Mount("/statics", app=statics, name="statics"),
                 Route(
                     self.index_view.path,
                     self._render_custom_view(self.index_view),
@@ -507,6 +505,8 @@ class BaseAdmin:
         return data
 
     def mount_to(self, app: Starlette) -> None:
+        statics = StaticFiles(directory=self.statics_dir, packages=["starlette_admin"])
+        self.routes.append(Mount("/statics", app=statics, name="statics"))
         for view in self._views:
             if view.routes:
                 self.routes.extend(view.routes)
