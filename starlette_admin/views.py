@@ -46,7 +46,7 @@ class BaseView:
 
     label: str = ""
     icon: Optional[str] = None
-    routes: List[Union[Route, Mount]] = []
+    routes: ClassVar[List[Union[Route, Mount]]] = []
 
     def title(self, request: Request) -> str:
         """Return the title of the view to be displayed in the browser tab"""
