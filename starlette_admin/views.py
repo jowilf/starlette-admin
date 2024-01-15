@@ -372,7 +372,7 @@ class BaseModelView(BaseView):
             return self.can_delete(request)
         return True
 
-    async def is_row_action_allowed(self, request: Request, name: str) -> bool:
+    async def is_row_action_allowed(self, request: Request, name: str, obj: Any) -> bool:
         """
         Verify if the row action with `name` is allowed.
         Override this method to allow or disallow row actions based
@@ -398,7 +398,7 @@ class BaseModelView(BaseView):
                 actions.append(self._actions.get(action_name, {}))
         return actions
 
-    async def get_all_row_actions(self, request: Request) -> List[Dict[str, Any]]:
+    async def get_all_row_actions(self, request: Request, obj: List[Any]) -> List[Dict[str, Any]]:
         """Return a list of allowed row actions"""
         row_actions = []
         for row_action_name in not_none(self.row_actions):
@@ -446,6 +446,7 @@ class BaseModelView(BaseView):
         handler = self._row_actions_handlers.get(name, None)
         if handler is None:
             raise ActionFailed("Invalid row action")
+        # TODO: My logic locked here...
         if not await self.is_row_action_allowed(request, name):
             raise ActionFailed("Forbidden")
         handler_return = await handler(request, pk)

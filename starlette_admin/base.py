@@ -311,9 +311,9 @@ class BaseAdmin:
 
         if not select2:
             # Add row actions for datatables
-            row_actions = await model.get_all_row_actions(request)
             assert model.pk_attr
-            for serialized_item in serialized_items:
+            for idx, serialized_item in enumerate(serialized_items):
+                row_actions = await model.get_all_row_actions(request, obj=items[idx])
                 serialized_item["_meta"]["rowActions"] = self.templates.get_template(
                     "row-actions.html"
                 ).render(
@@ -397,7 +397,7 @@ class BaseAdmin:
                 "title": model.title(request),
                 "model": model,
                 "raw_obj": obj,
-                "_actions": await model.get_all_row_actions(request),
+                "_actions": await model.get_all_row_actions(request, obj=obj),
                 "obj": await model.serialize(obj, request, RequestAction.DETAIL),
             },
         )
