@@ -32,8 +32,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 * Support translation for login form placeholders by [@hasansezertasan](https://github.com/hasansezertasan)
   in [#425](https://github.com/jowilf/starlette-admin/pull/425)
-* Update AuthMiddleware for Compatibility with Starlette >= 0.33 by [@jowilf](https://github.com/jowilf)
-  in [#427](https://github.com/jowilf/starlette-admin/pull/427)
 * Fixes actions docstrings
   by [@mrharpo](https://github.com/mrharpo)
   in [#401](https://github.com/jowilf/starlette-admin/pull/401)
