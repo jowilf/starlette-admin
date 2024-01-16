@@ -1,11 +1,11 @@
+import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence
 
-from packaging import version
-from starlette import __version__ as starlette_version
+from starlette.applications import Starlette
 from starlette.middleware import Middleware
-from starlette.routing import Route
+from starlette.routing import Match, Mount, Route, WebSocketRoute
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_422_UNPROCESSABLE_ENTITY,
@@ -28,6 +28,16 @@ from starlette.status import (
 from starlette.types import ASGIApp
 
 
+def login_not_required(
+    endpoint: Callable[..., Any],
+) -> Callable[..., Any]:
+    """Decorators for endpoints that do not require login."""
+
+    endpoint._login_not_required = True
+
+    return endpoint
+
+
 @dataclass
 class AdminUser:
     username: str = field(default_factory=lambda: _("Administrator"))
@@ -48,6 +58,11 @@ class BaseAuthProvider(ABC):
         login_path: The path for the login page.
         logout_path: The path for the logout page.
         allow_paths: A list of paths that are allowed without authentication.
+        allow_routes: A list of route names that are allowed without authentication.
+
+    Warning:
+        - The usage of `allow_paths` is deprecated. It is recommended to use `allow_routes`
+          that specifies the route names instead.
 
     """
 
@@ -56,10 +71,19 @@ class BaseAuthProvider(ABC):
         login_path: str = "/login",
         logout_path: str = "/logout",
         allow_paths: Optional[Sequence[str]] = None,
+        allow_routes: Optional[Sequence[str]] = None,
     ) -> None:
         self.login_path = login_path
         self.logout_path = logout_path
         self.allow_paths = allow_paths
+        self.allow_routes = allow_routes
+
+        if allow_paths:
+            warnings.warn(
+                "`allow_paths` is deprecated. Use `allow_routes` instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
     @abstractmethod
     def setup_admin(self, admin: "BaseAdmin") -> None:
@@ -270,7 +294,7 @@ class AuthProvider(BaseAuthProvider):
 
     def setup_admin(self, admin: "BaseAdmin") -> None:
         """
-        Setup the admin interface by adding necessary middleware and routes.
+        Set up the admin interface by adding necessary middleware and routes.
         """
         admin.middlewares.append(self.get_middleware(admin=admin))
         login_route = self.get_login_route(admin=admin)
@@ -286,49 +310,58 @@ class AuthMiddleware(BaseHTTPMiddleware):
         app: ASGIApp,
         provider: "BaseAuthProvider",
         allow_paths: Optional[Sequence[str]] = None,
+        allow_routes: Optional[Sequence[str]] = None,
     ) -> None:
         super().__init__(app)
         self.provider = provider
         self.allow_paths = list(allow_paths) if allow_paths is not None else []
         self.allow_paths.extend(
-            [
-                self.provider.login_path,
-                "/statics/css/tabler.min.css",
-                "/statics/css/fontawesome.min.css",
-                "/statics/js/vendor/jquery.min.js",
-                "/statics/js/vendor/tabler.min.js",
-                "/statics/js/vendor/js.cookie.min.js",
-            ]
-        )  # Allow static files needed for the login page
-        self.allow_paths.extend(
             self.provider.allow_paths if self.provider.allow_paths is not None else []
+        )
+
+        self.allow_routes = list(allow_routes) if allow_routes is not None else []
+        self.allow_routes.extend(["login", "statics"])
+        self.allow_routes.extend(
+            self.provider.allow_routes if self.provider.allow_routes is not None else []
         )
 
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        request_path = request.scope["path"]
-        if version.parse(starlette_version) >= version.parse("0.33"):
-            """In Starlette version 0.33, there's a change in the implementation of request.scope["path"],
-            which impacts this middleware. Discussions about this issue can be found at
-            https://github.com/encode/starlette/discussions/2361 and https://github.com/encode/starlette/pull/2400
-            The following line provides a temporary fix to address this change."""
-            _route_path_name = (
-                "root_path"
-                if version.parse(starlette_version) >= version.parse("0.35")
-                else "route_root_path"
-            )
-            request_path = request_path[len(request.scope.get("root_path")) :]  # type: ignore[arg-type]
+        """This middleware checks if the requested admin endpoint requires login.
+        If login is required, it redirects to the login page when the user is
+        not authenticated.
 
-        if request_path not in self.allow_paths and not (
-            await self.provider.is_authenticated(request)
-        ):
-            # TODO: Improve the implementation in the future to eliminate the need for request.scope['path']
-            return RedirectResponse(
-                "{url}?{query_params}".format(
-                    url=request.url_for(request.app.state.ROUTE_NAME + ":login"),
-                    query_params=urlencode({"next": str(request.url)}),
-                ),
-                status_code=HTTP_303_SEE_OTHER,
+        Endpoints are authorized without login if:
+
+        - They are decorated with `@login_not_required`
+        - Their path is in `allow_paths`
+        - Their name is in `allow_routes`
+        - The user is already authenticated
+        """
+        _admin_app: Starlette = request.scope["app"]
+        current_route: Optional[Route | Mount | WebSocketRoute] = None
+        for route in _admin_app.routes:
+            match, _ = route.matches(request.scope)
+            if match == Match.FULL:
+                assert isinstance(route, (Route, Mount, WebSocketRoute))
+                current_route = route
+                break
+        if (
+            (current_route is not None and current_route.path in self.allow_paths)
+            or (current_route is not None and current_route.name in self.allow_routes)
+            or (
+                current_route is not None
+                and hasattr(current_route, "endpoint")
+                and getattr(current_route.endpoint, "_login_not_required", False)
             )
-        return await call_next(request)
+            or await self.provider.is_authenticated(request)
+        ):
+            return await call_next(request)
+        return RedirectResponse(
+            "{url}?{query_params}".format(
+                url=request.url_for(request.app.state.ROUTE_NAME + ":login"),
+                query_params=urlencode({"next": str(request.url)}),
+            ),
+            status_code=HTTP_303_SEE_OTHER,
+        )
