@@ -7,22 +7,19 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.13.0-rc2] - 2023-01-14
+## [0.13.0] - 2023-01-16
 
 ### Added
 
+* Enhance AuthMiddleware, introduce `@login_not_required` decorator and `allow_routes`, deprecate `allow_paths`
+  by [@jowilf](https://github.com/jowilf)
+  in [#474](https://github.com/jowilf/starlette-admin/pull/474)
 * Add a search bar on detail page to search by attributes or values
   by [@hasansezertasan](https://github.com/hasansezertasan)
   in [#461](https://github.com/jowilf/starlette-admin/pull/461)
-
 * Refactor TinyMCEEditorField: support custom TinyMCE configuration
   by [@hasansezertasan](https://github.com/hasansezertasan)
   in [#380](https://github.com/jowilf/starlette-admin/pull/380)
-
-## [0.13.0-rc1] - 2023-12-23
-
-### Added
-
 * Add support for SQLAlchemy `column_property` by [@jowilf](https://github.com/jowilf)
   in [#402](https://github.com/jowilf/starlette-admin/pull/402)
 * Add support for SQLAlchemy Models with Multiple Primary Keys by [@jowilf](https://github.com/jowilf)
