@@ -1,7 +1,7 @@
 import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union
 
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
@@ -340,7 +340,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         - The user is already authenticated
         """
         _admin_app: Starlette = request.scope["app"]
-        current_route: Optional[Route | Mount | WebSocketRoute] = None
+        current_route: Optional[Union[Route, Mount, WebSocketRoute]] = None
         for route in _admin_app.routes:
             match, _ = route.matches(request.scope)
             if match == Match.FULL:
