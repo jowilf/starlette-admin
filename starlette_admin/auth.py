@@ -33,7 +33,7 @@ def login_not_required(
 ) -> Callable[..., Any]:
     """Decorators for endpoints that do not require login."""
 
-    endpoint._login_not_required = True
+    endpoint._login_not_required = True  # type: ignore[attr-defined]
 
     return endpoint
 
