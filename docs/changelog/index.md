@@ -21,7 +21,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   by [@hasansezertasan](https://github.com/hasansezertasan)
   in [#380](https://github.com/jowilf/starlette-admin/pull/380)
 * Add support for SQLAlchemy `column_property` by [@jowilf](https://github.com/jowilf)
-  in [#402](https://github.com/jowilf/starlette-admin/pull/402)
+  in [#408](https://github.com/jowilf/starlette-admin/pull/408)
 * Add support for SQLAlchemy Models with Multiple Primary Keys by [@jowilf](https://github.com/jowilf)
   in [#402](https://github.com/jowilf/starlette-admin/pull/402)
 * Adds `AdminConfig` to override `app_title` and `logo_url` in the templates
