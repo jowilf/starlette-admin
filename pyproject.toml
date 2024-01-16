@@ -121,7 +121,6 @@ sqla_version = ["sqla14", "sqla2"]
 matrix.sqla_version.dependencies = [
     { value = "SQLAlchemy[asyncio] >=2.0, <2.1", if = ["sqla2"] },
     { value = "SQLAlchemy[asyncio] >=1.4, <1.5", if = ["sqla14"] },
-    { value = "starlette>=0.32,<0.33", if = ["sqla14"] },
 ]
 matrix.sqla_version.scripts = [
     { key = "all", value = 'coverage run -m pytest tests --ignore=tests/odmantic', if = ["sqla2"] },
