@@ -4,3 +4,4 @@
         members:
             - BaseAuthProvider
             - AuthProvider
+            - login_not_required
