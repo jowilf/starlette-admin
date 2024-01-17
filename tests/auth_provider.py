@@ -1,8 +1,15 @@
 from typing import Optional
 
 from starlette.requests import Request
-from starlette.responses import Response
-from starlette_admin.auth import AdminConfig, AdminUser, AuthProvider
+from starlette.responses import PlainTextResponse, Response
+from starlette.routing import Route
+from starlette_admin import BaseAdmin
+from starlette_admin.auth import (
+    AdminConfig,
+    AdminUser,
+    AuthProvider,
+    login_not_required,
+)
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 
 users = {
@@ -53,3 +60,30 @@ class MyAuthProvider(AuthProvider):
     async def logout(self, request: Request, response: Response):
         response.delete_cookie("session")
         return response
+
+    @login_not_required
+    async def public_route_async(self, request: Request):
+        return PlainTextResponse("async public route")
+
+    @login_not_required
+    def public_route_sync(self, request: Request):
+        return PlainTextResponse("sync public route")
+
+    def setup_admin(self, admin: "BaseAdmin"):
+        super().setup_admin(admin)
+        admin.routes.extend(
+            [
+                Route(
+                    "/public_sync",
+                    self.public_route_sync,
+                    methods=["GET"],
+                    name="public_sync",
+                ),
+                Route(
+                    "/public_async",
+                    self.public_route_async,
+                    methods=["GET"],
+                    name="public_async",
+                ),
+            ]
+        )
