@@ -126,12 +126,15 @@ Additionally, you can override these methods depending on your needs:
 from typing import Optional
 
 from starlette.datastructures import URL
-from starlette.middleware import Middleware
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
 from starlette.routing import Route
 from starlette_admin import BaseAdmin
-from starlette_admin.auth import AdminUser, AuthMiddleware, AuthProvider
+from starlette_admin.auth import (
+    AdminUser,
+    AuthProvider,
+    login_not_required,
+)
 
 from authlib.integrations.starlette_client import OAuth
 
@@ -181,6 +184,7 @@ class MyAuthProvider(AuthProvider):
             )
         )
 
+    @login_not_required
     async def handle_auth_callback(self, request: Request):
         auth0 = oauth.create_client("auth0")
         token = await auth0.authorize_access_token(request)
@@ -198,12 +202,6 @@ class MyAuthProvider(AuthProvider):
                 name="authorize_auth0",
             )
         )
-
-    def get_middleware(self, admin: "BaseAdmin") -> Middleware:
-        return Middleware(
-            AuthMiddleware, provider=self, allow_paths=["/auth0/authorize"]
-        )
-
 ```
 
 For a working example, have a look
