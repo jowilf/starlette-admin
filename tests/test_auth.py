@@ -141,6 +141,10 @@ class TestAuth:
             == "http://testserver/admin/custom-login?next=http%3A%2F%2Ftestserver%2Fadmin%2F"
         )
 
+    def test_deprecated_allow_paths(self):
+        with pytest.warns(DeprecationWarning, match="`allow_paths` is deprecated"):
+            MyAuthProvider(allow_paths=["/custom-path"])
+
     @pytest.mark.asyncio
     async def test_invalid_login(self):
         admin = BaseAdmin(auth_provider=MyAuthProvider())
@@ -283,6 +287,19 @@ class TestViewAccess:
             cookies={"session": "admin"},
         )
         assert response.status_code == 200
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "route_path,response_text",
+        [
+            ("public_sync", "sync public route"),
+            ("public_async", "async public route"),
+        ],
+    )
+    async def test_public_route(self, client, route_path, response_text):
+        response = await client.get(f"/admin/{route_path}")
+        assert response.status_code == 200
+        assert response.text == response_text
 
 
 class TestFieldAccess:
