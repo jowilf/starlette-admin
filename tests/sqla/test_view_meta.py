@@ -202,6 +202,23 @@ def test_other_fields_conversion():
     ]
 
 
+def test_pk_field():
+    assert ModelView(Document).pk_field == IntegerField(
+        "int",
+        required=True,
+        exclude_from_create=True,
+        exclude_from_edit=True,
+        help_text="This is the primary key",
+    )
+
+
+def test_pk_field_excluded_from_fields():
+    class DocumentView(ModelView):
+        fields = ["float"]
+
+    assert DocumentView(Document).pk_field == StringField("int")
+
+
 def test_not_supported_array_columns():
     with pytest.raises(
         NotSupportedColumn, match="Column ARRAY with dimensions != 1 is not supported"
