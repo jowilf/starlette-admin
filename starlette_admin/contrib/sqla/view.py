@@ -107,13 +107,10 @@ class ModelView(BaseModelView):
                 for f in self.model.__dict__
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
-        self._setup_primary_key()
         self.fields = (converter or ModelConverter()).convert_fields_list(
             fields=self.fields, model=self.model, mapper=mapper
         )
-        self.pk_field: BaseField = next(
-            f for f in self.fields if f.name == self.pk_attr
-        )
+        self._setup_primary_key()
         self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
         self.exclude_fields_from_detail = normalize_list(self.exclude_fields_from_detail)  # type: ignore
         self.exclude_fields_from_create = normalize_list(self.exclude_fields_from_create)  # type: ignore
@@ -157,16 +154,20 @@ class ModelView(BaseModelView):
             self._pk_coerce = tuple(
                 extract_column_python_type(c) for c in self._pk_column
             )
-            pk_field = MultiplePKField(_pk_attrs)
-            self.pk_attr = pk_field.name
-            self.fields.append(pk_field)  # type: ignore[attr-defined]
+            self.pk_field: BaseField = MultiplePKField(_pk_attrs)
         else:
             assert (
                 len(_pk_attrs) == 1
             ), f"No primary key found in model {self.model.__name__}"
-            self.pk_attr = _pk_attrs[0]
             self._pk_column = getattr(self.model, _pk_attrs[0])
             self._pk_coerce = extract_column_python_type(self._pk_column)  # type: ignore[arg-type]
+            try:
+                # Try to find the primary key field among the fields
+                self.pk_field = next(f for f in self.fields if f.name == _pk_attrs[0])
+            except StopIteration:
+                # If the primary key is not among the fields, treat its value as a string
+                self.pk_field = StringField(_pk_attrs[0])
+        self.pk_attr = self.pk_field.name
 
     async def handle_action(
         self, request: Request, pks: List[Any], name: str
