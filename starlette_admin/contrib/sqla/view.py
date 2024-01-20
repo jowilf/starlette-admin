@@ -154,7 +154,7 @@ class ModelView(BaseModelView):
             self._pk_coerce = tuple(
                 extract_column_python_type(c) for c in self._pk_column
             )
-            self.pk_field = MultiplePKField(_pk_attrs)
+            self.pk_field: BaseField = MultiplePKField(_pk_attrs)
         else:
             assert (
                 len(_pk_attrs) == 1
@@ -163,9 +163,7 @@ class ModelView(BaseModelView):
             self._pk_coerce = extract_column_python_type(self._pk_column)  # type: ignore[arg-type]
             try:
                 # Try to find the primary key field among the fields
-                self.pk_field: BaseField = next(
-                    f for f in self.fields if f.name == _pk_attrs[0]
-                )
+                self.pk_field = next(f for f in self.fields if f.name == _pk_attrs[0])
             except StopIteration:
                 # If the primary key is not among the fields, treat its value as a string
                 self.pk_field = StringField(_pk_attrs[0])
