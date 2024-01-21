@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.13.1] - 2023-01-21
+
 * Fixed the StopIteration exception raised in Sqlalchemy ModelView when the primary key is not included in the field
   list by [@jowilf](https://github.com/jowilf) in [#482](https://github.com/jowilf/starlette-admin/pull/482)
 
