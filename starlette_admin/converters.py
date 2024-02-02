@@ -34,7 +34,10 @@ from starlette_admin.fields import (
 
 def converts(
     *args: Any,
-) -> Callable[[Callable[..., BaseField]], Callable[..., BaseField],]:
+) -> Callable[
+    [Callable[..., BaseField]],
+    Callable[..., BaseField],
+]:
     def wrap(func: Callable[..., BaseField]) -> Callable[..., BaseField]:
         func._converter_for = frozenset(args)  # type:ignore [attr-defined]
         return func
