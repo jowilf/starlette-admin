@@ -309,9 +309,9 @@ class BaseModelView(BaseView):
         self._actions_handlers: Dict[
             str, Callable[[Request, Sequence[Any]], Awaitable]
         ] = OrderedDict()
-        self._row_actions_handlers: Dict[
-            str, Callable[[Request, Any], Awaitable]
-        ] = OrderedDict()
+        self._row_actions_handlers: Dict[str, Callable[[Request, Any], Awaitable]] = (
+            OrderedDict()
+        )
         self._init_actions()
 
     def is_active(self, request: Request) -> bool:

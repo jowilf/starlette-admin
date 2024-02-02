@@ -421,10 +421,10 @@ class ModelView(BaseModelView):
             for decoded_pk in decoded_pks:
                 clauses.append(
                     and_(
-                        _pk_col == _coerce(_pk)
-                        if _coerce is not bool
-                        else (
-                            _pk_col == (_pk == "True")
+                        (
+                            _pk_col == _coerce(_pk)
+                            if _coerce is not bool
+                            else (_pk_col == (_pk == "True"))
                         )  # to avoid bool("False") which is True
                         for _pk_col, _coerce, _pk in zip(
                             self._pk_column, self._pk_coerce, decoded_pk  # type: ignore[type-var,arg-type]
