@@ -9,10 +9,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.13.2] - 2023-02-04
 
+### Fixed
+
 * Remove extra whitespaces from TextAreaField form template (0.13.0 regression) by [@jowilf](https://github.com/jowilf)
   in [#494](https://github.com/jowilf/starlette-admin/pull/494)
 
 ## [0.13.1] - 2023-01-21
+
+### Fixed
 
 * Fixed the StopIteration exception raised in Sqlalchemy ModelView when the primary key is not included in the field
   list by [@jowilf](https://github.com/jowilf) in [#482](https://github.com/jowilf/starlette-admin/pull/482)
