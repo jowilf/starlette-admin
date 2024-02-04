@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.13.2] - 2023-02-04
+
 * Remove extra whitespaces from TextAreaField form template (0.13.0 regression) by [@jowilf](https://github.com/jowilf)
   in [#494](https://github.com/jowilf/starlette-admin/pull/494)
 
