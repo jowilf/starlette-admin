@@ -1,9 +1,9 @@
 # BaseModelView'ı Genişletme
 
-*Starlette-Admin* veritabanı modelleriyle çalışırken birkaç varsayımda bulunur. Eğer kendi veritabanı arayüzünüzü geliştirmek ve *Starlette-Admin*'in model görünümlerinin beklenildiği gibi çalışmasını istiyorsanız, aşağıdakileri göz önünde bulundurmalısınız:
+*Starlette-Admin*, çalıştığı veritabanı modelleriyle ilgili birkaç varsayımda bulunur. Eğer kendi veritabanı arayüzünüzü geliştirmek ve *Starlette-Admin*'in model görünümlerinin beklenildiği gibi çalışmasını istiyorsanız, aşağıdaki maddeleri göz önünde bulundurmalısınız:
 
-2. Modellerinizin her biri birincil anahtar olarak kullanılacak bir alan içermelidir. Ancak, birincil anahtar alanının veri tipi veya alan adı üzerinde herhangi bir kısıtlama yoktur.
-3. Model verileriniz Python özellikleri olarak erişilebilir hale getirmelidir.
+1. Modellerinizin her biri, o modelin nesnelerini ayırt edebilmek adına birincil anahtar olarak kullanılacak bir alan içermelidir. Ancak, birincil anahtar alanının veri tipi veya alan adı üzerinde herhangi bir kısıtlama yoktur.
+2. Model verileriniz Python özellikleri olarak erişilebilir hale getirilmelidir.
 
 Eğer bunlar sizin için uygunsa, kendi veritabanı arayüzünüzü [BaseModelView][starlette_admin.BaseModelView] sınıfını genişleterek ve aşağıda listelenen metodları uygulayarak oluşturabilirsiniz.
 
@@ -65,7 +65,7 @@ class PostView(BaseModelView):
 
 ## Alanlar
 
-*Starlette-Admin* normalde her bir özelliği temsil etmek için [BaseField][starlette_admin.fields.BaseField]'dan türetilen özel alanları kullanır. Sonuç olarak, her bir özellik için doğru alanı seçmelisiniz veya gerekiyorsa yeni bir alan oluşturmalısınız. Varsayılan alanların tam listesi için [API Referansı][starlette_admin.fields.BaseField] sayfasına bakın.
+*Starlette-Admin*, kendi içinde, her bir özelliği temsil etmek için [BaseField][starlette_admin.fields.BaseField]'dan türetilen özel alanları kullanır. Sonuç olarak, her bir özellik için doğru alanı seçmelisiniz veya gerekiyorsa yeni bir alan oluşturmalısınız. Varsayılan alanların tam listesi için [API Referansı][starlette_admin.fields.BaseField] sayfasına göz atabilirsiniz.
 
 ```python
 from starlette_admin import BaseModelView
@@ -82,7 +82,7 @@ class PostView(BaseModelView):
 
 ## CRUD Metodları
 
-En sonunda, bu CRUD metodlarını uygulamanız gerekiyor:
+Son olarak, bu CRUD metodlarını uygulamanız gerekir:
 
 * [count()][starlette_admin.BaseModelView.count]
 * [find_all()][starlette_admin.BaseModelView.find_all]
