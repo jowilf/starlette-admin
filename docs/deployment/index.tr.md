@@ -1,6 +1,6 @@
 # Yayınlama
 
-**Starlette-Admin** ile FastAPI veya Starlette kullanıp kullanmamanız fark etmeksizin, yayınlama sürecinde size yol gösterecek çok iyi kaynaklar hali hazırda mevcut.
+**Starlette-Admin** ile FastAPI veya Starlette kullanıp kullanmamanız fark etmeksizin, yayınlama sürecinde size yol gösterecek çok iyi kaynaklar hali hazırda mevcuttur.
 Detaylı bilgi ve en iyi pratikleri sunan bu kaynaklara başvurmanız şiddetle tavsiye edilir:
 
 * [FastAPI Deployment Documentation](https://fastapi.tiangolo.com/deployment/)
