@@ -31,8 +31,8 @@
 
 ## Özellikler
 
-- Herhangi bir veri üzerinde kolayca <abbr title="CRUD: Create (Oluşturma), Read (Görüntüleme), Update (Güncelleme), Delete (Silme)">CRUD</abbr> işlemleri yapın.
-- Otomatik form doğrulama.
+- Herhangi bir veri üzerinde kolayca <abbr title="CRUD: Create (Oluşturma), Read (Görüntüleme), Update (Güncelleme), Delete (Silme)">CRUD</abbr> işlemleri yapın
+- Otomatik form doğrulama
 - [Datatables](https://datatables.net/) ile gelişmiş tablo widget'ı.
 - Arama ve filtreleme
 - Arama sonucu vurgulama
