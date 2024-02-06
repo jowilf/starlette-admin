@@ -27,7 +27,7 @@
 * [Dokümantasyonu](https://jowilf.github.io/starlette-admin) inceleyin.
 * [Canlı demoyu](https://starlette-admin-demo.jowilf.com/) deneyin. ([Kaynak Kod](https://github.com/jowilf/starlette-admin-demo))
 * [/examples](https://github.com/jowilf/starlette-admin/tree/main/examples) klasöründe bulunan kullanım örneklerini deneyin.
-* Projeyi yararlı veya ilginç bulursanız, lütfen bir yıldız ⭐️ vermekten çekinmeyin.
+* Projeyi yararlı veya ilginç bulursanız bir yıldız ⭐️ vermekten lütfen çekinmeyin.
 
 ## Özellikler
 
