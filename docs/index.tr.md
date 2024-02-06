@@ -1,6 +1,6 @@
 # Genel Bakış
 
-*Starlette-Admin* Starlette/FastApi uygulamaları için hızlı, güzel ve genişletilebilir bir yönetici arayüzü çatısıdır.
+*Starlette-Admin*, Starlette/FastAPI uygulamaları için hızlı, zarif ve genişletilebilir bir yönetici arayüzü framework'üdür.
 
 <p align="center">
 <a href="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml">
