@@ -45,7 +45,7 @@ class CustomField(BaseField):
     ```
 
 !!! note "Not"
-    `fieldOptions` alanınızı javascript nesnesi olarak temsil eder. Alan özellikleriniz, dataclass `asdict` fonksiyonunu kullanarak javascript nesnesine dönüştürür.
+    `fieldOptions`, alanınızı, javascript nesnesi olarak temsil eder. Alan özellikleriniz, dataclass `asdict` fonksiyonu kullanılarak javascript nesnesine dönüştürülür.
 
 * Sonrasında `render_function_key` değerini atayın.
 
