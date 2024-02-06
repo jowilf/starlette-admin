@@ -1,6 +1,6 @@
 # Özelleştirilmiş Alanlar (Fields)
 
-*Starlette-Admin* bir çok hali hazırda bir çok [alan][starlette_admin.fields.BaseField] içerir. Ancak ihtiyacınıza göre alanı geçersiz kılabilir veya kendi alanınızı oluşturabilirsiniz.
+*Starlette-Admin* halihazırda birçok yerleşik [alan][starlette_admin.fields.BaseField] içerir. Ancak, ihtiyacınıza göre alanı geçersiz kılabilir veya kendi alanınızı oluşturabilirsiniz.
 
 !!! important "Önemli"
     Yeni bir alan oluşturmadan önce, mevcut olanları genişletmeyi deneyin. Çoğu duruma uyacak kadar esnektirler.
