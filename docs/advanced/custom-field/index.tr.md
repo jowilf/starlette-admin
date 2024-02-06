@@ -121,7 +121,7 @@ class CustomField(BaseField):
 
 ## Veri İşleme
 
-Veri işleme için şu iki metodu geçersiz kılmanız gerekiyor:
+Veri işleme için şu iki metodu geçersiz kılmanız gerekir:
 
 * `process_form_data`: Alan değerini python sözlük nesnesine dönüştürürken çağrılacaktır.
 * `serialize_field_value`: API üzerinden gönderilmiş veriyi serileştirmek için çağrılacaktır. Bu, *derleme* metodunuzda alacağınız aynı veridir.
