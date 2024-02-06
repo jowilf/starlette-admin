@@ -95,7 +95,7 @@ class CustomField(BaseField):
 
 ## Detay Görünümü
 
-Alanınızı detaylar görünümünde derlemek için şablonlarınızın bulunduğu dizininizde `displays` altında yeni bir html dosyası oluşturmanız gerekiyor.
+Alanınızı detaylar görünümünde derlemek için şablonlarınızın bulunduğu dizininizde `displays` klasörü altında yeni bir html dosyası oluşturmanız gerekiyor.
 
 Varolan Jinja2 değişkenleri şunlardır:
 
