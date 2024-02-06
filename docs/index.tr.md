@@ -103,7 +103,7 @@ admin.mount_to(app)
 
 Yönetici arayüzüne tarayıcınız üzerinden [http://localhost:8000/admin](http://localhost:8000/admin) adresine giderek erişebilirsiniz.
 
-## Üçüncü taraf
+## Üçüncü Taraf
 
 *starlette-admin* diğer açık kaynaklı projelerle birlikte geliştirilmiştir:
 
