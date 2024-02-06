@@ -18,7 +18,7 @@ class CustomField(BaseField):
 
 ## Liste Derleme
 
-*Starlette-Admin* listeleri derlemek için [Datatables](https://datatables.net/) kullanır. Varsayılan olarak, tüm alanlar <abbr title="text">metin</abbr> alanı olarak derlenir. Bu davranışı özelleştirmek için, datatable içinde sütununuzu derleyecek bir JavaScript fonksiyonu yazmanız gerekiyor. Kendi fonksiyonunuzu nasıl yazabileceğinizle ilgili daha fazla bilgi için [Datatables documentation](https://datatables.net/reference/option/columns.render) sayfasını okuyun.
+*Starlette-Admin* listeleri derlemek için [Datatables](https://datatables.net/) kullanır. Varsayılan olarak, tüm alanlar <abbr title="text">metin</abbr> alanı olarak derlenir. Bu davranışı özelleştirmek için, datatable içinde sütununuzu derleyecek bir JavaScript fonksiyonu yazmanız gerekir. Kendi fonksiyonunuzu nasıl yazabileceğinizle ilgili daha fazla bilgi için [Datatables documentation](https://datatables.net/reference/option/columns.render) sayfasından faydalanabilirsiniz.
 
 * Öncelikle ilave derleme fonksiyonunun bulunduğu javascript dosyanızın bağlantısını `admin` sınıfını geçersiz kılarak sağlamanız gerekiyor.
 
