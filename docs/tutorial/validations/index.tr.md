@@ -169,4 +169,4 @@ Gönderilen veriler, model tanımınıza göre otomatik olarak doğrulanır.
     ![SQLModel Form Validations](../../images/validations/mongoengine.png)
 
 ??? info "Bilgi"
-    Örneğin tamamı [burada](https://github.com/jowilf/starlette-admin/tree/main/examples/mongoengine)
+    Örneğin tamamına [buradan](https://github.com/jowilf/starlette-admin/tree/main/examples/mongoengine) ulaşabilirsiniz.
