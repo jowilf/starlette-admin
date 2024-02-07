@@ -143,7 +143,7 @@ Veri doğrulaması, gönderilen verilerin tanımladığınız modele uygun olup 
 
 
 ??? info "Bilgi"
-    Örneğin tamamı [burada](https://github.com/jowilf/starlette-admin/tree/main/examples/odmantic)
+    Örneğin tamamına [buradan](https://github.com/jowilf/starlette-admin/tree/main/examples/odmantic) ulaşabilirsiniz.
 
 ## MongoEngine
 
