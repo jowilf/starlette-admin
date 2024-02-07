@@ -128,7 +128,7 @@ Liste sayfasındaki sayfalandırma seçenekleri konfigüre edilebilir. Kullanıl
 *starlette-admin* ile birlikte bazı datatable eklentileri varsayılan olarak gelir. Bu eklentilerden herhangi birini `ModelView`'inizde aşağıdaki seçenekleri geçersiz kılarak devre dışı bırakabilirsiniz:
 
 * `column_visibility`: [column visibility](https://datatables.net/extensions/buttons/built-in#Column-visibility) eklentisini etkinleştir/devre dışı bırak
-* `search_builder`: [search builder](https://datatables.net/extensions/searchbuilder/) eklenini etkinleştir/devre dışı bırak
+* `search_builder`: [search builder](https://datatables.net/extensions/searchbuilder/) eklentisini etkinleştir/devre dışı bırak
 * `responsive_table`: [responsive](https://datatables.net/extensions/responsive/) eklentisini etkinleştir/devre dışı bırak
 * `save_state`: [state saving](https://datatables.net/examples/basic_init/state_save.html) eklentisini etkinleştir/devre dışı bırak
 
