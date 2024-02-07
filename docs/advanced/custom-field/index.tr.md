@@ -60,7 +60,7 @@ class CustomField(BaseField):
 
 ## Form
 
-Form derlemeleri için şablonlarınızın bulunduğu dizinde `forms` klasörü altında yeni bir html dosyası oluşturmanız gerekiyor.
+Form derlemeleri için şablonlarınızın bulunduğu dizinde `forms` klasörü altında yeni bir html dosyası oluşturmanız gerekir.
 
 Varolan Jinja2 değişkenleri şunlardır:
 
