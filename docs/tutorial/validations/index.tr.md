@@ -114,7 +114,7 @@ SQLModel ile veri doğrulamak çok daha kolay bir hale geldi. Modelinizi tanıml
 
 ## ODMantic
 
-Veri doğrulaması, gönderilen verilerin tanımladığınız modele uygun olup olmadığı kontrol edilerek Odmantic tarafından otomatik bir şekilde gerçekleştirilir.
+Veri doğrulaması, gönderilen verilerin tanımladığınız modele uygun olup olmadığı kontrol edilerek ODMantic tarafından otomatik bir şekilde gerçekleştirilir.
 
 !!! example "Örnek"
 
