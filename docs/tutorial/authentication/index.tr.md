@@ -8,7 +8,7 @@ Yönetici arayüzünüzü istenmeyen kullanıcılardan korumak için [AuthProvid
 
 * [is_authenticated][starlette_admin.auth.BaseAuthProvider.is_authenticated]: Bu metod, gelen her isteği doğrulamak için çağrılacaktır.
 * [get_admin_user][starlette_admin.auth.BaseAuthProvider.get_admin_user]: Bağlı olan kullanıcı `adı` ve/veya `avatar` bilgisini döndürür.
-* [get_admin_config][starlette_admin.auth.BaseAuthProvider.get_admin_config]: Bağlı olan kullanıcıya göre veya başka koşullara göre `logo_url` veya `app_title` bilgisini döndürür.
+* [get_admin_config][starlette_admin.auth.BaseAuthProvider.get_admin_config]: Bağlı olan kullanıcıya veya başka koşullara göre `logo_url` veya `app_title` bilgisini döndürür.
 * [login][starlette_admin.auth.AuthProvider.login]: kullanıcı kimlik bilgilerini doğrulamak için çağrılacaktır.
 * [logout][starlette_admin.auth.AuthProvider.logout]: çıkış yapmak için çağrılacaktır (oturumları, çerezleri temizleme, ...)
 
