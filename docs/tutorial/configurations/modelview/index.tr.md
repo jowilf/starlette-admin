@@ -167,7 +167,7 @@ Yönetici arayüzünde nesnelerin nasıl temsil edileceğini özelleştirmek iç
 
 ### `__admin_select2_repr__`
 
-`__admin_repr__` metoduna benzeyen bu metod, nesneyi `select2` bileşeninde görüntülemek için kullanılabilecek bir HTML döndürür. Varsaylına olarak nesnenin tüm özellikleri kullanılır, ancak ilişki ve dosya alanlarını içermez.
+`__admin_repr__` metoduna benzeyen bu metod, nesneyi `select2` bileşeninde görüntülemek için kullanılabilecek bir HTML döndürür. Varsayılan olarak, nesnenin, detay sayfası için izin verilen tüm özellikleri kullanılır ancak ilişki ve dosya alanlarını içermez.
 
 !!! note "Not"
     Döndürülen değer geçerli bir HTML olmalıdır.
