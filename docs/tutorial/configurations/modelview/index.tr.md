@@ -39,7 +39,7 @@ admin.add_view(PostView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
 ```
 
-## Exclusions - İstisnalar
+## Exclusions - Hariç Tutulanlar
 
 Admin görünümünün farklı bölümlerinde hangi alanların görüntüleneceğini özelleştirmek için kullanabileceğiniz birkaç seçenek vardır. Bunlar:
 
