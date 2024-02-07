@@ -81,7 +81,7 @@ Ayrıca, belirli veri gereksinimlerini zorunda kılmak için kendi doğrulama fo
     ![SQLAlchemy Form Validations](../../images/validations/sqla.png)
 
 ??? info "Bilgi"
-    Örneğin tamamı [burada]((https://github.com/jowilf/starlette-admin/tree/main/examples/sqla)).
+    Örneğin tamamına [buradan]((https://github.com/jowilf/starlette-admin/tree/main/examples/sqla)) ulaşabilirsiniz.
 
 ## SQLModel
 
