@@ -144,7 +144,7 @@ Liste sayfasındaki sayfalandırma seçenekleri konfigüre edilebilir. Kullanıl
 
 ## Object Representation - Nesne Temsili
 
-*sarlette-admin* yönetici arayüzünde nesnelerin nasıl temsil edileceğini özelleştirmek için iki yöntem mevcuttur:
+*starlette-admin* yönetici arayüzünde nesnelerin nasıl temsil edileceğini özelleştirmek için iki yöntem mevcuttur:
 
 ### `__admin_repr__`
 
