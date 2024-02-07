@@ -1,6 +1,6 @@
 # Kimlik Doğrulama ve Yetkilendirme
 
-Yönetici arayüzünüzü istenmeyen kullanıcılardan korumak için, [AuthProvider][starlette_admin.auth.AuthProvider] sınıfını genişleterek bir `Kimlik Doğrulama Sağlayıcısı` oluşturabilirsiniz ve admin uygulamanızı tanımlarken `auth_provider` özelliğine atayabilirsiniz.
+Yönetici arayüzünüzü istenmeyen kullanıcılardan korumak için [AuthProvider][starlette_admin.auth.AuthProvider] sınıfını genişleterek bir `Kimlik Doğrulama Sağlayıcısı` oluşturabilir ve admin uygulamanızı tanımlarken `auth_provider` özelliğine atayabilirsiniz.
 
 ## Kullanıcı Adı ve Şifre ile Kimlik Koğrulama
 
