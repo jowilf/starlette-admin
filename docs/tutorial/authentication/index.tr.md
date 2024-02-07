@@ -234,7 +234,7 @@ class ReportView(CustomView):
 
 ### [ModelView][starlette_admin.views.BaseModelView] İçin
 
-In [ModelView][starlette_admin.views.BaseModelView], içinde, geçerli kullanıcının erişimini kısıtlamak için aşağıdaki yöntemleri geçersiz kılabilirsiniz:
+[ModelView][starlette_admin.views.BaseModelView] içinde, geçerli kullanıcının erişimini kısıtlamak için aşağıdaki yöntemleri geçersiz kılabilirsiniz:
 
 * `can_view_details`: Bir öğenin tam ayrıntılarını görüntüleme izni.
 * `can_create`: Bir öğeyi oluşturma izni.
