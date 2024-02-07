@@ -112,7 +112,7 @@ SQLModel ile veri doğrulamak çok daha kolay bir hale geldi. Modelinizi tanıml
 ??? info "Bilgi"
     Örneğin tamamına [buradan]((htthttps://github.com/jowilf/starlette-admin/tree/main/examples/sqlmodel)) ulaşabilirsiniz.
 
-## Odmantic
+## ODMantic
 
 Veri doğrulaması, gönderilen verilerin tanımladığınız modele uygun olup olmadığı kontrol edilerek Odmantic tarafından otomatik bir şekilde gerçekleştirilir.
 
