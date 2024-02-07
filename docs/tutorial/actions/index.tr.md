@@ -92,7 +92,7 @@ Satır işlemleri, bir liste görünümü içindeki bireysel öğeler üzerinde 
     - `edit`: Öğenin düzenleme sayfasına yönlendirir
     - `delete`: Seçilen öğeyi siler
 
-[ModelView][starlette_admin.views.BaseModelView]inize varsayılan satır işlemi dışında başka satır işlemleri eklemek için, istediğiniz mantığı uygulayan bir fonksiyon tanımlayabilir ve [@row_action][starlette_admin.actions.row_action] dekoratörü ile sarabilirsiniz.
+[ModelView][starlette_admin.views.BaseModelView]'inize varsayılan satır işlemi dışında başka satır işlemleri eklemek için, istediğiniz mantığı uygulayan bir fonksiyon tanımlayabilir ve bu fonksiyonu [@row_action][starlette_admin.actions.row_action] dekoratörü ile sarabilirsiniz.
 
 Satır işlemlerinin bir sayfaya yönlendirme yapması gerektiği durumlarda, [@link_row_action][starlette_admin.actions.link_row_action] dekoratörünü kullanmak tercih edilir. Temel fark, `link_row_action`'ın işlem API'ını çağırmaya ihtiyaç duymamasıdır. Bunun yerine, bağlantı doğrudan oluşturulan html öğesinin href özniteliğine dahil edilir (ör. `<a href='https://example.com/?pk=4' ...>`).
 
