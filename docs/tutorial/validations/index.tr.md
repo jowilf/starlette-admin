@@ -110,7 +110,7 @@ SQLModel ile veri doğrulamak çok daha kolay bir hale geldi. Modelinizi tanıml
     ![SQLModel Form Validations](../../images/validations/sqlmodel.png)
 
 ??? info "Bilgi"
-    Örneğin tamamı [burada]((htthttps://github.com/jowilf/starlette-admin/tree/main/examples/sqlmodel)).
+    Örneğin tamamına [buradan]((htthttps://github.com/jowilf/starlette-admin/tree/main/examples/sqlmodel)) ulaşabilirsiniz.
 
 ## Odmantic
 
