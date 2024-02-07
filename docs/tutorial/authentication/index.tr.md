@@ -4,7 +4,7 @@ Yönetici arayüzünüzü istenmeyen kullanıcılardan korumak için [AuthProvid
 
 ## Kullanıcı Adı ve Şifre ile Kimlik Koğrulama
 
-[AuthProvider][starlette_admin.auth.AuthProvider] varsayılan olarak `username` ve `password` alanları içeren bir giriş formu sağlar. Bu kimlik doğrulama yöntemini tam olarak desteklemek için, özel `Kimlik Doğrulama Sağlayıcı`nızda aşağıdaki yöntemleri uygulamanız gerekir:
+[AuthProvider][starlette_admin.auth.AuthProvider] varsayılan olarak `username` ve `password` alanları içeren basit bir giriş formu sağlar. Bu kimlik doğrulama yöntemini tam olarak desteklemek için, özel `Kimlik Doğrulama Sağlayıcı`nızda aşağıdaki yöntemleri uygulamanız gerekir:
 
 * [is_authenticated][starlette_admin.auth.BaseAuthProvider.is_authenticated]: Bu metod, gelen her isteği doğrulamak için çağrılacaktır.
 * [get_admin_user][starlette_admin.auth.BaseAuthProvider.get_admin_user]: Bağlı olan kullanıcı `adı` ve/veya `profil` bilgisini döndürür.
