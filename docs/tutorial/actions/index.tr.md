@@ -18,7 +18,7 @@ Bu durumda birçok nesneyi aynı anda güncellemek için bir *özelleştirilmiş
 
     Toplu işlem adı, ModelView içinde benzersiz olmalıdır.
 
-## Example
+## Örnek
 
 ```python
 from typing import List, Any
