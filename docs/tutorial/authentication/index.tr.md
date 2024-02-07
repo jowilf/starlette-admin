@@ -65,7 +65,7 @@ class UsernameAndPasswordProvider(AuthProvider):
         if request.session.get("username", None) in users:
             """
             İsteğin durumunda bulunan `user` nesnesini kaydedin.
-            Daha sonra bağlı kullanicinin erişimin' kısıtlamak için kullanılabilir.
+            Daha sonra bağlı kullanıcının erişimini kısıtlamak için kullanılabilir.
             """
             request.state.user = users.get(request.session["username"])
             return True
