@@ -230,7 +230,7 @@ class ReportView(CustomView):
 ```
 
 !!! important "Önemli"
-    Görünüm erişilemez olduğunda, menü yapısında yer almaz.
+    Görünüm erişilemez olduğunda menü yapısında yer almaz.
 
 ### [ModelView][starlette_admin.views.BaseModelView] İçin
 
