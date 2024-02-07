@@ -119,7 +119,7 @@ Bu sayede tam donanımlı CRUD görünümlerine sahip olursunuz:
 
 ### CustomView - Özel Görünüm
 
-[CustomView][starlette_admin.views.CustomView] ile kendi görünümlerinizi (herhangi bir modele bağlı olmayan) ekleyebilirsiniz. Mesela, analitik verileri gösteren özel bir ana sayfa.
+[CustomView][starlette_admin.views.CustomView] ile (herhangi bir modele bağlı olmayan) kendi görünümlerinizi ekleyebilirsiniz. Mesela, analitik verileri gösteren özel bir ana sayfa.
 
 ```python
 from starlette_admin import CustomView
