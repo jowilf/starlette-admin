@@ -12,7 +12,7 @@ Bu durumda birçok nesneyi aynı anda güncellemek için bir *özelleştirilmiş
 !!! note "Not"
     *starlette-admin* varsayılan olarak birçok nesneyi aynı anda silmek için bir toplu işlem sunar.
 
-[ModelView][starlette_admin.views.BaseModelView]inize varsayılan silme işlemi dışında başka toplu işlemler eklemek için, istediğiniz mantığı uygulayan bir fonksiyon tanımlayabilir ve [@action][starlette_admin.actions.action] dekoratörü ile sarabilirsiniz (Flask-Admin'den esinlenilmiştir).
+[ModelView][starlette_admin.views.BaseModelView]'inize varsayılan silme işlemi dışında başka toplu işlemler eklemek için istediğiniz mantığı uygulayan bir fonksiyon tanımlayabilir ve bu fonksiyonu [@action][starlette_admin.actions.action] dekoratörü ile sarabilirsiniz (Flask-Admin'den esinlenilmiştir).
 
 !!! warning "Uyarı"
 
