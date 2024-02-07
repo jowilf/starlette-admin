@@ -240,8 +240,8 @@ class ReportView(CustomView):
 * `can_create`: Bir öğeyi oluşturma izni.
 * `can_edit`: Bir öğeyi düzenleme izni.
 * `can_delete`: Bir öğeyi silme izni.
-* `is_action_allowed`: ismi verilen <abbr title="action">toplu işlem</abbr>in izin verilip verilmediğini doğrulayın.
-* `is_row_action_allowed`: ismi verilen <abbr title="action">satır işlem</abbr>inin izin verilip verilmediğini doğrulayın.
+* `is_action_allowed`: belirli bir <abbr title="action">toplu işlem</abbr>in izin verilip verilmediğini doğrulayın.
+* `is_row_action_allowed`: belirli bir <abbr title="action">satır işlem</abbr>inin izin verilip verilmediğini doğrulayın.
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
