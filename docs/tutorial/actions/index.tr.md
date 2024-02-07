@@ -160,7 +160,7 @@ class ArticleView(ModelView):
 
 ### Liste Derleme
 
-`RowActionsDisplayType`, satır işlemlerinin list görünümünde nasıl görüntüleneceğini belirlemek için için seçenekler sağlar.
+`RowActionsDisplayType` enum sınıfı, satır işlemlerinin liste görünümünde nasıl görüntüleneceğini belirlemek için seçenekler sağlar.
 
 #### RowActionsDisplayType.ICON_LIST
 
