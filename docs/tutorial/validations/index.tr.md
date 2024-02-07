@@ -48,7 +48,7 @@ Gönderilen verinin Pydantic ile otomatik olarak doğrulanması için, yalnızca
 
 ### Özel Doğrulama
 
-Ayrıca, belirli veri gereksinimlerini zorunda kılmak için kendi doğrulama fonksiyonlarınızı oluşturabilirsiniz.
+Ayrıca, belirli veri gereksinimlerini zorunlu kılmak için kendi doğrulama fonksiyonlarınızı oluşturabilirsiniz.
 
 !!! example "Örnek"
 
