@@ -5,7 +5,7 @@
 !!! important "Önemli"
     Yeni bir alan oluşturmadan önce, mevcut olanları genişletmeyi deneyin. Çoğu duruma uyacak kadar esnektirler.
 
-Yeni bir nesne tanımlamak için ilk adım, [BaseField][starlette_admin.fields.BaseField] veya diğer alanlardan türetilmiş bir sınıf tanımlamaktır.
+İlk adım, [BaseField][starlette_admin.fields.BaseField] veya diğer alanlardan türetilmiş bir sınıf tanımlamaktır.
 
 ```python
 from starlette_admin import BaseField
