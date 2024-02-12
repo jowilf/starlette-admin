@@ -449,16 +449,14 @@ class TagsField(BaseField):
         return []
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
-        if action.is_form():
-            return [
-                str(
-                    request.url_for(
-                        f"{request.app.state.ROUTE_NAME}:statics",
-                        path="js/vendor/select2.min.js",
-                    )
+        return [
+            str(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/select2.min.js",
                 )
-            ]
-        return []
+            )
+        ]
 
 
 @dataclass
@@ -601,7 +599,7 @@ class EnumField(StringField):
     def additional_css_links(
         self, request: Request, action: RequestAction
     ) -> List[str]:
-        if self.select2 and action.is_form():
+        if self.select2:
             return [
                 str(
                     request.url_for(
@@ -613,7 +611,7 @@ class EnumField(StringField):
         return []
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
-        if self.select2 and action.is_form():
+        if self.select2:
             return [
                 str(
                     request.url_for(
@@ -1058,28 +1056,24 @@ class RelationField(BaseField):
     def additional_css_links(
         self, request: Request, action: RequestAction
     ) -> List[str]:
-        if action.is_form():
-            return [
-                str(
-                    request.url_for(
-                        f"{request.app.state.ROUTE_NAME}:statics",
-                        path="css/select2.min.css",
-                    )
+        return [
+            str(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="css/select2.min.css",
                 )
-            ]
-        return []
+            )
+        ]
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
-        if action.is_form():
-            return [
-                str(
-                    request.url_for(
-                        f"{request.app.state.ROUTE_NAME}:statics",
-                        path="js/vendor/select2.min.js",
-                    )
+        return [
+            str(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path="js/vendor/select2.min.js",
                 )
-            ]
-        return []
+            )
+        ]
 
 
 @dataclass

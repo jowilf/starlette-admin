@@ -376,6 +376,7 @@ class BaseAdmin:
                 "model": model,
                 "title": model.title(request),
                 "_actions": await model.get_all_actions(request),
+                "_row_actions": await model.get_all_row_actions(request),
                 "__js_model__": await model._configs(request),
             },
         )
@@ -398,6 +399,7 @@ class BaseAdmin:
                 "model": model,
                 "raw_obj": obj,
                 "_actions": await model.get_all_row_actions(request),
+                "_row_actions": await model.get_all_row_actions(request),
                 "obj": await model.serialize(obj, request, RequestAction.DETAIL),
             },
         )

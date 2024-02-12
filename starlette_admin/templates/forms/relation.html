@@ -2,6 +2,7 @@
 {% set fpk = foreign_model.pk_attr %}
 <div class="{% if error %}{{ field.error_class }}{% endif %}">
     <select data-allow-clear="true"
+            {% if action %}data-dropdown-parent="#modal-action-{{ action.name }}"{% endif %}
             data-placeholder="Select {{ field.id }}"
             id="{{ field.id }}"
             name="{{ field.id }}"

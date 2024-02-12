@@ -131,6 +131,8 @@ registerFieldInitializer(function (element) {
         }
       });
   });
+  $('.select2-container').css('width','100%');
+
   $("input.field-datetime", element).each(function () {
     let el = $(this);
     el.flatpickr({

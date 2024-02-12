@@ -1,6 +1,8 @@
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional, Sequence
 
 from starlette_admin.i18n import lazy_gettext as _
+
+from .fields import BaseField
 
 
 def action(
@@ -11,6 +13,8 @@ def action(
     submit_btn_text: Optional[str] = _("Yes, Proceed"),
     icon_class: Optional[str] = None,
     form: Optional[str] = None,
+    form_template: Optional[str] = "forms/action_form.html",
+    form_fields: Optional[Sequence[BaseField]] = None,
     custom_response: Optional[bool] = False,
 ) -> Callable[[Callable[..., Awaitable[str]]], Any]:
     """
@@ -26,6 +30,8 @@ def action(
                 `btn-outline-danger`, ...)
         icon_class: Icon class (ex. `fa-lite fa-folder`, `fa-duotone fa-circle-right`, ...)
         form: Custom form to collect data from user
+        form_template: Custom action form template file
+        form_fields: Fields of the form template
         custom_response: Set to True when you want to return a custom Starlette response
             from your action instead of a string.
 
@@ -91,6 +97,8 @@ def action(
             "submit_btn_class": submit_btn_class,
             "icon_class": icon_class,
             "form": form if form is not None else "",
+            "form_template": form_template,
+            "form_fields": form_fields or [],
             "custom_response": custom_response,
         }
         return f
@@ -107,6 +115,8 @@ def row_action(
     submit_btn_text: Optional[str] = _("Yes, Proceed"),
     icon_class: Optional[str] = None,
     form: Optional[str] = None,
+    form_template: Optional[str] = "forms/action_form.html",
+    form_fields: Optional[Sequence[BaseField]] = None,
     custom_response: Optional[bool] = False,
     exclude_from_list: bool = False,
     exclude_from_detail: bool = False,
@@ -123,6 +133,8 @@ def row_action(
         submit_btn_text: Text for the submit button.
         icon_class: Icon class (ex. `fa-lite fa-folder`, `fa-duotone fa-circle-right`, ...)
         form: Custom HTML to collect data from the user.
+        form_template: Custom action form template file
+        form_fields: Fields of the form template
         custom_response: Set to True when you want to return a custom Starlette response
             from your action instead of a string.
         exclude_from_list: Set to True to exclude the action from the list view.
@@ -163,6 +175,8 @@ def row_action(
             "submit_btn_class": submit_btn_class,
             "icon_class": icon_class,
             "form": form if form is not None else "",
+            "form_template": form_template,
+            "form_fields": form_fields or [],
             "custom_response": custom_response,
             "exclude_from_list": exclude_from_list,
             "exclude_from_detail": exclude_from_detail,
