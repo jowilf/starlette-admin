@@ -2,6 +2,7 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import (
+    Boolean,
     Column,
     Date,
     DateTime,
@@ -51,9 +52,10 @@ class Post(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(100), nullable=False)
     text = Column(Text, nullable=False)
-    date = Column(Date)
-    status = Column(Enum(Status))
+    date = Column(Date, default=datetime.today)
+    status = Column(Enum(Status), default=Status.PENDING)
     created_at = Column(DateTime, default=datetime.utcnow)
+    is_public = Column(Boolean, default=True, nullable=False)
 
     publisher_id = Column(Integer, ForeignKey(User.id))
     publisher = relationship(User, back_populates="posts")

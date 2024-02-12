@@ -11,6 +11,7 @@ from sqlalchemy.orm import (
     RelationshipProperty,
 )
 from sqlalchemy.sql.elements import ColumnElement, Label
+from sqlalchemy.sql.schema import ScalarElementColumnDefault
 from starlette_admin.contrib.sqla.exceptions import NotSupportedColumn
 from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.converters import BaseModelConverter, converts
@@ -130,15 +131,28 @@ class ModelConverter(BaseSQLAModelConverter):
                 "exclude_from_edit": True,
                 "exclude_from_create": True,
             }
+
+        default_value = ""
+        help_text = column.comment
+        if column.default:
+            if isinstance(column.default, ScalarElementColumnDefault):
+                default_value = column.default.arg
+            elif help_text:
+                # We can't evaluate even CallableColumnDefault because it requires execution context
+                help_text = f"{help_text}. Defaulted to {column.default.arg}"
+            else:
+                help_text = f"Defaulted to {column.default.arg}"
+
         return {
             "name": name,
-            "help_text": column.comment,
+            "help_text": help_text,
             "required": (
                 not column.nullable
                 and not isinstance(column.type, (Boolean,))
                 and not column.default
                 and not column.server_default
             ),
+            "default": default_value,
         }
 
     @classmethod
