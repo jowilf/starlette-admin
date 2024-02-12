@@ -70,14 +70,14 @@ class Model(Base):
     uuid = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
     choice = Column(ChoiceType([(1, "One"), (2, "Two")], impl=Integer()))
     counter = Column(ChoiceType(Counter))
-    arrow = Column(ArrowType, default=arrow.utcnow())
+    arrow = Column(ArrowType, default=arrow.utcnow)
     url = Column(URLType)
     email = Column(EmailType)
     ip_address = Column(IPAddressType)
     country = Column(CountryType)
     color = Column(ColorType)
     timezone = Column(TimezoneType(backend="zoneinfo"))
-    currency = Column(CurrencyType)
+    currency = Column(CurrencyType, default="USD")
     scalars = Column(ScalarListType)
     phonenumber = Column(PhoneNumberType)
     password = Column(
@@ -89,17 +89,22 @@ class Model(Base):
 
 async def test_model_fields_conversion():
     assert ModelView(Model).fields == [
-        StringField("uuid", exclude_from_create=True, exclude_from_edit=True),
+        StringField(
+            "uuid",
+            exclude_from_create=True,
+            exclude_from_edit=True,
+            help_text="Defaulted to uuid4",
+        ),
         EnumField("choice", choices=((1, "One"), (2, "Two")), coerce=int),
         EnumField("counter", enum=Counter, coerce=str),
-        ArrowField("arrow"),
+        ArrowField("arrow", help_text="Defaulted to utcnow"),
         URLField("url"),
         EmailField("email"),
         StringField("ip_address"),
         CountryField("country"),
         ColorField("color"),
         TimeZoneField("timezone", coerce=zoneinfo.ZoneInfo),
-        CurrencyField("currency"),
+        CurrencyField("currency", default="USD"),
         ListField(StringField("scalars")),
         PhoneField("phonenumber"),
         PasswordField("password"),
