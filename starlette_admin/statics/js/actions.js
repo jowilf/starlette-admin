@@ -1,5 +1,5 @@
 /**
- * A class for managing bactch and row actions in the admin interface.
+ * A class for managing batch and row actions in the admin interface.
  */
 class ActionManager {
   /**
@@ -41,26 +41,17 @@ class ActionManager {
    */
   initActionModal() {
     let self = this;
-    $("#modal-action").on("show.bs.modal", function (event) {
+    $("[data-action-modal]").on("show.bs.modal", function (event) {
       let button = $(event.relatedTarget); // Button that triggered the modal
-      let confirmation = button.data("confirmation");
-      let form = button.data("form");
       let name = button.data("name");
-      let submit_btn_text = button.data("submit-btn-text");
-      let submit_btn_class = button.data("submit-btn-class");
       let customResponse = button.data("custom-response") === true;
       let isRowAction = button.data("is-row-action") === true;
 
       let modal = $(this);
-      modal.find("#actionConfirmation").text(confirmation);
-      let modalForm = modal.find("#modal-form");
-      modalForm.html(form);
-      let actionSubmit = modal.find("#actionSubmit");
-      actionSubmit.text(submit_btn_text);
-      actionSubmit.removeClass().addClass(`btn ${submit_btn_class}`);
+      let actionSubmit = modal.find("[data-action-submit]");
       actionSubmit.unbind();
       actionSubmit.on("click", function (event) {
-        const formElements = modalForm.find("form");
+        const formElements = modal.find("form");
         const form = formElements.length ? formElements.get(0) : null;
         self.submitAction(name, form, customResponse, isRowAction, button);
       });

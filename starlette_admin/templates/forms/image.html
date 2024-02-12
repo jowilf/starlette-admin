@@ -6,7 +6,7 @@
     {% endif %}
 </div>
 {% include "forms/_error.html" %}
-{% if action=='EDIT' and field._isvalid_value(data) %}
+{% if request_action=='EDIT' and field._isvalid_value(data) %}
     <div class="mt-2 border p-2">
         {% include "displays/image.html" %}
         {% include "forms/_delete.html" %}
