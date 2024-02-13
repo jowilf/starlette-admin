@@ -1,19 +1,32 @@
 from datetime import date, timedelta
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from sqlalchemy.exc import IntegrityError
 from starlette.requests import Request
-from starlette_admin import EnumField, ExportType, StringField
+from starlette_admin import (
+    EnumField,
+    ExportType,
+    HasOne,
+    StringField,
+    action,
+    row_action,
+)
 from starlette_admin.contrib.sqla import ModelView
-from starlette_admin.exceptions import FormValidationError
+from starlette_admin.exceptions import ActionFailed, FormValidationError
 
-from .models import Post, User
+from .models import Post, Tag, User
 
 AVAILABLE_USER_TYPES = [
     ("admin", "Admin"),
     ("content-writer", "Content writer"),
     ("editor", "Editor"),
     ("regular-user", "Regular user"),
+]
+
+AVAILABLE_POST_STATUSES = [
+    ("pending", "Pending"),
+    ("rejected", "Rejected"),
+    ("approved", "Approved"),
 ]
 
 
@@ -54,6 +67,43 @@ class PostView(ModelView):
         if len(errors) > 0:
             raise FormValidationError(errors)
         return await super().validate(request, data)
+
+    @action(
+        name="add_tag",
+        text="Add a tag for selected posts",
+        icon_class="fas fa-tag",
+        confirmation="Are you sure you want to add a tag to all of these posts?",
+        form_fields=[HasOne("tag", identity="tag")],
+    )
+    async def add_tag(self, request: Request, pks: List[Any]):
+        form = await request.form()
+        tag_pk = form["tag"]
+        tag = await TagView(Tag).find_by_pk(request, tag_pk)
+        if not tag:
+            raise ActionFailed("Tag is missing")
+        posts = await self.find_by_pks(request, pks)
+        for post in posts:
+            post.tags.append(tag)
+
+        request.state.session.commit()
+        return f"Successfully added tag {tag.name} to selected posts"
+
+    @row_action(
+        name="approve",
+        text="Approve selected posts",
+        icon_class="fas fa-tag",
+        confirmation="Are you sure you want to change selected posts' status?",
+        form_fields=[
+            EnumField("status", choices=AVAILABLE_POST_STATUSES, select2=False)
+        ],
+    )
+    async def approve(self, request: Request, pk: Any):
+        form = await request.form()
+        status = form["status"]
+        post = await self.find_by_pk(request, pk)
+        post.status = status
+        request.state.session.commit()
+        return f"Post status successfully changed to {status}"
 
 
 class TagView(ModelView):
