@@ -350,6 +350,10 @@ class BaseAdmin:
             return JSONResponse({"msg": handler_return})
         except ActionFailed as exc:
             return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
+        except FormValidationError as exc:
+            return JSONResponse(
+                {"errors": exc.errors}, status_code=HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
     async def handle_row_action(self, request: Request) -> Response:
         request.state.action = RequestAction.ROW_ACTION
@@ -366,6 +370,10 @@ class BaseAdmin:
             return JSONResponse({"msg": handler_return})
         except ActionFailed as exc:
             return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
+        except FormValidationError as exc:
+            return JSONResponse(
+                {"errors": exc.errors}, status_code=HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
     async def _render_list(self, request: Request) -> Response:
         request.state.action = RequestAction.LIST

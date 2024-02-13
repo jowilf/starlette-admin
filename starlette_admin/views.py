@@ -16,6 +16,7 @@ from typing import (
 )
 
 from jinja2 import Template
+from multipart.exceptions import MultipartParseError
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
@@ -304,14 +305,22 @@ class BaseModelView(BaseView):
             self.fields_default_sort = [self.pk_attr]  # type: ignore[list-item]
 
         # Actions
-        self._actions: Dict[str, Dict[str, str]] = OrderedDict()
-        self._row_actions: Dict[str, Dict[str, str]] = OrderedDict()
+        self._actions: Dict[str, Dict[str, Any]] = OrderedDict()
+        self._row_actions: Dict[str, Dict[str, Any]] = OrderedDict()
         self._actions_handlers: Dict[
-            str, Callable[[Request, Sequence[Any]], Awaitable]
+            str,
+            Union[
+                Callable[[Request, Sequence[Any]], Awaitable],
+                Callable[[Request, Sequence[Any], Dict], Awaitable],
+            ],
         ] = OrderedDict()
-        self._row_actions_handlers: Dict[str, Callable[[Request, Any], Awaitable]] = (
-            OrderedDict()
-        )
+        self._row_actions_handlers: Dict[
+            str,
+            Union[
+                Callable[[Request, Any], Awaitable],
+                Callable[[Request, Any, Dict], Awaitable],
+            ],
+        ] = OrderedDict()
         self._init_actions()
 
     def is_active(self, request: Request) -> bool:
@@ -414,6 +423,21 @@ class BaseModelView(BaseView):
                     row_actions.append(_row_action)
         return row_actions
 
+    async def parse_form(
+        self, request: Request, form_fields: Sequence[BaseField]
+    ) -> Dict:
+        try:
+            data = await request.form()
+        except MultipartParseError:
+            # For empty FormData, `fetch` doesn't set Content-Type and therefore Starlette cannot parse the form.
+            # https://stackoverflow.com/questions/39280438/fetch-missing-boundary-in-multipart-form-data-post
+            data = {}
+
+        return {
+            f.name: await f.parse_form_data(request, data, request.state.action)
+            for f in form_fields
+        }
+
     async def handle_action(
         self, request: Request, pks: List[Any], name: str
     ) -> Union[str, Response]:
@@ -427,7 +451,13 @@ class BaseModelView(BaseView):
             raise ActionFailed("Invalid action")
         if not await self.is_action_allowed(request, name):
             raise ActionFailed("Forbidden")
-        handler_return = await handler(request, pks)
+
+        form_fields: List[BaseField] = self._actions[name]["form_fields"]
+        if form_fields:
+            data = await self.parse_form(request, form_fields)
+            handler_return = await handler(request, pks, data)
+        else:
+            handler_return = await handler(request, pks)
         custom_response = self._actions[name]["custom_response"]
         if isinstance(handler_return, Response) and not custom_response:
             raise ActionFailed(
@@ -448,7 +478,13 @@ class BaseModelView(BaseView):
             raise ActionFailed("Invalid row action")
         if not await self.is_row_action_allowed(request, name):
             raise ActionFailed("Forbidden")
-        handler_return = await handler(request, pk)
+
+        form_fields: List[BaseField] = self._row_actions[name]["form_fields"]
+        if form_fields:
+            data = await self.parse_form(request, form_fields)
+            handler_return = await handler(request, pk, data)
+        else:
+            handler_return = await handler(request, pk)
         custom_response = self._row_actions[name]["custom_response"]
         if isinstance(handler_return, Response) and not custom_response:
             raise ActionFailed(

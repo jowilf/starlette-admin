@@ -3,21 +3,28 @@
     <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-body">
-                <div>{{ action.confirmation }}</div>
-                <div>
-                    {% if action.form %}
-                        {{ action.form | safe }}
-                    {% elif action.form_template %}
-                        {% include action.form_template %}
-                    {% endif %}
+                <div data-loading style="display: none;">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <span class="ms-2">{{ _("Loading") }}...</span>
+                    </div>
+                </div>
+                <div data-form>
+                    <div>{{ action.confirmation }}</div>
+                    <div>
+                        {% if action.form %}
+                            {{ action.form | safe }}
+                        {% elif action.form_template %}
+                            {% include action.form_template %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-link link-secondary me-auto"
                         data-bs-dismiss="modal">{{ _("Cancel") }}</button>
                 <button type="button" class="btn {{ action.submit_btn_class | default("btn-primary", true) }}"
-                        data-action-submit
-                        data-bs-dismiss="modal">
+                        data-action-submit>
                     {{ action.submit_btn_text | default(_("Yes, Proceed"), true) }}
                 </button>
             </div>

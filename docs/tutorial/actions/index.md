@@ -115,7 +115,7 @@ generated html element (e.g. `<a href='https://example.com/?pk=4' ...>`).
 ### Example
 
 ```python
-from typing import Any
+from typing import Any, Dict
 
 from starlette.datastructures import FormData
 from starlette.requests import Request
@@ -145,10 +145,8 @@ class ArticleView(ModelView):
             EnumField("status", choices=['draft', 'published', 'rejected'], select2=True)
         ],
     )
-    async def make_published_row_action(self, request: Request, pk: Any) -> str:
+    async def make_published_row_action(self, request: Request, pk: Any, data: Dict) -> str:
         # Write your logic here
-
-        data: FormData = await request.form()
         article_status = data.get("status")
 
         if ...:
