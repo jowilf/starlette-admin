@@ -12,9 +12,9 @@ from starlette_admin import (
     row_action,
 )
 from starlette_admin.contrib.sqla import ModelView
-from starlette_admin.exceptions import ActionFailed, FormValidationError
+from starlette_admin.exceptions import FormValidationError
 
-from .models import Post, Tag, User
+from .models import Post, User
 
 AVAILABLE_USER_TYPES = [
     ("admin", "Admin"),
@@ -68,6 +68,13 @@ class PostView(ModelView):
             raise FormValidationError(errors)
         return await super().validate(request, data)
 
+    async def validate_add_tag(self, request: Request, data: Dict[str, Any]):
+        errors: Dict[str, str] = {}
+        if data["tag"] is None:
+            errors["tag"] = "You must specify a tag"
+        if len(errors) > 0:
+            raise FormValidationError(errors)
+
     @action(
         name="add_tag",
         text="Add a tag for selected posts",
@@ -75,12 +82,10 @@ class PostView(ModelView):
         confirmation="Are you sure you want to add a tag to all of these posts?",
         form_fields=[HasOne("tag", identity="tag")],
     )
-    async def add_tag(self, request: Request, pks: List[Any]):
-        form = await request.form()
-        tag_pk = form["tag"]
-        tag = await TagView(Tag).find_by_pk(request, tag_pk)
-        if not tag:
-            raise ActionFailed("Tag is missing")
+    async def add_tag(self, request: Request, pks: List[Any], data: Dict):
+        await self.validate_add_tag(request, data)
+
+        tag = data["tag"]
         posts = await self.find_by_pks(request, pks)
         for post in posts:
             post.tags.append(tag)
@@ -97,9 +102,8 @@ class PostView(ModelView):
             EnumField("status", choices=AVAILABLE_POST_STATUSES, select2=False)
         ],
     )
-    async def approve(self, request: Request, pk: Any):
-        form = await request.form()
-        status = form["status"]
+    async def approve(self, request: Request, pk: Any, data: Dict):
+        status = data["status"]
         post = await self.find_by_pk(request, pk)
         post.status = status
         request.state.session.commit()
