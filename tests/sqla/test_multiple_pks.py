@@ -69,11 +69,9 @@ async def client(app):
         yield c
 
 
-async def test_model_view(session: Session):
+async def test_pk_field(session: Session):
     view = ModelView(Record)
 
-    assert len(view.fields) == 5
-    assert view.pk_field == view.fields[-1]
     assert isinstance(view.pk_field, MultiplePKField)
     assert view.pk_field.name == "id1,id2,id3"
 

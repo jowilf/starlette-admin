@@ -5,6 +5,7 @@ Useful for dealing with objects with multiple primary keys.
 Copied from: https://github.com/flask-admin/flask-admin/blob/master/flask_admin/tools.py
 
 """
+
 from typing import Iterable, Tuple
 
 CHAR_ESCAPE = "."
