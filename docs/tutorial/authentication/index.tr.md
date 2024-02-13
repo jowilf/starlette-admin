@@ -15,7 +15,7 @@ Yönetici arayüzünüzü istenmeyen kullanıcılardan korumak için [AuthProvid
 ```python
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette_admin.auth import AdminUser, AuthProvider
+from starlette_admin.auth import AdminConfig, AdminUser, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 
 users = {
@@ -118,12 +118,15 @@ Bunlarla birlikte ihtiyaçlarınıza bağlı olarak aşağıdaki yöntemleri ge�
 from typing import Optional
 
 from starlette.datastructures import URL
-from starlette.middleware import Middleware
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
 from starlette.routing import Route
 from starlette_admin import BaseAdmin
-from starlette_admin.auth import AdminUser, AuthMiddleware, AuthProvider
+from starlette_admin.auth import (
+    AdminUser,
+    AuthProvider,
+    login_not_required,
+)
 
 from authlib.integrations.starlette_client import OAuth
 
@@ -173,6 +176,7 @@ class MyAuthProvider(AuthProvider):
             )
         )
 
+    @login_not_required
     async def handle_auth_callback(self, request: Request):
         auth0 = oauth.create_client("auth0")
         token = await auth0.authorize_access_token(request)
@@ -190,12 +194,6 @@ class MyAuthProvider(AuthProvider):
                 name="authorize_auth0",
             )
         )
-
-    def get_middleware(self, admin: "BaseAdmin") -> Middleware:
-        return Middleware(
-            AuthMiddleware, provider=self, allow_paths=["/auth0/authorize"]
-        )
-
 ```
 
 Çalışan bir örnek için [`https://github.com/jowilf/starlette-admin/tree/main/examples/authlib`](https://github.com/jowilf/starlette-admin/tree/main/examples/authlib) sayfasına bakabilirsiniz.
