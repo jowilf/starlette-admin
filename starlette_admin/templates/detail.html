@@ -30,7 +30,7 @@
                     <div id="alertContainer"></div>
                     <div class="card-header">
                         <h3 class="card-title">
-                            <strong>#{{ obj[pk] }}</strong>
+                            <strong>{{ model.get_detail_card_title(request, obj) }}</strong>
                         </h3>
                         <div class="card-actions">
                             {% with pk=obj[pk] %}

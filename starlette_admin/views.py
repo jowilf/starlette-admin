@@ -16,6 +16,7 @@ from typing import (
 )
 
 from jinja2 import Template
+from starlette.datastructures import URL
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
@@ -41,10 +42,12 @@ class BaseView:
     Attributes:
         label: Label of the view to be displayed.
         icon: Icon to be displayed for this model in the admin. Only FontAwesome names are supported.
+        add_to_menu: Display to menu or not
     """
 
     label: str = ""
     icon: Optional[str] = None
+    add_to_menu: bool = True
 
     def title(self, request: Request) -> str:
         """Return the title of the view to be displayed in the browser tab"""
@@ -667,6 +670,10 @@ class BaseModelView(BaseView):
         """Permission for viewing full details of Item. Return True by default"""
         return True
 
+    def can_view_list(self, request: Request) -> bool:
+        """Permission for viewing list of Items. Return True by default"""
+        return True
+
     def can_create(self, request: Request) -> bool:
         """Permission for creating new Items. Return True by default"""
         return True
@@ -678,6 +685,52 @@ class BaseModelView(BaseView):
     def can_delete(self, request: Request) -> bool:
         """Permission for deleting Items. Return True by default"""
         return True
+
+    def can_save_and_continue_editing(self, request: Request) -> bool:
+        """Return True if 'Save and continue editing' button should be visible. Returns `can_edit` by default"""
+        return self.can_edit(request)
+
+    def can_save_and_add_another(self, request: Request) -> bool:
+        """Return True if 'Save and add another' button should be visible. Returns `can_create` by default"""
+        return self.can_create(request)
+
+    def create_button_visible(self, request: Request) -> bool:
+        """Return True if 'Create' button should be visible. Returns `can_create` by default"""
+        return self.can_create(request)
+
+    def get_detail_card_title(self, request: Request, obj: Dict[str, Any]) -> str:
+        """Return the title of the detail card"""
+        return gettext("#%(pk)s") % {"pk": obj[self.pk_attr]}
+
+    def get_create_card_title(self, request: Request) -> str:
+        """Return the title of the create card"""
+        return gettext("New %(name)s") % {"name": self.name}
+
+    def get_edit_card_title(self, request: Request, obj: Dict[str, Any]) -> str:
+        """Return the title of the edit card"""
+        return gettext("Edit #%(pk)s") % {"pk": obj[self.pk_attr]}
+
+    def get_create_redirect_url(self, request: Request, obj: Any) -> URL:
+        """Return redirect url after saving item"""
+        route_name = request.app.state.ROUTE_NAME
+        return request.url_for(f"{route_name}:list", identity=self.identity)
+
+    def get_create_cancel_redirect_url(self, request: Request) -> URL:
+        """Return redirect url after canceling create page"""
+        route_name = request.app.state.ROUTE_NAME
+        return request.url_for(f"{route_name}:list", identity=self.identity)
+
+    def get_edit_redirect_url(self, request: Request, obj: Any) -> URL:
+        """Return redirect url after saving item"""
+        route_name = request.app.state.ROUTE_NAME
+        return request.url_for(f"{route_name}:list", identity=self.identity)
+
+    def get_edit_cancel_redirect_url(
+        self, request: Request, obj: Dict[str, Any]
+    ) -> URL:
+        """Return redirect url after canceling edit page"""
+        route_name = request.app.state.ROUTE_NAME
+        return request.url_for(f"{route_name}:list", identity=self.identity)
 
     async def serialize_field_value(
         self, value: Any, field: BaseField, action: RequestAction, request: Request

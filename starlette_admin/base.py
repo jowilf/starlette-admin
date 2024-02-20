@@ -367,7 +367,7 @@ class BaseAdmin:
         request.state.action = RequestAction.LIST
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        if not model.is_accessible(request):
+        if not model.is_accessible(request) or not model.can_view_list(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         return self.templates.TemplateResponse(
             model.list_template,
@@ -428,13 +428,14 @@ class BaseAdmin:
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = await model.get_pk_value(request, obj)
-        url = request.url_for(self.route_name + ":list", identity=model.identity)
         if form.get("_continue_editing", None) is not None:
             url = request.url_for(
                 self.route_name + ":edit", identity=model.identity, pk=pk
             )
         elif form.get("_add_another", None) is not None:
             url = request.url
+        else:
+            url = model.get_create_redirect_url(request, obj)
         return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_edit(self, request: Request) -> Response:
@@ -473,13 +474,14 @@ class BaseAdmin:
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = await model.get_pk_value(request, obj)
-        url = request.url_for(self.route_name + ":list", identity=model.identity)
         if form.get("_continue_editing", None) is not None:
             url = request.url_for(
                 self.route_name + ":edit", identity=model.identity, pk=pk
             )
         elif form.get("_add_another", None) is not None:
             url = request.url_for(self.route_name + ":create", identity=model.identity)
+        else:
+            url = model.get_edit_redirect_url(request, obj)
         return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_error(
