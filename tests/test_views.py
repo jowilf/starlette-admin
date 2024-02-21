@@ -70,6 +70,13 @@ class PostView(DummyModelView):
         IntegerField("id"),
         StringField("title"),
         TextAreaField("content"),
+        IntegerField(
+            name="content_length",
+            label="Content Length",
+            parse_func=lambda r, o: len(o.content),
+            exclude_from_create=True,
+            exclude_from_edit=True,
+        ),
         IntegerField("views"),
         TagsField("tags"),
     )

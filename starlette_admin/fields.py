@@ -85,6 +85,7 @@ class BaseField:
     label_template: str = "forms/_label.html"
     display_template: str = "displays/text.html"
     error_class = "is-invalid"
+    parse_func: Optional[Callable[[Request, Any], Any]] = None
 
     def __post_init__(self) -> None:
         if self.label is None:
@@ -124,7 +125,11 @@ class BaseField:
                 fields = ["id", MyCustomField("full_name")]
             ```
         """
-        return getattr(obj, self.name, None)
+        return (
+            self.parse_func(request, obj)
+            if self.parse_func
+            else getattr(obj, self.name, None)
+        )
 
     async def serialize_none_value(
         self, request: Request, action: RequestAction
