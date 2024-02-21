@@ -498,7 +498,7 @@ class BaseModelView(BaseView):
         text=_("Delete"),
         confirmation=_("Are you sure you want to delete this item?"),
         icon_class="fa-solid fa-trash",
-        submit_btn_text="Yes, delete",
+        submit_btn_text=_("Yes, delete"),
         submit_btn_class="btn-danger",
         action_btn_class="btn-danger",
     )
