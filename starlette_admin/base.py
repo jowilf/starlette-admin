@@ -46,6 +46,7 @@ class BaseAdmin:
         route_name: str = "admin",
         logo_url: Optional[str] = None,
         login_logo_url: Optional[str] = None,
+        favicon_url: Optional[str] = None,
         templates_dir: str = "templates",
         statics_dir: Optional[str] = None,
         index_view: Optional[CustomView] = None,
@@ -61,6 +62,7 @@ class BaseAdmin:
             route_name: Mounted Admin name
             logo_url: URL of logo to be displayed instead of title.
             login_logo_url: If set, it will be used for login interface instead of logo_url.
+            favicon_url: URL of favicon.
             templates_dir: Templates dir for customisation
             statics_dir: Statics dir for customisation
             index_view: CustomView to use for index page.
@@ -73,6 +75,7 @@ class BaseAdmin:
         self.route_name = route_name
         self.logo_url = logo_url
         self.login_logo_url = login_logo_url
+        self.favicon_url = favicon_url
         self.templates_dir = templates_dir
         self.statics_dir = statics_dir
         self.auth_provider = auth_provider
@@ -201,6 +204,7 @@ class BaseAdmin:
         templates.env.globals["__name__"] = self.route_name
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["login_logo_url"] = self.login_logo_url
+        templates.env.globals["favicon_url"] = self.favicon_url
         templates.env.globals["custom_render_js"] = lambda r: self.custom_render_js(r)
         templates.env.globals["get_locale"] = get_locale
         templates.env.globals["get_locale_display_name"] = get_locale_display_name
