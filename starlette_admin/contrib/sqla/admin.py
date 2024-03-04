@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Union
+from typing import Optional, Sequence, Union, Any
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -30,6 +30,7 @@ class Admin(BaseAdmin):
         route_name: str = "admin",
         logo_url: Optional[str] = None,
         login_logo_url: Optional[str] = None,
+        favicon_url: Optional[str] = None,
         templates_dir: str = "templates",
         statics_dir: Optional[str] = None,
         index_view: Optional[CustomView] = None,
@@ -44,6 +45,7 @@ class Admin(BaseAdmin):
             route_name=route_name,
             logo_url=logo_url,
             login_logo_url=login_logo_url,
+            favicon_url=favicon_url,
             templates_dir=templates_dir,
             statics_dir=statics_dir,
             index_view=index_view,
