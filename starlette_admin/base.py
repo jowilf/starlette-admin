@@ -218,9 +218,9 @@ class BaseAdmin:
         )
         templates.env.filters["tojson"] = lambda data: json.dumps(data, default=str)
         templates.env.filters["file_icon"] = get_file_icon
-        templates.env.filters[
-            "to_model"
-        ] = lambda identity: self._find_model_from_identity(identity)
+        templates.env.filters["to_model"] = (
+            lambda identity: self._find_model_from_identity(identity)
+        )
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
