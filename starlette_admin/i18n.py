@@ -15,7 +15,6 @@ SUPPORTED_LOCALES = [
     "ru",  # Russian
     "tr",  # Turkish
     "pt",  # Portuguese
-    # "pt_BR",  # Brazilian Portuguese
 ]
 
 

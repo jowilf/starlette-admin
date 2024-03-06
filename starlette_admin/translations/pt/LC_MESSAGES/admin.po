@@ -90,7 +90,7 @@ msgstr "Criar"
 #: starlette_admin/templates/list.html:34
 #, python-format
 msgid "New %(name)s"
-msgstr "Novos %(name)s"
+msgstr "Novo(a) %(name)s"
 
 #: starlette_admin/templates/create.html:44
 #: starlette_admin/templates/edit.html:46

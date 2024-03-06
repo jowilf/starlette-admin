@@ -147,16 +147,16 @@
 	},
 	"select": {
 		"cells": {
-			"1": "1 célula seleccionada",
-			"_": "%d células seleccionadas"
+			"1": "1 célula selecionada",
+			"_": "%d células selecionadas"
 		},
 		"columns": {
-			"1": "1 coluna seleccionada",
-			"_": "%d colunas seleccionadas"
+			"1": "1 coluna selecionada",
+			"_": "%d colunas selecionadas"
 		},
 		"rows": {
-			"1": "%d linha seleccionada",
-			"_": "%d linhas seleccionadas"
+			"1": "%d linha selecionada",
+			"_": "%d linhas selecionadas"
 		}
 	},
 	"starlette-admin": {
