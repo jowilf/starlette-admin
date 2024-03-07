@@ -1,175 +1,111 @@
 {
 	"aria": {
-		"sortAscending": ": activate to sort column ascending",
-		"sortDescending": ": activate to sort column descending"
+		"sortAscending": ": aktivieren, um Spalte aufsteigend zu sortieren",
+		"sortDescending": ": aktivieren, um Spalte absteigend zu sortieren"
 	},
 	"buttons": {
-		"collection": "Collection <span class='ui-button-icon-primary ui-icon ui-icon-triangle-1-s'/>",
-		"colvis": "Show/Hide columns",
-		"colvisRestore": "Restore visibility",
-		"copy": "Copy",
-		"copyKeys": "Press ctrl or u2318 + C to copy the table data to your system clipboard.<br><br>To cancel, click this message or press escape.",
+		"collection": "Sammlung <span class='ui-button-icon-primary ui-icon ui-icon-triangle-1-s'/>",
+		"colvis": "Spalten anzeigen/ausblenden",
+		"colvisRestore": "Sichtbarkeit wiederherstellen",
+		"copy": "Kopieren",
+		"copyKeys": "Drücken Sie Strg oder u2318 + C, um die Tabellendaten in die Zwischenablage zu kopieren.<br><br>Um abzubrechen, klicken Sie auf diese Nachricht oder drücken Sie Escape.",
 		"copySuccess": {
-			"1": "Copied 1 row to clipboard",
-			"_": "Copied %d rows to clipboard"
+			"1": "1 Zeile in die Zwischenablage kopiert",
+			"_": "%d Zeilen in die Zwischenablage kopiert"
 		},
-		"copyTitle": "Copy to Clipboard",
-		"createState": "Create State",
+		"copyTitle": "In Zwischenablage kopieren",
+		"createState": "Status erstellen",
 		"csv": "CSV",
 		"excel": "Excel",
 		"pageLength": {
-			"-1": "Show all rows",
-			"_": "Show %d rows"
+			"-1": "Alle Zeilen anzeigen",
+			"_": "%d Zeilen anzeigen"
 		},
 		"pdf": "PDF",
-		"print": "Print",
-		"removeAllStates": "Remove All States",
-		"removeState": "Remove",
-		"renameState": "Rename",
-		"savedStates": "Saved States",
-		"stateRestore": "State %d",
-		"updateState": "Update"
+		"print": "Drucken",
+		"removeAllStates": "Alle Status entfernen",
+		"removeState": "Entfernen",
+		"renameState": "Umbenennen",
+		"savedStates": "Gespeicherte Status",
+		"stateRestore": "Status %d",
+		"updateState": "Aktualisieren"
 	},
 	"datetime": {
 		"amPm": [
-			"am",
-			"pm"
+			"vormittags",
+			"nachmittags"
 		],
-		"hours": "Hour",
+		"hours": "Stunde",
 		"minutes": "Minute",
 		"months": [
-			"January",
-			"February",
-			"March",
+			"Januar",
+			"Februar",
+			"März",
 			"April",
-			"May",
-			"June",
-			"July",
+			"Mai",
+			"Juni",
+			"Juli",
 			"August",
 			"September",
-			"October",
+			"Oktober",
 			"November",
-			"December"
+			"Dezember"
 		],
-		"next": "Next",
-		"previous": "Previous",
-		"seconds": "Second",
+		"next": "Weiter",
+		"previous": "Zurück",
+		"seconds": "Sekunde",
 		"unknown": "-",
 		"weekdays": [
-			"Sun",
-			"Mon",
-			"Tue",
-			"Wed",
-			"Thu",
-			"Fri",
-			"Sat"
+			"So",
+			"Mo",
+			"Di",
+			"Mi",
+			"Do",
+			"Fr",
+			"Sa"
 		]
 	},
 	"decimal": ".",
-	"emptyTable": "No data available in table",
-	"info": "Showing _START_ to _END_ of _TOTAL_ entries",
-	"infoEmpty": "Showing 0 to 0 of 0 entries",
-	"infoFiltered": "(filtered from _MAX_ total entries)",
-	"infoThousands": ",",
-	"lengthMenu": "Show _MENU_ entries",
-	"loadingRecords": "Loading...",
+	"emptyTable": "Keine Daten in der Tabelle vorhanden",
+	"info": "_START_ bis _END_ von _TOTAL_ Einträgen anzeigen",
+	"infoEmpty": "0 bis 0 von 0 Einträgen anzeigen",
+	"infoFiltered": "(gefiltert von _MAX_ Gesamteinträgen)",
+	"infoThousands": ".",
+	"lengthMenu": "_MENU_ Einträge anzeigen",
+	"loadingRecords": "Wird geladen...",
 	"paginate": {
-		"first": "First",
-		"last": "Last",
-		"next": "Next",
-		"previous": "Previous"
+		"first": "Erste",
+		"last": "Letzte",
+		"next": "Nächste",
+		"previous": "Vorherige"
 	},
-	"processing": "Processing...",
-	"search": "Search:",
-	"searchBuilder": {
-		"add": "Add Condition",
-		"button": {
-			"0": "<i class=\"fa-solid fa-filter\"></i> Filter",
-			"_": "<i class=\"fa-solid fa-filter\"></i> Filter (%d)"
-		},
-		"clearAll": "Reset",
-		"condition": "Condition",
-		"conditions": {
-			"array": {
-				"contains": "Contains",
-				"empty": "Empty",
-				"equals": "Equals",
-				"not": "Not",
-				"notEmpty": "Not Empty",
-				"without": "Without"
-			},
-			"date": {
-				"after": "After",
-				"before": "Before",
-				"between": "Between",
-				"empty": "Empty",
-				"equals": "Equals",
-				"not": "Not",
-				"notBetween": "Not Between",
-				"notEmpty": "Not Empty"
-			},
-			"number": {
-				"between": "Between",
-				"empty": "Empty",
-				"equals": "Equals",
-				"gt": "Greater Than",
-				"gte": "Greater Than Equal To",
-				"lt": "Less Than",
-				"lte": "Less Than Equal To",
-				"not": "Not",
-				"notBetween": "Not Between",
-				"notEmpty": "Not Empty"
-			},
-			"string": {
-				"contains": "Contains",
-				"empty": "Empty",
-				"endsWith": "Ends With",
-				"equals": "Equals",
-				"not": "Not",
-				"notContains": "Does Not Contain",
-				"notEmpty": "Not Empty",
-				"notEndsWith": "Does Not End With",
-				"notStartsWith": "Does Not Start With",
-				"startsWith": "Starts With"
-			}
-		},
-		"data": "Data",
-		"deleteTitle": "Delete filtering rule",
-		"leftTitle": "Outdent Criteria",
-		"logicAnd": "And",
-		"logicOr": "Or",
-		"rightTitle": "Indent Criteria",
-		"title": {
-			"0": "Filter",
-			"_": "Filter (%d)"
-		},
-		"value": "Value"
-	},
+	"processing": "Verarbeitung...",
+	"search": "Suchen:",
 	"select": {
 		"cells": {
-			"1": "1 cell selected",
-			"_": "%d cells selected"
+			"1": "1 Zelle ausgewählt",
+			"_": "%d Zellen ausgewählt"
 		},
 		"columns": {
-			"1": "1 column selected",
-			"_": "%d columns selected"
+			"1": "1 Spalte ausgewählt",
+			"_": "%d Spalten ausgewählt"
 		},
 		"rows": {
-			"1": "1 row selected",
-			"_": "%d rows selected"
+			"1": "1 Zeile ausgewählt",
+			"_": "%d Zeilen ausgewählt"
 		}
 	},
 	"starlette-admin": {
 		"buttons": {
-			"export": "Export"
+			"export": "Exportieren"
 		},
 		"conditions": {
-			"empty": "Empty",
-			"false": "False",
-			"notEmpty": "Not Empty",
-			"true": "True"
+			"empty": "Leer",
+			"false": "Falsch",
+			"notEmpty": "Nicht leer",
+			"true": "Wahr"
 		}
 	},
-	"thousands": ",",
-	"zeroRecords": "No matching records found"
+	"thousands": ".",
+	"zeroRecords": "Keine übereinstimmenden Datensätze gefunden"
 }
