@@ -19,7 +19,6 @@ class Admin(BaseAdmin):
         route_name: str = "admin",
         logo_url: Optional[str] = None,
         login_logo_url: Optional[str] = None,
-        favicon_url: Optional[str] = None,
         templates_dir: str = "templates",
         statics_dir: Optional[str] = None,
         index_view: Optional[CustomView] = None,
@@ -27,6 +26,7 @@ class Admin(BaseAdmin):
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
         i18n_config: Optional[I18nConfig] = None,
+        favicon_url: Optional[str] = None,
     ) -> None:
         super().__init__(
             title=title,
@@ -34,7 +34,6 @@ class Admin(BaseAdmin):
             route_name=route_name,
             logo_url=logo_url,
             login_logo_url=login_logo_url,
-            favicon_url=favicon_url,
             templates_dir=templates_dir,
             statics_dir=statics_dir,
             index_view=index_view,
@@ -42,6 +41,7 @@ class Admin(BaseAdmin):
             middlewares=middlewares,
             debug=debug,
             i18n_config=i18n_config,
+            favicon_url=favicon_url,
         )
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)
         self.middlewares.insert(0, Middleware(EngineMiddleware, engine=engine))

@@ -46,7 +46,6 @@ class BaseAdmin:
         route_name: str = "admin",
         logo_url: Optional[str] = None,
         login_logo_url: Optional[str] = None,
-        favicon_url: Optional[str] = None,
         templates_dir: str = "templates",
         statics_dir: Optional[str] = None,
         index_view: Optional[CustomView] = None,
@@ -54,6 +53,7 @@ class BaseAdmin:
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
         i18n_config: Optional[I18nConfig] = None,
+        favicon_url: Optional[str] = None,
     ):
         """
         Parameters:
@@ -62,13 +62,13 @@ class BaseAdmin:
             route_name: Mounted Admin name
             logo_url: URL of logo to be displayed instead of title.
             login_logo_url: If set, it will be used for login interface instead of logo_url.
-            favicon_url: URL of favicon.
             templates_dir: Templates dir for customisation
             statics_dir: Statics dir for customisation
             index_view: CustomView to use for index page.
             auth_provider: Authentication Provider
             middlewares: Starlette middlewares
             i18n_config: i18n configuration
+            favicon_url: URL of favicon.
         """
         self.title = title
         self.base_url = base_url
