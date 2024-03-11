@@ -65,7 +65,7 @@
 			"Sa"
 		]
 	},
-	"decimal": ".",
+	"decimal": ",",
 	"emptyTable": "Keine Daten in der Tabelle vorhanden",
 	"info": "_START_ bis _END_ von _TOTAL_ Einträgen anzeigen",
 	"infoEmpty": "0 bis 0 von 0 Einträgen anzeigen",
