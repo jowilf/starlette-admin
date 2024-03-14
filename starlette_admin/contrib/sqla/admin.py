@@ -37,6 +37,7 @@ class Admin(BaseAdmin):
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
         i18n_config: Optional[I18nConfig] = None,
+        favicon_url: Optional[str] = None,
     ) -> None:
         super().__init__(
             title=title,
@@ -51,6 +52,7 @@ class Admin(BaseAdmin):
             middlewares=middlewares,
             debug=debug,
             i18n_config=i18n_config,
+            favicon_url=favicon_url,
         )
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)
         self.middlewares.insert(0, Middleware(DBSessionMiddleware, engine=engine))
