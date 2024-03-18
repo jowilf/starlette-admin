@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+* Add German translation by [@disrupted](https://github.com/disrupted) in [#523](https://github.com/jowilf/starlette-admin/pull/523)
+
 ## [0.13.2] - 2023-02-04
 
 ### Fixed
