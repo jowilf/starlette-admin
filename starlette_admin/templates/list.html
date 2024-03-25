@@ -118,6 +118,10 @@
             margin-top: 0px !important;
             margin-bottom: 0px !important;
         }
+
+        .is-invalid .select2-selection {
+            border-color: #d63939 !important;
+        }
     </style>
 {% endblock %}
 {% block script %}
@@ -157,4 +161,6 @@
             src="{{ url_for(__name__ ~ ':statics', path='js/actions.js') }}"></script>
     <script type="text/javascript"
             src="{{ url_for(__name__ ~ ':statics', path='js/list.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for(__name__ ~ ':statics', path='js/form.js') }}"></script>
 {% endblock %}
