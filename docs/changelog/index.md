@@ -9,7 +9,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-* Add Support for favicon customization by [@omarmoo5](https://github.com/omarmoo5) in [#520](https://github.com/jowilf/starlette-admin/pull/520)
+* Add German translation
+  by [@disrupted](https://github.com/disrupted)
+  in [#523](https://github.com/jowilf/starlette-admin/pull/523)
+* Add Support for favicon customization
+  by [@omarmoo5](https://github.com/omarmoo5)
+  in [#520](https://github.com/jowilf/starlette-admin/pull/520)
 
 ## [0.13.2] - 2023-02-04
 
