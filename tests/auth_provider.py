@@ -42,7 +42,7 @@ class MyAuthProvider(AuthProvider):
     async def is_authenticated(self, request) -> bool:
         if "session" in request.cookies:
             username = request.cookies.get("session")
-            user_roles = users.get(username, None)
+            user_roles = users.get(username)
             if user_roles is not None:
                 """Save user roles in request state, can be use later,
                 to restrict user actions in admin interface"""
