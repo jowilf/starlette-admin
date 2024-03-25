@@ -174,7 +174,7 @@ msgid "Actions"
 msgstr "Aktionen"
 
 #: starlette_admin/templates/forms/_delete.html:13
-msgid "Checked this to delete current content of this field"
+msgid "Check this to delete the current content of this field"
 msgstr "Markieren Sie dies, um den aktuellen Inhalt dieses Feldes zu löschen"
 
 #: starlette_admin/templates/forms/enum.html:5
