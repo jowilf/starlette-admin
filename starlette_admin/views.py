@@ -18,6 +18,7 @@ from typing import (
 from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
+from starlette.routing import Mount, Route
 from starlette.templating import Jinja2Templates
 from starlette_admin._types import ExportType, RequestAction, RowActionsDisplayType
 from starlette_admin.actions import action, link_row_action, row_action
@@ -45,6 +46,7 @@ class BaseView:
 
     label: str = ""
     icon: Optional[str] = None
+    routes: ClassVar[List[Union[Route, Mount]]] = []
 
     def title(self, request: Request) -> str:
         """Return the title of the view to be displayed in the browser tab"""
@@ -60,6 +62,22 @@ class BaseView:
         Return True if current user can access this view
         """
         return True
+
+    def _init_routes(self) -> None:
+        for _method_name, method in inspect.getmembers(
+            self, predicate=inspect.ismethod
+        ):
+            if hasattr(method, "_route"):
+                route = method._route
+                self.routes.append(
+                    Route(
+                        path=route["path"],
+                        endpoint=method,
+                        methods=route["methods"],
+                        name=route["name"],
+                        include_in_schema=route["include_in_schema"],
+                    )
+                )
 
 
 class DropDown(BaseView):
@@ -161,6 +179,9 @@ class CustomView(BaseView):
         self.name = name
         self.methods = methods
         self.add_to_menu = add_to_menu
+
+        # Expose
+        self._init_routes()
 
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
         """Default methods to render view. Override this methods to add your custom logic."""
@@ -313,6 +334,9 @@ class BaseModelView(BaseView):
             OrderedDict()
         )
         self._init_actions()
+
+        # Expose
+        self._init_routes()
 
     def is_active(self, request: Request) -> bool:
         return request.path_params.get("identity", None) == self.identity
