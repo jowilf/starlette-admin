@@ -220,10 +220,7 @@ class TestMongoBasic:
             },
         )
         assert response.status_code == 422
-        assert (
-            '<div class="invalid-feedback">String value is too short</div>'
-            in response.text
-        )
+        assert 'class="invalid-feedback">String value is too short' in response.text
         assert Product.objects.count() == 5
         with pytest.raises(me.DoesNotExist):
             Product.objects(brand="Infinix").get()
@@ -264,10 +261,7 @@ class TestMongoBasic:
             },
         )
         assert response.status_code == 422
-        assert (
-            '<div class="invalid-feedback">String value is too short</div>'
-            in response.text
-        )
+        assert 'class="invalid-feedback">String value is too short' in response.text
         assert Product.objects.count() == 5
         with pytest.raises(me.DoesNotExist):
             Product.objects(brand="Infinix").get()

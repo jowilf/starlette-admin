@@ -53,7 +53,7 @@ class TestFieldAccess:
             "/admin/post/create", cookies={"session": user_session}
         )
         assert response.status_code == 200
-        assert response.text.count('name="super_admin_only_field"') == expected_value
+        assert response.text.count(' name="super_admin_only_field"') == expected_value
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -102,7 +102,7 @@ class TestFieldAccess:
             f"/admin/post/edit/{post.id}", cookies={"session": user_session}
         )
         assert response.status_code == 200
-        assert response.text.count('name="super_admin_only_field"') == expected_value
+        assert response.text.count(' name="super_admin_only_field"') == expected_value
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
