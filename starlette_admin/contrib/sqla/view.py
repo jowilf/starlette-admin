@@ -527,7 +527,7 @@ class ModelView(BaseModelView):
         request: Request,
         data: Dict[str, Any],
         is_edit: bool = False,
-    ):
+    ) -> Dict[str, Any]:
         fields = self.get_fields_list(request, request.state.action)
         return await self.arrange_data_for_fields(request, data, fields)
 

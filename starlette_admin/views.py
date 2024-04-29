@@ -1,3 +1,4 @@
+import functools
 import inspect
 from abc import abstractmethod
 from collections import OrderedDict
@@ -17,6 +18,7 @@ from typing import (
 
 from jinja2 import Template
 from multipart.exceptions import MultipartParseError
+from starlette.datastructures import FormData
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
@@ -308,18 +310,10 @@ class BaseModelView(BaseView):
         self._actions: Dict[str, Dict[str, Any]] = OrderedDict()
         self._row_actions: Dict[str, Dict[str, Any]] = OrderedDict()
         self._actions_handlers: Dict[
-            str,
-            Union[
-                Callable[[Request, Sequence[Any]], Awaitable],
-                Callable[[Request, Sequence[Any], Dict], Awaitable],
-            ],
+            str, Callable[[Request, Sequence[Any], Dict], Awaitable]
         ] = OrderedDict()
         self._row_actions_handlers: Dict[
-            str,
-            Union[
-                Callable[[Request, Any], Awaitable],
-                Callable[[Request, Any, Dict], Awaitable],
-            ],
+            str, Callable[[Request, Any, Dict], Awaitable]
         ] = OrderedDict()
         self._init_actions()
 
@@ -336,25 +330,58 @@ class BaseModelView(BaseView):
         This method initializes batch and row actions, collects their handlers,
         and validates that all specified actions exist.
         """
+
+        def wrap(
+            fn: Callable[[Request, Sequence[Any]], Awaitable]
+        ) -> Callable[[Request, Sequence[Any], Dict], Awaitable]:
+            @functools.wraps(fn)
+            async def wrapper(r: Request, pks: Sequence[Any], d: Dict) -> Any:
+                return await fn(r, pks)
+
+            return wrapper
+
         for _method_name, method in inspect.getmembers(
             self, predicate=inspect.ismethod
         ):
             if hasattr(method, "_action"):
                 name = method._action.get("name")
                 self._actions[name] = method._action
-                self._actions_handlers[name] = method
+
+                s = inspect.signature(method)
+                if len(s.parameters) == 3:
+                    self._actions_handlers[name] = method
+                elif len(s.parameters) == 2:
+                    self._actions_handlers[name] = wrap(method)
+                else:
+                    raise TypeError("Wrong number of arguments")
 
         if self.actions is None:
             self.actions = list(self._actions_handlers.keys())
 
     def _init_row_actions(self) -> None:
+        def wrap(
+            fn: Callable[[Request, Any], Awaitable]
+        ) -> Callable[[Request, Any, Dict], Awaitable]:
+            @functools.wraps(fn)
+            async def wrapper(r: Request, pk: Any, d: Dict) -> Any:
+                return await fn(r, pk)
+
+            return wrapper
+
         for _method_name, method in inspect.getmembers(
             self, predicate=inspect.ismethod
         ):
             if hasattr(method, "_row_action"):
                 name = method._row_action.get("name")
                 self._row_actions[name] = method._row_action
-                self._row_actions_handlers[name] = method
+
+                s = inspect.signature(method)
+                if len(s.parameters) == 3:
+                    self._row_actions_handlers[name] = method
+                elif len(s.parameters) == 2:
+                    self._row_actions_handlers[name] = wrap(method)
+                else:
+                    raise TypeError("Wrong number of arguments")
 
         if self.row_actions is None:
             self.row_actions = list(self._row_actions_handlers.keys())
@@ -431,7 +458,7 @@ class BaseModelView(BaseView):
         except MultipartParseError:
             # For empty FormData, `fetch` doesn't set Content-Type and therefore Starlette cannot parse the form.
             # https://stackoverflow.com/questions/39280438/fetch-missing-boundary-in-multipart-form-data-post
-            data = {}
+            data = FormData()
 
         return {
             f.name: await f.parse_form_data(request, data, request.state.action)
@@ -453,11 +480,8 @@ class BaseModelView(BaseView):
             raise ActionFailed("Forbidden")
 
         form_fields: List[BaseField] = self._actions[name]["form_fields"]
-        if form_fields:
-            data = await self.parse_form(request, form_fields)
-            handler_return = await handler(request, pks, data)
-        else:
-            handler_return = await handler(request, pks)
+        data = await self.parse_form(request, form_fields)
+        handler_return = await handler(request, pks, data)
         custom_response = self._actions[name]["custom_response"]
         if isinstance(handler_return, Response) and not custom_response:
             raise ActionFailed(
@@ -480,11 +504,8 @@ class BaseModelView(BaseView):
             raise ActionFailed("Forbidden")
 
         form_fields: List[BaseField] = self._row_actions[name]["form_fields"]
-        if form_fields:
-            data = await self.parse_form(request, form_fields)
-            handler_return = await handler(request, pk, data)
-        else:
-            handler_return = await handler(request, pk)
+        data = await self.parse_form(request, form_fields)
+        handler_return = await handler(request, pk, data)
         custom_response = self._row_actions[name]["custom_response"]
         if isinstance(handler_return, Response) and not custom_response:
             raise ActionFailed(

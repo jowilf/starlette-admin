@@ -1,6 +1,6 @@
 {% macro action_data_attributes(action) -%}
     {% if action.is_link -%}
-        href="{{ model._row_actions_handlers.get(action.name)(request, pk) }}"
+        href="{{ model._row_actions_handlers.get(action.name)(request, pk, {}) }}"
     {% else %}
         href="#"
         {% if action.confirmation is not none -%}
