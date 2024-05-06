@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    {% if favicon_url %}
+        <link rel="icon" type="image/x-icon" href="{{ favicon_url }}"/>
+    {% endif %}
     {% block head_meta %}{% endblock %}
     {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
     <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/tabler.min.css') }}">

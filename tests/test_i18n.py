@@ -46,6 +46,7 @@ class PostView(DummyModelView):
 @pytest.mark.parametrize(
     "locale,expected_text",
     [
+        ("de", "Post erstellen"),
         ("en", "New Post"),
         ("fr", "Créer Post"),
         ("ru", "Добавить Post"),

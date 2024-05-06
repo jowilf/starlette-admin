@@ -53,6 +53,7 @@ class BaseAdmin:
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
         i18n_config: Optional[I18nConfig] = None,
+        favicon_url: Optional[str] = None,
     ):
         """
         Parameters:
@@ -67,12 +68,14 @@ class BaseAdmin:
             auth_provider: Authentication Provider
             middlewares: Starlette middlewares
             i18n_config: i18n configuration
+            favicon_url: URL of favicon.
         """
         self.title = title
         self.base_url = base_url
         self.route_name = route_name
         self.logo_url = logo_url
         self.login_logo_url = login_logo_url
+        self.favicon_url = favicon_url
         self.templates_dir = templates_dir
         self.statics_dir = statics_dir
         self.auth_provider = auth_provider
@@ -199,6 +202,7 @@ class BaseAdmin:
         templates.env.globals["__name__"] = self.route_name
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["login_logo_url"] = self.login_logo_url
+        templates.env.globals["favicon_url"] = self.favicon_url
         templates.env.globals["custom_render_js"] = lambda r: self.custom_render_js(r)
         templates.env.globals["get_locale"] = get_locale
         templates.env.globals["get_locale_display_name"] = get_locale_display_name
@@ -216,9 +220,9 @@ class BaseAdmin:
         )
         templates.env.filters["tojson"] = lambda data: json.dumps(data, default=str)
         templates.env.filters["file_icon"] = get_file_icon
-        templates.env.filters[
-            "to_model"
-        ] = lambda identity: self._find_model_from_identity(identity)
+        templates.env.filters["to_model"] = (
+            lambda identity: self._find_model_from_identity(identity)
+        )
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)

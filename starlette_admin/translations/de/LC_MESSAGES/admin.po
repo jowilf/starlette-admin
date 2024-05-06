@@ -1,19 +1,19 @@
-# French translations for starlette-admin.
-# Copyright (C) 2023 ORGANIZATION
+# German translations for starlette-admin.
+# Copyright (C) 2024 ORGANIZATION
 # This file is distributed under the same license as the starlette-admin
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: starlette-admin VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-10-28 16:32-0500\n"
-"PO-Revision-Date: 2022-12-24 18:16+0100\n"
+"POT-Creation-Date: 2024-03-07 16:31+0000\n"
+"PO-Revision-Date: 2024-03-07 16:50+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: fr\n"
-"Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: de\n"
+"Language-Team: de <opensource@bakdata.com>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,11 +22,11 @@ msgstr ""
 #: starlette_admin/actions.py:11 starlette_admin/actions.py:107
 #: starlette_admin/templates/modals/actions.html:12
 msgid "Yes, Proceed"
-msgstr "Oui, Continuez"
+msgstr "Ja, fortfahren"
 
 #: starlette_admin/auth.py:31
 msgid "Administrator"
-msgstr "Administrateur"
+msgstr "Administrator"
 
 #: starlette_admin/base.py:44 starlette_admin/contrib/odmantic/admin.py:17
 #: starlette_admin/contrib/sqla/admin.py:28
@@ -34,89 +34,89 @@ msgstr "Administrateur"
 #: starlette_admin/templates/detail.html:8
 #: starlette_admin/templates/edit.html:7 starlette_admin/templates/list.html:7
 msgid "Admin"
-msgstr "Administration"
+msgstr "Admin"
 
 #: starlette_admin/base.py:254
 #, python-format
 msgid "Model with identity %(identity)s not found"
-msgstr "Le model ayant pour identité %(identity)s n'existe pas"
+msgstr "Modell mit Identität %(identity)s wurde nicht gefunden"
 
 #: starlette_admin/templates/forms/_delete.html:8
 #: starlette_admin/templates/modals/delete.html:25 starlette_admin/views.py:461
 #: starlette_admin/views.py:498
 msgid "Delete"
-msgstr "Supprimer"
+msgstr "Löschen"
 
 #: starlette_admin/views.py:462
 msgid "Are you sure you want to delete selected items?"
-msgstr "Êtes-vous sûr de vouloir supprimer ces éléments?"
+msgstr "Sind Sie sicher, dass Sie die ausgewählten Elemente löschen möchten?"
 
 #: starlette_admin/views.py:463
 msgid "Yes, delete all"
-msgstr "Oui, supprimer tout"
+msgstr "Ja, alles löschen"
 
 #: starlette_admin/views.py:468 starlette_admin/views.py:507
 #, python-format
 msgid "Item was successfully deleted"
 msgid_plural "%(count)d items were successfully deleted"
-msgstr[0] "L'élément a été supprimé avec succès"
-msgstr[1] "%(count)d éléments ont été supprimés avec succès"
+msgstr[0] "Element wurde erfolgreich gelöscht"
+msgstr[1] "%(count)d Elemente wurden erfolgreich gelöscht"
 
 #: starlette_admin/views.py:476
 msgid "View"
-msgstr "Afficher"
+msgstr "Ansehen"
 
 #: starlette_admin/templates/edit.html:12 starlette_admin/views.py:488
 msgid "Edit"
-msgstr "Modifier"
+msgstr "Bearbeiten"
 
 #: starlette_admin/templates/modals/delete.html:15 starlette_admin/views.py:499
 msgid "Are you sure you want to delete this item?"
-msgstr "Êtes-vous sûr de vouloir supprimer cet élément?"
+msgstr "Sind Sie sicher, dass Sie dieses Element löschen möchten?"
 
 #: starlette_admin/views.py:818
 msgid "All"
-msgstr "Tout"
+msgstr "Alle"
 
 #: starlette_admin/templates/actions.html:6
 msgid "With selected"
-msgstr "Avec la sélection"
+msgstr "Mit ausgewählten"
 
 #: starlette_admin/templates/create.html:12
 msgid "Create"
-msgstr "Ajouter"
+msgstr "Erstellen"
 
 #: starlette_admin/templates/create.html:25
 #: starlette_admin/templates/list.html:34
 #, python-format
 msgid "New %(name)s"
-msgstr "Créer %(name)s"
+msgstr "%(name)s erstellen"
 
 #: starlette_admin/templates/create.html:44
 #: starlette_admin/templates/edit.html:46
 #: starlette_admin/templates/modals/actions.html:10
 #: starlette_admin/templates/modals/delete.html:21
 msgid "Cancel"
-msgstr "Annuler"
+msgstr "Abbrechen"
 
 #: starlette_admin/templates/create.html:46
 #: starlette_admin/templates/edit.html:48
 msgid "Save and add another"
-msgstr "Enregistrer et en ajouter un autre"
+msgstr "Speichern und weiteres hinzufügen"
 
 #: starlette_admin/templates/create.html:48
 #: starlette_admin/templates/edit.html:50
 msgid "Save and continue editing"
-msgstr "Enregistrer et continuer à éditer"
+msgstr "Speichern und Bearbeitung fortsetzen"
 
 #: starlette_admin/templates/create.html:49
 #: starlette_admin/templates/edit.html:51
 msgid "Save"
-msgstr "Enregistrer"
+msgstr "Speichern"
 
 #: starlette_admin/templates/detail.html:13
 msgid "Detail"
-msgstr "Détail"
+msgstr "Detail"
 
 #: starlette_admin/templates/detail.html:47
 msgid "Attribute"
@@ -124,68 +124,68 @@ msgstr "Attribut"
 
 #: starlette_admin/templates/detail.html:48
 msgid "Value"
-msgstr "Valeur"
+msgstr "Wert"
 
 #: starlette_admin/templates/edit.html:27
 #, python-format
 msgid "Edit %(name)s"
-msgstr "Modifier %(name)s"
+msgstr "%(name)s bearbeiten"
 
 #: starlette_admin/templates/error.html:7
 msgid "Oops… You just found an error page"
-msgstr "Oups… Vous venez de trouver une page d'erreur"
+msgstr "Ups… Sie haben gerade eine Fehlerseite gefunden"
 
 #: starlette_admin/templates/error.html:29
 msgid "Take me home"
-msgstr "Retournez à la page d'acceuil"
+msgstr "Zur Startseite"
 
 #: starlette_admin/templates/layout.html:95
 #: starlette_admin/templates/layout.html:118
 #: starlette_admin/templates/layout.html:204
 msgid "Logout"
-msgstr "Se déconnecter "
+msgstr "Abmelden"
 
 #: starlette_admin/templates/list.html:67
 msgid "Search"
-msgstr "Rechercher"
+msgstr "Suchen"
 
 #: starlette_admin/templates/login.html:16
 msgid "Login to your account"
-msgstr "Connectez-vous à votre compte"
+msgstr "Melden Sie sich bei Ihrem Konto an"
 
 #: starlette_admin/templates/login.html:32
 msgid "Username"
-msgstr "Nom d'utilisateur"
+msgstr "Benutzername"
 
 #: starlette_admin/templates/login.html:43
 msgid "Password"
-msgstr "Mot de passe"
+msgstr "Passwort"
 
 #: starlette_admin/templates/login.html:56
 msgid "Remember me"
-msgstr "Se rappeler de moi"
+msgstr "Angemeldet bleiben"
 
 #: starlette_admin/templates/login.html:60
 msgid "Sign in"
-msgstr "Se connecter"
+msgstr "Anmelden"
 
 #: starlette_admin/templates/row-actions.html:38
 msgid "Actions"
-msgstr "Actions"
+msgstr "Aktionen"
 
 #: starlette_admin/templates/forms/_delete.html:13
 msgid "Check this to delete the current content of this field"
-msgstr "Cocher cette case pour supprimer le contenu actuel de ce champ"
+msgstr "Markieren Sie dies, um den aktuellen Inhalt dieses Feldes zu löschen"
 
 #: starlette_admin/templates/forms/enum.html:5
 #, python-format
 msgid "Select a %(label)s"
-msgstr "Sélectionnez un %(label)s"
+msgstr "Wählen Sie %(label)s aus"
 
 #: starlette_admin/templates/forms/list.html:44
 msgid "Add item"
-msgstr "Ajouter un élément"
+msgstr "Element hinzufügen"
 
 #: starlette_admin/templates/modals/loading.html:7
 msgid "Loading"
-msgstr "Chargement"
+msgstr "Laden"
