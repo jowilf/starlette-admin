@@ -216,8 +216,8 @@ class BaseModelView(BaseView):
         datatables_options: Dict of [Datatables options](https://datatables.net/reference/option/).
             These will overwrite any default options set for the datatable.
         list_template: List view template. Default is `list.html`.
-        detail_template: Details view template. Default is `details.html`.
-        create_template: Edit view template. Default is `edit.html`.
+        detail_template: Details view template. Default is `detail.html`.
+        create_template: Edit view template. Default is `create.html`.
         edit_template: Edit view template. Default is `edit.html`.
         actions: List of actions
         additional_js_links: A list of additional JavaScript files to include.
