@@ -1,0 +1,10 @@
+<form>
+    {% for field in action.form_fields %}
+        <div class="mt-3">
+            {% with request_action=('ACTION'| ra) %}
+                {% include field.label_template %}
+                {% include field.form_template %}
+            {% endwith %}
+        </div>
+    {% endfor %}
+</form>

@@ -1,6 +1,7 @@
 <div class="{% if error %}{{ field.error_class }}{% endif %}">
     <select id="{{ field.id }}"
             name="{{ field.id }}"
+            {% if action %}data-dropdown-parent="#modal-action-{{ action.name }}"{% endif %}
             class="{{ field.class_ }} {% if error %}{{ field.error_class }}{% endif %}"
             data-tags="true"
             multiple>

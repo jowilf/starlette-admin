@@ -94,15 +94,14 @@ async def test_create_validation_error(client: AsyncClient, session: Session):
     )
     assert response.status_code == 422
     assert (
-        '<div class="invalid-feedback">ensure this value has at least 10'
-        " characters</div>" in response.text
-        or '<div class="invalid-feedback">String should have at least 10'  # pydantic v2
-        " characters</div>" in response.text
+        'class="invalid-feedback">ensure this value has at least 10 characters'
+        in response.text
+        or 'class="invalid-feedback">String should have at least 10 characters'
+        in response.text  # pydantic v2
     )
     assert (
-        '<div class="invalid-feedback">none is not an allowed value</div>'
-        in response.text
-        or '<div class="invalid-feedback">Input should be a valid datetime</div>'  # pydantic v2
+        'class="invalid-feedback">none is not an allowed value' in response.text
+        or 'class="invalid-feedback">Input should be a valid datetime'  # pydantic v2
         in response.text
     )
 
@@ -145,15 +144,14 @@ async def test_edit_validation_error(client: AsyncClient, session: Session):
     )
     assert response.status_code == 422
     assert (
-        '<div class="invalid-feedback">ensure this value has at least 10'
-        " characters</div>" in response.text
-        or '<div class="invalid-feedback">String should have at least 10'  # pydantic v2
-        " characters</div>" in response.text
+        'class="invalid-feedback">ensure this value has at least 10 characters'
+        in response.text
+        or 'class="invalid-feedback">String should have at least 10 characters'
+        in response.text  # pydantic v2
     )
     assert (
-        '<div class="invalid-feedback">none is not an allowed value</div>'
-        in response.text
-        or '<div class="invalid-feedback">Input should be a valid datetime</div>'  # pydantic v2
+        'class="invalid-feedback">none is not an allowed value' in response.text
+        or 'class="invalid-feedback">Input should be a valid datetime'  # pydantic v2
         in response.text
     )
 

@@ -206,7 +206,7 @@ async def test_create_validation_error(client: AsyncClient, aio_engine: AIOEngin
         },
         follow_redirects=False,
     )
-    assert response.text.count('<div class="invalid-feedback">') == 3
+    assert response.text.count('class="invalid-feedback">') == 3
     assert response.text.count("ensure this value has at least 3 characters") == 1
     assert response.text.count("ensure this value has at least 5 characters") == 1
     assert response.text.count("ensure this value has at most 10 characters") == 1
@@ -264,7 +264,7 @@ async def test_edit_validation_error(client: AsyncClient, aio_engine: AIOEngine)
         },
         follow_redirects=False,
     )
-    assert response.text.count('<div class="invalid-feedback">') == 3
+    assert response.text.count('class="invalid-feedback">') == 3
     assert response.text.count("ensure this value has at least 3 characters") == 1
     assert response.text.count("ensure this value has at least 5 characters") == 1
     assert response.text.count("ensure this value has at most 10 characters") == 1

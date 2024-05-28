@@ -330,7 +330,7 @@ class TestFieldAccess:
     async def test_render_create(self, client, session, expected_value):
         response = await client.get("/admin/post/create", cookies={"session": session})
         assert response.status_code == 200
-        assert response.text.count('name="super_admin_only_field"') == expected_value
+        assert response.text.count(' name="super_admin_only_field"') == expected_value
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -367,7 +367,7 @@ class TestFieldAccess:
     async def test_render_edit(self, client, session, expected_value):
         response = await client.get("/admin/post/edit/1", cookies={"session": session})
         assert response.status_code == 200
-        assert response.text.count('name="super_admin_only_field"') == expected_value
+        assert response.text.count(' name="super_admin_only_field"') == expected_value
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(

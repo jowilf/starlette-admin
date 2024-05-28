@@ -350,6 +350,10 @@ class BaseAdmin:
             return JSONResponse({"msg": handler_return})
         except ActionFailed as exc:
             return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
+        except FormValidationError as exc:
+            return JSONResponse(
+                {"errors": exc.errors}, status_code=HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
     async def handle_row_action(self, request: Request) -> Response:
         request.state.action = RequestAction.ROW_ACTION
@@ -366,6 +370,10 @@ class BaseAdmin:
             return JSONResponse({"msg": handler_return})
         except ActionFailed as exc:
             return JSONResponse({"msg": exc.msg}, status_code=HTTP_400_BAD_REQUEST)
+        except FormValidationError as exc:
+            return JSONResponse(
+                {"errors": exc.errors}, status_code=HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
     async def _render_list(self, request: Request) -> Response:
         request.state.action = RequestAction.LIST
@@ -380,6 +388,7 @@ class BaseAdmin:
                 "model": model,
                 "title": model.title(request),
                 "_actions": await model.get_all_actions(request),
+                "_row_actions": await model.get_all_row_actions(request),
                 "__js_model__": await model._configs(request),
             },
         )
@@ -402,6 +411,7 @@ class BaseAdmin:
                 "model": model,
                 "raw_obj": obj,
                 "_actions": await model.get_all_row_actions(request),
+                "_row_actions": await model.get_all_row_actions(request),
                 "obj": await model.serialize(obj, request, RequestAction.DETAIL),
             },
         )

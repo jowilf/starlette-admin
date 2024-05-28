@@ -115,11 +115,12 @@ generated html element (e.g. `<a href='https://example.com/?pk=4' ...>`).
 ### Example
 
 ```python
-from typing import Any
+from typing import Any, Dict
 
 from starlette.datastructures import FormData
 from starlette.requests import Request
 
+from starlette_admin import EnumField
 from starlette_admin._types import RowActionsDisplayType
 from starlette_admin.actions import link_row_action, row_action
 from starlette_admin.contrib.sqla import ModelView
@@ -140,25 +141,19 @@ class ArticleView(ModelView):
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
         action_btn_class="btn-info",
-        form="""
-        <form>
-            <div class="mt-3">
-                <input type="text" class="form-control" name="example-text-input" placeholder="Enter value">
-            </div>
-        </form>
-        """,
+        form_fields=[
+            EnumField("status", choices=['draft', 'published', 'rejected'], select2=True)
+        ],
     )
-    async def make_published_row_action(self, request: Request, pk: Any) -> str:
+    async def make_published_row_action(self, request: Request, pk: Any, data: Dict) -> str:
         # Write your logic here
-
-        data: FormData = await request.form()
-        user_input = data.get("example-text-input")
+        article_status = data.get("status")
 
         if ...:
             # Display meaningfully error
             raise ActionFailed("Sorry, We can't proceed this action now.")
         # Display successfully message
-        return "The article was successfully marked as published"
+        return f"The article status was changed to {article_status}"
 
     @link_row_action(
         name="go_to_example",

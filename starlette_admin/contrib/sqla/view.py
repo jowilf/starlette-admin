@@ -169,6 +169,12 @@ class ModelView(BaseModelView):
                 self.pk_field = StringField(_pk_attrs[0])
         self.pk_attr = self.pk_field.name
 
+    async def parse_form(
+        self, request: Request, form_fields: Sequence[BaseField]
+    ) -> Dict:
+        data = await super().parse_form(request, form_fields)
+        return await self.arrange_data_for_fields(request, data, form_fields)
+
     async def handle_action(
         self, request: Request, pks: List[Any], name: str
     ) -> Union[str, Response]:
@@ -522,12 +528,21 @@ class ModelView(BaseModelView):
         data: Dict[str, Any],
         is_edit: bool = False,
     ) -> Dict[str, Any]:
+        fields = self.get_fields_list(request, request.state.action)
+        return await self.arrange_data_for_fields(request, data, fields)
+
+    async def arrange_data_for_fields(
+        self,
+        request: Request,
+        data: Dict[str, Any],
+        fields: Sequence[BaseField],
+    ) -> Dict[str, Any]:
         """
         This function will return a new dict with relationships loaded from
         database.
         """
         arranged_data: Dict[str, Any] = {}
-        for field in self.get_fields_list(request, request.state.action):
+        for field in fields:
             if isinstance(field, RelationField) and data[field.name] is not None:
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
                 if not field.multiple:
