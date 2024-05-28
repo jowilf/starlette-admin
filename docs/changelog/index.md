@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.14.0] - 2024-05-28
 
 ### Added
 
@@ -16,21 +16,21 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   by [@omarmoo5](https://github.com/omarmoo5)
   in [#520](https://github.com/jowilf/starlette-admin/pull/520)
 
-## [0.13.2] - 2023-02-04
+## [0.13.2] - 2024-02-04
 
 ### Fixed
 
 * Remove extra whitespaces from TextAreaField form template (0.13.0 regression) by [@jowilf](https://github.com/jowilf)
   in [#494](https://github.com/jowilf/starlette-admin/pull/494)
 
-## [0.13.1] - 2023-01-21
+## [0.13.1] - 2024-01-21
 
 ### Fixed
 
 * Fixed the StopIteration exception raised in Sqlalchemy ModelView when the primary key is not included in the field
   list by [@jowilf](https://github.com/jowilf) in [#482](https://github.com/jowilf/starlette-admin/pull/482)
 
-## [0.13.0] - 2023-01-16
+## [0.13.0] - 2024-01-16
 
 ### Added
 
