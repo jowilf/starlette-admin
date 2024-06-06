@@ -83,6 +83,7 @@
 	"search": "Procurar:",
 	"searchBuilder": {
 		"add": "Adicionar condição",
+		"search": "Buscar",
 		"button": {
 			"0": "<i class=\"fa-solid fa-filter\"></i> Construtor de pesquisa",
 			"_": "<i class=\"fa-solid fa-filter\"></i> Construtor de pesquisa (%d)"
