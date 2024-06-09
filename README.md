@@ -2,7 +2,8 @@
 
 *Fast, beautiful, and extensible administrative interface framework for Starlette & FastApi applications*
 
-<div align="center">
+
+<p align="center">
 <a href="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml">
     <img src="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml/badge.svg" alt="Test suite">
 </a>
@@ -18,7 +19,7 @@
 <a href="https://pypi.org/project/starlette-admin/">
     <img src="https://img.shields.io/pypi/pyversions/starlette-admin?color=2334D058" alt="Supported Python versions">
 </a>
-</div>
+</p>
 
 ![Preview image](https://raw.githubusercontent.com/jowilf/starlette-admin/main/docs/images/preview.jpg)
 
@@ -35,9 +36,11 @@ box with multiple ORM/ODMs and can also be used with a custom data layer.
 ## Getting started
 
 * Check out [the documentation](https://jowilf.github.io/starlette-admin).
-* Try the [live demo](https://starlette-admin-demo.jowilf.com/). ([Source code](https://github.com/jowilf/starlette-admin-demo))
+* Try
+  the [live demo](https://starlette-admin-demo.jowilf.com/). ([Source code](https://github.com/jowilf/starlette-admin-demo))
 * Follow the [tutorials](https://jowilf.github.io/starlette-admin/tutorials/)
-* Try the several usage examples included in the [/examples](https://github.com/jowilf/starlette-admin/tree/main/examples) folder
+* Try the several usage examples included in
+  the [/examples](https://github.com/jowilf/starlette-admin/tree/main/examples) folder
 * If you find this project helpful or interesting, please consider giving it a star ⭐️
 
 ## Features
@@ -59,7 +62,8 @@ box with multiple ORM/ODMs and can also be used with a custom data layer.
     * [SQLModel](https://sqlmodel.tiangolo.com/)
     * [MongoEngine](http://mongoengine.org/)
     * [ODMantic](https://github.com/art049/odmantic/)
-    * Custom backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
+    * Custom
+      backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
 - Internationalization
 
 ## Installation
@@ -94,10 +98,10 @@ engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": F
 
 # Define your model
 class Post(Base):
-  __tablename__ = "posts"
+    __tablename__ = "posts"
 
-  id: Mapped[int] = mapped_column(primary_key=True)
-  title: Mapped[str]
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str]
 
 
 Base.metadata.create_all(engine)
