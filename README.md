@@ -19,7 +19,7 @@
     <img src="https://img.shields.io/pypi/pyversions/starlette-admin?color=2334D058" alt="Supported Python versions">
 </a>
 </div>
-![Preview image](./images/preview.jpg)
+![Preview image](https://raw.githubusercontent.com/jowilf/starlette-admin/main/docs/images/preview.jpg)
 
 ## why starlette-admin?
 
