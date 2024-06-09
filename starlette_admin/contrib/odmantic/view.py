@@ -264,7 +264,9 @@ class ModelView(BaseModelView):
             ):
                 _list.append(
                     getattr(self.model, field.name).match(
-                        re.compile(r"%s" % re.escape(term), re.IGNORECASE)
+                        re.compile(
+                            r"%s" % re.escape(term), re.IGNORECASE  # noqa: UP031
+                        )
                     )
                 )
         return query.or_(*_list) if len(_list) > 0 else QueryExpression({})
