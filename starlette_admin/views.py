@@ -886,10 +886,10 @@ class BaseModelView(BaseView):
         ]
 
     def _search_columns_selector(self) -> List[str]:
-        return ["%s:name" % name for name in self.searchable_fields]  # type: ignore
+        return [f"{name}:name" for name in self.searchable_fields]  # type: ignore
 
     def _export_columns_selector(self) -> List[str]:
-        return ["%s:name" % name for name in self.export_fields]  # type: ignore
+        return [f"{name}:name" for name in self.export_fields]  # type: ignore
 
     def get_fields_list(
         self,

@@ -225,7 +225,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Add support for custom object representations in the admin interface with `__admin_repr__`
   and `__admin_select2_repr__`  by [@jowilf](https://github.com/jowilf)
   in [#152](https://github.com/jowilf/starlette-admin/pull/152). The documentation can be
-  found [here](../tutorial/configurations/modelview/#object-representation)
+  found [here](../user-guide/configurations/modelview/#object-representation)
 
 ### Internals
 

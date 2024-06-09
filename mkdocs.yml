@@ -6,6 +6,9 @@ repo_url: https://github.com/jowilf/starlette-admin
 edit_uri: https://github.com/jowilf/starlette-admin/tree/main/docs
 theme:
   name: material
+  favicon: assets/favicon.ico
+  icon:
+    logo: material/database-settings
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -47,32 +50,36 @@ plugins:
             show_root_heading: true
             show_source: true
   - i18n:
-      default_language: en
+      docs_structure: suffix
+      fallback_to_default: true
       languages:
-        en:
+        - build: true
+          default: true
+          locale: en
           name: English
-          build: false
-        es:
+        - build: true
+          default: false
+          locale: es
           name: Español
-          build: true
-      nav_translations:
-        es:
-          Overview: Visión General
-          Tutorial - User Guide: Tutoriales - Guía de Usuario
-          Getting Started: Empezando
-          Configurations: Configuraciones
-          Admin: Admin
-          ModelView: ModelView
-          Forms Validations: Validación de Formularios
-          Authentication: Autenticación
-          Managing Files: Administrando Archivos
-          Multiple Admin: Multiples Admin
-          Advanced User Guide: Guía de Usuario Avanzada
-          Custom Field: Campos Personalizados
-          Extending BaseModelView: Extendiendo BaseModelView
-          Alternatives, Inspiration and Comparisons: Alternativas, Inspiración y Comparaciones
-          API Reference: Referencia de la API
-          Changelog: Registro de Cambios
+          nav_translations:
+            API Reference: Referencia de la API
+            Admin: Admin
+            Advanced User Guide: Guía de Usuario Avanzada
+            Alternatives, Inspiration and Comparisons: Alternativas, Inspiración y Comparaciones
+            Authentication: Autenticación
+            Changelog: Registro de Cambios
+            Configurations: Configuraciones
+            Custom Field: Campos Personalizados
+            Extending BaseModelView: Extendiendo BaseModelView
+            Forms Validations: Validación de Formularios
+            Getting Started: Empezando
+            Managing Files: Administrando Archivos
+            ModelView: ModelView
+            Multiple Admin: Multiples Admin
+            Overview: Visión General
+            Tutorial - User Guide: Tutoriales - Guía de Usuario
+      reconfigure_material: true
+      reconfigure_search: true
 
 watch:
   - starlette_admin
@@ -82,16 +89,19 @@ extra_css:
 
 nav:
   - Overview: 'index.md'
-  - Tutorial - User Guide:
-      - Getting Started: 'tutorial/getting-started/index.md'
+  - Tutorials:
+      - Introduction: 'tutorials/index.md'
+      - Building your first admin panel: 'tutorials/basic/index.md'
+  - User Guide:
+      - Getting Started: 'user-guide/getting-started/index.md'
       - Configurations:
-          - Admin: 'tutorial/configurations/admin/index.md'
-          - ModelView: 'tutorial/configurations/modelview/index.md'
-      - Forms Validations: 'tutorial/validations/index.md'
-      - Authentication: 'tutorial/authentication/index.md'
-      - Managing Files: 'tutorial/files/index.md'
-      - Actions: 'tutorial/actions/index.md'
-      - Multiple Admin: 'tutorial/multiple-admin/index.md'
+          - Admin: 'user-guide/configurations/admin/index.md'
+          - ModelView: 'user-guide/configurations/modelview/index.md'
+      - Forms Validations: 'user-guide/validations/index.md'
+      - Authentication: 'user-guide/authentication/index.md'
+      - Managing Files: 'user-guide/files/index.md'
+      - Actions: 'user-guide/actions/index.md'
+      - Multiple Admin: 'user-guide/multiple-admin/index.md'
   - Advanced User Guide:
       - Custom Field: 'advanced/custom-field/index.md'
       - Extending BaseModelView: 'advanced/base-model-view/index.md'
