@@ -1,5 +1,7 @@
 import os
+import uuid
 
+import sqlalchemy.types as types
 from libcloud.storage.base import Container, StorageDriver
 from libcloud.storage.drivers.local import LocalStorageDriver
 from libcloud.storage.drivers.minio import MinIOStorageDriver
@@ -41,3 +43,32 @@ def get_test_container(name: str) -> Container:
     dir_path = os.environ.get("LOCAL_PATH", "/tmp/storage")
     os.makedirs(dir_path, 0o777, exist_ok=True)
     return get_or_create_container(LocalStorageDriver(dir_path), name)
+
+
+class Uuid(types.TypeDecorator):
+    """
+    Platform-independent UUID type for testing.
+    """
+
+    impl = types.CHAR
+
+    def load_dialect_impl(self, dialect):
+        return dialect.type_descriptor(types.CHAR(32))
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+
+        if not isinstance(value, uuid.UUID):
+            value = uuid.UUID(value)
+
+        return value.hex
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+
+        if not isinstance(value, uuid.UUID):
+            value = uuid.UUID(value)
+
+        return value
