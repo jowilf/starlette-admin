@@ -1,16 +1,7 @@
 from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import anyio.to_thread
-from sqlalchemy import (
-    String,
-    and_,
-    cast,
-    func,
-    inspect,
-    or_,
-    select,
-    tuple_,
-)
+from sqlalchemy import String, and_, cast, func, inspect, or_, select, tuple_
 from sqlalchemy.exc import DBAPIError, NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
@@ -605,6 +596,10 @@ class ModelView(BaseModelView):
 
     async def get_pk_value(self, request: Request, obj: Any) -> Any:
         return await self.pk_field.parse_obj(request, obj)
+
+    async def get_serialized_pk_value(self, request: Request, obj: Any) -> Any:
+        value = await self.get_pk_value(request, obj)
+        return await self.pk_field.serialize_value(request, value, request.state.action)
 
     def handle_exception(self, exc: Exception) -> None:
         try:
