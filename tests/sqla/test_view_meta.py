@@ -193,7 +193,12 @@ def test_document_fields_conversion():
 
 def test_other_fields_conversion():
     assert ModelView(Other).fields == [
-        StringField("uuid", exclude_from_create=True, exclude_from_edit=True),
+        StringField(
+            "uuid",
+            exclude_from_create=True,
+            exclude_from_edit=True,
+            help_text="Defaulted to uuid4",
+        ),
         BooleanField("bit"),
         IntegerField("year", min=1901, max=2155),
         StringField("macaddr"),

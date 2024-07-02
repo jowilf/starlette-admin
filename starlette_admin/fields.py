@@ -54,6 +54,7 @@ class BaseField:
         search_builder_type: datatable columns.searchBuilderType, For more information
             [click here](https://datatables.net/reference/option/columns.searchBuilderType)
         required: Indicate if the fields is required
+        default: Default value for the field
         exclude_from_list: Control field visibility in list page
         exclude_from_detail: Control field visibility in detail page
         exclude_from_create: Control field visibility in create page
@@ -74,6 +75,7 @@ class BaseField:
     id: str = ""
     search_builder_type: Optional[str] = "default"
     required: Optional[bool] = False
+    default: Optional[Any] = None
     exclude_from_list: Optional[bool] = False
     exclude_from_detail: Optional[bool] = False
     exclude_from_create: Optional[bool] = False
@@ -84,7 +86,7 @@ class BaseField:
     form_template: str = "forms/input.html"
     label_template: str = "forms/_label.html"
     display_template: str = "displays/text.html"
-    error_class = "is-invalid"
+    error_class: str = "is-invalid"
 
     def __post_init__(self) -> None:
         if self.label is None:

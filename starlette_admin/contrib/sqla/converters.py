@@ -130,15 +130,30 @@ class ModelConverter(BaseSQLAModelConverter):
                 "exclude_from_edit": True,
                 "exclude_from_create": True,
             }
+
+        default_value = None
+        help_text = column.comment
+        if column.default:
+            if column.default.is_scalar:
+                default_value = column.default.arg
+            elif column.default.is_callable:
+                # Here we can't evaluate even callable default because it requires execution context
+                func_name = column.default.arg.__name__
+                if help_text:
+                    help_text = f"{help_text}. Defaulted to {func_name}"
+                else:
+                    help_text = f"Defaulted to {func_name}"
+
         return {
             "name": name,
-            "help_text": column.comment,
+            "help_text": help_text,
             "required": (
                 not column.nullable
                 and not isinstance(column.type, (Boolean,))
                 and not column.default
                 and not column.server_default
             ),
+            "default": default_value,
         }
 
     @classmethod
