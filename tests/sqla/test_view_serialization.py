@@ -19,7 +19,7 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Uuid, primary_key=True, default=uuid.uuid1, unique=True)
-    name = Column(String())
+    name = Column(String(50))
     membership = relationship("Membership", back_populates="user", uselist=False)
 
 
