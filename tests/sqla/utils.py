@@ -60,7 +60,6 @@ class Uuid(types.TypeDecorator):
         if value is None:
             return value
 
-
         return value.hex
 
     def process_result_value(self, value, dialect):
