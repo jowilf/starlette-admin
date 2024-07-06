@@ -63,8 +63,6 @@ class Uuid(types.TypeDecorator):
         return value.hex
 
     def process_result_value(self, value, dialect):
-        if value is None:
-            return value
 
         if not isinstance(value, uuid.UUID):
             value = uuid.UUID(value)
