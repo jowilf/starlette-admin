@@ -57,8 +57,6 @@ class Uuid(types.TypeDecorator):
         return mysql.CHAR(32) if dialect == "mysql" else types.CHAR(32)
 
     def process_bind_param(self, value, dialect):
-        if value is None:
-            return value
 
         return value.hex
 
