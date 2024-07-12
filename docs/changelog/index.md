@@ -11,6 +11,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 * Fix JSON serialization error for UUID primary keys when excluded from list by [@alg](https://github.com/alg)
   in [#553](https://github.com/jowilf/starlette-admin/pull/553)
+
 ## [0.14.0] - 2024-05-28
 
 ### Added
