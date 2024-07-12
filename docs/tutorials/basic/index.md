@@ -535,4 +535,4 @@ Some next tutorials to continue learning:
 
 - To be continued...
 
-The final source code is available on GitHub at [...]()
+The final source code is available [on GitHub](https://github.com/jowilf/starlette-admin/tree/main/examples/tutorials/basic)
