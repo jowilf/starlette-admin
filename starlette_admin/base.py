@@ -410,13 +410,20 @@ class BaseAdmin:
         request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        config = {"request": request, "title": model.title(request), "model": model}
+        dict_obj = self.defaults_to_dict(request, model, RequestAction.CREATE)
+        config = {
+            "request": request,
+            "title": model.title(request),
+            "model": model,
+            "obj": dict_obj,
+        }
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
             return self.templates.TemplateResponse(model.create_template, config)
         form = await request.form()
-        dict_obj = await self.form_to_dict(request, form, model, RequestAction.CREATE)
+        form_dict = await self.form_to_dict(request, form, model, RequestAction.CREATE)
+        dict_obj.update(form_dict)
         try:
             obj = await model.create(request, dict_obj)
         except FormValidationError as exc:
@@ -497,6 +504,17 @@ class BaseAdmin:
             {"request": request, "exc": exc},
             status_code=exc.status_code,
         )
+
+    def defaults_to_dict(
+        self,
+        request: Request,
+        model: BaseModelView,
+        action: RequestAction,
+    ) -> Dict[str, Any]:
+        data = {}
+        for field in model.get_fields_list(request, action):
+            data[field.name] = field.default
+        return data
 
     async def form_to_dict(
         self,
