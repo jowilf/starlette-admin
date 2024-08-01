@@ -72,7 +72,7 @@ test = [
     "pydantic[email] >=1.10.2, <2.8.0",
 ]
 cov = [
-    "coverage[toml] >=7.0.0, <7.4.0"
+    "coverage[toml] >=7.0.0, <7.7.0"
 ]
 doc = [
     "mkdocs >=1.4.2, <2.0.0",
