@@ -66,7 +66,7 @@ async def test_api(client: AsyncClient):
     data = response.json()
     assert data["total"] == 3
     assert len(data["items"]) == 2
-    assert ["Jim Rohn", "Albert Einstein"] == [x["name"] for x in data["items"]]
+    assert [x["name"] for x in data["items"]] == ["Jim Rohn", "Albert Einstein"]
     # Find by pks
     response = await client.get(
         "/admin/api/author", params={"pks": [x["id"] for x in data["items"]]}
