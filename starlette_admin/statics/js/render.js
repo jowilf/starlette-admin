@@ -111,4 +111,20 @@ const render = {
       )
       .join("")}</div>`;
   },
+  interval: function render(data, type, full, meta, fieldOptions) {
+    if (!data) return null_column();
+    if (Array.isArray(data) && data.length == 0) return empty_column();
+    data = Array.isArray(data) ? data : [data];
+    if (type != "display") return data.map((d) => new URL(d.url));
+    return `<div class="d-flex flex-column">${data
+      .map(
+        (e) => {
+            return Object.entries(e)
+                .filter(([key, value]) => value !== 0)  // Filter out components with value 0
+                .map(([key, value]) => `<span>${value} ${key}</span>`)  // Create spans for existing components
+                .join('');  // Join all the spans into a single string
+        }
+      )
+      .join("")}</div>`;
+  },
 };

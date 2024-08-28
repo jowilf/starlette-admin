@@ -12,6 +12,7 @@ from typing import (
     TypeVar,
     Union,
 )
+from datetime import timedelta
 
 from markupsafe import escape
 from starlette.requests import Request
@@ -151,3 +152,35 @@ def not_none(value: Optional[T]) -> T:
     if value is not None:
         return value
     raise ValueError("Value can not be None")  # pragma: no cover
+
+
+def timedelta_to_components(td: timedelta):
+    # Constants
+    seconds_in_minute = 60
+    seconds_in_hour = 3600
+    seconds_in_day = 86400
+    seconds_in_week = 604800
+
+    # Total seconds in the timedelta
+    total_seconds = td.total_seconds()
+
+    # Calculate each component
+    weeks = int(total_seconds // seconds_in_week)
+    total_seconds -= weeks * seconds_in_week
+
+    days = td.days % 7
+    hours = (td.seconds // seconds_in_hour)
+    minutes = (td.seconds % seconds_in_hour) // seconds_in_minute
+    seconds = td.seconds % seconds_in_minute
+    milliseconds = td.microseconds // 1000
+    microseconds = td.microseconds % 1000
+
+    return {
+        "weeks": weeks,
+        "days": days,
+        "hours": hours,
+        "minutes": minutes,
+        "seconds": seconds,
+        "milliseconds": milliseconds,
+        "microseconds": microseconds
+    }
