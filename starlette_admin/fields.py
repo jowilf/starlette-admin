@@ -3,7 +3,7 @@ import json
 import warnings
 from dataclasses import asdict, dataclass
 from dataclasses import field as dc_field
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum
 from json import JSONDecodeError
 from typing import (
@@ -17,12 +17,16 @@ from typing import (
     Type,
     Union,
 )
-from datetime import timedelta
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
-from starlette_admin.helpers import extract_fields, html_params, is_empty_file, timedelta_to_components
+from starlette_admin.helpers import (
+    extract_fields,
+    html_params,
+    is_empty_file,
+    timedelta_to_components,
+)
 from starlette_admin.i18n import (
     format_date,
     format_datetime,
@@ -1276,17 +1280,49 @@ class IntervalField(BaseField):
     form_template: str = "forms/interval.html"
     display_template: str = "displays/interval.html"
 
-    async def parse_form_data(self, request: Request, form_data: FormData, action: RequestAction) -> Any:
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
         timedelta_params = {
-            "weeks": (0 if form_data.get(f'{self.name}_weeks') == '' else int(form_data.get(f'{self.name}_weeks'))),
-            "days": (0 if form_data.get(f'{self.name}_days') == '' else int(form_data.get(f'{self.name}_days'))),
-            "hours": (0 if form_data.get(f'{self.name}_hours') == '' else int(form_data.get(f'{self.name}_hours'))),
-            "minutes": (0 if form_data.get(f'{self.name}_minutes') == '' else int(form_data.get(f'{self.name}_minutes'))),
-            "seconds": (0 if form_data.get(f'{self.name}_seconds') == '' else int(form_data.get(f'{self.name}_seconds'))),
-            "microseconds": (0 if form_data.get(f'{self.name}_microseconds') == '' else int(form_data.get(f'{self.name}_microseconds'))),
-            "milliseconds": (0 if form_data.get(f'{self.name}_milliseconds') == '' else int(form_data.get(f'{self.name}_milliseconds')))
+            "weeks": (
+                0
+                if form_data.get(f"{self.name}_weeks") == ""
+                else int(form_data.get(f"{self.name}_weeks"))
+            ),
+            "days": (
+                0
+                if form_data.get(f"{self.name}_days") == ""
+                else int(form_data.get(f"{self.name}_days"))
+            ),
+            "hours": (
+                0
+                if form_data.get(f"{self.name}_hours") == ""
+                else int(form_data.get(f"{self.name}_hours"))
+            ),
+            "minutes": (
+                0
+                if form_data.get(f"{self.name}_minutes") == ""
+                else int(form_data.get(f"{self.name}_minutes"))
+            ),
+            "seconds": (
+                0
+                if form_data.get(f"{self.name}_seconds") == ""
+                else int(form_data.get(f"{self.name}_seconds"))
+            ),
+            "microseconds": (
+                0
+                if form_data.get(f"{self.name}_microseconds") == ""
+                else int(form_data.get(f"{self.name}_microseconds"))
+            ),
+            "milliseconds": (
+                0
+                if form_data.get(f"{self.name}_milliseconds") == ""
+                else int(form_data.get(f"{self.name}_milliseconds"))
+            ),
         }
         return timedelta(**timedelta_params)
 
-    async def serialize_value(self, request: Request, value: Any, action: RequestAction) -> Any:
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
         return timedelta_to_components(value)
