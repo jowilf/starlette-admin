@@ -31,6 +31,7 @@ from starlette_admin.fields import (
     HasMany,
     HasOne,
     IntegerField,
+    IntervalField,
     JSONField,
     ListField,
     PasswordField,
@@ -201,6 +202,12 @@ class ModelConverter(BaseSQLAModelConverter):
     @converts("Time")
     def conv_time(self, *args: Any, **kwargs: Any) -> BaseField:
         return TimeField(
+            **self._field_common(*args, **kwargs),
+        )
+
+    @converts("Interval")
+    def conv_interval(self, *args: Any, **kwargs: Any) -> BaseField:
+        return IntervalField(
             **self._field_common(*args, **kwargs),
         )
 

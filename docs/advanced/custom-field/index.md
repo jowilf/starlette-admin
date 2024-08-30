@@ -132,7 +132,7 @@ class CustomField(BaseField):
 
 For data processing you will need to override two functions:
 
-* `process_form_data`:  Will be call when converting field value into python dict object
+* `parse_form_data`:  Will be call when converting field value into python dict object
 * `serialize_field_value`: Will be call when serializing value to send through the API. This is the same data
 you will get in your *render* function
 

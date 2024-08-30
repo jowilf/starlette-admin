@@ -18,6 +18,7 @@ from typing import (
     Union,
 )
 
+from humanize import precisedelta
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
@@ -1275,10 +1276,8 @@ class ListField(BaseField):
 
 
 @dataclass
-class IntervalField(BaseField):
-    render_function_key: str = "interval"
+class IntervalField(StringField):
     form_template: str = "forms/interval.html"
-    display_template: str = "displays/interval.html"
 
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
@@ -1286,38 +1285,38 @@ class IntervalField(BaseField):
         timedelta_params = {
             "weeks": (
                 0
-                if form_data.get(f"{self.name}_weeks") == ""
-                else int(form_data.get(f"{self.name}_weeks"))
+                if form_data.get(f"{self.id}_weeks") == ""
+                else int(form_data.get(f"{self.id}_weeks"))
             ),
             "days": (
                 0
-                if form_data.get(f"{self.name}_days") == ""
-                else int(form_data.get(f"{self.name}_days"))
+                if form_data.get(f"{self.id}_days") == ""
+                else int(form_data.get(f"{self.id}_days"))
             ),
             "hours": (
                 0
-                if form_data.get(f"{self.name}_hours") == ""
-                else int(form_data.get(f"{self.name}_hours"))
+                if form_data.get(f"{self.id}_hours") == ""
+                else int(form_data.get(f"{self.id}_hours"))
             ),
             "minutes": (
                 0
-                if form_data.get(f"{self.name}_minutes") == ""
-                else int(form_data.get(f"{self.name}_minutes"))
+                if form_data.get(f"{self.id}_minutes") == ""
+                else int(form_data.get(f"{self.id}_minutes"))
             ),
             "seconds": (
                 0
-                if form_data.get(f"{self.name}_seconds") == ""
-                else int(form_data.get(f"{self.name}_seconds"))
+                if form_data.get(f"{self.id}_seconds") == ""
+                else int(form_data.get(f"{self.id}_seconds"))
             ),
             "microseconds": (
                 0
-                if form_data.get(f"{self.name}_microseconds") == ""
-                else int(form_data.get(f"{self.name}_microseconds"))
+                if form_data.get(f"{self.id}_microseconds") == ""
+                else int(form_data.get(f"{self.id}_microseconds"))
             ),
             "milliseconds": (
                 0
-                if form_data.get(f"{self.name}_milliseconds") == ""
-                else int(form_data.get(f"{self.name}_milliseconds"))
+                if form_data.get(f"{self.id}_milliseconds") == ""
+                else int(form_data.get(f"{self.id}_milliseconds"))
             ),
         }
         return timedelta(**timedelta_params)
@@ -1325,4 +1324,6 @@ class IntervalField(BaseField):
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
+        if action != RequestAction.EDIT:
+            return precisedelta(value)
         return timedelta_to_components(value)

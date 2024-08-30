@@ -1,33 +1,57 @@
-<div class="{% if error %}{{ field.error_class }}{% endif %}">
-    <label for="{{ field.id }}_weeks">Weeks:</label>
-    <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_weeks"
-       name="{{ field.id }}_weeks" value="{{ '' if data is none else data.weeks }}" {{ field.input_params() | safe }}/>
+<fieldset class="form-fieldset">
+    <div class="{% if error %}{{ field.error_class }}{% endif %} form-group row mb-3">
+        <label class="col-2 col-form-label"
+                for="{{ field.id }}_weeks">Weeks:</label>
+        <div class="col-2">
+            <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_weeks"
+                name="{{ field.id }}_weeks" value="{{ '' if data is none else data.weeks }}" {{ field.input_params() | safe }}/>
+        </div>
 
-    <label for="{{ field.id }}_days">Days:</label>
-    <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_days"
-       name="{{ field.id }}_days" value="{{ '' if data is none else data.days }}" {{ field.input_params() | safe }}/>
+        <label class="col-2 col-form-label"
+                for="{{ field.id }}_days">Days:</label>
+        <div class="col-2">
+            <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_days"
+                name="{{ field.id }}_days" value="{{ '' if data is none else data.days }}" {{ field.input_params() | safe }}/>
+        </div>
 
-    <label for="{{ field.id }}_hours">Hours:</label>
-    <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_hours"
-       name="{{ field.id }}_hours" value="{{ '' if data is none else data.hours }}" {{ field.input_params() | safe }}/>
+        <label class="col-2 col-form-label"
+                for="{{ field.id }}_hours">Hours:</label>
+        <div class="col-2">
+            <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_hours"
+                name="{{ field.id }}_hours" value="{{ '' if data is none else data.hours }}" {{ field.input_params() | safe }}/>
+        </div>
 
-    <label for="{{ field.id }}_minutes">Minutes:</label>
-    <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_minutes"
-       name="{{ field.id }}_minutes" value="{{ '' if data is none else data.minutes }}" {{ field.input_params() | safe }}/>
+        <label class="col-2 col-form-label"
+                for="{{ field.id }}_minutes">Minutes:</label>
+        <div class="col-2">
+            <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_minutes"
+                name="{{ field.id }}_minutes" value="{{ '' if data is none else data.minutes }}" {{ field.input_params() | safe }}/>
+        </div>
 
-    <label for="{{ field.id }}_seconds">Seconds:</label>
-    <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_seconds"
-       name="{{ field.id }}_seconds" value="{{ '' if data is none else data.seconds }}" {{ field.input_params() | safe }}/>
+        <label class="col-2 col-form-label"
+                for="{{ field.id }}_seconds">Seconds:</label>
+        <div class="col-2">
+            <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_seconds"
+                name="{{ field.id }}_seconds" value="{{ '' if data is none else data.seconds }}" {{ field.input_params() | safe }}/>
+        </div>
 
-    <label for="{{ field.id }}_milliseconds">Milliseconds:</label>
-    <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_milliseconds"
-       name="{{ field.id }}_milliseconds" value="{{ '' if data is none else data.milliseconds }}" {{ field.input_params() | safe }}/>
+        <label class="col-2 col-form-label"
+                for="{{ field.id }}_milliseconds">Milliseconds:</label>
+        <div class="col-2">
+            <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_milliseconds"
+                name="{{ field.id }}_milliseconds" value="{{ '' if data is none else data.milliseconds }}" {{ field.input_params() | safe }}/>
+        </div>
 
-    <label for="{{ field.id }}_microseconds">Microseconds:</label>
-    <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_microseconds"
-       name="{{ field.id }}_microseconds" value="{{ '' if data is none else data.microseconds }}" {{ field.input_params() | safe }}/>
-    {% if field.help_text %}
-        <small class="form-hint">{{ field.help_text }}</small>
-    {% endif %}
-</div>
+        <label class="col-2 col-form-label"
+                for="{{ field.id }}_microseconds">Microseconds:</label>
+        <div class="col-2">
+            <input type="number" class="form-control {% if error %}is-invalid{% endif %}" id="{{ field.id }}_microseconds"
+                name="{{ field.id }}_microseconds" value="{{ '' if data is none else data.microseconds }}" {{ field.input_params() | safe }}/>
+        </div>
+        {% if field.help_text %}
+            <small class="form-hint">{{ field.help_text }}</small>
+        {% endif %}
+    </div>
+
+</fieldset>
 {% include "forms/_error.html" %}
