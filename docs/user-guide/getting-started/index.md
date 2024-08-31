@@ -133,7 +133,7 @@ class HomeView(CustomView):
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
         return templates.TemplateResponse(
             request,
-            name="home.html", 
+            name="home.html",
             context={"latest_posts": ..., "top_users": ...},
         )
 
