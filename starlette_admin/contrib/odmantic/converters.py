@@ -29,10 +29,10 @@ from starlette_admin.fields import (
     EmailField,
     HasOne,
     IntegerField,
+    IntervalField,
     ListField,
     StringField,
     URLField,
-    IntervalField,
 )
 from starlette_admin.helpers import slugify_class_name
 
