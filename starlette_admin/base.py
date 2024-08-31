@@ -374,9 +374,9 @@ class BaseAdmin:
         if not model.is_accessible(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         return self.templates.TemplateResponse(
-            model.list_template,
-            {
-                "request": request,
+            request=request,
+            name=model.list_template,
+            context={
                 "model": model,
                 "title": model.title(request),
                 "_actions": await model.get_all_actions(request),
@@ -395,9 +395,9 @@ class BaseAdmin:
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
         return self.templates.TemplateResponse(
-            model.detail_template,
-            {
-                "request": request,
+            request=request,
+            name=model.detail_template,
+            context={
                 "title": model.title(request),
                 "model": model,
                 "raw_obj": obj,
@@ -410,11 +410,15 @@ class BaseAdmin:
         request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        config = {"request": request, "title": model.title(request), "model": model}
+        config = {"title": model.title(request), "model": model}
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
-            return self.templates.TemplateResponse(model.create_template, config)
+            return self.templates.TemplateResponse(
+                request=request,
+                name=model.create_template,
+                context=config,
+            )
         form = await request.form()
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.CREATE)
         try:
@@ -427,8 +431,9 @@ class BaseAdmin:
                 }
             )
             return self.templates.TemplateResponse(
-                model.create_template,
-                config,
+                request=request,
+                name=model.create_template,
+                context=config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = await model.get_pk_value(request, obj)
@@ -452,14 +457,17 @@ class BaseAdmin:
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
         config = {
-            "request": request,
             "title": model.title(request),
             "model": model,
             "raw_obj": obj,
             "obj": await model.serialize(obj, request, RequestAction.EDIT),
         }
         if request.method == "GET":
-            return self.templates.TemplateResponse(model.edit_template, config)
+            return self.templates.TemplateResponse(
+                request=request,
+                name=model.edit_template,
+                context=config,
+            )
         form = await request.form()
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
         try:
@@ -472,8 +480,9 @@ class BaseAdmin:
                 }
             )
             return self.templates.TemplateResponse(
-                model.edit_template,
-                config,
+                request=request,
+                name=model.edit_template,
+                context=config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = await model.get_pk_value(request, obj)
@@ -493,8 +502,9 @@ class BaseAdmin:
     ) -> Response:
         assert isinstance(exc, HTTPException)
         return self.templates.TemplateResponse(
-            "error.html",
-            {"request": request, "exc": exc},
+            request=request,
+            name="error.html",
+            context={"exc": exc},
             status_code=exc.status_code,
         )
 
