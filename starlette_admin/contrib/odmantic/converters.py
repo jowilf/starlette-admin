@@ -32,6 +32,7 @@ from starlette_admin.fields import (
     ListField,
     StringField,
     URLField,
+    IntervalField,
 )
 from starlette_admin.helpers import slugify_class_name
 
@@ -109,7 +110,11 @@ class ModelConverter(BaseODMModelConverter):
     def conv_bson_decimal(self, *args: Any, **kwargs: Any) -> BaseField:
         return DecimalField(**self._standard_type_common(**kwargs))
 
-    @converts(odmantic.bson._datetime)
+    @converts("timedelta")
+    def conv_bson_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
+        return IntervalField(**self._standard_type_common(**kwargs))
+
+    @converts(odmantic.bson)
     def conv_bson_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
         return DateTimeField(**self._standard_type_common(**kwargs))
 
