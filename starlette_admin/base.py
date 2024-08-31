@@ -2,7 +2,7 @@ import json
 from json import JSONDecodeError
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Type, Union
 
-from jinja2 import ChoiceLoader, FileSystemLoader, PackageLoader
+from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PackageLoader
 from starlette.applications import Starlette
 from starlette.datastructures import FormData
 from starlette.exceptions import HTTPException
@@ -190,13 +190,17 @@ class BaseAdmin:
             self._views.append(self.index_view)
 
     def _setup_templates(self) -> None:
-        templates = Jinja2Templates(self.templates_dir, extensions=["jinja2.ext.i18n"])
-        templates.env.loader = ChoiceLoader(
-            [
-                FileSystemLoader(self.templates_dir),
-                PackageLoader("starlette_admin", "templates"),
-            ]
+        env = Environment(
+            loader=ChoiceLoader(
+                [
+                    FileSystemLoader(self.templates_dir),
+                    PackageLoader("starlette_admin", "templates"),
+                ]
+            ),
+            extensions=["jinja2.ext.i18n"],
         )
+        templates = Jinja2Templates(env=env)
+
         # globals
         templates.env.globals["views"] = self._views
         templates.env.globals["app_title"] = self.title
