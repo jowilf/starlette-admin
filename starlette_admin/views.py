@@ -165,7 +165,9 @@ class CustomView(BaseView):
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
         """Default methods to render view. Override this methods to add your custom logic."""
         return templates.TemplateResponse(
-            self.template_path, {"request": request, "title": self.title(request)}
+            request=request,
+            name=self.template_path,
+            context={"title": self.title(request)},
         )
 
     def is_active(self, request: Request) -> bool:
