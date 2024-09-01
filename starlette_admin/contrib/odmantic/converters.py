@@ -29,10 +29,10 @@ from starlette_admin.fields import (
     EmailField,
     HasOne,
     IntegerField,
+    IntervalField,
     ListField,
     StringField,
     URLField,
-    IntervalField,
 )
 from starlette_admin.helpers import slugify_class_name
 
@@ -111,10 +111,10 @@ class ModelConverter(BaseODMModelConverter):
         return DecimalField(**self._standard_type_common(**kwargs))
 
     @converts("timedelta")
-    def conv_bson_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
+    def conv_bson_timedelta(self, *args: Any, **kwargs: Any) -> BaseField:
         return IntervalField(**self._standard_type_common(**kwargs))
 
-    @converts(odmantic.bson)
+    @converts(odmantic.bson._datetime)
     def conv_bson_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
         return DateTimeField(**self._standard_type_common(**kwargs))
 

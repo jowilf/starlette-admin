@@ -18,7 +18,6 @@ from typing import (
     Union,
 )
 
-from babel.dates import format_timedelta
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
@@ -42,6 +41,11 @@ try:
     import arrow
 except ImportError:
     arrow = None  # type: ignore[assignment]
+
+try:
+    from babel.dates import format_timedelta
+except ImportError:
+    format_timedelta = None  # type: ignore[assignment]
 
 
 @dataclass
@@ -1326,11 +1330,53 @@ class IntervalField(StringField):
     ) -> Any:
         params = timedelta_to_components(value)
         if action != RequestAction.EDIT:
-            print(params)
-            string = format_timedelta(timedelta(weeks=params['weeks']), granularity='week', threshold=params['weeks'], locale='en') + ' ' if params['weeks'] > 0 else ''
-            string += format_timedelta(timedelta(days=params['days']), granularity='day', threshold=1, locale='en') + ' '
-            string += format_timedelta(timedelta(hours=params['hours']), granularity='hour', threshold=1, locale='en') + ' '
-            string += format_timedelta(timedelta(minutes=params['minutes']), granularity='minute', threshold=1, locale='en') + ' '
-            string += format_timedelta(timedelta(seconds=params['seconds'], milliseconds=params['milliseconds'], microseconds=params['microseconds']), granularity='second', threshold=1, locale='en')
+            string = (
+                format_timedelta(
+                    timedelta(weeks=params["weeks"]),
+                    granularity="week",
+                    threshold=params["weeks"],
+                    locale=get_locale(),
+                )
+                + " "
+                if params["weeks"] > 0
+                else ""
+            )
+            string += (
+                format_timedelta(
+                    timedelta(days=params["days"]),
+                    granularity="day",
+                    threshold=1,
+                    locale=get_locale(),
+                )
+                + " "
+            )
+            string += (
+                format_timedelta(
+                    timedelta(hours=params["hours"]),
+                    granularity="hour",
+                    threshold=1,
+                    locale=get_locale(),
+                )
+                + " "
+            )
+            string += (
+                format_timedelta(
+                    timedelta(minutes=params["minutes"]),
+                    granularity="minute",
+                    threshold=1,
+                    locale=get_locale(),
+                )
+                + " "
+            )
+            string += format_timedelta(
+                timedelta(
+                    seconds=params["seconds"],
+                    milliseconds=params["milliseconds"],
+                    microseconds=params["microseconds"],
+                ),
+                granularity="second",
+                threshold=1,
+                locale=get_locale(),
+            )
             return string
         return params
