@@ -3,6 +3,7 @@ env*
 .mypy_cache
 .vscode
 .idea
+.venv
 poetry.lock
 dist
 htmlcov
