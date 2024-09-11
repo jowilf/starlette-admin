@@ -154,7 +154,7 @@ def not_none(value: Optional[T]) -> T:
     raise ValueError("Value can not be None")  # pragma: no cover
 
 
-def timedelta_to_components(td: timedelta):
+def timedelta_to_components(td: timedelta) -> dict:
     # Constants
     seconds_in_minute = 60
     seconds_in_hour = 3600

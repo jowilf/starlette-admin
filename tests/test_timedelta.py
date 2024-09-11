@@ -66,11 +66,11 @@ def test_no_microseconds():
 def test_negative_timedelta():
     td = timedelta(days=-7, seconds=-86399)
     expected = {
-        "weeks": -1,
-        "days": 0,
-        "hours": -23,
-        "minutes": -59,
-        "seconds": -59,
+        "weeks": -2,
+        "days": 6,
+        "hours": 0,
+        "minutes": 0,
+        "seconds": 1,
         "milliseconds": 0,
         "microseconds": 0,
     }

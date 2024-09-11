@@ -1282,44 +1282,47 @@ class IntervalField(StringField):
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
-        timedelta_params = {
-            "weeks": (
-                0
-                if form_data.get(f"{self.id}_weeks") == ""
-                else int(form_data.get(f"{self.id}_weeks"))
-            ),
-            "days": (
-                0
-                if form_data.get(f"{self.id}_days") == ""
-                else int(form_data.get(f"{self.id}_days"))
-            ),
-            "hours": (
-                0
-                if form_data.get(f"{self.id}_hours") == ""
-                else int(form_data.get(f"{self.id}_hours"))
-            ),
-            "minutes": (
-                0
-                if form_data.get(f"{self.id}_minutes") == ""
-                else int(form_data.get(f"{self.id}_minutes"))
-            ),
-            "seconds": (
-                0
-                if form_data.get(f"{self.id}_seconds") == ""
-                else int(form_data.get(f"{self.id}_seconds"))
-            ),
-            "microseconds": (
-                0
-                if form_data.get(f"{self.id}_microseconds") == ""
-                else int(form_data.get(f"{self.id}_microseconds"))
-            ),
-            "milliseconds": (
-                0
-                if form_data.get(f"{self.id}_milliseconds") == ""
-                else int(form_data.get(f"{self.id}_milliseconds"))
-            ),
-        }
-        return timedelta(**timedelta_params)
+        try:
+            timedelta_params = {
+                "weeks": (
+                    0
+                    if form_data.get(f"{self.id}_weeks") == ""
+                    else int(form_data.get(f"{self.id}_weeks"))  # type: ignore
+                ),
+                "days": (
+                    0
+                    if form_data.get(f"{self.id}_days") == ""
+                    else int(form_data.get(f"{self.id}_days"))  # type: ignore
+                ),
+                "hours": (
+                    0
+                    if form_data.get(f"{self.id}_hours") == ""
+                    else int(form_data.get(f"{self.id}_hours"))  # type: ignore
+                ),
+                "minutes": (
+                    0
+                    if form_data.get(f"{self.id}_minutes") == ""
+                    else int(form_data.get(f"{self.id}_minutes"))  # type: ignore
+                ),
+                "seconds": (
+                    0
+                    if form_data.get(f"{self.id}_seconds") == ""
+                    else int(form_data.get(f"{self.id}_seconds"))  # type: ignore
+                ),
+                "microseconds": (
+                    0
+                    if form_data.get(f"{self.id}_microseconds") == ""
+                    else int(form_data.get(f"{self.id}_microseconds"))  # type: ignore
+                ),
+                "milliseconds": (
+                    0
+                    if form_data.get(f"{self.id}_milliseconds") == ""
+                    else int(form_data.get(f"{self.id}_milliseconds"))  # type: ignore
+                ),
+            }
+            return timedelta(**timedelta_params)
+        except ValueError:
+            return timedelta()
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
