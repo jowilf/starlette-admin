@@ -29,6 +29,7 @@ from starlette_admin.fields import (
     EmailField,
     HasOne,
     IntegerField,
+    IntervalField,
     ListField,
     StringField,
     URLField,
@@ -108,6 +109,10 @@ class ModelConverter(BaseODMModelConverter):
     @converts(bson.Decimal128)
     def conv_bson_decimal(self, *args: Any, **kwargs: Any) -> BaseField:
         return DecimalField(**self._standard_type_common(**kwargs))
+
+    @converts("timedelta")
+    def conv_bson_timedelta(self, *args: Any, **kwargs: Any) -> BaseField:
+        return IntervalField(**self._standard_type_common(**kwargs))
 
     @converts(odmantic.bson._datetime)
     def conv_bson_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
