@@ -181,7 +181,7 @@ async def test_api(client: AsyncClient):
     data = response.json()
     assert data["total"] == 5
     assert len(data["items"]) == 2
-    assert ["OPPOF19", "IPhone X"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["OPPOF19", "IPhone X"]
     # Find by pks
     response = await client.get(
         "/admin/api/product",
@@ -196,7 +196,7 @@ async def test_api_fulltext(client: AsyncClient):
     )
     data = response.json()
     assert data["total"] == 2
-    assert ["IPhone 9", "IPhone X"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["IPhone 9", "IPhone X"]
 
 
 async def test_api_query1(client: AsyncClient):
@@ -207,7 +207,7 @@ async def test_api_query1(client: AsyncClient):
     response = await client.get(f"/admin/api/product?where={where}&order_by=price asc")
     data = response.json()
     assert data["total"] == 3
-    assert ["OPPOF19", "Huawei P30", "IPhone 9"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["OPPOF19", "Huawei P30", "IPhone 9"]
 
 
 async def test_api_query2(client: AsyncClient):
@@ -218,7 +218,7 @@ async def test_api_query2(client: AsyncClient):
     response = await client.get(f"/admin/api/product?where={where}")
     data = response.json()
     assert data["total"] == 1
-    assert ["IPhone X"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["IPhone X"]
 
 
 async def test_api_query3(client: AsyncClient):
@@ -229,7 +229,7 @@ async def test_api_query3(client: AsyncClient):
     response = await client.get(f"/admin/api/product?where={where}&order_by=price asc")
     data = response.json()
     assert data["total"] == 2
-    assert ["OPPOF19", "Huawei P30"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["OPPOF19", "Huawei P30"]
 
 
 async def test_api_query4(client: AsyncClient):
@@ -608,7 +608,7 @@ async def test_sortable_field_mapping_1(client: AsyncClient, session: Session):
     data = response.json()
     assert data["total"] == 5
     assert len(data["items"]) == 2
-    assert ["Huawei P30", "OPPOF19"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["Huawei P30", "OPPOF19"]
 
 
 @pytest.mark.skipif(
@@ -620,4 +620,4 @@ async def test_sortable_field_mapping_2(client: AsyncClient, session: Session):
     data = response.json()
     assert data["total"] == 5
     assert len(data["items"]) == 2
-    assert ["OPPOF19", "Huawei P30"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["OPPOF19", "Huawei P30"]

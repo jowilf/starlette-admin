@@ -376,7 +376,7 @@ class TestViews:
         # Test Api
         response = client.get("/admin/api/my-model?pks=1")
         assert response.status_code == 200
-        assert [1] == [x["id"] for x in response.json()["items"]]
+        assert [x["id"] for x in response.json()["items"]] == [1]
 
         # Test edit page load
         response = client.get("/admin/my-model/edit/1")
