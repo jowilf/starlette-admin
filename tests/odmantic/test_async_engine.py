@@ -113,7 +113,7 @@ async def test_api(client: AsyncClient):
     data = response.json()
     assert data["total"] == 3
     assert len(data["items"]) == 2
-    assert ["Sheldon Cole", "Terry Medhurst"] == [x["name"] for x in data["items"]]
+    assert [x["name"] for x in data["items"]] == ["Sheldon Cole", "Terry Medhurst"]
     # Find by pks
     response = await client.get(
         "/admin/api/user", params={"pks": [x["id"] for x in data["items"]]}
@@ -128,7 +128,7 @@ async def test_full_text_search(client: AsyncClient):
     assert response.status_code == 200
     data = response.json()
     assert data["total"] == 2
-    assert ["Hills Terrill", "Terry Medhurst"] == [x["name"] for x in data["items"]]
+    assert [x["name"] for x in data["items"]] == ["Hills Terrill", "Terry Medhurst"]
 
 
 async def test_deep_search(client: AsyncClient, aio_engine: AIOEngine):
