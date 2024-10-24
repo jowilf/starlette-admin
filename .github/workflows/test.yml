@@ -32,7 +32,7 @@ jobs:
         options: --health-cmd "curl http://localhost:9000/minio/health/live" --health-interval 10s --health-timeout 5s --health-retries 10
 
       postgres:
-        image: postgres:14-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: username
           POSTGRES_PASSWORD: password
