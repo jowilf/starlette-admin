@@ -176,8 +176,8 @@ exclude_lines = [
 ]
 
 [tool.coverage.run]
-#parallel = true
-#concurrency = ["thread", "greenlet"]
+parallel = true
+concurrency = ["thread", "greenlet"]
 source = ["starlette_admin", "tests"]
 
 [tool.pytest]
