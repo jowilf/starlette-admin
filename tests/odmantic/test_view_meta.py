@@ -8,11 +8,9 @@ import bson
 import pytest
 from odmantic import EmbeddedModel, Model, Reference
 from pydantic import AnyUrl, EmailStr
-from pydantic.color import Color
 from starlette_admin import (
     BooleanField,
     CollectionField,
-    ColorField,
     DateTimeField,
     DecimalField,
     EmailField,
@@ -50,7 +48,6 @@ class Document(Model):
     enums: List[Status]
     list_str: Optional[List[str]]
     json_: Dict[str, Any]
-    color: Color
 
 
 class Address(EmbeddedModel):
@@ -146,7 +143,6 @@ def test_fields_conversion():
         EnumField("enums", enum=Status, multiple=True, required=True),
         ListField(StringField("list_str")),
         JSONField("json_", required=True),
-        ColorField("color", required=True),
     ]
 
 

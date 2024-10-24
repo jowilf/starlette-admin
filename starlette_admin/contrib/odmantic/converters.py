@@ -23,7 +23,6 @@ from starlette_admin.exceptions import (
 from starlette_admin.fields import (
     BaseField,
     CollectionField,
-    ColorField,
     DateTimeField,
     DecimalField,
     EmailField,
@@ -116,10 +115,6 @@ class ModelConverter(BaseODMModelConverter):
     @converts(pydantic.EmailStr)
     def conv_pydantic_email(self, *args: Any, **kwargs: Any) -> BaseField:
         return EmailField(**self._standard_type_common(**kwargs))
-
-    @converts(pydantic.color.Color)
-    def conv_pydantic_color(self, *args: Any, **kwargs: Any) -> BaseField:
-        return ColorField(**self._standard_type_common(**kwargs))
 
     @converts(pydantic.AnyUrl)
     def conv_pydantic_url(self, *args: Any, **kwargs: Any) -> BaseField:
