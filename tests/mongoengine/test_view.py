@@ -136,7 +136,7 @@ class TestMongoBasic:
         data = response.json()
         assert data["total"] == 5
         assert len(data["items"]) == 2
-        assert ["OPPOF19", "IPhone X"] == [x["title"] for x in data["items"]]
+        assert [x["title"] for x in data["items"]] == ["OPPOF19", "IPhone X"]
         # Find by pks
         response = client.get(
             "/admin/api/product",
@@ -150,7 +150,7 @@ class TestMongoBasic:
         )
         data = response.json()
         assert data["total"] == 2
-        assert ["IPhone 9", "IPhone X"] == [x["title"] for x in data["items"]]
+        assert [x["title"] for x in data["items"]] == ["IPhone 9", "IPhone X"]
 
     def test_api_query1(self, client):
         where = (
@@ -160,8 +160,10 @@ class TestMongoBasic:
         response = client.get(f"/admin/api/product?where={where}&order_by=price asc")
         data = response.json()
         assert data["total"] == 3
-        assert ["OPPOF19", "Huawei P30", "IPhone 9"] == [
-            x["title"] for x in data["items"]
+        assert [x["title"] for x in data["items"]] == [
+            "OPPOF19",
+            "Huawei P30",
+            "IPhone 9",
         ]
 
     def test_api_query2(self, client):
@@ -172,13 +174,13 @@ class TestMongoBasic:
         response = client.get(f"/admin/api/product?where={where}")
         data = response.json()
         assert data["total"] == 1
-        assert ["IPhone X"] == [x["title"] for x in data["items"]]
+        assert [x["title"] for x in data["items"]] == ["IPhone X"]
 
     def test_api_query3(self, client):
         response = client.get("/admin/api/product?order_by=price desc&limit=2")
         data = response.json()
         assert data["total"] == 5
-        assert ["Samsung Universe 9", "IPhone X"] == [x["title"] for x in data["items"]]
+        assert [x["title"] for x in data["items"]] == ["Samsung Universe 9", "IPhone X"]
 
     def test_detail(self, client):
         id = Product.objects(title="IPhone 9").get().id
