@@ -1,5 +1,6 @@
 import functools
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import mongoengine as me
 import starlette_admin.fields as sa
@@ -29,7 +30,7 @@ from starlette_admin.views import BaseModelView
 class ModelView(BaseModelView):
     def __init__(
         self,
-        document: Type[me.Document],
+        document: type[me.Document],
         icon: Optional[str] = None,
         name: Optional[str] = None,
         label: Optional[str] = None,
@@ -66,7 +67,7 @@ class ModelView(BaseModelView):
     async def count(
         self,
         request: Request,
-        where: Union[Dict[str, Any], str, None] = None,
+        where: Union[dict[str, Any], str, None] = None,
     ) -> int:
         q = await self._build_query(request, where)
         return self.document.objects(q).count()
@@ -76,8 +77,8 @@ class ModelView(BaseModelView):
         request: Request,
         skip: int = 0,
         limit: int = 100,
-        where: Union[Dict[str, Any], str, None] = None,
-        order_by: Optional[List[str]] = None,
+        where: Union[dict[str, Any], str, None] = None,
+        order_by: Optional[list[str]] = None,
     ) -> Sequence[Any]:
         q = await self._build_query(request, where)
         objs = self.document.objects(q).order_by(*build_order_clauses(order_by or []))
@@ -92,11 +93,11 @@ class ModelView(BaseModelView):
             return None
 
     async def find_by_pks(
-        self, request: Request, pks: List[Any]
+        self, request: Request, pks: list[Any]
     ) -> Sequence[me.Document]:
         return self.document.objects(id__in=pks)
 
-    async def create(self, request: Request, data: Dict[str, Any]) -> Any:
+    async def create(self, request: Request, data: dict[str, Any]) -> Any:
         try:
             obj = await self._populate_obj(request, self.document(), data)
             await self.before_create(request, data, obj)
@@ -106,7 +107,7 @@ class ModelView(BaseModelView):
         except Exception as e:
             self.handle_exception(e)
 
-    async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
+    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
         try:
             obj = await self.find_by_pk(request, pk)
             obj = await self._populate_obj(request, obj, data, True)
@@ -121,7 +122,7 @@ class ModelView(BaseModelView):
         self,
         request: Request,
         obj: me.Document,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         is_edit: bool = False,
         document: Optional[BaseDocument] = None,
         fields: Optional[Sequence[sa.BaseField]] = None,
@@ -208,7 +209,7 @@ class ModelView(BaseModelView):
                 setattr(obj, name, value)
         return obj
 
-    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+    async def delete(self, request: Request, pks: list[Any]) -> Optional[int]:
         objs = self.document.objects(id__in=pks)
         for obj in objs:
             await self.before_delete(request, obj)
@@ -223,7 +224,7 @@ class ModelView(BaseModelView):
         raise exc  # pragma: no cover
 
     async def _build_query(
-        self, request: Request, where: Union[Dict[str, Any], str, None] = None
+        self, request: Request, where: Union[dict[str, Any], str, None] = None
     ) -> QNode:
         if where is None:
             return Q.empty()

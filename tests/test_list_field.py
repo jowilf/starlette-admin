@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 from packaging.version import parse as parse_version
 from pydantic import VERSION as PYDANTIC_VERSION
@@ -30,8 +28,8 @@ class ExtraItem(BaseModel):
 
 
 class Setting(DummyBaseModel):
-    hosts: List[HttpUrl] = Field(default_factory=list)
-    extras: List[ExtraItem] = Field(default_factory=list)
+    hosts: list[HttpUrl] = Field(default_factory=list)
+    extras: list[ExtraItem] = Field(default_factory=list)
 
 
 class SettingView(DummyModelView):

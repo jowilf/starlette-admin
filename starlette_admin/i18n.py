@@ -2,7 +2,7 @@ import datetime
 import pathlib
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from starlette.requests import HTTPConnection
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -23,7 +23,7 @@ try:
     from babel import Locale, dates
     from babel.support import LazyProxy, NullTranslations, Translations
 
-    translations: Dict[str, NullTranslations] = {
+    translations: dict[str, NullTranslations] = {
         locale: Translations.load(
             dirname=pathlib.Path(__file__).parent.joinpath("translations/"),
             locales=[locale],
@@ -72,11 +72,11 @@ try:
     ) -> str:
         return dates.format_time(time, format or "medium", tzinfo, get_locale())
 
-    def get_countries_list() -> List[Tuple[str, str]]:
+    def get_countries_list() -> list[tuple[str, str]]:
         locale = Locale.parse(get_locale())
         return [(x, locale.territories[x]) for x in countries_codes]
 
-    def get_currencies_list() -> List[Tuple[str, str]]:
+    def get_currencies_list() -> list[tuple[str, str]]:
         locale = Locale.parse(get_locale())
         return [(str(x), f"{x} - {locale.currencies[x]}") for x in locale.currencies]
 
@@ -116,10 +116,10 @@ except ImportError:
     ) -> str:
         return time.strftime(format or "%H:%M:%S")
 
-    def get_countries_list() -> List[Tuple[str, str]]:
+    def get_countries_list() -> list[tuple[str, str]]:
         raise NotImplementedError()
 
-    def get_currencies_list() -> List[Tuple[str, str]]:
+    def get_currencies_list() -> list[tuple[str, str]]:
         raise NotImplementedError()
 
     def get_locale_display_name(locale: str) -> str:
@@ -135,7 +135,7 @@ class I18nConfig:
     default_locale: str = DEFAULT_LOCALE
     language_cookie_name: Optional[str] = "language"
     language_header_name: Optional[str] = "Accept-Language"
-    language_switcher: Optional[List[str]] = None
+    language_switcher: Optional[list[str]] = None
 
 
 class LocaleMiddleware:

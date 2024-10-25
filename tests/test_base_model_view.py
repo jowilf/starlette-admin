@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic import Field
 from starlette_admin import (
     IntegerField,
@@ -16,7 +14,7 @@ class Post(DummyBaseModel):
     title: str
     content: str
     views: int = 0
-    tags: List[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
 
 
 class TestView:

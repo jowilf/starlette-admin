@@ -1,5 +1,4 @@
 import datetime
-from typing import List
 
 from sqlalchemy import ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,7 +13,7 @@ class Student(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
 
-    enrollments: Mapped[List["Enrollment"]] = relationship(back_populates="student")
+    enrollments: Mapped[list["Enrollment"]] = relationship(back_populates="student")
 
     def __admin_repr__(self, request: Request):
         return self.name
@@ -25,7 +24,7 @@ class Course(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-    enrollments: Mapped[List["Enrollment"]] = relationship(back_populates="course")
+    enrollments: Mapped[list["Enrollment"]] = relationship(back_populates="course")
 
     def __admin_repr__(self, request: Request):
         return self.name

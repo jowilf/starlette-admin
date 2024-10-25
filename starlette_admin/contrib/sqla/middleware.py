@@ -1,5 +1,6 @@
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator, Union
+from typing import Union
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession

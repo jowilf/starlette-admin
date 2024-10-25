@@ -1,5 +1,6 @@
 import functools
-from typing import Any, Callable, Dict, List, Optional, Sequence, Type
+from collections.abc import Sequence
+from typing import Any, Callable, Optional
 
 import mongoengine.fields as me
 from mongoengine.base.fields import BaseField as MongoBaseField
@@ -26,7 +27,7 @@ class Q(BaseQ):
         return BaseQ()
 
 
-OPERATORS: Dict[str, Callable[[str, Any], Q]] = {
+OPERATORS: dict[str, Callable[[str, Any], Q]] = {
     "eq": lambda f, v: Q(f, v),
     "neq": lambda f, v: Q(f, v, "ne"),
     "lt": lambda f, v: Q(f, v, "lt"),
@@ -50,7 +51,7 @@ OPERATORS: Dict[str, Callable[[str, Any], Q]] = {
 }
 
 
-def isvalid_field(document: Type[me.Document], field: str) -> bool:
+def isvalid_field(document: type[me.Document], field: str) -> bool:
     """
     Check if field is valid field for document. nested field is separate with '.'
     """
@@ -62,8 +63,8 @@ def isvalid_field(document: Type[me.Document], field: str) -> bool:
 
 
 def resolve_deep_query(
-    where: Dict[str, Any],
-    document: Type[me.Document],
+    where: dict[str, Any],
+    document: type[me.Document],
     latest_field: Optional[str] = None,
 ) -> QNode:
     _all_queries = []
@@ -82,7 +83,7 @@ def resolve_deep_query(
     return Q.empty()
 
 
-def build_order_clauses(order_list: List[str]) -> List[str]:
+def build_order_clauses(order_list: list[str]) -> list[str]:
     clauses = []
     for value in order_list:
         key, order = value.strip().split(maxsplit=1)

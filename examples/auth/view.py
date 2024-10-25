@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from sqlalchemy.orm import Session
 from starlette.requests import Request
@@ -35,7 +35,7 @@ class ArticleView(ModelView):
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
     )
-    async def make_published_action(self, request: Request, pks: List[Any]) -> str:
+    async def make_published_action(self, request: Request, pks: list[Any]) -> str:
         session: Session = request.state.session
         for article in await self.find_by_pks(request, pks):
             article.status = Status.Published

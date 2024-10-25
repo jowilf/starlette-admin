@@ -1,7 +1,6 @@
+from collections.abc import Sequence
 from typing import (
     Any,
-    Sequence,
-    Type,
 )
 
 import bson
@@ -42,7 +41,7 @@ class BaseODMModelConverter(StandardModelConverter):
         raise ValueError(f"Can't find attribute with key {value}")
 
     def convert_fields_list(
-        self, *, fields: Sequence[Any], model: Type[Model], **kwargs: Any
+        self, *, fields: Sequence[Any], model: type[Model], **kwargs: Any
     ) -> Sequence[BaseField]:
         fields = [str(+v) if isinstance(v, FieldProxy) else v for v in fields]
         try:

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 from pydantic import ValidationError
 from sqlmodel import SQLModel
@@ -12,7 +12,7 @@ from starlette_admin.helpers import pydantic_error_to_form_validation_errors
 class ModelView(BaseModelView):
     def __init__(
         self,
-        model: Type[SQLModel],
+        model: type[SQLModel],
         icon: Optional[str] = None,
         name: Optional[str] = None,
         label: Optional[str] = None,
@@ -21,7 +21,7 @@ class ModelView(BaseModelView):
     ):
         super().__init__(model, icon, name, label, identity, converter)
 
-    async def validate(self, request: Request, data: Dict[str, Any]) -> None:
+    async def validate(self, request: Request, data: dict[str, Any]) -> None:
         """Validate data without file fields  relation fields"""
         fields_to_exclude = [
             f.name

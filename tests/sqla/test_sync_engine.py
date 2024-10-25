@@ -1,7 +1,7 @@
 import enum
 import json
 import os
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import pytest
 import pytest_asyncio
@@ -67,7 +67,7 @@ class ProductView(ModelView):
     sortable_field_mapping = {"user": User.name}
 
     async def before_create(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         assert isinstance(obj, Product)
         assert obj.id is None
@@ -77,7 +77,7 @@ class ProductView(ModelView):
         assert obj.id is not None
 
     async def before_edit(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         assert isinstance(obj, Product)
         assert obj.id is not None
@@ -295,7 +295,7 @@ async def test_api_query5(client: AsyncClient):
     ],
 )
 async def test_api_query6(
-    client: AsyncClient, resource: str, where: Tuple[str], expected: Dict[str, Any]
+    client: AsyncClient, resource: str, where: tuple[str], expected: dict[str, Any]
 ):
     response = await client.get(f"/admin/api/{resource}?where={where}")
     data = response.json()

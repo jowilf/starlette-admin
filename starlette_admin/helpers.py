@@ -1,14 +1,11 @@
 import os
 import re
+from collections.abc import Awaitable, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
-    Awaitable,
     Callable,
-    Dict,
     Optional,
-    Sequence,
-    Tuple,
     TypeVar,
     Union,
 )
@@ -71,7 +68,7 @@ def get_file_icon(mime_type: str) -> str:
     return "fa-file"
 
 
-def html_params(kwargs: Dict[str, Any]) -> str:
+def html_params(kwargs: dict[str, Any]) -> str:
     """Converts a dictionary of HTML attribute name-value pairs into a string of HTML parameters."""
     params = []
     for k, v in kwargs.items():
@@ -106,9 +103,9 @@ def pydantic_error_to_form_validation_errors(exc: Any) -> FormValidationError:
     from pydantic import ValidationError
 
     assert isinstance(exc, ValidationError)
-    errors: Dict[Union[str, int], Any] = {}
+    errors: dict[Union[str, int], Any] = {}
     for pydantic_error in exc.errors():
-        loc: Tuple[Union[int, str], ...] = pydantic_error["loc"]
+        loc: tuple[Union[int, str], ...] = pydantic_error["loc"]
         _d = errors
         for i in range(len(loc)):
             if i == len(loc) - 1:

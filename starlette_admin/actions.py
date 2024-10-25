@@ -1,4 +1,5 @@
-from typing import Any, Awaitable, Callable, Optional
+from collections.abc import Awaitable
+from typing import Any, Callable, Optional
 
 from starlette_admin.i18n import lazy_gettext as _
 

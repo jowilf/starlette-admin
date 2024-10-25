@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import pytest
 from sqlalchemy import Column, Integer, String, select
@@ -22,7 +22,7 @@ class Article(Base):
 
 
 class ArticleView(ModelView):
-    def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+    def delete(self, request: Request, pks: list[Any]) -> Optional[int]:
         # simulate MultipleResultsFound error
         request.state.session.execute(
             select(Article).where(Article.title == "test")

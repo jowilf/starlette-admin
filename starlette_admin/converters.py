@@ -4,13 +4,11 @@ import enum
 import inspect
 import typing
 from abc import abstractmethod
+from collections.abc import Sequence
 from typing import (
     Any,
     Callable,
-    Dict,
     Optional,
-    Sequence,
-    Type,
     get_args,
     get_origin,
 )
@@ -48,7 +46,7 @@ def converts(
 class BaseModelConverter:
     def __init__(
         self,
-        converters: Optional[Dict[Any, Callable[..., BaseField]]] = None,
+        converters: Optional[dict[Any, Callable[..., BaseField]]] = None,
     ):
         if converters is None:
             converters = {}
@@ -72,7 +70,7 @@ class BaseModelConverter:
         self,
         *,
         fields: Sequence[Any],
-        model: Type[Any],
+        model: type[Any],
         **kwargs: Any,
     ) -> Sequence[BaseField]:
         """Override this method to convert non-BaseField instances in your defined fields list into corresponding
@@ -117,7 +115,7 @@ class BaseStandardModelConverter(BaseModelConverter):
         return model.__annotations__[value]
 
     def convert_fields_list(
-        self, *, fields: Sequence[Any], model: Type[Any], **kwargs: Any
+        self, *, fields: Sequence[Any], model: type[Any], **kwargs: Any
     ) -> Sequence[BaseField]:
         converted_fields = []
         for value in fields:
@@ -147,7 +145,7 @@ class StandardModelConverter(BaseStandardModelConverter):
     @classmethod
     def _standard_type_common(
         cls, *, name: str, required: Optional[bool] = True, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {"name": name, "required": required}
 
     @converts(str, bytes, typing.Pattern)

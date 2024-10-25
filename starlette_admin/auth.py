@@ -1,7 +1,8 @@
 import warnings
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from starlette.applications import Starlette
 from starlette.middleware import Middleware

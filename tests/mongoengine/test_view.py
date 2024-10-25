@@ -3,7 +3,7 @@ import datetime
 import json
 import tempfile
 from enum import Enum
-from typing import Any, Dict
+from typing import Any
 
 import mongoengine as me
 import pytest
@@ -46,7 +46,7 @@ class User(me.Document):
 
 class ProductView(ModelView):
     async def before_create(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         assert isinstance(obj, Product)
         assert obj.id is None
@@ -56,7 +56,7 @@ class ProductView(ModelView):
         assert obj.id is not None
 
     async def before_edit(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         assert isinstance(obj, Product)
         assert obj.id is not None

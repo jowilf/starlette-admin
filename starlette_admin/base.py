@@ -1,6 +1,7 @@
 import json
+from collections.abc import Awaitable, Sequence
 from json import JSONDecodeError
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Type, Union
+from typing import Any, Callable, Optional, Union
 
 from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PackageLoader
 from starlette.applications import Starlette
@@ -85,9 +86,9 @@ class BaseAdmin:
             if (index_view is not None)
             else CustomView("", add_to_menu=False)
         )
-        self._views: List[BaseView] = []
-        self._models: List[BaseModelView] = []
-        self.routes: List[Union[Route, Mount]] = []
+        self._views: list[BaseView] = []
+        self._models: list[BaseModelView] = []
+        self.routes: list[Union[Route, Mount]] = []
         self.debug = debug
         self.i18n_config = i18n_config
         self._setup_templates()
@@ -95,7 +96,7 @@ class BaseAdmin:
         self.init_auth()
         self.init_routes()
 
-    def add_view(self, view: Union[Type[BaseView], BaseView]) -> None:
+    def add_view(self, view: Union[type[BaseView], BaseView]) -> None:
         """
         Add View to the Admin interface.
         """
@@ -518,7 +519,7 @@ class BaseAdmin:
         form_data: FormData,
         model: BaseModelView,
         action: RequestAction,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         data = {}
         for field in model.get_fields_list(request, action):
             data[field.name] = await field.parse_form_data(request, form_data, action)

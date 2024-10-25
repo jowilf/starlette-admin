@@ -1,4 +1,5 @@
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Optional, Union
 
 from odmantic import AIOEngine, SyncEngine
 from starlette.middleware import Middleware

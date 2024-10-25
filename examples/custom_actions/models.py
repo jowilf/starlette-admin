@@ -1,5 +1,5 @@
 import enum
-from typing import Any, List
+from typing import Any
 
 from sqlalchemy import Column, Enum, Integer, String, Text
 from sqlalchemy.orm import Session
@@ -49,7 +49,7 @@ class ArticleView(ModelView):
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
     )
-    async def make_published_action(self, request: Request, pks: List[Any]) -> str:
+    async def make_published_action(self, request: Request, pks: list[Any]) -> str:
         session: Session = request.state.session
         for article in await self.find_by_pks(request, pks):
             article.status = Status.Published
@@ -70,7 +70,7 @@ class ArticleView(ModelView):
         </form>
         """,
     )
-    async def increase_views_action(self, request: Request, pks: List[Any]) -> str:
+    async def increase_views_action(self, request: Request, pks: list[Any]) -> str:
         session: Session = request.state.session
         data = await request.form()
         try:
@@ -92,14 +92,14 @@ class ArticleView(ModelView):
         submit_btn_text="Continue",
         submit_btn_class="btn-outline-danger",
     )
-    async def always_failed_action(self, request: Request, pks: List[Any]) -> str:
+    async def always_failed_action(self, request: Request, pks: list[Any]) -> str:
         raise ActionFailed("Sorry, We can't proceed this action now.")
 
     @action(
         name="no_confirmation",
         text="No confirmation action",
     )
-    async def no_confirmation_action(self, request: Request, pks: List[Any]) -> str:
+    async def no_confirmation_action(self, request: Request, pks: list[Any]) -> str:
         return "You have successfully executed an action without confirmation"
 
     @action(
@@ -107,7 +107,7 @@ class ArticleView(ModelView):
         text="Redirect",
         custom_response=True,
     )
-    async def redirect_action(self, request: Request, pks: List[Any]) -> Response:
+    async def redirect_action(self, request: Request, pks: list[Any]) -> Response:
         return RedirectResponse("https://example.com/")
 
     @action(
@@ -123,7 +123,7 @@ class ArticleView(ModelView):
             </form>
             """,
     )
-    async def redirect_with_form(self, request: Request, pks: List[Any]) -> Response:
+    async def redirect_with_form(self, request: Request, pks: list[Any]) -> Response:
         data = await request.form()
         return RedirectResponse(f"https://example.com/?value={data['value']}")
 

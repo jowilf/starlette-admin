@@ -1,17 +1,12 @@
 import inspect
 from abc import abstractmethod
 from collections import OrderedDict
+from collections.abc import Awaitable, Sequence
 from typing import (
     Any,
-    Awaitable,
     Callable,
     ClassVar,
-    Dict,
-    List,
     Optional,
-    Sequence,
-    Tuple,
-    Type,
     Union,
 )
 
@@ -85,14 +80,14 @@ class DropDown(BaseView):
     def __init__(
         self,
         label: str,
-        views: List[Union[Type[BaseView], BaseView]],
+        views: list[Union[type[BaseView], BaseView]],
         icon: Optional[str] = None,
         always_open: bool = True,
     ) -> None:
         self.label = label
         self.icon = icon
         self.always_open = always_open
-        self.views: List[BaseView] = [
+        self.views: list[BaseView] = [
             (v if isinstance(v, BaseView) else v()) for v in views
         ]
 
@@ -151,7 +146,7 @@ class CustomView(BaseView):
         path: str = "/",
         template_path: str = "index.html",
         name: Optional[str] = None,
-        methods: Optional[List[str]] = None,
+        methods: Optional[list[str]] = None,
         add_to_menu: bool = True,
     ):
         self.label = label
@@ -239,7 +234,7 @@ class BaseModelView(BaseView):
     exclude_fields_from_edit: Sequence[str] = []
     searchable_fields: Optional[Sequence[str]] = None
     sortable_fields: Optional[Sequence[str]] = None
-    fields_default_sort: Optional[Sequence[Union[Tuple[str, bool], str]]] = None
+    fields_default_sort: Optional[Sequence[Union[tuple[str, bool], str]]] = None
     export_types: Sequence[ExportType] = [
         ExportType.CSV,
         ExportType.EXCEL,
@@ -252,15 +247,15 @@ class BaseModelView(BaseView):
     page_size_options: Sequence[int] = [10, 25, 50, 100]
     responsive_table: bool = False
     save_state: bool = True
-    datatables_options: ClassVar[Dict[str, Any]] = {}
+    datatables_options: ClassVar[dict[str, Any]] = {}
     list_template: str = "list.html"
     detail_template: str = "detail.html"
     create_template: str = "create.html"
     edit_template: str = "edit.html"
     actions: Optional[Sequence[str]] = None
     row_actions: Optional[Sequence[str]] = None
-    additional_js_links: Optional[List[str]] = None
-    additional_css_links: Optional[List[str]] = None
+    additional_js_links: Optional[list[str]] = None
+    additional_css_links: Optional[list[str]] = None
     row_actions_display_type: RowActionsDisplayType = RowActionsDisplayType.ICON_LIST
 
     _find_foreign_model: Callable[[str], "BaseModelView"]
@@ -306,12 +301,12 @@ class BaseModelView(BaseView):
             self.fields_default_sort = [self.pk_attr]  # type: ignore[list-item]
 
         # Actions
-        self._actions: Dict[str, Dict[str, str]] = OrderedDict()
-        self._row_actions: Dict[str, Dict[str, str]] = OrderedDict()
-        self._actions_handlers: Dict[
+        self._actions: dict[str, dict[str, str]] = OrderedDict()
+        self._row_actions: dict[str, dict[str, str]] = OrderedDict()
+        self._actions_handlers: dict[
             str, Callable[[Request, Sequence[Any]], Awaitable]
         ] = OrderedDict()
-        self._row_actions_handlers: Dict[str, Callable[[Request, Any], Awaitable]] = (
+        self._row_actions_handlers: dict[str, Callable[[Request, Any], Awaitable]] = (
             OrderedDict()
         )
         self._init_actions()
@@ -392,7 +387,7 @@ class BaseModelView(BaseView):
             return self.can_view_details(request)
         return True
 
-    async def get_all_actions(self, request: Request) -> List[Dict[str, Any]]:
+    async def get_all_actions(self, request: Request) -> list[dict[str, Any]]:
         """Return a list of allowed batch actions"""
         actions = []
         for action_name in not_none(self.actions):
@@ -400,7 +395,7 @@ class BaseModelView(BaseView):
                 actions.append(self._actions.get(action_name, {}))
         return actions
 
-    async def get_all_row_actions(self, request: Request) -> List[Dict[str, Any]]:
+    async def get_all_row_actions(self, request: Request) -> list[dict[str, Any]]:
         """Return a list of allowed row actions"""
         row_actions = []
         for row_action_name in not_none(self.row_actions):
@@ -417,7 +412,7 @@ class BaseModelView(BaseView):
         return row_actions
 
     async def handle_action(
-        self, request: Request, pks: List[Any], name: str
+        self, request: Request, pks: list[Any], name: str
     ) -> Union[str, Response]:
         """
         Handle action with `name`.
@@ -465,7 +460,7 @@ class BaseModelView(BaseView):
         submit_btn_text=_("Yes, delete all"),
         submit_btn_class="btn-danger",
     )
-    async def delete_action(self, request: Request, pks: List[Any]) -> str:
+    async def delete_action(self, request: Request, pks: list[Any]) -> str:
         affected_rows = await self.delete(request, pks)
         return ngettext(
             "Item was successfully deleted",
@@ -514,8 +509,8 @@ class BaseModelView(BaseView):
         request: Request,
         skip: int = 0,
         limit: int = 100,
-        where: Union[Dict[str, Any], str, None] = None,
-        order_by: Optional[List[str]] = None,
+        where: Union[dict[str, Any], str, None] = None,
+        order_by: Optional[list[str]] = None,
     ) -> Sequence[Any]:
         """
         Find all items
@@ -536,7 +531,7 @@ class BaseModelView(BaseView):
     async def count(
         self,
         request: Request,
-        where: Union[Dict[str, Any], str, None] = None,
+        where: Union[dict[str, Any], str, None] = None,
     ) -> int:
         """
         Count items
@@ -561,7 +556,7 @@ class BaseModelView(BaseView):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
+    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]:
         """
         Find many items
         Parameters:
@@ -571,7 +566,7 @@ class BaseModelView(BaseView):
         raise NotImplementedError()
 
     async def before_create(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         """
         This hook is called before a new item is created.
@@ -583,7 +578,7 @@ class BaseModelView(BaseView):
         """
 
     @abstractmethod
-    async def create(self, request: Request, data: Dict) -> Any:
+    async def create(self, request: Request, data: dict) -> Any:
         """
         Create item
         Parameters:
@@ -604,7 +599,7 @@ class BaseModelView(BaseView):
         """
 
     async def before_edit(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         """
         This hook is called before an item is edited.
@@ -616,7 +611,7 @@ class BaseModelView(BaseView):
         """
 
     @abstractmethod
-    async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
+    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
         """
         Edit item
         Parameters:
@@ -647,7 +642,7 @@ class BaseModelView(BaseView):
         """
 
     @abstractmethod
-    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+    async def delete(self, request: Request, pks: list[Any]) -> Optional[int]:
         """
         Bulk delete items
         Parameters:
@@ -710,9 +705,9 @@ class BaseModelView(BaseView):
         action: RequestAction,
         include_relationships: bool = True,
         include_select2: bool = False,
-    ) -> Dict[str, Any]:
-        obj_serialized: Dict[str, Any] = {}
-        obj_meta: Dict[str, Any] = {}
+    ) -> dict[str, Any]:
+        obj_serialized: dict[str, Any] = {}
+        obj_meta: dict[str, Any] = {}
         for field in self.get_fields_list(request, action):
             if isinstance(field, RelationField) and include_relationships:
                 value = getattr(obj, field.name, None)
@@ -907,10 +902,10 @@ class BaseModelView(BaseView):
             [(_("All") if i < 0 else i) for i in self.page_size_options],
         ]
 
-    def _search_columns_selector(self) -> List[str]:
+    def _search_columns_selector(self) -> list[str]:
         return [f"{name}:name" for name in self.searchable_fields]  # type: ignore
 
-    def _export_columns_selector(self) -> List[str]:
+    def _export_columns_selector(self) -> list[str]:
         return [f"{name}:name" for name in self.export_fields]  # type: ignore
 
     def get_fields_list(
@@ -948,7 +943,7 @@ class BaseModelView(BaseView):
                     links.append(link)
         return links
 
-    async def _configs(self, request: Request) -> Dict[str, Any]:
+    async def _configs(self, request: Request) -> dict[str, Any]:
         locale = get_locale()
         return {
             "label": self.label,

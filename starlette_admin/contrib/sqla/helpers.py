@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any, Callable, Optional
 
 from sqlalchemy import String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
@@ -25,7 +26,7 @@ def __is_not_null(latest_attr: InstrumentedAttribute) -> Any:
     return latest_attr.is_not(None)
 
 
-OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
+OPERATORS: dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
     "eq": lambda f, v: f == v,
     "neq": lambda f, v: f != v,
     "lt": lambda f, v: f < v,
@@ -50,7 +51,7 @@ OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
 
 
 def build_query(
-    where: Dict[str, Any],
+    where: dict[str, Any],
     model: Any,
     latest_attr: Optional[InstrumentedAttribute] = None,
 ) -> Any:

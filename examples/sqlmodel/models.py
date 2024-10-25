@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from pydantic import AnyHttpUrl, BaseModel, EmailStr
 from pydantic import Field as PydField
@@ -23,15 +23,15 @@ class User(SQLModel, table=True):
         sa_column=Column(Enum(Gender), index=True), default=Gender.UNKNOWN
     )
 
-    posts: List["Post"] = Relationship(back_populates="publisher")
-    comments: List["Comment"] = Relationship(back_populates="user")
+    posts: list["Post"] = Relationship(back_populates="publisher")
+    comments: list["Comment"] = Relationship(back_populates="user")
 
 
 class Post(SQLModel, table=True):
     id: Optional[int] = Field(primary_key=True)
     title: str = Field(min_length=3)
     content: str = Field(sa_column=Column(Text))
-    tags: List[str] = Field(sa_column=Column(JSON), min_items=1)
+    tags: list[str] = Field(sa_column=Column(JSON), min_items=1)
     published_at: Optional[datetime] = Field(
         sa_column=Column(DateTime(timezone=True), default=datetime.utcnow)
     )
@@ -39,7 +39,7 @@ class Post(SQLModel, table=True):
     publisher_id: Optional[int] = Field(foreign_key="user.id")
     publisher: User = Relationship(back_populates="posts")
 
-    comments: List["Comment"] = Relationship(back_populates="post")
+    comments: list["Comment"] = Relationship(back_populates="post")
 
 
 class Comment(SQLModel, table=True):
@@ -66,5 +66,5 @@ class Dump(SQLModel, table=True):
     email: EmailStr = Field(index=True)
     color: Color = Field(sa_column=Column(String(10)))
     url: AnyHttpUrl
-    json_field: Dict[str, Any] = Field(sa_column=Column(JSON))
-    configs: List[Config] = Field(sa_column=Column(JSON))
+    json_field: dict[str, Any] = Field(sa_column=Column(JSON))
+    configs: list[Config] = Field(sa_column=Column(JSON))

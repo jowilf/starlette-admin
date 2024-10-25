@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, Sequence, Type
+from collections.abc import Sequence
+from typing import Any, Callable
 
 import mongoengine.fields as me
 import starlette_admin.contrib.mongoengine.fields as internal_fields
@@ -27,7 +28,7 @@ class BaseMongoEngineModelConverter(BaseModelConverter):
         self,
         *,
         fields: Sequence[Any],
-        model: Type[me.Document],
+        model: type[me.Document],
         **kwargs: Any,
     ) -> Sequence[sa.BaseField]:
         converted_fields = []
@@ -47,7 +48,7 @@ class BaseMongoEngineModelConverter(BaseModelConverter):
 
 class ModelConverter(BaseMongoEngineModelConverter):
     @classmethod
-    def _field_common(cls, *, field: me.BaseField, **kwargs: Any) -> Dict[str, Any]:
+    def _field_common(cls, *, field: me.BaseField, **kwargs: Any) -> dict[str, Any]:
         return {
             "name": field.name,
             "help_text": getattr(field, "help_text", None),
@@ -57,7 +58,7 @@ class ModelConverter(BaseMongoEngineModelConverter):
     @classmethod
     def _numeric_field_common(
         cls, *, field: me.BaseField, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {
             "min": getattr(field, "min_value", None),
             "max": getattr(field, "max_value", None),

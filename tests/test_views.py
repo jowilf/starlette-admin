@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Optional
+from typing import Optional
 
 import pytest
 from pydantic import Field
@@ -29,7 +29,7 @@ class Post(DummyBaseModel):
     title: str
     content: str
     views: Optional[int] = 0
-    tags: List[str]
+    tags: list[str]
 
     async def __admin_repr__(self, request: Request):
         return self.title
@@ -40,7 +40,7 @@ class Post(DummyBaseModel):
 
 class User(DummyBaseModel):
     name: str
-    posts: List[Post] = Field(default_factory=list)
+    posts: list[Post] = Field(default_factory=list)
     reviewer: Optional["User"] = None
 
     def __admin_repr__(self, request: Request):
@@ -299,7 +299,7 @@ class TestViews:
 
     def test_model_view_create_validation_error(self):
         class PostViewWithRestrictedTitle(PostView):
-            def validate_data(self, data: Dict):
+            def validate_data(self, data: dict):
                 if len(data["title"]) < 3:
                     raise FormValidationError(
                         {"title": "Ensure Post title has at least 03 characters"}

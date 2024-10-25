@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from operator import attrgetter
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Optional, Union
 
 from starlette.requests import Request
 from starlette_admin import (
@@ -52,8 +53,8 @@ class PostView(BaseModelView):
         request: Request,
         skip: int = 0,
         limit: int = 100,
-        where: Union[Dict[str, Any], str, None] = None,
-        order_by: Optional[List[str]] = None,
+        where: Union[dict[str, Any], str, None] = None,
+        order_by: Optional[list[str]] = None,
     ) -> Sequence[Any]:
         docs = []
         if where is not None:
@@ -72,7 +73,7 @@ class PostView(BaseModelView):
         return values[skip:]
 
     async def count(
-        self, request: Request, where: Union[Dict[str, Any], str, None] = None
+        self, request: Request, where: Union[dict[str, Any], str, None] = None
     ) -> int:
         if where is not None:
             assert not isinstance(where, dict)  # search_builder is disabled
@@ -85,10 +86,10 @@ class PostView(BaseModelView):
             return Post.from_document(self.db.get(doc_id=pk))
         return None
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
+    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]:
         return [Post.from_document(self.db.get(doc_id=pk)) for pk in map(int, pks)]
 
-    async def validate_data(self, data: Dict) -> None:
+    async def validate_data(self, data: dict) -> None:
         errors = {}
         if data["title"] is None or len(data["title"]) < 3:
             errors["title"] = "Ensure title has at least 03 characters"
@@ -97,16 +98,16 @@ class PostView(BaseModelView):
         if len(errors) > 0:
             raise FormValidationError(errors)
 
-    async def create(self, request: Request, data: Dict) -> Any:
+    async def create(self, request: Request, data: dict) -> Any:
         await self.validate_data(data)
         new_id = self.db.insert(Post(**data).to_dict())
         return await self.find_by_pk(request, new_id)
 
-    async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
+    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
         pk = int(pk)
         await self.validate_data(data)
         self.db.update(Post(**data).to_dict(), doc_ids=[pk])
         return await self.find_by_pk(request, pk)
 
-    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+    async def delete(self, request: Request, pks: list[Any]) -> Optional[int]:
         return len(self.db.remove(doc_ids=map(int, pks)))

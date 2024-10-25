@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import EmailStr
 
@@ -17,7 +17,7 @@ class Author(Model):
     first_name: str = Field(min_length=3)
     last_name: str = Field(min_length=3)
     email: Optional[EmailStr]
-    addresses: List[Address] = Field(default_factory=list)
+    addresses: list[Address] = Field(default_factory=list)
 
 
 class BookFormat(str, Enum):
@@ -31,5 +31,5 @@ class Book(Model):
     title: str = Field(min_length=5)
     format: BookFormat
     year: int = Field(ge=1900, le=2022)
-    awards: List[str] = Field(default_factory=list, min_length=3)
+    awards: list[str] = Field(default_factory=list, min_length=3)
     author: Author = Reference()

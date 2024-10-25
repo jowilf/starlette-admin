@@ -1,6 +1,7 @@
 import re
+from collections.abc import Sequence
 from functools import partial
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from typing import Any, Optional, Union
 
 import anyio
 from bson import ObjectId
@@ -39,7 +40,7 @@ from starlette_admin.views import BaseModelView
 class ModelView(BaseModelView):
     def __init__(
         self,
-        model: Type[Model],
+        model: type[Model],
         icon: Optional[str] = None,
         name: Optional[str] = None,
         label: Optional[str] = None,
@@ -81,8 +82,8 @@ class ModelView(BaseModelView):
         request: Request,
         skip: int = 0,
         limit: int = 100,
-        where: Union[Dict[str, Any], str, None] = None,
-        order_by: Optional[List[str]] = None,
+        where: Union[dict[str, Any], str, None] = None,
+        order_by: Optional[list[str]] = None,
     ) -> Sequence[Any]:
         session: Union[AIOSession, SyncSession] = request.state.session
         q = await self._build_query(request, where)
@@ -107,7 +108,7 @@ class ModelView(BaseModelView):
         )
 
     async def count(
-        self, request: Request, where: Union[Dict[str, Any], str, None] = None
+        self, request: Request, where: Union[dict[str, Any], str, None] = None
     ) -> int:
         session: Union[AIOSession, SyncSession] = request.state.session
         q = await self._build_query(request, where)
@@ -123,14 +124,14 @@ class ModelView(BaseModelView):
             session.find_one, self.model, self.model.id == ObjectId(pk)
         )
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
+    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]:
         pks = list(map(ObjectId, pks))
         session: Union[AIOSession, SyncSession] = request.state.session
         if isinstance(session, AIOSession):
             return await session.find(self.model, self.model.id.in_(pks))  # type: ignore
         return list(await anyio.to_thread.run_sync(session.find, self.model, self.model.id.in_(pks)))  # type: ignore
 
-    async def create(self, request: Request, data: Dict) -> Any:
+    async def create(self, request: Request, data: dict) -> Any:
         session: Union[AIOSession, SyncSession] = request.state.session
         data = await self._arrange_data(request, data)
         try:
@@ -145,7 +146,7 @@ class ModelView(BaseModelView):
         except Exception as e:
             self.handle_exception(e)
 
-    async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
+    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
         session: Union[AIOSession, SyncSession] = request.state.session
         data = await self._arrange_data(request, data, is_edit=True)
         try:
@@ -161,7 +162,7 @@ class ModelView(BaseModelView):
         except Exception as e:
             self.handle_exception(e)
 
-    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+    async def delete(self, request: Request, pks: list[Any]) -> Optional[int]:
         objs = await self.find_by_pks(request, pks)
         pks = list(map(ObjectId, pks))
         for obj in objs:
@@ -183,11 +184,11 @@ class ModelView(BaseModelView):
     async def _arrange_data(
         self,
         request: Request,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         is_edit: bool = False,
         fields: Optional[Sequence[BaseField]] = None,
-    ) -> Dict[str, Any]:
-        arranged_data: Dict[str, Any] = {}
+    ) -> dict[str, Any]:
+        arranged_data: dict[str, Any] = {}
         if fields is None:
             fields = self.get_fields_list(request, request.state.action)
         for field in fields:
@@ -227,7 +228,7 @@ class ModelView(BaseModelView):
         return arranged_data
 
     async def _build_query(
-        self, request: Request, where: Union[Dict[str, Any], str, None] = None
+        self, request: Request, where: Union[dict[str, Any], str, None] = None
     ) -> Any:
         if where is None:
             return {}
@@ -235,7 +236,7 @@ class ModelView(BaseModelView):
             return resolve_deep_query(where, self.model)
         return await self.build_full_text_search_query(request, where)
 
-    async def _build_order_clauses(self, order_list: List[str]) -> Any:
+    async def _build_order_clauses(self, order_list: list[str]) -> Any:
         clauses = []
         for value in order_list:
             key, order = value.strip().split(maxsplit=1)

@@ -2,7 +2,7 @@ import enum
 import re
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import bson
 import pytest
@@ -45,9 +45,9 @@ class Document(Model):
     email: EmailStr
     url: AnyUrl
     enum: Optional[Status]
-    enums: List[Status]
-    list_str: Optional[List[str]]
-    json_: Dict[str, Any]
+    enums: list[Status]
+    list_str: Optional[list[str]]
+    json_: dict[str, Any]
 
 
 class Address(EmbeddedModel):
@@ -63,7 +63,7 @@ class Hobby(EmbeddedModel):
 class User(Model):
     name: str
     address: Address
-    hobbies: List[Hobby]
+    hobbies: list[Hobby]
     document: Document = Reference()
 
 
@@ -153,14 +153,14 @@ def test_not_supported_annotation():
     ):
 
         class MyModel(Model):
-            tuple_: Tuple[str, ...]
+            tuple_: tuple[str, ...]
 
         ModelView(MyModel)
 
 
 def test_fields_customisation():
     class MyModel(Model):
-        tags: List[str]
+        tags: list[str]
         name: str
 
     class MyModelView(ModelView):

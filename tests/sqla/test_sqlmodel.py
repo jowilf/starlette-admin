@@ -1,5 +1,5 @@
 from datetime import date, datetime, time
-from typing import List, Optional
+from typing import Optional
 
 import pytest
 import pytest_asyncio
@@ -17,7 +17,7 @@ pytestmark = pytest.mark.asyncio
 class User(SQLModel, table=True):
     id: Optional[int] = Field(None, primary_key=True)
     name: str
-    todos: List["Todo"] = Relationship(back_populates="user")
+    todos: list["Todo"] = Relationship(back_populates="user")
 
 
 class Todo(SQLModel, table=True):

@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Any, Dict
+from typing import Any
 
 from sqlalchemy.exc import IntegrityError
 from starlette.requests import Request
@@ -33,13 +33,13 @@ class PostView(ModelView):
     exclude_fields_from_create = [Post.created_at]
     exclude_fields_from_edit = ["created_at"]
 
-    async def validate(self, request: Request, data: Dict[str, Any]) -> None:
+    async def validate(self, request: Request, data: dict[str, Any]) -> None:
         """By default, starlette-admin doesn't validate your data, you need
         to override this function and write your own validation, or you can
         use sqlmodel to autovalidate your data with pydantic.
 
         Raise FormValidationError to display error in forms"""
-        errors: Dict[str, str] = {}
+        errors: dict[str, str] = {}
         _2day_from_today = date.today() + timedelta(days=2)
         if data["title"] is None or len(data["title"]) < 3:
             errors["title"] = "Ensure this value has at least 03 characters"

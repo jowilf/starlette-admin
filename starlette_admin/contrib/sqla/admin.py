@@ -1,4 +1,5 @@
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Optional, Union
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine

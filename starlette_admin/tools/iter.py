@@ -6,7 +6,7 @@ Copied from: https://github.com/flask-admin/flask-admin/blob/master/flask_admin/
 
 """
 
-from typing import Iterable, Tuple
+from collections.abc import Iterable
 
 CHAR_ESCAPE = "."
 CHAR_SEPARATOR = ","
@@ -25,7 +25,7 @@ def iterencode(iter: Iterable[str]) -> str:
     return CHAR_SEPARATOR.join(escape(value) for value in iter)
 
 
-def iterdecode(value: str) -> Tuple[str, ...]:
+def iterdecode(value: str) -> tuple[str, ...]:
     """Decode an encoded string back to a tuple of string values."""
     result = []
     accumulator = ""

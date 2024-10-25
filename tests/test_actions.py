@@ -1,5 +1,5 @@
 import enum
-from typing import Any, List
+from typing import Any
 
 import pytest
 from requests import Request
@@ -62,7 +62,7 @@ class ArticleView(DummyModelView):
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
     )
-    async def make_published_action(self, request: Request, pks: List[Any]) -> str:
+    async def make_published_action(self, request: Request, pks: list[Any]) -> str:
         for article in await self.find_by_pks(request, pks):
             article.status = Status.Published
         return f"{len(pks)} articles were successfully marked as published"
@@ -86,7 +86,7 @@ class ArticleView(DummyModelView):
         submit_btn_text="Continue",
         submit_btn_class="btn-outline-danger",
     )
-    async def always_failed_action(self, request: Request, pks: List[Any]) -> str:
+    async def always_failed_action(self, request: Request, pks: list[Any]) -> str:
         raise ActionFailed("Sorry, We can't proceed this action now.")
 
     @row_action(
@@ -103,7 +103,7 @@ class ArticleView(DummyModelView):
         name="forbidden",
         text="Forbidden action",
     )
-    async def forbidden_action(self, request: Request, pks: List[Any]) -> str:
+    async def forbidden_action(self, request: Request, pks: list[Any]) -> str:
         raise NotImplementedError
 
     @row_action(
@@ -118,7 +118,7 @@ class ArticleView(DummyModelView):
         text="Invalid Redirection",
     )
     async def invalid_redirect_action(
-        self, request: Request, pks: List[Any]
+        self, request: Request, pks: list[Any]
     ) -> Response:
         # Missing `custom_response=True`
         return RedirectResponse("https://example.com/")
@@ -136,7 +136,7 @@ class ArticleView(DummyModelView):
         text="Redirect",
         custom_response=True,
     )
-    async def redirect_action(self, request: Request, pks: List[Any]) -> Response:
+    async def redirect_action(self, request: Request, pks: list[Any]) -> Response:
         return RedirectResponse("https://example.com/")
 
     @row_action(
@@ -144,7 +144,7 @@ class ArticleView(DummyModelView):
         text="Redirect",
         custom_response=True,
     )
-    async def redirect_row_action(self, request: Request, pks: List[Any]) -> Response:
+    async def redirect_row_action(self, request: Request, pks: list[Any]) -> Response:
         return RedirectResponse("https://example.com/")
 
 

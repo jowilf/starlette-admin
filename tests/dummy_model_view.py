@@ -1,4 +1,5 @@
-from typing import Any, Dict, Iterable, List, Optional, Type, Union
+from collections.abc import Iterable
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel
 from requests import Request
@@ -17,7 +18,7 @@ class DummyBaseModel(BaseModel):
                 return True
         return False
 
-    def update(self, data: Dict):
+    def update(self, data: dict):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
@@ -27,8 +28,8 @@ class DummyModelView(BaseModelView):
     """Custom ModelView which store data in memory only for testing purpose"""
 
     pk_attr = "id"
-    model: Optional[Type[DummyBaseModel]] = None
-    db: Dict[int, DummyBaseModel] = {}
+    model: Optional[type[DummyBaseModel]] = None
+    db: dict[int, DummyBaseModel] = {}
     seq = 1
 
     def __init__(self):
@@ -47,7 +48,7 @@ class DummyModelView(BaseModelView):
     async def count(
         self,
         request: Request,
-        where: Union[Dict[str, Any], str, None] = None,
+        where: Union[dict[str, Any], str, None] = None,
     ) -> int:
         values = list(self.db.values())
         if where is not None and isinstance(where, (str, int)):
@@ -59,9 +60,9 @@ class DummyModelView(BaseModelView):
         request: Request,
         skip: int = 0,
         limit: int = 100,
-        where: Union[Dict[str, Any], str, None] = None,
-        order_by: Optional[List[str]] = None,
-    ) -> List[Any]:
+        where: Union[dict[str, Any], str, None] = None,
+        order_by: Optional[list[str]] = None,
+    ) -> list[Any]:
         db = type(self).db
         values = list(db.values())
         if order_by is not None:
@@ -81,13 +82,13 @@ class DummyModelView(BaseModelView):
     async def find_by_pk(self, request: Request, pk):
         return type(self).db.get(int(pk), None)
 
-    async def find_by_pks(self, request: Request, pks) -> List[Any]:
+    async def find_by_pks(self, request: Request, pks) -> list[Any]:
         return [type(self).db.get(int(pk)) for pk in pks]
 
-    async def validate_data(self, data: Dict):
+    async def validate_data(self, data: dict):
         pass
 
-    async def arrange(self, request: Request, data: Dict):
+    async def arrange(self, request: Request, data: dict):
         for field in self.fields:
             if isinstance(field, HasOne) and data[field.name] is not None:
                 data[field.name] = await self._find_foreign_model(
@@ -99,7 +100,7 @@ class DummyModelView(BaseModelView):
                 ).find_by_pks(request, list(map(int, data[field.name])))
         return data
 
-    async def create(self, request: Request, data: Dict):
+    async def create(self, request: Request, data: dict):
         data = await self.arrange(request, data)
         await self.validate_data(data)
         obj = self.model(id=type(self).seq, **data)
@@ -107,13 +108,13 @@ class DummyModelView(BaseModelView):
         type(self).seq += 1
         return obj
 
-    async def edit(self, request: Request, pk, data: Dict):
+    async def edit(self, request: Request, pk, data: dict):
         data = await self.arrange(request, data)
         await self.validate_data(data)
         type(self).db[int(pk)].update(data)
         return type(self).db[int(pk)]
 
-    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+    async def delete(self, request: Request, pks: list[Any]) -> Optional[int]:
         cnt = 0
         for pk in pks:
             value = await self.find_by_pk(request, pk)

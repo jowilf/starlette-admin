@@ -1,7 +1,8 @@
 # Inspired by wtforms-sqlalchemy
 import enum
 import inspect
-from typing import Any, Callable, Dict, Optional, Sequence, Type
+from collections.abc import Sequence
+from typing import Any, Callable, Optional
 
 from sqlalchemy import ARRAY, Boolean, Column, Float, String
 from sqlalchemy.orm import (
@@ -85,7 +86,7 @@ class BaseSQLAModelConverter(BaseModelConverter):
         return None  # pragma: no cover
 
     def convert_fields_list(
-        self, *, fields: Sequence[Any], model: Type[Any], **kwargs: Any
+        self, *, fields: Sequence[Any], model: type[Any], **kwargs: Any
     ) -> Sequence[BaseField]:
         mapper: Mapper = kwargs.get("mapper")  # type: ignore [assignment]
         converted_fields = []
@@ -123,7 +124,7 @@ class ModelConverter(BaseSQLAModelConverter):
     @classmethod
     def _field_common(
         cls, *, name: str, column: ColumnElement, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         if isinstance(column, Label):
             return {
                 "name": column.key,
@@ -142,7 +143,7 @@ class ModelConverter(BaseSQLAModelConverter):
         }
 
     @classmethod
-    def _string_common(cls, *, type: Any, **kwargs: Any) -> Dict[str, Any]:
+    def _string_common(cls, *, type: Any, **kwargs: Any) -> dict[str, Any]:
         if (
             isinstance(type, String)
             and isinstance(type.length, int)
@@ -152,7 +153,7 @@ class ModelConverter(BaseSQLAModelConverter):
         return {}
 
     @classmethod
-    def _file_common(cls, *, type: Any, **kwargs: Any) -> Dict[str, Any]:
+    def _file_common(cls, *, type: Any, **kwargs: Any) -> dict[str, Any]:
         return {"multiple": getattr(type, "multiple", False)}
 
     @converts(

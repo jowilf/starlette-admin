@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from mongoengine import GridFSProxy
 from starlette.requests import Request
@@ -26,7 +26,7 @@ class ImageField(BaseImageField):
 
 def _serialize_file_field(
     request: Request, value: GridFSProxy, action: RequestAction
-) -> Optional[Dict[str, str]]:
+) -> Optional[dict[str, str]]:
     if value.grid_id:
         id = value.grid_id
         if (

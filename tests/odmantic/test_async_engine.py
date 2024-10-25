@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import pytest
 import pytest_asyncio
@@ -26,13 +26,13 @@ class Hobby(EmbeddedModel):
 class User(Model):
     name: str = Field(min_length=3)
     address: Address
-    hobbies: List[Hobby]
+    hobbies: list[Hobby]
     birthday: Optional[datetime]
 
 
 class UserView(ModelView):
     async def before_create(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         assert isinstance(obj, User)
         assert obj.id is not None
@@ -42,7 +42,7 @@ class UserView(ModelView):
         assert obj.id is not None
 
     async def before_edit(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         assert isinstance(obj, User)
         assert obj.id is not None

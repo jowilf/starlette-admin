@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Optional, Union
 
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
@@ -74,7 +75,7 @@ class ImageField(BaseImageField):
 
 def _serialize_sqlalchemy_file_library(
     request: Request, value: Any, action: RequestAction, is_multiple: bool
-) -> Optional[Union[List[Dict[str, Any]], Dict[str, Any]]]:
+) -> Optional[Union[list[dict[str, Any]], dict[str, Any]]]:
     from sqlalchemy_file import File
 
     if isinstance(value, File) or (

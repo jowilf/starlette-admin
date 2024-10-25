@@ -1,4 +1,5 @@
-from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple, Type, Union
+from collections.abc import Sequence
+from typing import Any, ClassVar, Optional, Union
 
 import anyio.to_thread
 from sqlalchemy import String, and_, cast, func, inspect, or_, select, tuple_
@@ -46,7 +47,7 @@ from starlette_admin.views import BaseModelView
 class ModelView(BaseModelView):
     """A view for managing SQLAlchemy models."""
 
-    sortable_field_mapping: ClassVar[Dict[str, InstrumentedAttribute]] = {}
+    sortable_field_mapping: ClassVar[dict[str, InstrumentedAttribute]] = {}
     """A dictionary for overriding the default model attribute used for sorting.
 
     Example:
@@ -70,7 +71,7 @@ class ModelView(BaseModelView):
 
     def __init__(
         self,
-        model: Type[Any],
+        model: type[Any],
         icon: Optional[str] = None,
         name: Optional[str] = None,
         label: Optional[str] = None,
@@ -131,9 +132,9 @@ class ModelView(BaseModelView):
         # Detect the primary key attribute(s) of the model
         _pk_attrs = []
         self._pk_column: Union[
-            Tuple[InstrumentedAttribute, ...], InstrumentedAttribute
+            tuple[InstrumentedAttribute, ...], InstrumentedAttribute
         ] = ()
-        self._pk_coerce: Union[Tuple[type, ...], type] = ()
+        self._pk_coerce: Union[tuple[type, ...], type] = ()
         for key in self.model.__dict__:
             attr = getattr(self.model, key)
             if isinstance(attr, InstrumentedAttribute) and getattr(
@@ -161,7 +162,7 @@ class ModelView(BaseModelView):
         self.pk_attr = self.pk_field.name
 
     async def handle_action(
-        self, request: Request, pks: List[Any], name: str
+        self, request: Request, pks: list[Any], name: str
     ) -> Union[str, Response]:
         try:
             return await super().handle_action(request, pks, name)
@@ -249,7 +250,7 @@ class ModelView(BaseModelView):
     async def count(
         self,
         request: Request,
-        where: Union[Dict[str, Any], str, None] = None,
+        where: Union[dict[str, Any], str, None] = None,
     ) -> int:
         session: Union[Session, AsyncSession] = request.state.session
         stmt = self.get_count_query(request)
@@ -270,8 +271,8 @@ class ModelView(BaseModelView):
         request: Request,
         skip: int = 0,
         limit: int = 100,
-        where: Union[Dict[str, Any], str, None] = None,
-        order_by: Optional[List[str]] = None,
+        where: Union[dict[str, Any], str, None] = None,
+        order_by: Optional[list[str]] = None,
     ) -> Sequence[Any]:
         session: Union[Session, AsyncSession] = request.state.session
         stmt = self.get_list_query(request).offset(skip)
@@ -337,7 +338,7 @@ class ModelView(BaseModelView):
             .one_or_none()
         )
 
-    async def find_by_pks(self, request: Request, pks: List[Any]) -> Sequence[Any]:
+    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]:
         has_multiple_pks = isinstance(self._pk_column, tuple)
         try:
             return await self._exec_find_by_pks(request, pks)
@@ -350,7 +351,7 @@ class ModelView(BaseModelView):
             raise
 
     async def _exec_find_by_pks(
-        self, request: Request, pks: List[Any], use_composite_in: bool = True
+        self, request: Request, pks: list[Any], use_composite_in: bool = True
     ) -> Sequence[Any]:
         session: Union[Session, AsyncSession] = request.state.session
         has_multiple_pks = isinstance(self._pk_column, tuple)
@@ -374,7 +375,7 @@ class ModelView(BaseModelView):
         )
 
     async def _get_multiple_pks_in_clause(
-        self, pks: List[Any], use_composite_in: bool
+        self, pks: list[Any], use_composite_in: bool
     ) -> Any:
         """
         Constructs the WHERE clause for models with multiple primary keys.
@@ -424,7 +425,7 @@ class ModelView(BaseModelView):
                 )
             return or_(*clauses)
 
-    async def validate(self, request: Request, data: Dict[str, Any]) -> None:
+    async def validate(self, request: Request, data: dict[str, Any]) -> None:
         """
         Inherit this method to validate your data.
 
@@ -468,7 +469,7 @@ class ModelView(BaseModelView):
 
         """
 
-    async def create(self, request: Request, data: Dict[str, Any]) -> Any:
+    async def create(self, request: Request, data: dict[str, Any]) -> Any:
         try:
             data = await self._arrange_data(request, data)
             await self.validate(request, data)
@@ -487,7 +488,7 @@ class ModelView(BaseModelView):
         except Exception as e:
             return self.handle_exception(e)
 
-    async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
+    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
         try:
             data = await self._arrange_data(request, data, True)
             await self.validate(request, data)
@@ -510,14 +511,14 @@ class ModelView(BaseModelView):
     async def _arrange_data(
         self,
         request: Request,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         is_edit: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         This function will return a new dict with relationships loaded from
         database.
         """
-        arranged_data: Dict[str, Any] = {}
+        arranged_data: dict[str, Any] = {}
         for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField) and data[field.name] is not None:
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
@@ -537,7 +538,7 @@ class ModelView(BaseModelView):
         self,
         request: Request,
         obj: Any,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         is_edit: bool = False,
     ) -> Any:
         for field in self.get_fields_list(request, request.state.action):
@@ -554,7 +555,7 @@ class ModelView(BaseModelView):
                 setattr(obj, name, value)
         return obj
 
-    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+    async def delete(self, request: Request, pks: list[Any]) -> Optional[int]:
         session: Union[Session, AsyncSession] = request.state.session
         objs = await self.find_by_pks(request, pks)
         if isinstance(session, AsyncSession):
@@ -577,7 +578,7 @@ class ModelView(BaseModelView):
         return self.get_search_query(request, term)
 
     def build_order_clauses(
-        self, request: Request, order_list: List[str], stmt: Select
+        self, request: Request, order_list: list[str], stmt: Select
     ) -> Select:
         for value in order_list:
             attr_key, order = value.strip().split(maxsplit=1)

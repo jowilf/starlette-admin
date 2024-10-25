@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 from pydantic import BaseModel, ValidationError
 from starlette.requests import Request
@@ -46,8 +46,8 @@ class ModelView(BaseModelView):
 
     def __init__(
         self,
-        model: Type[Any],
-        pydantic_model: Type[BaseModel],
+        model: type[Any],
+        pydantic_model: type[BaseModel],
         icon: Optional[str] = None,
         name: Optional[str] = None,
         label: Optional[str] = None,
@@ -57,7 +57,7 @@ class ModelView(BaseModelView):
         self.pydantic_model = pydantic_model
         super().__init__(model, icon, name, label, identity, converter)
 
-    async def validate(self, request: Request, data: Dict[str, Any]) -> None:
+    async def validate(self, request: Request, data: dict[str, Any]) -> None:
         try:
             self.pydantic_model(**data)
         except ValidationError as error:

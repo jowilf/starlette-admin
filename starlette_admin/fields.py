@@ -1,6 +1,7 @@
 import decimal
 import json
 import warnings
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from dataclasses import field as dc_field
 from datetime import date, datetime, time
@@ -9,12 +10,7 @@ from json import JSONDecodeError
 from typing import (
     Any,
     Callable,
-    Dict,
-    List,
     Optional,
-    Sequence,
-    Tuple,
-    Type,
     Union,
 )
 
@@ -161,15 +157,15 @@ class BaseField:
 
     def additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> List[str]:
+    ) -> list[str]:
         """Returns a list of CSS file URLs to include for the current request action."""
         return []
 
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> list[str]:
         """Returns a list of JavaScript file URLs to include for the current request action."""
         return []
 
-    def dict(self) -> Dict[str, Any]:
+    def dict(self) -> dict[str, Any]:
         """Return the dataclass instance as a dictionary."""
         return asdict(self)
 
@@ -292,10 +288,10 @@ class TinyMCEEditorField(TextAreaField):
         " UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px;"
         " -webkit-font-smoothing: antialiased; }"
     )
-    extra_options: Dict[str, Any] = dc_field(default_factory=dict)
+    extra_options: dict[str, Any] = dc_field(default_factory=dict)
     """For more options, see the [TinyMCE | Documentation](https://www.tiny.cloud/docs/tinymce/6/)"""
 
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> list[str]:
         if action.is_form():
             return [
                 f"https://cdn.jsdelivr.net/npm/tinymce@{self.version_tinymce}/tinymce.min.js",
@@ -431,12 +427,12 @@ class TagsField(BaseField):
 
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
-    ) -> List[str]:
+    ) -> list[str]:
         return form_data.getlist(self.id)  # type: ignore
 
     def additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> List[str]:
+    ) -> list[str]:
         if action.is_form():
             return [
                 str(
@@ -448,7 +444,7 @@ class TagsField(BaseField):
             ]
         return []
 
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> list[str]:
         if action.is_form():
             return [
                 str(
@@ -541,10 +537,10 @@ class EnumField(StringField):
     """
 
     multiple: bool = False
-    enum: Optional[Type[Enum]] = None
-    choices: Union[Sequence[str], Sequence[Tuple[Any, str]], None] = None
+    enum: Optional[type[Enum]] = None
+    choices: Union[Sequence[str], Sequence[tuple[Any, str]], None] = None
     choices_loader: Optional[
-        Callable[[Request], Union[Sequence[str], Sequence[Tuple[Any, str]]]]
+        Callable[[Request], Union[Sequence[str], Sequence[tuple[Any, str]]]]
     ] = dc_field(default=None, compare=False)
     form_template: str = "forms/enum.html"
     class_: str = "field-enum form-control form-select"
@@ -600,7 +596,7 @@ class EnumField(StringField):
 
     def additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> List[str]:
+    ) -> list[str]:
         if self.select2 and action.is_form():
             return [
                 str(
@@ -612,7 +608,7 @@ class EnumField(StringField):
             ]
         return []
 
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> list[str]:
         if self.select2 and action.is_form():
             return [
                 str(
@@ -628,9 +624,9 @@ class EnumField(StringField):
     def from_enum(
         cls,
         name: str,
-        enum_type: Type[Enum],
+        enum_type: type[Enum],
         multiple: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> "EnumField":
         warnings.warn(
             f'This method is deprecated. Use EnumField("name", enum={enum_type.__name__}) instead.',
@@ -643,9 +639,9 @@ class EnumField(StringField):
     def from_choices(
         cls,
         name: str,
-        choices: Union[Sequence[str], Sequence[Tuple[str, str]], None],
+        choices: Union[Sequence[str], Sequence[tuple[str, str]], None],
         multiple: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> "EnumField":
         warnings.warn(
             f'This method is deprecated. Use EnumField("name", choices={choices}) instead.',
@@ -752,7 +748,7 @@ class DateTimeField(NumberField):
 
     def additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> List[str]:
+    ) -> list[str]:
         if action.is_form():
             return [
                 str(
@@ -764,7 +760,7 @@ class DateTimeField(NumberField):
             ]
         return []
 
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> list[str]:
         _links = [
             str(
                 request.url_for(
@@ -900,7 +896,7 @@ class JSONField(BaseField):
 
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         try:
             value = form_data.get(self.id)
             return json.loads(value) if value is not None else None  # type: ignore
@@ -909,7 +905,7 @@ class JSONField(BaseField):
 
     def additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> List[str]:
+    ) -> list[str]:
         if action.is_form():
             return [
                 str(
@@ -921,7 +917,7 @@ class JSONField(BaseField):
             ]
         return []
 
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> list[str]:
         if action.is_form():
             return [
                 str(
@@ -952,7 +948,7 @@ class FileField(BaseField):
 
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
-    ) -> Tuple[Union[UploadFile, List[UploadFile], None], bool]:
+    ) -> tuple[Union[UploadFile, list[UploadFile], None], bool]:
         should_be_deleted = form_data.get(f"_{self.id}-delete") == "on"
         if self.multiple:
             files = form_data.getlist(self.id)
@@ -1057,7 +1053,7 @@ class RelationField(BaseField):
 
     def additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> List[str]:
+    ) -> list[str]:
         if action.is_form():
             return [
                 str(
@@ -1069,7 +1065,7 @@ class RelationField(BaseField):
             ]
         return []
 
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> list[str]:
         if action.is_form():
             return [
                 str(
@@ -1146,7 +1142,7 @@ class CollectionField(BaseField):
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
-        serialized_value: Dict[str, Any] = {}
+        serialized_value: dict[str, Any] = {}
         for field in self.get_fields_list(request, action):
             name = field.name
             serialized_value[name] = None
@@ -1162,13 +1158,13 @@ class CollectionField(BaseField):
 
     def additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> List[str]:
+    ) -> list[str]:
         _links = []
         for f in self.get_fields_list(request, action):
             _links.extend(f.additional_css_links(request, action))
         return _links
 
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> list[str]:
         _links = []
         for f in self.get_fields_list(request, action):
             _links.extend(f.additional_js_links(request, action))
@@ -1235,7 +1231,7 @@ class ListField(BaseField):
             serialized_value.append(serialized_item_value)
         return serialized_value
 
-    def _extra_indices(self, form_data: FormData) -> List[int]:
+    def _extra_indices(self, form_data: FormData) -> list[int]:
         """
         Return list of all indices.  For example, if field id is `foo` and
         form_data contains following keys ['foo.0.bar', 'foo.1.baz'], then the indices are [0,1].
@@ -1262,8 +1258,8 @@ class ListField(BaseField):
 
     def additional_css_links(
         self, request: Request, action: RequestAction
-    ) -> List[str]:
+    ) -> list[str]:
         return self.field.additional_css_links(request, action)
 
-    def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
+    def additional_js_links(self, request: Request, action: RequestAction) -> list[str]:
         return self.field.additional_js_links(request, action)

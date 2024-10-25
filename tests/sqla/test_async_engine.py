@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 import pytest_asyncio
@@ -26,7 +26,7 @@ class Product(Base):
 
 class ProductView(ModelView):
     async def before_create(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         assert isinstance(obj, Product)
         assert obj.id is None
@@ -37,7 +37,7 @@ class ProductView(ModelView):
         assert obj.id is not None
 
     async def before_edit(
-        self, request: Request, data: Dict[str, Any], obj: Any
+        self, request: Request, data: dict[str, Any], obj: Any
     ) -> None:
         assert isinstance(obj, Product)
         assert obj.id is not None

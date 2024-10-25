@@ -1,6 +1,6 @@
 import re
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Optional, TypedDict
 
 from tinydb import Query
 from tinydb.table import Document
@@ -15,17 +15,17 @@ class Comment(TypedDict):
 class Post:
     title: str
     body: str
-    tags: List[str]
-    comments: List[Comment] = field(default_factory=list)
+    tags: list[str]
+    comments: list[Comment] = field(default_factory=list)
     id: Optional[int] = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {k: v for k, v in asdict(self).items() if k != "id"}
 
     def to_document(self) -> Document:
         return Document(self.to_dict(), doc_id=self.id)
 
-    def update(self, data: Dict) -> None:
+    def update(self, data: dict) -> None:
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
