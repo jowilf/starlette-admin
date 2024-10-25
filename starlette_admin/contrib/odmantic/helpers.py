@@ -3,13 +3,12 @@ import re
 import typing as t
 
 import bson
-import pydantic as pyd
-import pydantic.datetime_parse
 from odmantic import Model, query
 from odmantic.field import (
     FieldProxy,
 )
 from odmantic.query import QueryExpression
+from pydantic import TypeAdapter, ValidationError  # type: ignore[attr-defined]
 
 
 def normalize_list(
@@ -74,6 +73,14 @@ OPERATORS: t.Dict[str, t.Callable[[FieldProxy, t.Any], QueryExpression]] = {
 }
 
 
+def parse_datetime(value: str) -> bool:
+    try:
+        TypeAdapter(datetime.datetime).validate_python(value)
+    except ValidationError:
+        return False
+    return True
+
+
 def resolve_proxy(model: t.Type[Model], proxy_name: str) -> t.Optional[FieldProxy]:
     _list = proxy_name.split(".")
     m = model
@@ -88,7 +95,7 @@ def _check_value(v: t.Any, proxy: t.Optional[FieldProxy]) -> t.Any:
     The purpose of this function is to detect datetime string, or ObjectId
     and convert them into the appropriate python type.
     """
-    if isinstance(v, str) and pyd.datetime_parse.datetime_re.match(v):
+    if isinstance(v, str) and parse_datetime(v):
         return datetime.datetime.fromisoformat(v)
     if proxy is not None and +proxy == "_id" and bson.ObjectId.is_valid(v):
         return bson.ObjectId(v)

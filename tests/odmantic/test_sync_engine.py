@@ -1,5 +1,4 @@
 import json
-import sys
 
 import pytest
 import pytest_asyncio
@@ -7,13 +6,6 @@ from httpx import AsyncClient
 from odmantic import Model, Reference, SyncEngine
 from starlette.applications import Starlette
 from starlette_admin.contrib.odmantic import Admin, ModelView
-
-if sys.version_info < (3, 9):
-    pytest.skip(
-        "Skipping the test due to a segment fault error with odmantic on Python 3.8, and the library is not "
-        "currently maintained",
-        allow_module_level=True,
-    )
 
 pytestmark = pytest.mark.asyncio
 
@@ -66,7 +58,7 @@ async def test_api(client: AsyncClient):
     data = response.json()
     assert data["total"] == 3
     assert len(data["items"]) == 2
-    assert ["Jim Rohn", "Albert Einstein"] == [x["name"] for x in data["items"]]
+    assert [x["name"] for x in data["items"]] == ["Jim Rohn", "Albert Einstein"]
     # Find by pks
     response = await client.get(
         "/admin/api/author", params={"pks": [x["id"] for x in data["items"]]}
