@@ -185,10 +185,10 @@ class ModelView(BaseModelView):
             ```python  hl_lines="3-4"
             class PostView(ModelView):
 
-                    def get_list_query(self):
+                    def get_list_query(self, request: Request):
                         return super().get_list_query().where(Post.published == true())
 
-                    def get_count_query(self):
+                    def get_count_query(self, request: Request):
                         return super().get_count_query().where(Post.published == true())
             ```
 
@@ -207,10 +207,10 @@ class ModelView(BaseModelView):
             ```python hl_lines="6-7"
             class PostView(ModelView):
 
-                    def get_list_query(self):
+                    def get_list_query(self, request: Request):
                         return super().get_list_query().where(Post.published == true())
 
-                    def get_count_query(self):
+                    def get_count_query(self, request: Request):
                         return super().get_count_query().where(Post.published == true())
             ```
         """
