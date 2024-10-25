@@ -2,7 +2,7 @@ import json
 from json import JSONDecodeError
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Type, Union
 
-from jinja2 import ChoiceLoader, FileSystemLoader, PackageLoader
+from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PackageLoader
 from starlette.applications import Starlette
 from starlette.datastructures import FormData
 from starlette.exceptions import HTTPException
@@ -53,6 +53,7 @@ class BaseAdmin:
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
         i18n_config: Optional[I18nConfig] = None,
+        favicon_url: Optional[str] = None,
     ):
         """
         Parameters:
@@ -67,12 +68,14 @@ class BaseAdmin:
             auth_provider: Authentication Provider
             middlewares: Starlette middlewares
             i18n_config: i18n configuration
+            favicon_url: URL of favicon.
         """
         self.title = title
         self.base_url = base_url
         self.route_name = route_name
         self.logo_url = logo_url
         self.login_logo_url = login_logo_url
+        self.favicon_url = favicon_url
         self.templates_dir = templates_dir
         self.statics_dir = statics_dir
         self.auth_provider = auth_provider
@@ -187,13 +190,17 @@ class BaseAdmin:
             self._views.append(self.index_view)
 
     def _setup_templates(self) -> None:
-        templates = Jinja2Templates(self.templates_dir, extensions=["jinja2.ext.i18n"])
-        templates.env.loader = ChoiceLoader(
-            [
-                FileSystemLoader(self.templates_dir),
-                PackageLoader("starlette_admin", "templates"),
-            ]
+        env = Environment(
+            loader=ChoiceLoader(
+                [
+                    FileSystemLoader(self.templates_dir),
+                    PackageLoader("starlette_admin", "templates"),
+                ]
+            ),
+            extensions=["jinja2.ext.i18n"],
         )
+        templates = Jinja2Templates(env=env)
+
         # globals
         templates.env.globals["views"] = self._views
         templates.env.globals["app_title"] = self.title
@@ -201,6 +208,7 @@ class BaseAdmin:
         templates.env.globals["__name__"] = self.route_name
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["login_logo_url"] = self.login_logo_url
+        templates.env.globals["favicon_url"] = self.favicon_url
         templates.env.globals["custom_render_js"] = lambda r: self.custom_render_js(r)
         templates.env.globals["get_locale"] = get_locale
         templates.env.globals["get_locale_display_name"] = get_locale_display_name
@@ -370,9 +378,9 @@ class BaseAdmin:
         if not model.is_accessible(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         return self.templates.TemplateResponse(
-            model.list_template,
-            {
-                "request": request,
+            request=request,
+            name=model.list_template,
+            context={
                 "model": model,
                 "title": model.title(request),
                 "_actions": await model.get_all_actions(request),
@@ -391,9 +399,9 @@ class BaseAdmin:
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
         return self.templates.TemplateResponse(
-            model.detail_template,
-            {
-                "request": request,
+            request=request,
+            name=model.detail_template,
+            context={
                 "title": model.title(request),
                 "model": model,
                 "raw_obj": obj,
@@ -406,11 +414,15 @@ class BaseAdmin:
         request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        config = {"request": request, "title": model.title(request), "model": model}
+        config = {"title": model.title(request), "model": model}
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
-            return self.templates.TemplateResponse(model.create_template, config)
+            return self.templates.TemplateResponse(
+                request=request,
+                name=model.create_template,
+                context=config,
+            )
         form = await request.form()
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.CREATE)
         try:
@@ -423,8 +435,9 @@ class BaseAdmin:
                 }
             )
             return self.templates.TemplateResponse(
-                model.create_template,
-                config,
+                request=request,
+                name=model.create_template,
+                context=config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = await model.get_pk_value(request, obj)
@@ -448,14 +461,17 @@ class BaseAdmin:
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
         config = {
-            "request": request,
             "title": model.title(request),
             "model": model,
             "raw_obj": obj,
             "obj": await model.serialize(obj, request, RequestAction.EDIT),
         }
         if request.method == "GET":
-            return self.templates.TemplateResponse(model.edit_template, config)
+            return self.templates.TemplateResponse(
+                request=request,
+                name=model.edit_template,
+                context=config,
+            )
         form = await request.form()
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
         try:
@@ -468,8 +484,9 @@ class BaseAdmin:
                 }
             )
             return self.templates.TemplateResponse(
-                model.edit_template,
-                config,
+                request=request,
+                name=model.edit_template,
+                context=config,
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = await model.get_pk_value(request, obj)
@@ -489,8 +506,9 @@ class BaseAdmin:
     ) -> Response:
         assert isinstance(exc, HTTPException)
         return self.templates.TemplateResponse(
-            "error.html",
-            {"request": request, "exc": exc},
+            request=request,
+            name="error.html",
+            context={"exc": exc},
             status_code=exc.status_code,
         )
 

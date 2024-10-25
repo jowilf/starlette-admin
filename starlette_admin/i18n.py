@@ -10,6 +10,7 @@ from starlette_admin.utils.countries import countries_codes
 
 DEFAULT_LOCALE = "en"
 SUPPORTED_LOCALES = [
+    "de",  # German
     "en",  # English
     "fr",  # French
     "ru",  # Russian

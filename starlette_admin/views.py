@@ -165,7 +165,9 @@ class CustomView(BaseView):
     async def render(self, request: Request, templates: Jinja2Templates) -> Response:
         """Default methods to render view. Override this methods to add your custom logic."""
         return templates.TemplateResponse(
-            self.template_path, {"request": request, "title": self.title(request)}
+            request=request,
+            name=self.template_path,
+            context={"title": self.title(request)},
         )
 
     def is_active(self, request: Request) -> bool:
@@ -719,8 +721,8 @@ class BaseModelView(BaseView):
                     obj_serialized[field.name] = None
                 elif isinstance(field, HasOne):
                     if action == RequestAction.EDIT:
-                        obj_serialized[field.name] = await foreign_model.get_pk_value(
-                            request, value
+                        obj_serialized[field.name] = (
+                            await foreign_model.get_serialized_pk_value(request, value)
                         )
                     else:
                         obj_serialized[field.name] = await foreign_model.serialize(
@@ -729,7 +731,7 @@ class BaseModelView(BaseView):
                 else:
                     if action == RequestAction.EDIT:
                         obj_serialized[field.name] = [
-                            (await foreign_model.get_pk_value(request, obj))
+                            (await foreign_model.get_serialized_pk_value(request, obj))
                             for obj in value
                         ]
                     else:
@@ -750,11 +752,14 @@ class BaseModelView(BaseView):
                 "result": await self.select2_result(obj, request),
             }
         obj_meta["repr"] = await self.repr(obj, request)
+
+        # Make sure the primary key is always available
+        pk_attr = not_none(self.pk_attr)
+        if pk_attr not in obj_serialized:
+            pk_value = await self.get_serialized_pk_value(request, obj)
+            obj_serialized[pk_attr] = pk_value
+
         pk = await self.get_pk_value(request, obj)
-        obj_serialized[not_none(self.pk_attr)] = obj_serialized.get(
-            not_none(self.pk_attr),
-            pk,  # Make sure the primary key is always available
-        )
         route_name = request.app.state.ROUTE_NAME
         obj_meta["detailUrl"] = str(
             request.url_for(route_name + ":detail", identity=self.identity, pk=pk)
@@ -879,6 +884,23 @@ class BaseModelView(BaseView):
     async def get_pk_value(self, request: Request, obj: Any) -> Any:
         return getattr(obj, not_none(self.pk_attr))
 
+    async def get_serialized_pk_value(self, request: Request, obj: Any) -> Any:
+        """
+        Return serialized value of the primary key.
+
+        !!! note
+
+            The returned value should be JSON-serializable.
+
+        Parameters:
+            request: The request being processed
+            obj: object to get primary key of
+
+        Returns:
+            Any: Serialized value of a PK.
+        """
+        return await self.get_pk_value(request, obj)
+
     def _length_menu(self) -> Any:
         return [
             self.page_size_options,
@@ -886,10 +908,10 @@ class BaseModelView(BaseView):
         ]
 
     def _search_columns_selector(self) -> List[str]:
-        return ["%s:name" % name for name in self.searchable_fields]  # type: ignore
+        return [f"{name}:name" for name in self.searchable_fields]  # type: ignore
 
     def _export_columns_selector(self) -> List[str]:
-        return ["%s:name" % name for name in self.export_fields]  # type: ignore
+        return [f"{name}:name" for name in self.export_fields]  # type: ignore
 
     def get_fields_list(
         self,

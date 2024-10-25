@@ -5,23 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.14.1] - 2024-07-12
 
-## [0.13.2] - 2023-02-04
+### Fixed
+
+* Fix JSON serialization error for UUID primary keys when excluded from list by [@alg](https://github.com/alg)
+  in [#553](https://github.com/jowilf/starlette-admin/pull/553)
+
+## [0.14.0] - 2024-05-28
+
+### Added
+
+* Add German translation
+  by [@disrupted](https://github.com/disrupted)
+  in [#523](https://github.com/jowilf/starlette-admin/pull/523)
+* Add Support for favicon customization
+  by [@omarmoo5](https://github.com/omarmoo5)
+  in [#520](https://github.com/jowilf/starlette-admin/pull/520)
+
+## [0.13.2] - 2024-02-04
 
 ### Fixed
 
 * Remove extra whitespaces from TextAreaField form template (0.13.0 regression) by [@jowilf](https://github.com/jowilf)
   in [#494](https://github.com/jowilf/starlette-admin/pull/494)
 
-## [0.13.1] - 2023-01-21
+## [0.13.1] - 2024-01-21
 
 ### Fixed
 
 * Fixed the StopIteration exception raised in Sqlalchemy ModelView when the primary key is not included in the field
   list by [@jowilf](https://github.com/jowilf) in [#482](https://github.com/jowilf/starlette-admin/pull/482)
 
-## [0.13.0] - 2023-01-16
+## [0.13.0] - 2024-01-16
 
 ### Added
 
@@ -216,7 +232,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Add support for custom object representations in the admin interface with `__admin_repr__`
   and `__admin_select2_repr__`  by [@jowilf](https://github.com/jowilf)
   in [#152](https://github.com/jowilf/starlette-admin/pull/152). The documentation can be
-  found [here](../tutorial/configurations/modelview/#object-representation)
+  found [here](../user-guide/configurations/modelview/#object-representation)
 
 ### Internals
 

@@ -233,8 +233,9 @@ class AuthProvider(BaseAuthProvider):
         """Render the default login page for username & password authentication."""
         if request.method == "GET":
             return admin.templates.TemplateResponse(
-                "login.html",
-                {"request": request, "_is_login_path": True},
+                request=request,
+                name="login.html",
+                context={"_is_login_path": True},
             )
         form = await request.form()
         try:
@@ -251,14 +252,16 @@ class AuthProvider(BaseAuthProvider):
             )
         except FormValidationError as errors:
             return admin.templates.TemplateResponse(
-                "login.html",
-                {"request": request, "form_errors": errors, "_is_login_path": True},
+                request=request,
+                name="login.html",
+                context={"form_errors": errors, "_is_login_path": True},
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         except LoginFailed as error:
             return admin.templates.TemplateResponse(
-                "login.html",
-                {"request": request, "error": error.msg, "_is_login_path": True},
+                request=request,
+                name="login.html",
+                context={"error": error.msg, "_is_login_path": True},
                 status_code=HTTP_400_BAD_REQUEST,
             )
 

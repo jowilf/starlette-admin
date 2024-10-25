@@ -1,16 +1,7 @@
 from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import anyio.to_thread
-from sqlalchemy import (
-    String,
-    and_,
-    cast,
-    func,
-    inspect,
-    or_,
-    select,
-    tuple_,
-)
+from sqlalchemy import String, and_, cast, func, inspect, or_, select, tuple_
 from sqlalchemy.exc import DBAPIError, NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
@@ -185,7 +176,7 @@ class ModelView(BaseModelView):
         except SQLAlchemyError as exc:
             raise ActionFailed(str(exc)) from exc
 
-    def get_list_query(self) -> Select:
+    def get_list_query(self, request: Request) -> Select:
         """
         Return a Select expression which is used as base statement for
         [find_all][starlette_admin.views.BaseModelView.find_all] method.
@@ -194,10 +185,10 @@ class ModelView(BaseModelView):
             ```python  hl_lines="3-4"
             class PostView(ModelView):
 
-                    def get_list_query(self):
+                    def get_list_query(self, request: Request):
                         return super().get_list_query().where(Post.published == true())
 
-                    def get_count_query(self):
+                    def get_count_query(self, request: Request):
                         return super().get_count_query().where(Post.published == true())
             ```
 
@@ -207,7 +198,7 @@ class ModelView(BaseModelView):
         """
         return select(self.model)
 
-    def get_count_query(self) -> Select:
+    def get_count_query(self, request: Request) -> Select:
         """
         Return a Select expression which is used as base statement for
         [count][starlette_admin.views.BaseModelView.count] method.
@@ -216,10 +207,10 @@ class ModelView(BaseModelView):
             ```python hl_lines="6-7"
             class PostView(ModelView):
 
-                    def get_list_query(self):
+                    def get_list_query(self, request: Request):
                         return super().get_list_query().where(Post.published == true())
 
-                    def get_count_query(self):
+                    def get_count_query(self, request: Request):
                         return super().get_count_query().where(Post.published == true())
             ```
         """
@@ -261,7 +252,7 @@ class ModelView(BaseModelView):
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
         session: Union[Session, AsyncSession] = request.state.session
-        stmt = self.get_count_query()
+        stmt = self.get_count_query(request)
         if where is not None:
             if isinstance(where, dict):
                 where = build_query(where, self.model)
@@ -283,7 +274,7 @@ class ModelView(BaseModelView):
         order_by: Optional[List[str]] = None,
     ) -> Sequence[Any]:
         session: Union[Session, AsyncSession] = request.state.session
-        stmt = self.get_list_query().offset(skip)
+        stmt = self.get_list_query(request).offset(skip)
         if limit > 0:
             stmt = stmt.limit(limit)
         if where is not None:
@@ -605,6 +596,10 @@ class ModelView(BaseModelView):
 
     async def get_pk_value(self, request: Request, obj: Any) -> Any:
         return await self.pk_field.parse_obj(request, obj)
+
+    async def get_serialized_pk_value(self, request: Request, obj: Any) -> Any:
+        value = await self.get_pk_value(request, obj)
+        return await self.pk_field.serialize_value(request, value, request.state.action)
 
     def handle_exception(self, exc: Exception) -> None:
         try:

@@ -1,6 +1,7 @@
 # starlette-admin
 
-*Starlette-Admin* is a fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications.
+*Fast, beautiful, and extensible administrative interface framework for Starlette & FastApi applications*
+
 
 <p align="center">
 <a href="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml">
@@ -22,11 +23,24 @@
 
 ![Preview image](https://raw.githubusercontent.com/jowilf/starlette-admin/main/docs/images/preview.jpg)
 
+## why starlette-admin?
+
+FastAPI has emerged as a popular web framework for building APIs in Python. However, it lacks a mature admin interface
+solution like Flask-Admin to quickly manage your data through a user-friendly interface. Although
+solutions like Sqladmin and Fastapi-Admin exist, they only work with specific ORMs such as SQLAlchemy and Tortoise ORM.
+
+Starlette-admin was born from the need for a FastAPI admin interface that works with various data layer. It aims
+to provide a complete solution for CRUD interfaces regardless of the database backend. Starlette-admin works out of the
+box with multiple ORM/ODMs and can also be used with a custom data layer.
+
 ## Getting started
 
 * Check out [the documentation](https://jowilf.github.io/starlette-admin).
-* Try the [live demo](https://starlette-admin-demo.jowilf.com/). ([Source code](https://github.com/jowilf/starlette-admin-demo))
-* Try the several usage examples included in the [/examples](https://github.com/jowilf/starlette-admin/tree/main/examples) folder
+* Try
+  the [live demo](https://starlette-admin-demo.jowilf.com/). ([Source code](https://github.com/jowilf/starlette-admin-demo))
+* Follow the [tutorials](https://jowilf.github.io/starlette-admin/tutorials/)
+* Try the several usage examples included in
+  the [/examples](https://github.com/jowilf/starlette-admin/tree/main/examples) folder
 * If you find this project helpful or interesting, please consider giving it a star ⭐️
 
 ## Features
@@ -48,7 +62,8 @@
     * [SQLModel](https://sqlmodel.tiangolo.com/)
     * [MongoEngine](http://mongoengine.org/)
     * [ODMantic](https://github.com/art049/odmantic/)
-    * Custom backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
+    * Custom
+      backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
 - Internationalization
 
 ## Installation
@@ -70,9 +85,11 @@ $ poetry add starlette-admin
 This is a simple example with SQLAlchemy model
 
 ```python
-from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Mapped, mapped_column
 from starlette.applications import Starlette
+
 from starlette_admin.contrib.sqla import Admin, ModelView
 
 Base = declarative_base()
@@ -83,8 +100,8 @@ engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": F
 class Post(Base):
     __tablename__ = "posts"
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str]
 
 
 Base.metadata.create_all(engine)
@@ -100,6 +117,7 @@ admin.add_view(ModelView(Post))
 # Mount admin to your app
 admin.mount_to(app)
 ```
+
 Access your admin interface in your browser at [http://localhost:8000/admin](http://localhost:8000/admin)
 
 ## Third party
