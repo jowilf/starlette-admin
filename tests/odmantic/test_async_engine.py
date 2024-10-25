@@ -1,5 +1,4 @@
 import json
-import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -10,13 +9,6 @@ from odmantic import AIOEngine, EmbeddedModel, Field, Model
 from requests import Request
 from starlette.applications import Starlette
 from starlette_admin.contrib.odmantic import Admin, ModelView
-
-if sys.version_info < (3, 9):
-    pytest.skip(
-        "Skipping the test due to a segment fault error with odmantic on Python 3.8, and the library is not "
-        "currently maintained",
-        allow_module_level=True,
-    )
 
 pytestmark = pytest.mark.asyncio
 
