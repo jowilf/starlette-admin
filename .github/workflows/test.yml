@@ -111,7 +111,7 @@ jobs:
       - name: get coverage files
         uses: actions/download-artifact@v4
         with:
-          pattern: coverage-*
+          pattern: coverage*
           merge-multiple: true
       - name: Install Dependencies
         run: pip install hatch
