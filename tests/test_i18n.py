@@ -51,6 +51,7 @@ class PostView(DummyModelView):
         ("fr", "Créer Post"),
         ("ru", "Добавить Post"),
         ("tr", "Yeni Post"),
+        ("pt", "Novo(a) Post"),
     ],
 )
 def test_default_locale(locale, expected_text):
