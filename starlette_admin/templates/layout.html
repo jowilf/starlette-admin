@@ -9,7 +9,7 @@
 {% block body %}
     <div class="page">
         {% block sidebar %}
-            <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark">
+            <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
                 <div class="container-fluid">
                     <button class="navbar-toggler"
                             type="button"
@@ -23,11 +23,9 @@
                         <a class="brand-link" href="{{ url_for(__name__ ~ ':index') }}">
                             {% if logo_url %}
                                 <img src="{{ logo_url }}"
-                                     width="110"
-                                     height="32"
-                                     class="navbar-brand-image"/>
+                                     class="navbar-logo"/>
                             {% else %}
-                                <h3>{{ app_title }}</h3>
+                                {{ app_title }}
                             {% endif %}
                         </a>
                     </h1>
