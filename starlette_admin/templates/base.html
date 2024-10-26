@@ -9,7 +9,7 @@
     {% endif %}
     {% block head_meta %}{% endblock %}
     {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
-    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/tabler.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/tabler.min.beta21.css') }}">
     <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/fontawesome.min.css') }}">
     <style>
         @import url('https://rsms.me/inter/inter.css');
@@ -21,6 +21,11 @@
         body {
             font-feature-settings: "cv03", "cv04", "cv11";
         }
+
+        .navbar-logo {
+            width: auto;
+            height: 2rem;
+        }
     </style>
     {% block head_css %}{% endblock %}
 </head>
@@ -30,7 +35,8 @@
 {% block modal %}{% endblock %}
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jquery.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/js.cookie.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/tabler.min.js') }}"></script>
+<script type="text/javascript"
+        src="{{ url_for(__name__ ~ ':statics', path='js/vendor/tabler.min.beta21.js') }}"></script>
 {% block script %}{% endblock %}
 <script>
     $(function () {
