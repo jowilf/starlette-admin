@@ -119,4 +119,4 @@ jobs:
       - name: Coverage Report
         run: hatch run cov:report
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
