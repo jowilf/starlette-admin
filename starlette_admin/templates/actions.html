@@ -24,7 +24,7 @@
                data-name="{{ action.name }}"
                data-submit-btn-text="{{ action.submit_btn_text }}"
                data-submit-btn-class="{{ action.submit_btn_class }}"
-               data-form="{{ action.form }}"
+               data-form="{{ action.form |forceescape }}"
             >
                 {% if action.icon_class %}
                     <i class="{{ action.icon_class }} me-2"></i>

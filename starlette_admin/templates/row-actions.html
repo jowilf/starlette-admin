@@ -15,7 +15,7 @@
         {% endif %}
         data-submit-btn-text="{{ action.submit_btn_text }}"
         data-submit-btn-class="{{ action.submit_btn_class }}"
-        data-form="{{ action.form }}"
+        data-form="{{ action.form |forceescape }}"
     {% endif %}
     data-is-row-action="true"
     data-name="{{ action.name }}"
