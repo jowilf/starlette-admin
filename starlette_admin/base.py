@@ -524,7 +524,11 @@ class BaseAdmin:
             data[field.name] = await field.parse_form_data(request, form_data, action)
         return data
 
-    def mount_to(self, app: Starlette) -> None:
+    def mount_to(
+        self,
+        app: Starlette,
+        redirect_slashes: bool = True,
+    ) -> None:
         admin_app = Starlette(
             routes=self.routes,
             middleware=self.middlewares,
@@ -537,3 +541,4 @@ class BaseAdmin:
             app=admin_app,
             name=self.route_name,
         )
+        admin_app.router.redirect_slashes = redirect_slashes

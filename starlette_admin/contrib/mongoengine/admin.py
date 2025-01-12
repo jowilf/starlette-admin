@@ -10,7 +10,7 @@ from starlette_admin.base import BaseAdmin
 
 
 class Admin(BaseAdmin):
-    def mount_to(self, app: Starlette) -> None:
+    def mount_to(self, app: Starlette, redirect_slashes: bool = True) -> None:
         self.routes.append(
             Route(
                 "/api/file/{db}/{col}/{pk}",
@@ -19,7 +19,7 @@ class Admin(BaseAdmin):
                 name="api:file",
             )
         )
-        super().mount_to(app)
+        super().mount_to(app, redirect_slashes)
 
 
 def _serve_file(request: Request) -> Response:
