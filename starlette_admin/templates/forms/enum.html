@@ -11,7 +11,7 @@
             <option></option>
         {% endif %}
         {% for value, label in field._get_choices(request) %}
-            <option value="{{ value }}" {{ 'selected' if (data and (value in (data if field.multiple else [data]))) else '' }}>{{ label }}
+            <option value="{{ value }}" {{ 'selected' if (data is not none and (value in (data if field.multiple else [data]))) else '' }}>{{ label }}
             </option>
         {% endfor %}
     </select>
