@@ -20,6 +20,7 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.engine import Engine
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Session, declarative_base, relationship
 from sqlalchemy_file.storage import StorageManager
 from starlette.applications import Starlette
@@ -60,6 +61,8 @@ class User(Base):
     name = Column(String(100), primary_key=True)
     files = Column(sf.FileField(multiple=True))
     products = relationship("Product", back_populates="user")
+    # to reproduce https://github.com/jowilf/starlette-admin/issues/507
+    product_titles = association_proxy("products", "titles")
 
 
 class ProductView(ModelView):

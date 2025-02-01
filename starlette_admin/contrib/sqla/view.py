@@ -95,7 +95,7 @@ class ModelView(BaseModelView):
         if self.fields is None or len(self.fields) == 0:
             self.fields = [
                 self.model.__dict__[f].key
-                for f in self.model.__dict__
+                for f in list(self.model.__dict__.keys())
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
         self.fields = (converter or ModelConverter()).convert_fields_list(
@@ -134,7 +134,7 @@ class ModelView(BaseModelView):
             Tuple[InstrumentedAttribute, ...], InstrumentedAttribute
         ] = ()
         self._pk_coerce: Union[Tuple[type, ...], type] = ()
-        for key in self.model.__dict__:
+        for key in list(self.model.__dict__.keys()):
             attr = getattr(self.model, key)
             if isinstance(attr, InstrumentedAttribute) and getattr(
                 attr, "primary_key", False
