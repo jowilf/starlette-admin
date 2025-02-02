@@ -14,7 +14,7 @@ from sqlalchemy.orm import (
 from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette_admin import BaseField
+from starlette_admin import BaseField, HasMany
 from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.converters import (
     BaseSQLAModelConverter,
@@ -521,12 +521,10 @@ class ModelView(BaseModelView):
         for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField) and data[field.name] is not None:
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
-                if not field.multiple:
-                    arranged_data[field.name] = await foreign_model.find_by_pk(
-                        request, data[field.name]
-                    )
+                if isinstance(field, HasMany):
+                    arranged_data[field.name] = field.collection_class(await foreign_model.find_by_pks(request, data[field.name]))  # type: ignore[call-arg]
                 else:
-                    arranged_data[field.name] = await foreign_model.find_by_pks(
+                    arranged_data[field.name] = await foreign_model.find_by_pk(
                         request, data[field.name]
                     )
             else:

@@ -9,6 +9,7 @@ from json import JSONDecodeError
 from typing import (
     Any,
     Callable,
+    Collection,
     Dict,
     List,
     Optional,
@@ -1094,6 +1095,7 @@ class HasMany(RelationField):
     """A field representing a "has-many" relationship between two models."""
 
     multiple: bool = True
+    collection_class: Union[Type[Collection[Any]], Callable[[], Collection[Any]]] = list
 
 
 @dataclass(init=False)

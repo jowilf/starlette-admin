@@ -38,7 +38,7 @@ class User(Base, IDMixin):
 
     name = Column(String(100))
 
-    todos = relationship("Todo", back_populates="user")
+    todos = relationship("Todo", back_populates="user", collection_class=set)
 
 
 class Todo(Base, IDMixin):
