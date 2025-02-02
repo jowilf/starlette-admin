@@ -1095,7 +1095,7 @@ class HasMany(RelationField):
     """A field representing a "has-many" relationship between two models."""
 
     multiple: bool = True
-    collection_class: Type[Collection] = list
+    collection_class: Union[Type[Collection[Any]], Callable[[], Collection[Any]]] = list
 
 
 @dataclass(init=False)
