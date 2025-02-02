@@ -526,8 +526,8 @@ class ModelView(BaseModelView):
                         request, data[field.name]
                     )
                 else:
-                    arranged_data[field.name] = await foreign_model.find_by_pks(
-                        request, data[field.name]
+                    arranged_data[field.name] = field.collection_class(
+                        await foreign_model.find_by_pks(request, data[field.name])
                     )
             else:
                 arranged_data[field.name] = data[field.name]

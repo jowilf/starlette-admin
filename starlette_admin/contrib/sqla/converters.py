@@ -106,7 +106,13 @@ class BaseSQLAModelConverter(BaseModelConverter):
                     ):
                         converted_fields.append(HasOne(attr.key, identity=identity))
                     else:
-                        converted_fields.append(HasMany(attr.key, identity=identity))
+                        converted_fields.append(
+                            HasMany(
+                                attr.key,
+                                identity=identity,
+                                collection_class=attr.collection_class or list,
+                            )
+                        )
                 elif isinstance(attr, ColumnProperty):
                     assert (
                         len(attr.columns) == 1
