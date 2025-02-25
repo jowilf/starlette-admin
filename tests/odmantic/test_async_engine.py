@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from odmantic import AIOEngine, EmbeddedModel, Field, Model
 from requests import Request
 from starlette.applications import Starlette
@@ -93,7 +93,9 @@ async def client(prepare_database, aio_engine: AIOEngine):
     app = Starlette()
     admin.add_view(UserView(User))
     admin.mount_to(app)
-    async with AsyncClient(app=app, base_url="http://testserver") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as c:
         yield c
 
 

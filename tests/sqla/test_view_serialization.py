@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import Boolean, Column, ForeignKey, String
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, declarative_base, relationship
@@ -64,7 +64,9 @@ def app(engine: Engine):
 
 @pytest_asyncio.fixture
 async def client(app):
-    async with AsyncClient(app=app, base_url="http://testserver") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as c:
         yield c
 
 
