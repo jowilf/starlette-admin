@@ -3,7 +3,7 @@ from typing import Sequence
 import mongoengine as me
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from mongoengine import connect, disconnect
 from starlette.applications import Starlette
 from starlette.requests import Request
@@ -45,7 +45,7 @@ class TestFieldAccess:
         app = Starlette()
         admin.add_view(PostView(Post))
         admin.mount_to(app)
-        async with AsyncClient(app=app, base_url="http://testserver") as c:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
             yield c
 
     @pytest.mark.asyncio

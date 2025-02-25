@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy import Column, Integer, String, select
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.orm import declarative_base
@@ -78,7 +78,7 @@ async def client(engine: AsyncEngine):
     admin.add_view(ProductView(Product))
     app = Starlette()
     admin.mount_to(app)
-    async with AsyncClient(app=app, base_url="http://testserver") as c:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
         yield c
 
 
