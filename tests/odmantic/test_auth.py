@@ -2,7 +2,7 @@ from typing import Sequence
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from odmantic import Field, Model, SyncEngine
 from starlette.applications import Starlette
 from starlette.requests import Request
@@ -36,7 +36,9 @@ class TestFieldAccess:
         app = Starlette()
         admin.add_view(PostView(Post))
         admin.mount_to(app)
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        ) as c:
             yield c
         sync_engine.remove(Post)
 

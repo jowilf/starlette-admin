@@ -2,7 +2,7 @@ import json
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from odmantic import Model, Reference, SyncEngine
 from starlette.applications import Starlette
 from starlette_admin.contrib.odmantic import Admin, ModelView
@@ -48,7 +48,9 @@ async def client(prepare_database, sync_engine: SyncEngine):
     admin.add_view(ModelView(Author))
     admin.add_view(ModelView(Quote))
     admin.mount_to(app)
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as c:
         yield c
 
 

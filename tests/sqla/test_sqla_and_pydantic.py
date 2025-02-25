@@ -3,7 +3,7 @@ from typing import Optional
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel, Field
 from sqlalchemy import (
     Boolean,
@@ -99,7 +99,9 @@ def app(admin: Admin):
 
 @pytest_asyncio.fixture
 async def client(app):
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as c:
         yield c
 
 

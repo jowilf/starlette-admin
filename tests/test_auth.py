@@ -2,7 +2,7 @@ import json
 from typing import Optional, Sequence
 
 import pytest
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette_admin import (
@@ -104,7 +104,9 @@ class TestAuth:
         admin.mount_to(app)
         assert app.url_path_for("admin:login") == "/admin/login"
         assert app.url_path_for("admin:logout") == "/admin/logout"
-        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")
+        client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
         response = await client.get("/admin/login")
         assert response.status_code == 200
         response = await client.get("/admin/", follow_redirects=False)
@@ -119,7 +121,9 @@ class TestAuth:
         admin = BaseAdmin(auth_provider=AuthProvider())
         app = Starlette()
         admin.mount_to(app)
-        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")
+        client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
         response = await client.post(
             "/admin/login",
             follow_redirects=False,
@@ -133,7 +137,9 @@ class TestAuth:
         app = Starlette()
         admin.mount_to(app)
         assert app.url_path_for("admin:login") == "/admin/custom-login"
-        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")
+        client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
         response = await client.get("/admin/", follow_redirects=False)
         assert response.status_code == 303
         assert (
@@ -151,7 +157,9 @@ class TestAuth:
         app = Starlette()
         admin.mount_to(app)
         assert app.url_path_for("admin:login") == "/admin/login"
-        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")
+        client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
         data = {"username": "ad", "password": "invalid-password", "remember_me": "on"}
         response = await client.post("/admin/login", follow_redirects=False, data=data)
         assert "Ensure username has at least 03 characters" in response.text
@@ -165,7 +173,9 @@ class TestAuth:
         app = Starlette()
         admin.mount_to(app)
         assert app.url_path_for("admin:login") == "/admin/login"
-        client = AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")
+        client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
         response = await client.post(
             "/admin/login",
             data={"username": "admin", "password": "password", "remember_me": "on"},
@@ -200,7 +210,9 @@ class TestViewAccess:
         admin.add_view(report_view)
         admin.add_view(PostView)
         admin.mount_to(app)
-        return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")
+        return AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
 
     @pytest.mark.asyncio
     async def test_access_custom_view(self, client: AsyncClient):
@@ -317,7 +329,9 @@ class TestFieldAccess:
         app = Starlette()
         admin.add_view(PostView)
         admin.mount_to(app)
-        return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")
+        return AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(

@@ -6,7 +6,7 @@ from typing import Any, Dict, Tuple
 import pytest
 import pytest_asyncio
 import sqlalchemy_file as sf
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import (
     Boolean,
     Column,
@@ -157,7 +157,9 @@ def app(admin: Admin):
 
 @pytest_asyncio.fixture
 async def client(app):
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as c:
         yield c
 
 

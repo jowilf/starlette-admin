@@ -11,7 +11,7 @@ import arrow
 import pytest
 import pytest_asyncio
 from colour import Color
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import Column, Integer, MetaData, event, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, declarative_base
@@ -126,7 +126,9 @@ async def client(engine: Engine):
     admin.add_view(ModelView(Model))
     app = Starlette()
     admin.mount_to(app)
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as c:
         yield c
 
 
