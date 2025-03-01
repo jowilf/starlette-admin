@@ -12,9 +12,12 @@ import pytest
 import pytest_asyncio
 from colour import Color
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import Column, Integer, MetaData, event, select
+from sqlalchemy import Column, ForeignKey, Integer, MetaData, String, event, select
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy.orm import (
+    Session,
+    declarative_base,
+)
 from sqlalchemy_utils import (
     ArrowType,
     ChoiceType,
@@ -87,6 +90,27 @@ class Model(Base):
     )
 
 
+# Test joined table polymorphic inheritance
+class BaseItem(Base):
+    __tablename__ = "base_items"
+    __mapper_args__ = {
+        "polymorphic_identity": "base_item",
+        "polymorphic_on": "_type",
+    }
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50))
+    _type = Column(String(50))
+
+
+class SpecialItem(BaseItem):
+    __tablename__ = "special_items"
+    __mapper_args__ = {"polymorphic_identity": "special_item"}
+
+    id = Column(ForeignKey("base_items.id"), primary_key=True)
+    special_power = Column(String(50))
+
+
 async def test_model_fields_conversion():
     assert ModelView(Model).fields == [
         StringField("uuid", exclude_from_create=True, exclude_from_edit=True),
@@ -103,6 +127,24 @@ async def test_model_fields_conversion():
         ListField(StringField("scalars")),
         PhoneField("phonenumber"),
         PasswordField("password"),
+    ]
+
+
+async def test_polymorphic():
+    assert ModelView(BaseItem).fields == [
+        IntegerField(
+            "id", required=True, exclude_from_create=True, exclude_from_edit=True
+        ),
+        StringField("name", maxlength=50),
+        StringField("_type", maxlength=50),
+    ]
+    assert ModelView(SpecialItem).fields == [
+        IntegerField(
+            "id", required=True, exclude_from_create=True, exclude_from_edit=True
+        ),
+        StringField("special_power", maxlength=50),
+        StringField("name", maxlength=50),
+        StringField("_type", maxlength=50),
     ]
 
 
