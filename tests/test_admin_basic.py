@@ -31,7 +31,7 @@ class TestAdminBasic:
             index_view=CustomView(
                 "Home", path="/home", template_path="custom_index.html"
             ),
-            templates_dir="tests/templates",
+            templates_dir="tests/templates/basic",
         )
         admin.mount_to(app)
         assert len(admin._views) == 1
@@ -64,3 +64,15 @@ class TestAdminBasic:
         assert response.status_code == 200
         assert response.text.count("<title>DashBoard</title>") == 1
         assert response.text.count("https://test.com/logo.png") == 1
+
+    def test_template_override(self):
+        app = Starlette()
+        admin = BaseAdmin(templates_dir="tests/templates/basic")
+        admin.mount_to(app)
+        client = TestClient(app)
+        response = client.get("/admin")
+        assert response.status_code == 200
+        assert (
+            response.text.count('<meta name="custom-meta" content="Custom metadata" />')
+            == 1
+        )
