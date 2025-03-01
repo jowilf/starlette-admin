@@ -204,7 +204,7 @@ class TestViewAccess:
     @pytest.fixture
     def client(self, report_view):
         admin = BaseAdmin(
-            auth_provider=MyAuthProvider(), templates_dir="tests/templates"
+            auth_provider=MyAuthProvider(), templates_dir="tests/templates/auth"
         )
         app = Starlette()
         admin.add_view(report_view)

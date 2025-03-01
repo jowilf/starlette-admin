@@ -116,7 +116,7 @@ class TestViews:
         PostView.seq = len(PostView.db.keys()) + 1
 
     def test_add_custom_view(self, report_view):
-        admin = BaseAdmin(templates_dir="tests/templates")
+        admin = BaseAdmin(templates_dir="tests/templates/views")
         app = Starlette()
         admin.add_view(report_view)
         admin.mount_to(app)

@@ -2,7 +2,13 @@ import json
 from json import JSONDecodeError
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Type, Union
 
-from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PackageLoader
+from jinja2 import (
+    ChoiceLoader,
+    Environment,
+    FileSystemLoader,
+    PackageLoader,
+    PrefixLoader,
+)
 from starlette.applications import Starlette
 from starlette.datastructures import FormData
 from starlette.exceptions import HTTPException
@@ -195,6 +201,13 @@ class BaseAdmin:
                 [
                     FileSystemLoader(self.templates_dir),
                     PackageLoader("starlette_admin", "templates"),
+                    PrefixLoader(
+                        {
+                            "@starlette-admin": PackageLoader(
+                                "starlette_admin", "templates"
+                            ),
+                        }
+                    ),
                 ]
             ),
             extensions=["jinja2.ext.i18n"],

@@ -54,7 +54,7 @@ def test_multiple_admin(report_view):
         "Admin1",
         base_url="/admin1",
         route_name="admin1",
-        templates_dir="tests/templates",
+        templates_dir="tests/templates/multiple-admin",
     )
     admin1.add_view(report_view)
     admin1.add_view(PostView)
