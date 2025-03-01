@@ -3,7 +3,7 @@ import json
 import warnings
 from dataclasses import asdict, dataclass
 from dataclasses import field as dc_field
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum
 from json import JSONDecodeError
 from typing import (
@@ -19,10 +19,16 @@ from typing import (
     Union,
 )
 
+from babel.dates import format_timedelta
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
-from starlette_admin.helpers import extract_fields, html_params, is_empty_file
+from starlette_admin.helpers import (
+    extract_fields,
+    html_params,
+    is_empty_file,
+    timedelta_to_components,
+)
 from starlette_admin.i18n import (
     format_date,
     format_datetime,
@@ -1269,3 +1275,109 @@ class ListField(BaseField):
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         return self.field.additional_js_links(request, action)
+
+
+@dataclass
+class IntervalField(StringField):
+    form_template: str = "forms/interval.html"
+
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
+        try:
+            timedelta_params = {
+                "weeks": (
+                    0
+                    if form_data.get(f"{self.id}_weeks") == ""
+                    else int(form_data.get(f"{self.id}_weeks"))  # type: ignore
+                ),
+                "days": (
+                    0
+                    if form_data.get(f"{self.id}_days") == ""
+                    else int(form_data.get(f"{self.id}_days"))  # type: ignore
+                ),
+                "hours": (
+                    0
+                    if form_data.get(f"{self.id}_hours") == ""
+                    else int(form_data.get(f"{self.id}_hours"))  # type: ignore
+                ),
+                "minutes": (
+                    0
+                    if form_data.get(f"{self.id}_minutes") == ""
+                    else int(form_data.get(f"{self.id}_minutes"))  # type: ignore
+                ),
+                "seconds": (
+                    0
+                    if form_data.get(f"{self.id}_seconds") == ""
+                    else int(form_data.get(f"{self.id}_seconds"))  # type: ignore
+                ),
+                "microseconds": (
+                    0
+                    if form_data.get(f"{self.id}_microseconds") == ""
+                    else int(form_data.get(f"{self.id}_microseconds"))  # type: ignore
+                ),
+                "milliseconds": (
+                    0
+                    if form_data.get(f"{self.id}_milliseconds") == ""
+                    else int(form_data.get(f"{self.id}_milliseconds"))  # type: ignore
+                ),
+            }
+            return timedelta(**timedelta_params)
+        except ValueError:
+            return timedelta()
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
+        params = timedelta_to_components(value)
+        if action != RequestAction.EDIT:
+            string = (
+                format_timedelta(
+                    timedelta(weeks=params["weeks"]),
+                    granularity="week",
+                    threshold=params["weeks"],
+                    locale="en",
+                )
+                + " "
+                if params["weeks"] > 0
+                else ""
+            )
+            string += (
+                format_timedelta(
+                    timedelta(days=params["days"]),
+                    granularity="day",
+                    threshold=1,
+                    locale="en",
+                )
+                + " "
+            )
+            string += (
+                format_timedelta(
+                    timedelta(hours=params["hours"]),
+                    granularity="hour",
+                    threshold=1,
+                    locale="en",
+                )
+                + " "
+            )
+            string += (
+                format_timedelta(
+                    timedelta(minutes=params["minutes"]),
+                    granularity="minute",
+                    threshold=1,
+                    locale="en",
+                )
+                + " "
+            )
+            string += format_timedelta(
+                timedelta(
+                    seconds=params["seconds"],
+                    milliseconds=params["milliseconds"],
+                    microseconds=params["microseconds"],
+                ),
+                granularity="second",
+                threshold=1,
+                locale="en",
+            )
+            return string
+        return params
