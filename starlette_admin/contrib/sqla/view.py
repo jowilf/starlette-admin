@@ -176,6 +176,21 @@ class ModelView(BaseModelView):
         except SQLAlchemyError as exc:
             raise ActionFailed(str(exc)) from exc
 
+    def get_details_query(self, request: Request) -> Select:
+        """
+        Return a Select expression which is used as base statement for
+        [find_by_pk][starlette_admin.views.BaseModelView.find_by_pk] method.
+
+        Examples:
+            ```python  hl_lines="3-4"
+            class PostView(ModelView):
+
+                    def get_details_query(self, request: Request):
+                        return super().get_details_query().options(selectinload(Post.author))
+            ```
+        """
+        return select(self.model)
+
     def get_list_query(self, request: Request) -> Select:
         """
         Return a Select expression which is used as base statement for
@@ -324,7 +339,7 @@ class ModelView(BaseModelView):
         else:
             assert isinstance(self._pk_coerce, type)
             clause = self._pk_column == self._pk_coerce(pk)
-        stmt = select(self.model).where(clause)
+        stmt = self.get_details_query(request).where(clause)
         for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField):
                 stmt = stmt.options(joinedload(getattr(self.model, field.name)))
