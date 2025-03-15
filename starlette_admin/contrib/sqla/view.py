@@ -375,7 +375,7 @@ class ModelView(BaseModelView):
             clause = await self._get_multiple_pks_in_clause(pks, use_composite_in)
         else:
             clause = self._pk_column.in_(map(self._pk_coerce, pks))  # type: ignore
-        stmt = select(self.model).where(clause)
+        stmt = self.get_details_query(request).where(clause)
         for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField):
                 stmt = stmt.options(joinedload(getattr(self.model, field.name)))
