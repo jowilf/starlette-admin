@@ -179,7 +179,8 @@ class ModelView(BaseModelView):
     def get_details_query(self, request: Request) -> Select:
         """
         Return a Select expression which is used as base statement for
-        [find_by_pk][starlette_admin.views.BaseModelView.find_by_pk] method.
+        [find_by_pk][starlette_admin.views.BaseModelView.find_by_pk] and
+        [find_by_pks][starlette_admin.views.BaseModelView.find_by_pks] methods.
 
         Examples:
             ```python  hl_lines="3-4"
