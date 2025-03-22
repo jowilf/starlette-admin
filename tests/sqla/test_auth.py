@@ -2,7 +2,7 @@ from typing import Sequence
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, declarative_base
@@ -58,7 +58,9 @@ class TestFieldAccess:
         app = Starlette()
         admin.add_view(PostView(Post))
         admin.mount_to(app)
-        async with AsyncClient(app=app, base_url="http://testserver") as c:
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        ) as c:
             yield c
 
     @pytest.mark.asyncio

@@ -1,22 +1,14 @@
 import json
-import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from odmantic import AIOEngine, EmbeddedModel, Field, Model
 from requests import Request
 from starlette.applications import Starlette
 from starlette_admin.contrib.odmantic import Admin, ModelView
-
-if sys.version_info < (3, 9):
-    pytest.skip(
-        "Skipping the test due to a segment fault error with odmantic on Python 3.8, and the library is not "
-        "currently maintained",
-        allow_module_level=True,
-    )
 
 pytestmark = pytest.mark.asyncio
 
@@ -101,7 +93,9 @@ async def client(prepare_database, aio_engine: AIOEngine):
     app = Starlette()
     admin.add_view(UserView(User))
     admin.mount_to(app)
-    async with AsyncClient(app=app, base_url="http://testserver") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as c:
         yield c
 
 
@@ -113,7 +107,7 @@ async def test_api(client: AsyncClient):
     data = response.json()
     assert data["total"] == 3
     assert len(data["items"]) == 2
-    assert ["Sheldon Cole", "Terry Medhurst"] == [x["name"] for x in data["items"]]
+    assert [x["name"] for x in data["items"]] == ["Sheldon Cole", "Terry Medhurst"]
     # Find by pks
     response = await client.get(
         "/admin/api/user", params={"pks": [x["id"] for x in data["items"]]}
@@ -128,7 +122,7 @@ async def test_full_text_search(client: AsyncClient):
     assert response.status_code == 200
     data = response.json()
     assert data["total"] == 2
-    assert ["Hills Terrill", "Terry Medhurst"] == [x["name"] for x in data["items"]]
+    assert [x["name"] for x in data["items"]] == ["Hills Terrill", "Terry Medhurst"]
 
 
 async def test_deep_search(client: AsyncClient, aio_engine: AIOEngine):
@@ -171,7 +165,7 @@ async def test_create(client: AsyncClient, aio_engine: AIOEngine):
     assert response.status_code == 303
     users = await aio_engine.find(User, User.name == "John Doe")
     assert len(users) == 1
-    assert users[0].dict(exclude={"id"}) == {
+    assert users[0].model_dump(exclude={"id"}) == {
         "name": "John Doe",
         "birthday": datetime(1999, 1, 1),
         "address": {
@@ -207,9 +201,9 @@ async def test_create_validation_error(client: AsyncClient, aio_engine: AIOEngin
         follow_redirects=False,
     )
     assert response.text.count('<div class="invalid-feedback">') == 3
-    assert response.text.count("ensure this value has at least 3 characters") == 1
-    assert response.text.count("ensure this value has at least 5 characters") == 1
-    assert response.text.count("ensure this value has at most 10 characters") == 1
+    assert response.text.count("at least 3 characters") == 1
+    assert response.text.count("at least 5 characters") == 1
+    assert response.text.count("at most 10 characters") == 1
     assert response.status_code == 422
     assert (await aio_engine.find_one(User, User.name == "Jo")) is None
 
@@ -231,7 +225,7 @@ async def test_edit(client: AsyncClient, aio_engine: AIOEngine):
     assert response.status_code == 303
     users = await aio_engine.find(User, User.id == id)
     assert len(users) == 1
-    assert users[0] == {
+    assert users[0].model_dump() == {
         "id": id,
         "name": "John Doe",
         "birthday": datetime(1999, 1, 1),
@@ -265,9 +259,9 @@ async def test_edit_validation_error(client: AsyncClient, aio_engine: AIOEngine)
         follow_redirects=False,
     )
     assert response.text.count('<div class="invalid-feedback">') == 3
-    assert response.text.count("ensure this value has at least 3 characters") == 1
-    assert response.text.count("ensure this value has at least 5 characters") == 1
-    assert response.text.count("ensure this value has at most 10 characters") == 1
+    assert response.text.count("at least 3 characters") == 1
+    assert response.text.count("at least 5 characters") == 1
+    assert response.text.count("at most 10 characters") == 1
     assert response.status_code == 422
     assert (await aio_engine.find_one(User, User.name == "Hills Terrill")) is not None
     assert (await aio_engine.find_one(User, User.name == "Jo")) is None

@@ -5,6 +5,6 @@
 </div>
 <input type="text"
        name="{{ field.id }}"
-       value="{{ (data|tojson) if data else 'null' }}"
+       value="{{ (data|tojson|forceescape) if data else 'null' }}"
        hidden/>
 {% include "forms/_error.html" %}

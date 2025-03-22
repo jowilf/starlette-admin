@@ -6,7 +6,7 @@ from typing import Any, Dict, Tuple
 import pytest
 import pytest_asyncio
 import sqlalchemy_file as sf
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import (
     Boolean,
     Column,
@@ -20,6 +20,7 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.engine import Engine
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Session, declarative_base, relationship
 from sqlalchemy_file.storage import StorageManager
 from starlette.applications import Starlette
@@ -60,6 +61,8 @@ class User(Base):
     name = Column(String(100), primary_key=True)
     files = Column(sf.FileField(multiple=True))
     products = relationship("Product", back_populates="user")
+    # to reproduce https://github.com/jowilf/starlette-admin/issues/507
+    product_titles = association_proxy("products", "titles")
 
 
 class ProductView(ModelView):
@@ -154,7 +157,9 @@ def app(admin: Admin):
 
 @pytest_asyncio.fixture
 async def client(app):
-    async with AsyncClient(app=app, base_url="http://testserver") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as c:
         yield c
 
 
@@ -181,7 +186,7 @@ async def test_api(client: AsyncClient):
     data = response.json()
     assert data["total"] == 5
     assert len(data["items"]) == 2
-    assert ["OPPOF19", "IPhone X"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["OPPOF19", "IPhone X"]
     # Find by pks
     response = await client.get(
         "/admin/api/product",
@@ -196,7 +201,7 @@ async def test_api_fulltext(client: AsyncClient):
     )
     data = response.json()
     assert data["total"] == 2
-    assert ["IPhone 9", "IPhone X"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["IPhone 9", "IPhone X"]
 
 
 async def test_api_query1(client: AsyncClient):
@@ -207,7 +212,7 @@ async def test_api_query1(client: AsyncClient):
     response = await client.get(f"/admin/api/product?where={where}&order_by=price asc")
     data = response.json()
     assert data["total"] == 3
-    assert ["OPPOF19", "Huawei P30", "IPhone 9"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["OPPOF19", "Huawei P30", "IPhone 9"]
 
 
 async def test_api_query2(client: AsyncClient):
@@ -218,7 +223,7 @@ async def test_api_query2(client: AsyncClient):
     response = await client.get(f"/admin/api/product?where={where}")
     data = response.json()
     assert data["total"] == 1
-    assert ["IPhone X"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["IPhone X"]
 
 
 async def test_api_query3(client: AsyncClient):
@@ -229,7 +234,7 @@ async def test_api_query3(client: AsyncClient):
     response = await client.get(f"/admin/api/product?where={where}&order_by=price asc")
     data = response.json()
     assert data["total"] == 2
-    assert ["OPPOF19", "Huawei P30"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["OPPOF19", "Huawei P30"]
 
 
 async def test_api_query4(client: AsyncClient):
@@ -608,7 +613,7 @@ async def test_sortable_field_mapping_1(client: AsyncClient, session: Session):
     data = response.json()
     assert data["total"] == 5
     assert len(data["items"]) == 2
-    assert ["Huawei P30", "OPPOF19"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["Huawei P30", "OPPOF19"]
 
 
 @pytest.mark.skipif(
@@ -620,4 +625,4 @@ async def test_sortable_field_mapping_2(client: AsyncClient, session: Session):
     data = response.json()
     assert data["total"] == 5
     assert len(data["items"]) == 2
-    assert ["OPPOF19", "Huawei P30"] == [x["title"] for x in data["items"]]
+    assert [x["title"] for x in data["items"]] == ["OPPOF19", "Huawei P30"]
