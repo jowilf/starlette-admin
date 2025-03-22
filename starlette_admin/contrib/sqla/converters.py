@@ -107,16 +107,35 @@ class BaseSQLAModelConverter(BaseModelConverter):
                     ):
                         converted_fields.append(HasOne(attr.key, identity=identity))
                     else:
-                        converted_fields.append(HasMany(attr.key, identity=identity))
-                elif isinstance(attr, ColumnProperty):
-                    assert (
-                        len(attr.columns) == 1
-                    ), "Multiple-column properties are not supported"
-                    column = attr.columns[0]
-                    if not column.foreign_keys:
                         converted_fields.append(
-                            self.convert(name=attr.key, type=column.type, column=column)
+                            HasMany(
+                                attr.key,
+                                identity=identity,
+                                collection_class=attr.collection_class or list,
+                            )
                         )
+                elif isinstance(attr, ColumnProperty):
+                    # Handle inherited primary keys (i.e.: joined table polymorphic inheritance)
+                    is_inherited_pk = mapper.inherits is not None and any(
+                        col.primary_key for col in attr.columns
+                    )
+                    if is_inherited_pk:
+                        column = attr.columns[0]
+                        converted_fields.append(
+                            self.convert(
+                                name=attr.key, type=column.type, column=column
+                            ),
+                        )
+                    else:
+                        assert (
+                            len(attr.columns) == 1
+                        ), "Multiple-column properties are not supported"
+                        column = attr.columns[0]
+                        if not column.foreign_keys:
+                            converted_field = self.convert(
+                                name=attr.key, type=column.type, column=column
+                            )
+                            converted_fields.append(converted_field)
         return converted_fields
 
 

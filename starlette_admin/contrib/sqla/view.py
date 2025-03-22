@@ -14,7 +14,7 @@ from sqlalchemy.orm import (
 from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette_admin import BaseField
+from starlette_admin import BaseField, HasMany
 from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.converters import (
     BaseSQLAModelConverter,
@@ -95,7 +95,7 @@ class ModelView(BaseModelView):
         if self.fields is None or len(self.fields) == 0:
             self.fields = [
                 self.model.__dict__[f].key
-                for f in self.model.__dict__
+                for f in list(self.model.__dict__.keys())
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
         self.fields = (converter or ModelConverter()).convert_fields_list(
@@ -134,7 +134,7 @@ class ModelView(BaseModelView):
             Tuple[InstrumentedAttribute, ...], InstrumentedAttribute
         ] = ()
         self._pk_coerce: Union[Tuple[type, ...], type] = ()
-        for key in self.model.__dict__:
+        for key in list(self.model.__dict__.keys()):
             attr = getattr(self.model, key)
             if isinstance(attr, InstrumentedAttribute) and getattr(
                 attr, "primary_key", False
@@ -176,7 +176,23 @@ class ModelView(BaseModelView):
         except SQLAlchemyError as exc:
             raise ActionFailed(str(exc)) from exc
 
-    def get_list_query(self) -> Select:
+    def get_details_query(self, request: Request) -> Select:
+        """
+        Return a Select expression which is used as base statement for
+        [find_by_pk][starlette_admin.views.BaseModelView.find_by_pk] and
+        [find_by_pks][starlette_admin.views.BaseModelView.find_by_pks] methods.
+
+        Examples:
+            ```python  hl_lines="3-4"
+            class PostView(ModelView):
+
+                    def get_details_query(self, request: Request):
+                        return super().get_details_query().options(selectinload(Post.author))
+            ```
+        """
+        return select(self.model)
+
+    def get_list_query(self, request: Request) -> Select:
         """
         Return a Select expression which is used as base statement for
         [find_all][starlette_admin.views.BaseModelView.find_all] method.
@@ -185,10 +201,10 @@ class ModelView(BaseModelView):
             ```python  hl_lines="3-4"
             class PostView(ModelView):
 
-                    def get_list_query(self):
+                    def get_list_query(self, request: Request):
                         return super().get_list_query().where(Post.published == true())
 
-                    def get_count_query(self):
+                    def get_count_query(self, request: Request):
                         return super().get_count_query().where(Post.published == true())
             ```
 
@@ -198,7 +214,7 @@ class ModelView(BaseModelView):
         """
         return select(self.model)
 
-    def get_count_query(self) -> Select:
+    def get_count_query(self, request: Request) -> Select:
         """
         Return a Select expression which is used as base statement for
         [count][starlette_admin.views.BaseModelView.count] method.
@@ -207,10 +223,10 @@ class ModelView(BaseModelView):
             ```python hl_lines="6-7"
             class PostView(ModelView):
 
-                    def get_list_query(self):
+                    def get_list_query(self, request: Request):
                         return super().get_list_query().where(Post.published == true())
 
-                    def get_count_query(self):
+                    def get_count_query(self, request: Request):
                         return super().get_count_query().where(Post.published == true())
             ```
         """
@@ -252,7 +268,7 @@ class ModelView(BaseModelView):
         where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
         session: Union[Session, AsyncSession] = request.state.session
-        stmt = self.get_count_query()
+        stmt = self.get_count_query(request)
         if where is not None:
             if isinstance(where, dict):
                 where = build_query(where, self.model)
@@ -274,7 +290,7 @@ class ModelView(BaseModelView):
         order_by: Optional[List[str]] = None,
     ) -> Sequence[Any]:
         session: Union[Session, AsyncSession] = request.state.session
-        stmt = self.get_list_query().offset(skip)
+        stmt = self.get_list_query(request).offset(skip)
         if limit > 0:
             stmt = stmt.limit(limit)
         if where is not None:
@@ -324,7 +340,7 @@ class ModelView(BaseModelView):
         else:
             assert isinstance(self._pk_coerce, type)
             clause = self._pk_column == self._pk_coerce(pk)
-        stmt = select(self.model).where(clause)
+        stmt = self.get_details_query(request).where(clause)
         for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField):
                 stmt = stmt.options(joinedload(getattr(self.model, field.name)))
@@ -360,7 +376,7 @@ class ModelView(BaseModelView):
             clause = await self._get_multiple_pks_in_clause(pks, use_composite_in)
         else:
             clause = self._pk_column.in_(map(self._pk_coerce, pks))  # type: ignore
-        stmt = select(self.model).where(clause)
+        stmt = self.get_details_query(request).where(clause)
         for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField):
                 stmt = stmt.options(joinedload(getattr(self.model, field.name)))
@@ -521,12 +537,10 @@ class ModelView(BaseModelView):
         for field in self.get_fields_list(request, request.state.action):
             if isinstance(field, RelationField) and data[field.name] is not None:
                 foreign_model = self._find_foreign_model(field.identity)  # type: ignore
-                if not field.multiple:
-                    arranged_data[field.name] = await foreign_model.find_by_pk(
-                        request, data[field.name]
-                    )
+                if isinstance(field, HasMany):
+                    arranged_data[field.name] = field.collection_class(await foreign_model.find_by_pks(request, data[field.name]))  # type: ignore[call-arg]
                 else:
-                    arranged_data[field.name] = await foreign_model.find_by_pks(
+                    arranged_data[field.name] = await foreign_model.find_by_pk(
                         request, data[field.name]
                     )
             else:

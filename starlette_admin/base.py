@@ -2,7 +2,13 @@ import json
 from json import JSONDecodeError
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Type, Union
 
-from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PackageLoader
+from jinja2 import (
+    ChoiceLoader,
+    Environment,
+    FileSystemLoader,
+    PackageLoader,
+    PrefixLoader,
+)
 from starlette.applications import Starlette
 from starlette.datastructures import FormData
 from starlette.exceptions import HTTPException
@@ -195,6 +201,13 @@ class BaseAdmin:
                 [
                     FileSystemLoader(self.templates_dir),
                     PackageLoader("starlette_admin", "templates"),
+                    PrefixLoader(
+                        {
+                            "@starlette-admin": PackageLoader(
+                                "starlette_admin", "templates"
+                            ),
+                        }
+                    ),
                 ]
             ),
             extensions=["jinja2.ext.i18n"],
@@ -524,7 +537,11 @@ class BaseAdmin:
             data[field.name] = await field.parse_form_data(request, form_data, action)
         return data
 
-    def mount_to(self, app: Starlette) -> None:
+    def mount_to(
+        self,
+        app: Starlette,
+        redirect_slashes: bool = True,
+    ) -> None:
         admin_app = Starlette(
             routes=self.routes,
             middleware=self.middlewares,
@@ -537,3 +554,4 @@ class BaseAdmin:
             app=admin_app,
             name=self.route_name,
         )
+        admin_app.router.redirect_slashes = redirect_slashes

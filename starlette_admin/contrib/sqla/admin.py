@@ -57,7 +57,7 @@ class Admin(BaseAdmin):
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)
         self.middlewares.insert(0, Middleware(DBSessionMiddleware, engine=engine))
 
-    def mount_to(self, app: Starlette) -> None:
+    def mount_to(self, app: Starlette, redirect_slashes: bool = True) -> None:
         try:
             """Automatically add route to serve sqlalchemy_file files"""
             __import__("sqlalchemy_file")
@@ -71,7 +71,7 @@ class Admin(BaseAdmin):
             )
         except ImportError:  # pragma: no cover
             pass
-        super().mount_to(app)
+        super().mount_to(app, redirect_slashes=redirect_slashes)
 
 
 def _serve_file(request: Request) -> Response:
