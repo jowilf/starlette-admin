@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import List, Optional
 
 import pytest
@@ -24,6 +24,7 @@ class Todo(SQLModel, table=True):
     id: Optional[int] = Field(None, primary_key=True)
     todo: str = Field(min_length=10)
     completed: Optional[bool]
+    duration: Optional[timedelta]
     deadline: datetime
     completed_date: Optional[date]
     completed_time: Optional[time]
@@ -70,11 +71,13 @@ async def client(app):
 
 
 async def test_create(client: AsyncClient, session: Session):
+
     response = await client.post(
         "/admin/todo/create",
         data={
             "todo": "Do something nice for someone I care about",
-            "deadline": datetime.now().isoformat(),
+            "deadline": "2025-03-23T01:23:04.363268",
+            "duration_microseconds": 1000000000000,
             "completed": "on",
         },
         follow_redirects=False,
@@ -83,6 +86,8 @@ async def test_create(client: AsyncClient, session: Session):
     stmt = select(Todo).where(Todo.todo == "Do something nice for someone I care about")
     todo = session.exec(stmt).one()
     assert todo is not None
+    assert todo.deadline.isoformat() == "2025-03-23T01:23:04.363268"
+    assert todo.duration.total_seconds() == 1000000
 
 
 async def test_create_validation_error(client: AsyncClient, session: Session):

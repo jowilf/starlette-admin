@@ -63,6 +63,10 @@ class TagView(ModelView):
     column_visibility = False
     export_types = list(ExportType)  # Add all export types
 
+    async def validate(self, request: Request, data: Dict[str, Any]) -> None:
+        if len(data["name"]) < 1:
+            raise FormValidationError({"name": "Tag name is required"})
+
     def handle_exception(self, exc: Exception) -> None:
         """
         As `tag.name` is unique, sqlalchemy will raise IntegrityError

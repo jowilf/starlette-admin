@@ -19,7 +19,6 @@ from typing import (
     Union,
 )
 
-from babel.dates import format_timedelta
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
@@ -27,6 +26,7 @@ from starlette_admin.helpers import (
     extract_fields,
     html_params,
     is_empty_file,
+    parse_int_or_zero,
     timedelta_to_components,
 )
 from starlette_admin.i18n import (
@@ -1281,54 +1281,38 @@ class ListField(BaseField):
 class IntervalField(StringField):
     form_template: str = "forms/interval.html"
 
+    def __post_init__(self) -> None:
+        try:
+            import babel  # noqa
+        except ImportError as err:
+            raise ImportError(
+                "'babel' package is required to use 'IntervalField'. Install it with `pip install starlette-admin[i18n]`"
+            ) from err
+        super().__post_init__()
+
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
-        try:
-            timedelta_params = {
-                "weeks": (
-                    0
-                    if form_data.get(f"{self.id}_weeks") == ""
-                    else int(form_data.get(f"{self.id}_weeks"))  # type: ignore
-                ),
-                "days": (
-                    0
-                    if form_data.get(f"{self.id}_days") == ""
-                    else int(form_data.get(f"{self.id}_days"))  # type: ignore
-                ),
-                "hours": (
-                    0
-                    if form_data.get(f"{self.id}_hours") == ""
-                    else int(form_data.get(f"{self.id}_hours"))  # type: ignore
-                ),
-                "minutes": (
-                    0
-                    if form_data.get(f"{self.id}_minutes") == ""
-                    else int(form_data.get(f"{self.id}_minutes"))  # type: ignore
-                ),
-                "seconds": (
-                    0
-                    if form_data.get(f"{self.id}_seconds") == ""
-                    else int(form_data.get(f"{self.id}_seconds"))  # type: ignore
-                ),
-                "microseconds": (
-                    0
-                    if form_data.get(f"{self.id}_microseconds") == ""
-                    else int(form_data.get(f"{self.id}_microseconds"))  # type: ignore
-                ),
-                "milliseconds": (
-                    0
-                    if form_data.get(f"{self.id}_milliseconds") == ""
-                    else int(form_data.get(f"{self.id}_milliseconds"))  # type: ignore
-                ),
-            }
-            return timedelta(**timedelta_params)
-        except ValueError:
-            return timedelta()
+        timedelta_params = {
+            unit: parse_int_or_zero(form_data.get(f"{self.id}_{unit}", ""))
+            for unit in [
+                "weeks",
+                "days",
+                "hours",
+                "minutes",
+                "seconds",
+                "microseconds",
+                "milliseconds",
+            ]
+        }
+
+        return timedelta(**timedelta_params)
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> Any:
+        from babel.dates import format_timedelta
+
         params = timedelta_to_components(value)
         if action != RequestAction.EDIT:
             string = (
@@ -1336,7 +1320,7 @@ class IntervalField(StringField):
                     timedelta(weeks=params["weeks"]),
                     granularity="week",
                     threshold=params["weeks"],
-                    locale="en",
+                    locale=get_locale(),
                 )
                 + " "
                 if params["weeks"] > 0
@@ -1347,7 +1331,7 @@ class IntervalField(StringField):
                     timedelta(days=params["days"]),
                     granularity="day",
                     threshold=1,
-                    locale="en",
+                    locale=get_locale(),
                 )
                 + " "
             )
@@ -1356,7 +1340,7 @@ class IntervalField(StringField):
                     timedelta(hours=params["hours"]),
                     granularity="hour",
                     threshold=1,
-                    locale="en",
+                    locale=get_locale(),
                 )
                 + " "
             )
@@ -1365,7 +1349,7 @@ class IntervalField(StringField):
                     timedelta(minutes=params["minutes"]),
                     granularity="minute",
                     threshold=1,
-                    locale="en",
+                    locale=get_locale(),
                 )
                 + " "
             )
@@ -1377,7 +1361,7 @@ class IntervalField(StringField):
                 ),
                 granularity="second",
                 threshold=1,
-                locale="en",
+                locale=get_locale(),
             )
             return string
         return params

@@ -154,6 +154,13 @@ def not_none(value: Optional[T]) -> T:
     raise ValueError("Value can not be None")  # pragma: no cover
 
 
+def parse_int_or_zero(value: str) -> int:
+    try:
+        return int(value)
+    except ValueError:
+        return 0
+
+
 def timedelta_to_components(td: timedelta) -> dict:
     # Constants
     seconds_in_minute = 60
