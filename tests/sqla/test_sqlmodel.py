@@ -72,11 +72,13 @@ async def client(app):
 
 async def test_create(client: AsyncClient, session: Session):
 
+    deadline = datetime.now().isoformat()
+
     response = await client.post(
         "/admin/todo/create",
         data={
             "todo": "Do something nice for someone I care about",
-            "deadline": "2025-03-23T01:23:04.363268",
+            "deadline": deadline,
             "duration_microseconds": 1000000000000,
             "completed": "on",
         },
@@ -86,7 +88,7 @@ async def test_create(client: AsyncClient, session: Session):
     stmt = select(Todo).where(Todo.todo == "Do something nice for someone I care about")
     todo = session.exec(stmt).one()
     assert todo is not None
-    assert todo.deadline.isoformat() == "2025-03-23T01:23:04.363268"
+    assert todo.deadline.isoformat() == deadline
     assert todo.duration.total_seconds() == 1000000
 
 
