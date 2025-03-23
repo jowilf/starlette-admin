@@ -1293,9 +1293,9 @@ class IntervalField(StringField):
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
-        timedelta_params = {
-            unit: parse_int_or_zero(form_data.get(f"{self.id}_{unit}", ""))
-            for unit in [
+        timedelta_params: Dict[str, int] = {
+            unit: parse_int_or_zero(form_data.get(f"{self.id}_{unit}", ""))  # type: ignore[arg-type]
+            for unit in (
                 "weeks",
                 "days",
                 "hours",
@@ -1303,7 +1303,7 @@ class IntervalField(StringField):
                 "seconds",
                 "microseconds",
                 "milliseconds",
-            ]
+            )
         }
 
         return timedelta(**timedelta_params)
