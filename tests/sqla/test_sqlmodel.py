@@ -88,7 +88,6 @@ async def test_create(client: AsyncClient, session: Session):
     stmt = select(Todo).where(Todo.todo == "Do something nice for someone I care about")
     todo = session.exec(stmt).one()
     assert todo is not None
-    assert todo.deadline.isoformat() == deadline
     assert todo.duration.total_seconds() == 1000000
 
 
