@@ -68,7 +68,7 @@ test = [
     "tinydb >=4.7.0, <4.9.0",
     "Pillow >=9.4.0, <11.1.0",
     "itsdangerous >=2.2.0, <2.3.0",
-    "pydantic[email] >=1.10.2, <2.10.0",
+    "pydantic[email] >=1.10.2, <2.12.0",
 ]
 cov = [
     "coverage[toml] >=7.0.0, <7.7.0"
