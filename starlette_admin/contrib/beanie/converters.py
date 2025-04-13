@@ -5,7 +5,7 @@ import uuid
 from typing import Any, Callable, Dict, Optional, Sequence, Type, get_args, get_origin, Union
 
 from beanie import BackLink, Link, PydanticObjectId
-from pydantic import AwareDatetime, BaseModel
+from pydantic import AwareDatetime, BaseModel, EmailStr, SecretStr, AnyUrl
 from pydantic.fields import FieldInfo
 from starlette_admin.converters import StandardModelConverter, converts
 from starlette_admin.fields import (
@@ -69,6 +69,17 @@ class BeanieModelConverter(StandardModelConverter):
     def conv_back_link(self, *args: Any, **kwargs: Any) -> BaseField:
         return StringField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
 
+    @converts(SecretStr)
+    def conv_secret_str(self, *args: Any, **kwargs: Any) -> BaseField:
+        return PasswordField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
+
+    @converts(EmailStr)
+    def conv_email_str(self, *args: Any, **kwargs: Any) -> BaseField:
+        return EmailField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
+    
+    @converts(AnyUrl)
+    def conv_any_url(self, *args: Any, **kwargs: Any) -> BaseField:
+        return URLField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
 
     @converts(Link)
     def conv_link(self, *args: Any, **kwargs: Any) -> BaseField:
@@ -110,6 +121,7 @@ class BeanieModelConverter(StandardModelConverter):
                     self.convert(
                         name=value["name"],
                         type=value["type"],
+                        required=value["required"],
                         model=model,
                     )
                 )
