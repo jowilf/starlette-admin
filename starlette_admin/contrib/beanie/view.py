@@ -89,15 +89,13 @@ class ModelView(BaseModelView):
         **kwargs
     ) -> int:
         query = await self._build_query(request, where)
-        order_by = kwargs.pop("order_by", None)
 
         if isinstance(query, QCombination):
             result = self.document.find(*[q.query for q in query.children], **kwargs)
         else:
+            if query.empty:
+                return await self.document.get_motor_collection().estimated_document_count()
             result = self.document.find(query.query, **kwargs)
-        if order_by:
-            order_by = build_order_clauses(order_by)
-            result = result.sort(*order_by)
         return await result.count()
 
     async def find_all(
