@@ -10,9 +10,11 @@ from typing import (
     get_origin,
 )
 
+import bson.errors
 from beanie import Document, Link, PydanticObjectId
 from mongoengine.queryset import QNode
 from mongoengine.queryset.visitor import QCombination
+from pydantic import ValidationError
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
 from starlette_admin.contrib.beanie.converters import (
@@ -22,6 +24,7 @@ from starlette_admin.contrib.beanie.converters import (
 from starlette_admin.contrib.beanie.helpers import (
     Q,
     build_order_clauses,
+    flatten_qcombination,
     resolve_deep_query,
 )
 from starlette_admin.fields import (
@@ -31,6 +34,7 @@ from starlette_admin.fields import (
 from starlette_admin.helpers import (
     not_none,
     prettify_class_name,
+    pydantic_error_to_form_validation_errors,
     slugify_class_name,
 )
 from starlette_admin.views import BaseModelView
@@ -45,6 +49,9 @@ class ModelView(BaseModelView):
         label: Optional[str] = None,
         identity: Optional[str] = None,
         converter: Optional[BeanieModelConverter] = None,
+        exclude_fields_from_create: Optional[List[str]] = None,
+        exclude_fields_from_edit: Optional[List[str]] = None,
+        exclude_fields_from_list: Optional[List[str]] = None,
     ):
         self.document = document
         self.identity = (
@@ -60,9 +67,15 @@ class ModelView(BaseModelView):
 
         self.field_infos = []
         self.link_fields = []
-        self.exclude_fields_from_create = ["revision_id"]
-        self.exclude_fields_from_edit = ["revision_id"]
-        self.exclude_fields_from_list = ["revision_id"]
+        self.exclude_fields_from_create = exclude_fields_from_create or []
+        self.exclude_fields_from_create.append("revision_id")
+
+        self.exclude_fields_from_edit = exclude_fields_from_edit or []
+        self.exclude_fields_from_edit.extend(("revision_id", "id"))
+
+        self.exclude_fields_from_list = exclude_fields_from_list or []
+        self.exclude_fields_from_list.append("revision_id")
+
         for name, field in document.model_fields.items():
             field_type = get_pydantic_field_type(field)
             if self.is_link_type(field_type):
@@ -111,7 +124,8 @@ class ModelView(BaseModelView):
         query = await self._build_query(request, where)
 
         if isinstance(query, QCombination):
-            result = self.document.find(*[q.query for q in query.children])
+            flattened_query = flatten_qcombination(query)
+            result = self.document.find(flattened_query)
         else:
             if query.empty:
                 return (
@@ -133,7 +147,8 @@ class ModelView(BaseModelView):
             where = {}
         query = await self._build_query(request, where)
         if isinstance(query, QCombination):
-            result = self.document.find(*[q.query for q in query.children], **kwargs)
+            flattened_query = flatten_qcombination(query)
+            result = self.document.find(flattened_query, **kwargs)
         else:
             result = self.document.find(query.query, **kwargs)
 
@@ -145,6 +160,12 @@ class ModelView(BaseModelView):
     async def find_by_pk(
         self, request: Request, pk: PydanticObjectId
     ) -> Optional[Document]:
+        if not isinstance(pk, PydanticObjectId):
+            try:
+                pk = PydanticObjectId(pk)
+            except bson.errors.InvalidId:
+                return None
+
         return await self.document.get(pk)
 
     async def find_by_pks(
@@ -228,19 +249,33 @@ class ModelView(BaseModelView):
         return obj_serialized
 
     async def create(self, request: Request, data: dict) -> Document:
-        doc = self.document(**data)
+        data = {
+            k: v for k, v in data.items() if k not in self.exclude_fields_from_create
+        }
+        try:
+            doc = self.document(**data)
+        except ValidationError as ve:
+            raise pydantic_error_to_form_validation_errors(ve) from ve
         return await doc.create()
 
     async def edit(
         self, request: Request, pk: PydanticObjectId, data: dict
     ) -> Document:
         doc: Document = await self.document.get(pk)
-        for key, value in data.items():
-            setattr(doc, key, value)
+        data = {k: v for k, v in data.items() if k not in self.exclude_fields_from_edit}
+        try:
+            doc_dump: dict = doc.model_dump(mode="python")
+            doc_dump.update(data)
+            self.document.model_validate(doc_dump)
 
-        # ensure doc still passes validation
-        self.document.model_validate(doc)
-        return await doc.save()
+            # ensure doc still passes validation
+            for k, v in doc_dump.items():
+                setattr(doc, k, v)
+
+            return await doc.replace()
+
+        except ValidationError as ve:
+            raise pydantic_error_to_form_validation_errors(ve) from ve
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
         cnt = 0

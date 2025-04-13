@@ -5,6 +5,23 @@ from beanie import Document
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.queryset import Q as BaseQ  # noqa: N811
 from mongoengine.queryset import QNode
+from mongoengine.queryset.visitor import QCombination
+
+
+def flatten_qcombination(q: QNode) -> Dict[str, Any]:
+    """
+    Flatten QCombination into a list of QNode
+    """
+
+    # if q is a QCombination, flatten it
+    if isinstance(q, QCombination):
+        if q.operation == QCombination.OR:
+            return {"$or": [flatten_qcombination(child) for child in q.children]}
+        if q.operation == QCombination.AND:
+            return {"$and": [flatten_qcombination(child) for child in q.children]}
+        raise ValueError(f"Unknown operation: {q.operation}")
+
+    return q.query
 
 
 class Q(BaseQ):

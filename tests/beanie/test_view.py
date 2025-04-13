@@ -1,0 +1,319 @@
+import datetime
+import json
+from enum import Enum
+from typing import Annotated, Any, Dict
+
+import pytest
+import pytest_asyncio
+from beanie import Document, Indexed, Link, init_beanie
+from beanie.operators import In
+from httpx import ASGITransport, AsyncClient
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import Field
+from requests import Request
+from starlette.applications import Starlette
+from starlette_admin.contrib.beanie import Admin, ModelView
+
+from tests.beanie import MONGO_URL
+
+
+class Brand(str, Enum):
+    APPLE = "Apple"
+    SAMSUNG = "Samsung"
+    OPPO = "OPPO"
+    HUAWEI = "Huawei"
+    INFINIX = "Infinix"
+
+
+class Product(Document):
+    title: Annotated[str, Indexed(unique=True)] = Field(min_length=3)
+    description: str
+    price: float = Field(ge=0)
+    brand: Brand
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+
+
+class Store(Document):
+    name: str = Field(min_length=3)
+    products: list[Link[Product]] = []
+
+
+class User(Document):
+    name: str = Field(min_length=3)
+    store: Link[Store]
+
+
+class ProductView(ModelView):
+    async def before_create(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is None
+
+    async def after_create(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def after_edit(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def before_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+    async def after_delete(self, request: Request, obj: Any) -> None:
+        assert isinstance(obj, Product)
+        assert obj.id is not None
+
+
+class TestMongoBasic:
+
+    @pytest_asyncio.fixture(loop_scope="function")
+    async def admin(self):
+        self.motor_client = AsyncIOMotorClient(host=MONGO_URL)
+        await self.motor_client.drop_database("testdb")
+        await init_beanie(
+            database=self.motor_client.get_database("testdb"),
+            document_models=[Product, Store, User],
+        )
+        with open("./tests/data/products.json") as f:
+            for product in json.load(f):
+                await Product(**product).save()
+        admin = Admin(engine=self.motor_client)
+        admin.add_view(ModelView(Store))
+        admin.add_view(
+            ProductView(
+                Product,
+                exclude_fields_from_create=["created_at"],
+                exclude_fields_from_edit=["created_at"],
+            )
+        )
+        admin.add_view(ModelView(User))
+
+        yield admin
+
+        await self.motor_client.drop_database("testdb")
+        self.motor_client.close()
+
+    @pytest_asyncio.fixture(loop_scope="function")
+    async def app(self, admin):
+        app = Starlette()
+        admin.mount_to(app)
+        return app
+
+    @pytest_asyncio.fixture(loop_scope="function")
+    async def client(self, app):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        ) as c:
+            yield c
+
+    async def test_api(self, client):
+        response = await client.get(
+            "/admin/api/product?skip=1&where={}&limit=2&order_by=title desc"
+        )
+        data = response.json()
+        assert data["total"] == 5
+        assert len(data["items"]) == 2
+        assert [x["title"] for x in data["items"]] == ["OPPOF19", "IPhone X"]
+        # Find by pks
+        response = await client.get(
+            "/admin/api/product",
+            params={"pks": [x["id"] for x in data["items"]]},
+        )
+        assert {"IPhone X", "OPPOF19"} == {x["title"] for x in response.json()["items"]}
+
+    async def test_api_fulltext(self, client):
+        with pytest.raises(NotImplementedError):
+            response = await client.get(
+                "/admin/api/product?limit=-1&where=IPhone&order_by=price asc"
+            )
+            data = response.json()
+            assert data["total"] == 2
+            assert [x["title"] for x in data["items"]] == ["IPhone 9", "IPhone X"]
+
+    async def test_api_query1(self, client):
+        where = (
+            '{"or": [{"title": {"eq": "IPhone 9"}}, {"price": {"between": [200,'
+            " 500]}}]}"
+        )
+        response = await client.get(
+            f"/admin/api/product?where={where}&order_by=price asc"
+        )
+        data = response.json()
+        assert data["total"] == 3
+        assert [x["title"] for x in data["items"]] == [
+            "OPPOF19",
+            "Huawei P30",
+            "IPhone 9",
+        ]
+
+    async def test_api_query2(self, client):
+        where = (
+            '{"and": [{"brand": {"eq": "Apple"}}, {"price": {"not_between": [500,'
+            " 600]}}]}"
+        )
+        response = await client.get(f"/admin/api/product?where={where}")
+        data = response.json()
+        assert data["total"] == 1
+        assert [x["title"] for x in data["items"]] == ["IPhone X"]
+
+    async def test_api_query3(self, client):
+        response = await client.get("/admin/api/product?order_by=price desc&limit=2")
+        data = response.json()
+        assert data["total"] == 5
+        assert [x["title"] for x in data["items"]] == ["Samsung Universe 9", "IPhone X"]
+
+    async def test_detail(self, client):
+        doc = await Product.find(Product.title == "IPhone 9").first_or_none()
+        id = doc.id
+        response = await client.get(f"/admin/product/detail/{id}")
+        assert response.status_code == 200
+        assert str(id) in response.text
+        response = await client.get("/admin/product/detail/invalid_id")
+        assert response.status_code == 404
+
+    async def test_create(self, client):
+        response = await client.post(
+            "/admin/product/create",
+            data={
+                "title": "Infinix INBOOK",
+                "description": (
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
+                    " Warranty"
+                ),
+                "price": 1049,
+                "brand": "Infinix",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert (await Product.count()) == 6
+        assert (
+            await Product.find(Product.title == "Infinix INBOOK").first_or_none()
+        ) is not None
+
+    async def test_create_validation_error(self, client):
+        response = await client.post(
+            "/admin/product/create",
+            data={
+                "title": "In",
+                "description": (
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
+                    " Warranty"
+                ),
+                "price": 1049,
+                "brand": "Infinix",
+            },
+        )
+        assert response.status_code == 422
+        assert "String should have" in response.text
+        assert (await Product.count()) == 5
+
+        product = await Product.find(Product.brand == "Infinix").first_or_none()
+        assert product is None
+
+    async def test_edit(self, client):
+        doc = await Product.find(Product.title == "IPhone 9").first_or_none()
+        id = doc.id
+        response = await client.post(
+            f"/admin/product/edit/{id}",
+            data={
+                "title": "Infinix INBOOK",
+                "description": (
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
+                    " Warranty"
+                ),
+                "price": 1049,
+                "brand": "Infinix",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert (await Product.count()) == 5
+        assert (await Product.get(id)).title == "Infinix INBOOK"
+        assert (await Product.find(Product.title == "IPhone 9").first_or_none()) is None
+
+    async def test_edit_validation_error(self, client):
+        doc = await Product.find(Product.title == "IPhone 9").first_or_none()
+        id = doc.id
+        response = await client.post(
+            f"/admin/product/edit/{id}",
+            data={
+                "title": "In",
+                "description": (
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
+                    " Warranty"
+                ),
+                "price": 1049,
+                "brand": "Infinix",
+            },
+        )
+        assert response.status_code == 422
+        assert "String should have" in response.text
+        assert (await Product.count()) == 5
+        assert (await Product.find(Product.brand == "Infinix").first_or_none()) is None
+
+    async def test_delete(self, client):
+        ids = [
+            str(x.id)
+            for x in (
+                await Product.find(
+                    In(Product.title, ["IPhone 9", "Huawei P30", "OPPOF19"])
+                ).to_list()
+            )
+        ]
+        response = await client.post(
+            "/admin/api/product/action", params={"name": "delete", "pks": ids}
+        )
+        assert response.status_code == 200
+        assert (
+            await Product.find(
+                In(Product.title, ["IPhone 9", "Huawei P30", "OPPOF19"])
+            ).count()
+        ) == 0
+
+    async def test_relationships(self, client):
+        response = await client.post(
+            "/admin/store/create",
+            data={
+                "name": "Jewelry store",
+                "products": [
+                    x.id
+                    for x in (
+                        await Product.find(
+                            In(Product.title, ["IPhone 9", "Huawei P30"])
+                        ).to_list()
+                    )
+                ],
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert await Store.count() == 1
+        store = await Store.find(Store.name == "Jewelry store").first_or_none()
+        product_items = [await Product.get(x.ref.id) for x in store.products]
+        assert sorted(x.title for x in product_items) == [
+            "Huawei P30",
+            "IPhone 9",
+        ]
+        response = await client.post(
+            "/admin/user/create",
+            data={
+                "name": "John",
+                "store": store.id,
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert await User.count() == 1
+        user = await User.find(User.name == "John").first_or_none()
+        user_store = await Store.get(user.store.ref.id)
+        assert user_store.name == "Jewelry store"
