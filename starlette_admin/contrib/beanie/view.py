@@ -52,6 +52,9 @@ class ModelView(BaseModelView):
 
         self.field_infos = []
         self.link_fields = []
+        self.exclude_fields_from_create = ["revision_id"]
+        self.exclude_fields_from_edit = ["revision_id"]
+        self.exclude_fields_from_list = ["revision_id"]
         for name, field in document.model_fields.items():
             field_type = get_pydantic_field_type(field)
             if self.is_link_type(field_type):
@@ -65,11 +68,8 @@ class ModelView(BaseModelView):
         super().__init__()
 
     def is_link_type(self, field_type):
-        # Check if the type is a Link
         if get_origin(field_type) == Link:
             return True
-
-        # Check if the type is a list of Links
         if get_origin(field_type) == list:
             field_args = get_args(field_type)
             if len(field_args) == 1 and get_origin(field_args[0]) == Link:
@@ -205,11 +205,19 @@ class ModelView(BaseModelView):
         obj_serialized["_meta"] = obj_meta
         return obj_serialized
 
-    async def create(self, request: Request, data: Document):
-        return await data.create()
+    async def create(self, request: Request, data: dict) -> Document:
+        doc = self.document(**data)
+        return await doc.create()
 
-    async def edit(self, request: Request, pk, data: Document, **kwargs):
-        await data.save(**kwargs)
+    async def edit(self, request: Request, pk: PydanticObjectId, data: dict, **kwargs) -> Document:
+        doc: Document = await self.document.get(pk)
+        for key, value in data.items():
+            setattr(doc, key, value)
+        
+        # ensure doc still passes validation
+        self.document.model_validate(doc)
+        return await doc.save()
+
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
         cnt = 0
