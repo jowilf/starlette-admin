@@ -1,14 +1,13 @@
-from typing import Any, Dict, Optional, Type, Iterable, Mapping, List, Union, get_args
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Type, Union, get_args
 
-from beanie import Document, PydanticObjectId
+from beanie import Document, PydanticObjectId, Link
+from mongoengine.queryset import QNode
+from mongoengine.queryset.visitor import QCombination
 from pydantic import ValidationError
 from starlette.requests import Request
-from starlette_admin.views import BaseModelView
-from starlette_admin.fields import FileField, RelationField
-from starlette_admin.contrib.beanie.converters import BeanieModelConverter, get_pydantic_field_type
-from starlette_admin.helpers import (
-    prettify_class_name,
-    slugify_class_name,
+from starlette_admin.contrib.beanie.converters import (
+    BeanieModelConverter,
+    get_pydantic_field_type,
 )
 from starlette_admin.contrib.beanie.helpers import (
     Q,
@@ -16,8 +15,13 @@ from starlette_admin.contrib.beanie.helpers import (
     normalize_list,
     resolve_deep_query,
 )
-from mongoengine.queryset import QNode
-from mongoengine.queryset.visitor import QCombination
+from starlette_admin.fields import FileField, RelationField
+from starlette_admin.helpers import (
+    not_none,
+    prettify_class_name,
+    slugify_class_name,
+)
+from starlette_admin.views import BaseModelView
 
 
 class ModelView(BaseModelView):
@@ -110,6 +114,13 @@ class ModelView(BaseModelView):
             if doc:
                 docs.append(doc)
         return docs
+
+    async def get_pk_value(self, request: Request, obj: Any) -> Any:
+        if isinstance(obj, Link) and self.pk_attr == "id":
+            return getattr(obj.ref, not_none(self.pk_attr))
+
+        return getattr(obj, not_none(self.pk_attr))
+
 
     async def create(self, request: Request, data: Document):
         return await data.create()

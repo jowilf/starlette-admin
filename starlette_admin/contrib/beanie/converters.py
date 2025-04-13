@@ -1,12 +1,12 @@
 # Inspired by wtforms-sqlalchemy
 import enum
 import inspect
-from typing import Any, Callable, Dict, Optional, Sequence, Type, get_args
-from beanie import PydanticObjectId, Link, BackLink
 import uuid
+from typing import Any, Callable, Dict, Optional, Sequence, Type, get_args, get_origin
+
+from beanie import BackLink, Link, PydanticObjectId
 from pydantic import AwareDatetime, BaseModel
 from pydantic.fields import FieldInfo
-
 from starlette_admin.converters import StandardModelConverter, converts
 from starlette_admin.fields import (
     ArrowField,
@@ -35,6 +35,7 @@ from starlette_admin.fields import (
     TimeZoneField,
     URLField,
 )
+from starlette_admin.helpers import slugify_class_name
 
 def get_pydantic_field_type(field: FieldInfo) -> Type:
     if isinstance(get_args(field.annotation), list):
@@ -62,9 +63,19 @@ class BeanieModelConverter(StandardModelConverter):
     def conv_aware_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
         return DateTimeField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
 
-    @converts(Link, BackLink)
-    def conv_link(self, *args: Any, **kwargs: Any) -> BaseField:
+    @converts(BackLink)
+    def conv_back_link(self, *args: Any, **kwargs: Any) -> BaseField:
         return StringField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
+
+
+    @converts(Link)
+    def conv_link(self, *args: Any, **kwargs: Any) -> BaseField:
+
+        link_type = kwargs.get("type")
+        # get the model type from the Link field
+        link_model_type = get_args(link_type)[0]
+
+        return HasOne(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"), identity=slugify_class_name(link_model_type.__name__))
 
     @converts(BaseModel)
     def conv_base_model(self, *args: Any, **kwargs: Any) -> BaseField:
