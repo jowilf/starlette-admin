@@ -23,8 +23,8 @@ class Q(BaseQ):
         else:
             super().__init__(**{field: value})
 
-    def handle_text_operator(self, op: str, value: Any):
-        operator_map = {
+    def handle_text_operator(self, op: str, value: Any) -> Dict[str, Any]:
+        operator_map: Dict[str, dict[str, Any]] = {
             "$istartswith": {"$regex": f"^{value}", "$options": "i"},
             "$iendswith": {"$regex": f"{value}$", "$options": "i"},
             "$icontains": {"$regex": f"{value}", "$options": "i"},

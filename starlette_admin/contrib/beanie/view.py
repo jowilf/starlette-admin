@@ -86,7 +86,7 @@ class ModelView(BaseModelView):
 
         super().__init__()
 
-    def is_link_type(self, field_type):
+    def is_link_type(self, field_type: Type) -> bool:
         if get_origin(field_type) is Link:
             return True
         if get_origin(field_type) is list:
@@ -103,21 +103,21 @@ class ModelView(BaseModelView):
             return Q.empty()
         if isinstance(where, dict):
             return resolve_deep_query(where, self.document)
-        return await self.build_full_text_search_query(request, where)
+        raise NotImplementedError("Unsupported query type")
 
     async def count(
-        self, request: Request, where: Union[Dict[str, Any], str, None] = None, **kwargs
+        self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> int:
         query = await self._build_query(request, where)
 
         if isinstance(query, QCombination):
-            result = self.document.find(*[q.query for q in query.children], **kwargs)
+            result = self.document.find(*[q.query for q in query.children])
         else:
             if query.empty:
                 return (
                     await self.document.get_motor_collection().estimated_document_count()
                 )
-            result = self.document.find(query.query, **kwargs)
+            result = self.document.find(query.query)
         return await result.count()
 
     async def find_all(
@@ -126,12 +126,12 @@ class ModelView(BaseModelView):
         skip: int = 0,
         limit: int = 100,
         where: Union[Dict[str, Any], str, None] = None,
-        **kwargs,
+        order_by: Optional[List[str]] = None,
+        **kwargs: Dict[str, Any],
     ) -> List[Dict]:
         if not where:
             where = {}
         query = await self._build_query(request, where)
-        order_by = kwargs.pop("order_by", None)
         if isinstance(query, QCombination):
             result = self.document.find(*[q.query for q in query.children], **kwargs)
         else:
@@ -143,16 +143,16 @@ class ModelView(BaseModelView):
         return await result.skip(skip).limit(limit).to_list()
 
     async def find_by_pk(
-        self, request: Request, pk: PydanticObjectId, **kwargs
+        self, request: Request, pk: PydanticObjectId
     ) -> Optional[Document]:
-        return await self.document.get(pk, **kwargs)
+        return await self.document.get(pk)
 
     async def find_by_pks(
-        self, request: Request, pks: Iterable[PydanticObjectId], **kwargs
+        self, request: Request, pks: Iterable[PydanticObjectId]
     ) -> List[Document]:
         docs = []
         for pk in pks:
-            doc = await self.document.get(pk, **kwargs)
+            doc = await self.document.get(pk)
             if doc:
                 docs.append(doc)
         return docs
@@ -232,7 +232,7 @@ class ModelView(BaseModelView):
         return await doc.create()
 
     async def edit(
-        self, request: Request, pk: PydanticObjectId, data: dict, **kwargs
+        self, request: Request, pk: PydanticObjectId, data: dict
     ) -> Document:
         doc: Document = await self.document.get(pk)
         for key, value in data.items():
