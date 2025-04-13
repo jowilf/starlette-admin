@@ -2,7 +2,7 @@
 import enum
 import inspect
 import uuid
-from typing import Any, Callable, Dict, Optional, Sequence, Type, get_args, get_origin
+from typing import Any, Callable, Dict, Optional, Sequence, Type, get_args, get_origin, Union
 
 from beanie import BackLink, Link, PydanticObjectId
 from pydantic import AwareDatetime, BaseModel
@@ -38,16 +38,18 @@ from starlette_admin.fields import (
 from starlette_admin.helpers import slugify_class_name
 
 def get_pydantic_field_type(field: FieldInfo) -> Type:
-    if isinstance(get_args(field.annotation), list):
+
+    if get_origin(field.annotation) == Union:
+        # if the field is a union, get the first type
         types = list(get_args(field.annotation))
-    else:
-        types = [field.annotation]
-    types = [t for t in types if t is not type(None)]
-    if not len(types) == 1:
+        # remove NoneType from the list
+        types = [t for t in types if t is not type(None)]
+        if len(types) == 1:
+            return types[0]
         raise RuntimeError(
             f"Field {field.title} has multiple types: {types}. Only one type is allowed."
         )
-    return types[0]
+    return field.annotation
 
 class BeanieModelConverter(StandardModelConverter):
 
@@ -74,6 +76,11 @@ class BeanieModelConverter(StandardModelConverter):
         link_type = kwargs.get("type")
         # get the model type from the Link field
         link_model_type = get_args(link_type)[0]
+
+        # check if this is a list of links
+        if get_origin(link_type) == list:
+            link_model_type = get_args(link_model_type)[0]
+            return HasMany(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"), identity=slugify_class_name(link_model_type.__name__))
 
         return HasOne(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"), identity=slugify_class_name(link_model_type.__name__))
 

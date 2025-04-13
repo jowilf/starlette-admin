@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Type, Union, get_args
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Type, Union, get_args, get_origin
 
 from beanie import Document, PydanticObjectId, Link
 from mongoengine.queryset import QNode
@@ -47,13 +47,31 @@ class ModelView(BaseModelView):
         self.fields_pydantic = list(document.model_fields.items())
 
         self.field_infos = []
+        self.link_fields = []
         for name, field in document.model_fields.items():
             field_type = get_pydantic_field_type(field)
-            self.field_infos.append({"name": name, "type": field_type, "required": field.is_required()})
+            if self.is_link_type(field_type):
+                self.link_fields.append({"name": name, "type": field_type, "required": field.is_required()})
+            else:
+                self.field_infos.append({"name": name, "type": field_type, "required": field.is_required()})
+        self.fields = list((converter or BeanieModelConverter()).convert_fields_list(fields=self.field_infos, model=self.document))
 
-        self.fields = (converter or BeanieModelConverter()).convert_fields_list(fields=self.field_infos, model=self.document)
+        self.fields.extend(BeanieModelConverter().conv_link(**link_field) for link_field in self.link_fields)
 
         super().__init__()
+
+    def is_link_type(self, field_type):
+        # Check if the type is a Link
+        if get_origin(field_type) == Link:
+            return True
+
+        # Check if the type is a list of Links
+        if get_origin(field_type) == list:
+            field_args = get_args(field_type)
+            if len(field_args) == 1 and get_origin(field_args[0]) == Link:
+                return True
+
+        return False
 
     async def _build_query(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
@@ -116,7 +134,7 @@ class ModelView(BaseModelView):
         return docs
 
     async def get_pk_value(self, request: Request, obj: Any) -> Any:
-        if isinstance(obj, Link) and self.pk_attr == "id":
+        if isinstance(obj, Link):
             return getattr(obj.ref, not_none(self.pk_attr))
 
         return getattr(obj, not_none(self.pk_attr))
