@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from starlette.requests import Request
 from starlette_admin.views import BaseModelView
 from starlette_admin.fields import FileField, RelationField
-from starlette_admin.contrib.beanie.converters import BeanieModelConverter
+from starlette_admin.contrib.beanie.converters import BeanieModelConverter, get_pydantic_field_type
 from starlette_admin.helpers import (
     prettify_class_name,
     slugify_class_name,
@@ -43,17 +43,9 @@ class ModelView(BaseModelView):
         self.fields_pydantic = list(document.model_fields.items())
 
         self.field_infos = []
-        for name, field in self.fields_pydantic:
-            if isinstance(get_args(field.annotation), list):
-                types = list(get_args(field.annotation))
-            else:
-                types = [field.annotation]
-            types = [t for t in types if t is not type(None)]
-            if not len(types) == 1:
-                raise RuntimeError(
-                    f"Field {name} has multiple types: {types}. Only one type is allowed."
-                )
-            self.field_infos.append({"name": name, "type": types[0], "required": field.is_required()})
+        for name, field in document.model_fields.items():
+            field_type = get_pydantic_field_type(field)
+            self.field_infos.append({"name": name, "type": field_type, "required": field.is_required()})
 
         self.fields = (converter or BeanieModelConverter()).convert_fields_list(fields=self.field_infos, model=self.document)
 
