@@ -1,41 +1,24 @@
 # Inspired by wtforms-sqlalchemy
-import enum
-import inspect
 import uuid
-from typing import Any, Callable, Dict, Optional, Sequence, Type, get_args, get_origin, Union
+from typing import Any, Sequence, Type, Union, get_args, get_origin
 
 from beanie import BackLink, Link, PydanticObjectId
-from pydantic import AwareDatetime, BaseModel, EmailStr, SecretStr, AnyUrl
+from pydantic import AnyUrl, AwareDatetime, BaseModel, EmailStr, SecretStr
 from pydantic.fields import FieldInfo
 from starlette_admin.converters import StandardModelConverter, converts
 from starlette_admin.fields import (
-    ArrowField,
     BaseField,
-    BooleanField,
     CollectionField,
-    ColorField,
-    CountryField,
-    CurrencyField,
-    DateField,
     DateTimeField,
-    DecimalField,
     EmailField,
-    EnumField,
-    FloatField,
     HasMany,
     HasOne,
-    IntegerField,
-    JSONField,
-    ListField,
     PasswordField,
-    PhoneField,
     StringField,
-    TextAreaField,
-    TimeField,
-    TimeZoneField,
     URLField,
 )
 from starlette_admin.helpers import slugify_class_name
+
 
 def get_pydantic_field_type(field: FieldInfo) -> Type:
 
@@ -51,35 +34,50 @@ def get_pydantic_field_type(field: FieldInfo) -> Type:
         )
     return field.annotation
 
+
 class BeanieModelConverter(StandardModelConverter):
 
     @converts(PydanticObjectId)
     def conv_pydantic_object_id(self, *args: Any, **kwargs: Any) -> BaseField:
-        return StringField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
+        return StringField(
+            **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
+        )
 
     @converts(uuid.UUID)
     def conv_uuid(self, *args: Any, **kwargs: Any) -> BaseField:
-        return StringField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
+        return StringField(
+            **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
+        )
 
     @converts(AwareDatetime)
     def conv_aware_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
-        return DateTimeField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
+        return DateTimeField(
+            **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
+        )
 
     @converts(BackLink)
     def conv_back_link(self, *args: Any, **kwargs: Any) -> BaseField:
-        return StringField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
+        return StringField(
+            **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
+        )
 
     @converts(SecretStr)
     def conv_secret_str(self, *args: Any, **kwargs: Any) -> BaseField:
-        return PasswordField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
+        return PasswordField(
+            **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
+        )
 
     @converts(EmailStr)
     def conv_email_str(self, *args: Any, **kwargs: Any) -> BaseField:
-        return EmailField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
-    
+        return EmailField(
+            **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
+        )
+
     @converts(AnyUrl)
     def conv_any_url(self, *args: Any, **kwargs: Any) -> BaseField:
-        return URLField(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"))
+        return URLField(
+            **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
+        )
 
     @converts(Link)
     def conv_link(self, *args: Any, **kwargs: Any) -> BaseField:
@@ -89,11 +87,19 @@ class BeanieModelConverter(StandardModelConverter):
         link_model_type = get_args(link_type)[0]
 
         # check if this is a list of links
-        if get_origin(link_type) == list:
+        if get_origin(link_type) is list:
             link_model_type = get_args(link_model_type)[0]
-            return HasMany(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"), identity=slugify_class_name(link_model_type.__name__))
+            return HasMany(
+                **self._standard_type_common(*args, **kwargs),
+                label=kwargs.get("name"),
+                identity=slugify_class_name(link_model_type.__name__),
+            )
 
-        return HasOne(**self._standard_type_common(*args, **kwargs), label=kwargs.get("name"), identity=slugify_class_name(link_model_type.__name__))
+        return HasOne(
+            **self._standard_type_common(*args, **kwargs),
+            label=kwargs.get("name"),
+            identity=slugify_class_name(link_model_type.__name__),
+        )
 
     @converts(BaseModel)
     def conv_base_model(self, *args: Any, **kwargs: Any) -> BaseField:

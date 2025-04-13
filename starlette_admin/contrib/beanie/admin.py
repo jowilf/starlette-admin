@@ -1,1 +1,5 @@
-from starlette_admin.base import BaseAdmin as Admin
+from starlette_admin.contrib.sqla.admin import Admin as BaseAdmin
+
+
+class Admin(BaseAdmin):
+    pass

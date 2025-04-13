@@ -15,7 +15,6 @@ class Q(BaseQ):
     >>> Q('name', 'John') # same as Q(name = 'John')
     """
 
-
     def __init__(self, field: str, value: Any, op: Optional[str] = None) -> None:
         if op in TEXT_OPERATORS:
             super().__init__(**{field: self.handle_text_operator(op, value)})
@@ -41,13 +40,14 @@ class Q(BaseQ):
     def empty(cls) -> BaseQ:
         return BaseQ()
 
+
 TEXT_OPERATORS: List[str] = [
     "$istartswith",
     "$iendswith",
     "$icontains",
     "$not__istartswith",
     "$not__iendswith",
-    "$not__icontains"
+    "$not__icontains",
 ]
 
 OPERATORS: Dict[str, Callable[[str, Any], Q]] = {
@@ -73,6 +73,7 @@ OPERATORS: Dict[str, Callable[[str, Any], Q]] = {
     "not_between": lambda f, v: Q(f, v[0], "$lt") | Q(f, v[1], "$gt"),
 }
 
+
 def isvalid_field(document: Type[Document], field: str) -> bool:
     """
     Check if field is valid field for document. nested field is separate with '.'
@@ -93,11 +94,8 @@ def isvalid_field(document: Type[Document], field: str) -> bool:
         nested_type = subdoc.annotation
         if isinstance(get_args(nested_type), list):
             # recursive bit :)
-            return any(
-                isvalid_field(t, nested_field) for t in get_args(nested_type)
-            )
-        return isvalid_field(
-            nested_type, nested_field)
+            return any(isvalid_field(t, nested_field) for t in get_args(nested_type))
+        return isvalid_field(nested_type, nested_field)
 
     except Exception:  # pragma: no cover
         return False
