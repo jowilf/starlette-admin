@@ -1,4 +1,4 @@
-from starlette_admin.contrib.sqla.admin import Admin as BaseAdmin
+from starlette_admin.base import BaseAdmin
 
 
 class Admin(BaseAdmin):
