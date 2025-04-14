@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 from enum import Enum
 from typing import Annotated, Any, Dict
 
@@ -15,6 +16,8 @@ from starlette.applications import Starlette
 from starlette_admin.contrib.beanie import Admin, ModelView
 
 from tests.beanie import MONGO_URL
+
+MONGO_DATABASE = os.environ.get("MONGO_DATABASE", "testdb")
 
 
 class Brand(str, Enum):
@@ -78,9 +81,9 @@ class TestMongoBasic:
     @pytest_asyncio.fixture(loop_scope="function")
     async def admin(self):
         self.motor_client = AsyncIOMotorClient(host=MONGO_URL)
-        await self.motor_client.drop_database("testdb")
+        await self.motor_client.drop_database(MONGO_DATABASE)
         await init_beanie(
-            database=self.motor_client.get_database("testdb"),
+            database=self.motor_client.get_database(MONGO_DATABASE),
             document_models=[Product, Store, User],
         )
         with open("./tests/data/products.json") as f:
@@ -99,7 +102,7 @@ class TestMongoBasic:
 
         yield admin
 
-        await self.motor_client.drop_database("testdb")
+        await self.motor_client.drop_database(MONGO_DATABASE)
         self.motor_client.close()
 
     @pytest_asyncio.fixture(loop_scope="function")
