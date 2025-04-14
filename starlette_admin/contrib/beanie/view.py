@@ -141,7 +141,7 @@ class ModelView(BaseModelView):
         limit: int = 100,
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> List[Dict]:
         if not where:
             where = {}
@@ -261,7 +261,9 @@ class ModelView(BaseModelView):
     async def edit(
         self, request: Request, pk: PydanticObjectId, data: dict
     ) -> Document:
-        doc: Document = await self.document.get(pk)
+        doc: Document | None = await self.document.get(pk)
+        if doc is None:
+            raise ValueError("Document not found")
         data = {k: v for k, v in data.items() if k not in self.exclude_fields_from_edit}
         try:
             doc_dump: dict = doc.model_dump(mode="python")

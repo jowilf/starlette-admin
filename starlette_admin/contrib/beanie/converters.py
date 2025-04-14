@@ -21,9 +21,9 @@ from starlette_admin.helpers import slugify_class_name
 
 def get_pydantic_field_type(field: FieldInfo) -> Type:
 
-    if get_origin(field.annotation) is Union:
+    if get_origin(field.annotation) is Union:  # type: ignore[attr-defined,comparison-overlap]
         # if the field is a union, get the first type
-        types = list(get_args(field.annotation))
+        types = list(get_args(field.annotation))  # type: ignore[attr-defined]
         # remove NoneType from the list
         types = [t for t in types if t is not type(None)]
         if len(types) == 1:
@@ -31,7 +31,8 @@ def get_pydantic_field_type(field: FieldInfo) -> Type:
         raise RuntimeError(
             f"Field {field.title} has multiple types: {types}. Only one type is allowed."
         )
-    return field.annotation
+    assert field.annotation is not None, "Field annotation is None"  # type: ignore[attr-defined]
+    return field.annotation  # type: ignore[attr-defined]
 
 
 class BeanieModelConverter(StandardModelConverter):
@@ -96,12 +97,18 @@ class BeanieModelConverter(StandardModelConverter):
 
     @converts(BaseModel)
     def conv_base_model(
-        self, name: str, required: bool, *args: Any, **kwargs: Dict[str, Any]
+        self,
+        name: str,
+        required: bool,
+        *args: Any,
+        **kwargs: Any,
     ) -> BaseField:
-        model_type: type[BaseModel] = kwargs.get("type")
+        model_type: Type[BaseModel] | None = kwargs.get("type")
+        if model_type is None:
+            raise RuntimeError(f"Model type {model_type} is None")
 
         _fields = []
-        for subfield_name, subfield_field in model_type.model_fields.items():
+        for subfield_name, subfield_field in model_type.model_fields.items():  # type: ignore[attr-defined]
             subfield_type = get_pydantic_field_type(subfield_field)
             kwargs["type"] = subfield_type
             kwargs["name"] = subfield_name

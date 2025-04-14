@@ -247,7 +247,8 @@ module = [
     "starlette_admin.contrib.sqla.helpers",
     "starlette_admin.contrib.sqla.view",
     "starlette_admin.contrib.odmantic.helpers",
-    "starlette_admin.contrib.odmantic.view"
+    "starlette_admin.contrib.odmantic.view",
+    "starlette_admin.contrib.beanie.converters"
 ]
 warn_unused_ignores = false
 
