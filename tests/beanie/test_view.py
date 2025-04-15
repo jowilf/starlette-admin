@@ -89,7 +89,7 @@ class TestMongoBasic:
         with open("./tests/data/products.json") as f:
             for product in json.load(f):
                 await Product(**product).save()
-        admin = Admin(engine=self.motor_client)
+        admin = Admin()
         admin.add_view(ModelView(Store))
         admin.add_view(
             ProductView(
@@ -134,9 +134,8 @@ class TestMongoBasic:
         assert {"IPhone X", "OPPOF19"} == {x["title"] for x in response.json()["items"]}
 
     async def test_api_fulltext(self, client):
-        with pytest.raises(NotImplementedError):
             response = await client.get(
-                "/admin/api/product?limit=-1&where=IPhone&order_by=price asc"
+                "/admin/api/product?where=IPhone&order_by=price asc"
             )
             data = response.json()
             assert data["total"] == 2
