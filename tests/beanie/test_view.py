@@ -4,7 +4,6 @@ import os
 from enum import Enum
 from typing import Annotated, Any, Dict
 
-import pytest
 import pytest_asyncio
 from beanie import Document, Indexed, Link, init_beanie
 from beanie.operators import In
@@ -134,12 +133,12 @@ class TestMongoBasic:
         assert {"IPhone X", "OPPOF19"} == {x["title"] for x in response.json()["items"]}
 
     async def test_api_fulltext(self, client):
-            response = await client.get(
-                "/admin/api/product?where=IPhone&order_by=price asc"
-            )
-            data = response.json()
-            assert data["total"] == 2
-            assert [x["title"] for x in data["items"]] == ["IPhone 9", "IPhone X"]
+        response = await client.get(
+            "/admin/api/product?where=IPhone&order_by=price asc"
+        )
+        data = response.json()
+        assert data["total"] == 2
+        assert [x["title"] for x in data["items"]] == ["IPhone 9", "IPhone X"]
 
     async def test_api_query1(self, client):
         where = (

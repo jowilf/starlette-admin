@@ -1,3 +1,4 @@
+import functools
 from typing import (
     Any,
     Dict,
@@ -9,9 +10,9 @@ from typing import (
     get_args,
     get_origin,
 )
-import functools
 
 import bson.errors
+import starlette_admin.fields as sa
 from beanie import Document, Link, PydanticObjectId
 from bson import DBRef
 from mongoengine.queryset import QNode
@@ -33,7 +34,6 @@ from starlette_admin.fields import (
     HasOne,
     RelationField,
 )
-import starlette_admin.fields as sa
 from starlette_admin.helpers import (
     not_none,
     prettify_class_name,
@@ -103,10 +103,10 @@ class ModelView(BaseModelView):
         super().__init__()
 
     def id_to_link(self, id: str, model: Type[Document]) -> Link:
-        return Link(ref=DBRef(
-            collection=model.get_collection_name(),
-            id=PydanticObjectId(id)
-        ), document_class=model)
+        return Link(
+            ref=DBRef(collection=model.get_collection_name(), id=PydanticObjectId(id)),
+            document_class=model,
+        )
 
     def is_link_type(self, field_type: Type) -> bool:
         if get_origin(field_type) is Link:
@@ -144,7 +144,11 @@ class ModelView(BaseModelView):
                 ]
             ):
                 queries.append(Q(field.name, term, "$icontains"))
-        return functools.reduce(lambda q1, q2: QCombination(Q.OR, [q1, q2]), queries) if queries else Q.empty()
+        return (
+            functools.reduce(lambda q1, q2: QCombination(Q.OR, [q1, q2]), queries)
+            if queries
+            else Q.empty()
+        )
 
     async def count(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
@@ -304,10 +308,14 @@ class ModelView(BaseModelView):
                     # if it's a link field, we need to set the ref
                     if link_origin_type is list:
                         link_model_type = get_args(link_model_type[0])
-                        links = [self.id_to_link(id=item, model=link_model_type[0]) for item in v]
+                        links = [
+                            self.id_to_link(id=item, model=link_model_type[0])
+                            for item in v
+                        ]
+                        setattr(doc, k, links)
                     else:
-                        links = self.id_to_link(id=v, model=link_model_type[0])
-                    setattr(doc, k, links)
+                        link = self.id_to_link(id=v, model=link_model_type[0])
+                        setattr(doc, k, link)
                 else:
                     setattr(doc, k, v)
 
