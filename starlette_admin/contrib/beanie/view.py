@@ -9,9 +9,11 @@ from typing import (
     get_args,
     get_origin,
 )
+import functools
 
 import bson.errors
 from beanie import Document, Link, PydanticObjectId
+from bson import DBRef
 from mongoengine.queryset import QNode
 from mongoengine.queryset.visitor import QCombination
 from pydantic import ValidationError
@@ -31,6 +33,7 @@ from starlette_admin.fields import (
     HasOne,
     RelationField,
 )
+import starlette_admin.fields as sa
 from starlette_admin.helpers import (
     not_none,
     prettify_class_name,
@@ -99,6 +102,12 @@ class ModelView(BaseModelView):
 
         super().__init__()
 
+    def id_to_link(self, id: str, model: Type[Document]) -> Link:
+        return Link(ref=DBRef(
+            collection=model.get_collection_name(),
+            id=PydanticObjectId(id)
+        ), document_class=model)
+
     def is_link_type(self, field_type: Type) -> bool:
         if get_origin(field_type) is Link:
             return True
@@ -116,13 +125,31 @@ class ModelView(BaseModelView):
             return Q.empty()
         if isinstance(where, dict):
             return resolve_deep_query(where, self.document)
-        raise NotImplementedError("Unsupported query type")
+        return await self.build_full_text_search_query(request, where)
+
+    async def build_full_text_search_query(self, request: Request, term: str) -> QNode:
+        queries = []
+        for field in self.get_fields_list(request):
+            if (
+                field.searchable
+                and field.name != "id"
+                and type(field)
+                in [
+                    sa.StringField,
+                    sa.TextAreaField,
+                    sa.EmailField,
+                    sa.URLField,
+                    sa.PhoneField,
+                    sa.ColorField,
+                ]
+            ):
+                queries.append(Q(field.name, term, "$icontains"))
+        return functools.reduce(lambda q1, q2: QCombination(Q.OR, [q1, q2]), queries) if queries else Q.empty()
 
     async def count(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> int:
         query = await self._build_query(request, where)
-
         if isinstance(query, QCombination):
             flattened_query = flatten_qcombination(query)
             result = self.document.find(flattened_query)
@@ -151,7 +178,6 @@ class ModelView(BaseModelView):
             result = self.document.find(flattened_query, **kwargs)
         else:
             result = self.document.find(query.query, **kwargs)
-
         if order_by:
             order_by = build_order_clauses(order_by)
             result = result.sort(*order_by)
@@ -268,12 +294,25 @@ class ModelView(BaseModelView):
         try:
             doc_dump: dict = doc.model_dump(mode="python")
             doc_dump.update(data)
-            self.document.model_validate(doc_dump)
-
             # ensure doc still passes validation
             for k, v in doc_dump.items():
-                setattr(doc, k, v)
+                field = self.document.model_fields[k].annotation
+                if self.is_link_type(field):
+                    link_model_type = get_args(field)
+                    link_origin_type = get_origin(field)
 
+                    # if it's a link field, we need to set the ref
+                    if link_origin_type is list:
+                        link_model_type = get_args(link_model_type[0])
+                        links = [self.id_to_link(id=item, model=link_model_type[0]) for item in v]
+                    else:
+                        links = self.id_to_link(id=v, model=link_model_type[0])
+                    setattr(doc, k, links)
+                else:
+                    setattr(doc, k, v)
+
+            # ensure doc still passes validation
+            self.document.model_validate(doc_dump)
             return await doc.replace()
 
         except ValidationError as ve:
