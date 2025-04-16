@@ -1,10 +1,9 @@
 # Inspired by wtforms-sqlalchemy
 import uuid
-from typing import Any, Dict, Sequence, Type, Union, get_args, get_origin
+from typing import Any, Dict, Sequence, Type, get_args, get_origin
 
 from beanie import BackLink, Link, PydanticObjectId
 from pydantic import AnyUrl, BaseModel, EmailStr, SecretStr
-from pydantic.fields import FieldInfo
 from starlette_admin.converters import StandardModelConverter, converts
 from starlette_admin.fields import (
     BaseField,
@@ -17,22 +16,6 @@ from starlette_admin.fields import (
     URLField,
 )
 from starlette_admin.helpers import slugify_class_name
-
-
-def get_pydantic_field_type(field: FieldInfo) -> Type:
-
-    if get_origin(field.annotation) is Union:  # type: ignore[attr-defined,comparison-overlap]
-        # if the field is a union, get the first type
-        types = list(get_args(field.annotation))  # type: ignore[attr-defined]
-        # remove NoneType from the list
-        types = [t for t in types if t is not type(None)]
-        if len(types) == 1:
-            return types[0]
-        raise RuntimeError(
-            f"Field {field.title} has multiple types: {types}. Only one type is allowed."
-        )
-    assert field.annotation is not None, "Field annotation is None"  # type: ignore[attr-defined]
-    return field.annotation  # type: ignore[attr-defined]
 
 
 class BeanieModelConverter(StandardModelConverter):
@@ -75,7 +58,6 @@ class BeanieModelConverter(StandardModelConverter):
 
     @converts(Link)
     def conv_link(self, *args: Any, **kwargs: Any) -> BaseField:
-
         link_type = kwargs.get("type")
         # get the model type from the Link field
         link_model_type = get_args(link_type)[0]
@@ -109,8 +91,7 @@ class BeanieModelConverter(StandardModelConverter):
 
         _fields = []
         for subfield_name, subfield_field in model_type.model_fields.items():  # type: ignore[attr-defined]
-            subfield_type = get_pydantic_field_type(subfield_field)
-            kwargs["type"] = subfield_type
+            kwargs["type"] = subfield_field.annotation
             kwargs["name"] = subfield_name
             kwargs["required"] = subfield_field.is_required()
             _fields.append(self.convert(*args, **kwargs))

@@ -1,7 +1,18 @@
 import functools
-from typing import Any, Callable, Dict, List, Optional, Sequence, Type, get_args
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Type,
+    Union,
+    get_args,
+    get_origin,
+)
 
-from beanie import Document
+from beanie import Document, Link
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.queryset import Q as BaseQ  # noqa: N811
 from mongoengine.queryset import QNode
@@ -117,6 +128,52 @@ def isvalid_field(document: Type[Document], field: str) -> bool:
     except Exception:  # pragma: no cover
         return False
     return True
+
+
+def is_link_type(field_type: Type) -> bool:
+    """Check if the field type is a Link or a list of Links.
+    This is used to determine if the field is a relation field.
+    If the field type is Optional[Link], return true
+
+    Args:
+        field_type (Type): The field type to check.
+
+    Returns:
+        bool: True if the field type is a Link or a list of Links, False otherwise.
+    """
+    if get_origin(field_type) is Link:
+        return True
+    if get_origin(field_type) is Union:
+        field_args = get_args(field_type)
+        if any(get_origin(arg) is Link for arg in field_args):
+            return True
+    return False
+
+
+def is_list_of_links_type(field_type: Type) -> bool:
+    """Check if the field type is a list of Links.
+
+    Args:
+        field_type (Type): The field type to check.
+
+    Returns:
+        bool: True if the field type is a list of Links, False otherwise.
+    """
+    if get_origin(field_type) is list:
+        field_args = get_args(field_type)
+        if len(field_args) == 1 and get_origin(field_args[0]) is Link:
+            return True
+
+    # if is Optional[List[Link]], return true
+    if get_origin(field_type) is Union:
+        field_args = get_args(field_type)
+        if any(
+            get_origin(arg) is list and get_origin(get_args(arg)[0]) is Link
+            for arg in field_args
+        ):
+            return True
+
+    return False
 
 
 def resolve_deep_query(

@@ -14,7 +14,6 @@ from typing import (
 import bson.errors
 import starlette_admin.fields as sa
 from beanie import Document, Link, PydanticObjectId
-from bson import DBRef
 from mongoengine.queryset import QNode
 from mongoengine.queryset.visitor import QCombination
 from pydantic import ValidationError
@@ -22,12 +21,13 @@ from starlette.requests import Request
 from starlette_admin._types import RequestAction
 from starlette_admin.contrib.beanie.converters import (
     BeanieModelConverter,
-    get_pydantic_field_type,
 )
 from starlette_admin.contrib.beanie.helpers import (
     Q,
     build_order_clauses,
     flatten_qcombination,
+    is_link_type,
+    is_list_of_links_type,
     resolve_deep_query,
 )
 from starlette_admin.fields import (
@@ -80,8 +80,10 @@ class ModelView(BaseModelView):
         self.exclude_fields_from_list.append("revision_id")
 
         for name, field in document.model_fields.items():
-            field_type = get_pydantic_field_type(field)
-            if self.is_link_type(field_type):
+            field_type = field.annotation
+            while get_origin(field_type) is Union:
+                field_type = get_args(field_type)[0]
+            if is_link_type(field_type) or is_list_of_links_type(field_type):
                 self.link_fields.append(
                     {"name": name, "type": field_type, "required": field.is_required()}
                 )
@@ -101,22 +103,6 @@ class ModelView(BaseModelView):
         )
 
         super().__init__()
-
-    def id_to_link(self, id: str, model: Type[Document]) -> Link:
-        return Link(
-            ref=DBRef(collection=model.get_collection_name(), id=PydanticObjectId(id)),
-            document_class=model,
-        )
-
-    def is_link_type(self, field_type: Type) -> bool:
-        if get_origin(field_type) is Link:
-            return True
-        if get_origin(field_type) is list:
-            field_args = get_args(field_type)
-            if len(field_args) == 1 and get_origin(field_args[0]) == Link:
-                return True
-
-        return False
 
     async def _build_query(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
@@ -158,7 +144,7 @@ class ModelView(BaseModelView):
             flattened_query = flatten_qcombination(query)
             result = self.document.find(flattened_query)
         else:
-            if query.empty:
+            if not bool(query):
                 return (
                     await self.document.get_motor_collection().estimated_document_count()
                 )
@@ -292,36 +278,29 @@ class ModelView(BaseModelView):
         self, request: Request, pk: PydanticObjectId, data: dict
     ) -> Document:
         doc: Document | None = await self.document.get(pk)
-        if doc is None:
-            raise ValueError("Document not found")
+        assert doc is not None, "Document not found"
         data = {k: v for k, v in data.items() if k not in self.exclude_fields_from_edit}
         try:
-            doc_dump: dict = doc.model_dump(mode="python")
-            doc_dump.update(data)
-            # ensure doc still passes validation
-            for k, v in doc_dump.items():
-                field = self.document.model_fields[k].annotation
-                if self.is_link_type(field):
-                    link_model_type = get_args(field)
-                    link_origin_type = get_origin(field)
 
-                    # if it's a link field, we need to set the ref
-                    if link_origin_type is list:
-                        link_model_type = get_args(link_model_type[0])
-                        links = [
-                            self.id_to_link(id=item, model=link_model_type[0])
-                            for item in v
-                        ]
-                        setattr(doc, k, links)
-                    else:
-                        link = self.id_to_link(id=v, model=link_model_type[0])
-                        setattr(doc, k, link)
-                else:
-                    setattr(doc, k, v)
+            for key in data:
+                field_type = self.document.model_fields[key].annotation
+                if is_link_type(field_type):
+                    if not isinstance(data[key], PydanticObjectId):
+                        data[key] = (
+                            None if not data[key] else PydanticObjectId(data[key])
+                        )
+                elif is_list_of_links_type(field_type):
+                    if not isinstance(data[key], list):
+                        data[key] = (
+                            [] if not data[key] else [PydanticObjectId(data[key])]
+                        )
+                    data[key] = [PydanticObjectId(item) for item in data[key] if item]
+
+                setattr(doc, key, data[key])
 
             # ensure doc still passes validation
-            self.document.model_validate(doc_dump)
-            return await doc.replace()
+            validated_doc: Document = self.document.model_validate(doc.model_dump())
+            return await validated_doc.replace()
 
         except ValidationError as ve:
             raise pydantic_error_to_form_validation_errors(ve) from ve
