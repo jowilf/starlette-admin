@@ -1,13 +1,22 @@
-# Inspired by wtforms-sqlalchemy
 import uuid
 from typing import Any, Dict, Sequence, Type, get_args, get_origin
 
 from beanie import BackLink, Link, PydanticObjectId
-from pydantic import AnyUrl, BaseModel, EmailStr, SecretStr
+from pydantic import (  # type: ignore[attr-defined]
+    AnyUrl,
+    AwareDatetime,
+    BaseModel,
+    EmailStr,
+    FutureDatetime,
+    NaiveDatetime,
+    PastDatetime,
+    SecretStr,
+)
 from starlette_admin.converters import StandardModelConverter, converts
 from starlette_admin.fields import (
     BaseField,
     CollectionField,
+    DateTimeField,
     EmailField,
     HasMany,
     HasOne,
@@ -53,6 +62,12 @@ class BeanieModelConverter(StandardModelConverter):
     @converts(AnyUrl)
     def conv_any_url(self, *args: Any, **kwargs: Any) -> BaseField:
         return URLField(
+            **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
+        )
+
+    @converts(AwareDatetime, NaiveDatetime, FutureDatetime, PastDatetime)
+    def conv_aware_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
+        return DateTimeField(
             **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
         )
 
