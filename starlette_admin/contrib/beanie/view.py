@@ -5,6 +5,7 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Tuple,
     Type,
     Union,
     get_args,
@@ -55,6 +56,7 @@ class ModelView(BaseModelView):
         exclude_fields_from_create: Optional[List[str]] = None,
         exclude_fields_from_edit: Optional[List[str]] = None,
         exclude_fields_from_list: Optional[List[str]] = None,
+        full_text_override_order_by: bool = False,
     ):
         self.document = document
         self.identity = (
@@ -66,6 +68,9 @@ class ModelView(BaseModelView):
         self.name = name or self.name or prettify_class_name(self.document.__name__)
         self.icon = icon
         self.pk_attr = "id"
+        self.full_text_override_order_by = full_text_override_order_by
+        self.has_full_text_index = None
+
         self.fields_pydantic = list(document.model_fields.items())
 
         self.field_infos = []
@@ -104,16 +109,35 @@ class ModelView(BaseModelView):
 
         super().__init__()
 
+    async def check_full_text_index(self) -> None:
+        indexes = await self.document.get_motor_collection().index_information()
+        for index in indexes.values():
+            if any(field_type == "text" for _, field_type in index["key"]):
+                self.has_full_text_index = True
+                return
+        self.has_full_text_index = False
+
     async def _build_query(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
-    ) -> QNode:
+    ) -> Tuple[QNode, bool]:
         if where is None:
-            return Q.empty()
+            return Q.empty(), False
         if isinstance(where, dict):
-            return resolve_deep_query(where, self.document)
+            return resolve_deep_query(where, self.document), False
         return await self.build_full_text_search_query(request, where)
 
-    async def build_full_text_search_query(self, request: Request, term: str) -> QNode:
+    async def build_full_text_search_query(
+        self, request: Request, term: str
+    ) -> Tuple[QNode, bool]:
+        # use a full text index if the collection has one,
+        # otherwise use a combination of $icontains queries
+        if self.has_full_text_index is None:
+            await self.check_full_text_index()
+        if self.has_full_text_index:
+            return (
+                Q(field="$text", value={"$search": term, "$caseSensitive": False}),
+                True,
+            )
         queries = []
         for field in self.get_fields_list(request):
             if (
@@ -130,16 +154,17 @@ class ModelView(BaseModelView):
                 ]
             ):
                 queries.append(Q(field.name, term, "$icontains"))
-        return (
-            functools.reduce(lambda q1, q2: QCombination(Q.OR, [q1, q2]), queries)
-            if queries
-            else Q.empty()
-        )
+        if queries:
+            return (
+                functools.reduce(lambda q1, q2: QCombination(Q.OR, [q1, q2]), queries),
+                False,
+            )
+        return Q.empty(), False
 
     async def count(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> int:
-        query = await self._build_query(request, where)
+        query, _ = await self._build_query(request, where)
         if isinstance(query, QCombination):
             flattened_query = flatten_qcombination(query)
             result = self.document.find(flattened_query)
@@ -162,14 +187,17 @@ class ModelView(BaseModelView):
     ) -> List[Dict]:
         if not where:
             where = {}
-        query = await self._build_query(request, where)
+        query, is_full_text_query = await self._build_query(request, where)
         if isinstance(query, QCombination):
             flattened_query = flatten_qcombination(query)
             result = self.document.find(flattened_query, **kwargs)
         else:
             result = self.document.find(query.query, **kwargs)
         if order_by:
-            order_by = build_order_clauses(order_by)
+            if is_full_text_query and self.full_text_override_order_by:
+                order_by = [("score", {"$meta": "textScore"})]
+            else:
+                order_by = build_order_clauses(order_by)
             result = result.sort(*order_by)
         return await result.skip(skip).limit(limit).to_list()
 
