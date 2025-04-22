@@ -12,6 +12,7 @@ from typing import (
     get_origin,
 )
 
+import pymongo
 from beanie import Document, Link
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.queryset import Q as BaseQ  # noqa: N811
@@ -201,7 +202,10 @@ def build_order_clauses(order_list: List[str]) -> List[str]:
     clauses = []
     for value in order_list:
         key, order = value.strip().split(maxsplit=1)
-        clauses.append("{}{}".format("-" if order.lower() == "desc" else "+", key))
+        if key == "id":
+            key = "_id"  # this is a beanie quirk
+        direction = pymongo.DESCENDING if order.lower() == "desc" else pymongo.ASCENDING
+        clauses.append((key, direction))
     return clauses
 
 
