@@ -1,4 +1,4 @@
-MongoEngine document integration examples.
+# Beanie integration example
 
 To run this example:
 
