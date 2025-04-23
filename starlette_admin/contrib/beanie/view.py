@@ -69,7 +69,7 @@ class ModelView(BaseModelView):
         self.icon = icon
         self.pk_attr = "id"
         self.full_text_override_order_by = full_text_override_order_by
-        self.has_full_text_index = None
+        self.has_full_text_index: Optional[bool] = None
 
         self.fields_pydantic = list(document.model_fields.items())
 
@@ -195,10 +195,9 @@ class ModelView(BaseModelView):
             result = self.document.find(query.query, **kwargs)
         if order_by:
             if is_full_text_query and self.full_text_override_order_by:
-                order_by = [("score", {"$meta": "textScore"})]
+                result = result.sort(("score", {"$meta": "textScore"}))  # type: ignore
             else:
-                order_by = build_order_clauses(order_by)
-            result = result.sort(*order_by)
+                result = result.sort(build_order_clauses(order_by))
         return await result.skip(skip).limit(limit).to_list()
 
     async def find_by_pk(

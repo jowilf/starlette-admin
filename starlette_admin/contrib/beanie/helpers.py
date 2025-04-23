@@ -6,14 +6,15 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Tuple,
     Type,
     Union,
     get_args,
     get_origin,
 )
 
-import pymongo
 from beanie import Document, Link
+from beanie.odm.enums import SortDirection
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.queryset import Q as BaseQ  # noqa: N811
 from mongoengine.queryset import QNode
@@ -198,13 +199,17 @@ def resolve_deep_query(
     return Q.empty()
 
 
-def build_order_clauses(order_list: List[str]) -> List[str]:
-    clauses = []
+def build_order_clauses(order_list: List[str]) -> List[Tuple[str, SortDirection]]:
+    clauses: List[Tuple[str, SortDirection]] = []
     for value in order_list:
         key, order = value.strip().split(maxsplit=1)
         if key == "id":
             key = "_id"  # this is a beanie quirk
-        direction = pymongo.DESCENDING if order.lower() == "desc" else pymongo.ASCENDING
+        direction = (
+            SortDirection.DESCENDING
+            if order.lower() == "desc"
+            else SortDirection.ASCENDING
+        )
         clauses.append((key, direction))
     return clauses
 
