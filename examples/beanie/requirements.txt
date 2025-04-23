@@ -1,0 +1,4 @@
+pydantic[email]
+beanie
+uvicorn
+mongoengine
