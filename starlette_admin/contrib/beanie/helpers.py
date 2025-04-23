@@ -5,7 +5,6 @@ from typing import (
     Dict,
     List,
     Optional,
-    Sequence,
     Tuple,
     Type,
     Union,
@@ -15,7 +14,6 @@ from typing import (
 
 from beanie import Document, Link
 from beanie.odm.enums import SortDirection
-from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.queryset import Q as BaseQ  # noqa: N811
 from mongoengine.queryset import QNode
 from mongoengine.queryset.visitor import QCombination
@@ -62,9 +60,7 @@ class Q(BaseQ):
             "$not__iendswith": {"$not": {"$regex": f"{value}$", "$options": "i"}},
             "$not__icontains": {"$not": {"$regex": f"{value}", "$options": "i"}},
         }
-        if op in operator_map:
-            return operator_map[op]
-        raise ValueError(f"Invalid operator: {op}")
+        return operator_map[op]
 
     @classmethod
     def empty(cls) -> BaseQ:
@@ -122,14 +118,10 @@ def isvalid_field(document: Type[Document], field: str) -> bool:
             return True
 
         nested_type = subdoc.annotation
-        if isinstance(get_args(nested_type), list):
-            # recursive bit :)
-            return any(isvalid_field(t, nested_field) for t in get_args(nested_type))
         return isvalid_field(nested_type, nested_field)
 
     except Exception:  # pragma: no cover
         return False
-    return True
 
 
 def is_link_type(field_type: Type) -> bool:
@@ -174,7 +166,6 @@ def is_list_of_links_type(field_type: Type) -> bool:
             for arg in field_args
         ):
             return True
-
     return False
 
 
@@ -212,40 +203,3 @@ def build_order_clauses(order_list: List[str]) -> List[Tuple[str, SortDirection]
         )
         clauses.append((key, direction))
     return clauses
-
-
-def normalize_list(
-    arr: Optional[Sequence[Any]], is_default_sort_list: bool = False
-) -> Optional[Sequence[str]]:
-    if arr is None:
-        return None
-    _new_list = []
-    for v in arr:
-        if isinstance(v, MongoBaseField):
-            _new_list.append(v.name)
-        elif isinstance(v, str):
-            _new_list.append(v)
-        elif (
-            isinstance(v, tuple) and is_default_sort_list
-        ):  # Support for fields_default_sort:
-            if (
-                len(v) == 2
-                and isinstance(v[0], (str, MongoBaseField))
-                and isinstance(v[1], bool)
-            ):
-                _new_list.append(
-                    (
-                        v[0].name if isinstance(v[0], MongoBaseField) else v[0],
-                        v[1],
-                    )
-                )
-            else:
-                raise ValueError(
-                    "Invalid argument, Expected Tuple[str | monogoengine.BaseField, bool]"
-                )
-
-        else:
-            raise ValueError(
-                f"Expected str or monogoengine.BaseField, got {type(v).__name__}"
-            )
-    return _new_list
