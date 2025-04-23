@@ -103,7 +103,7 @@ class ProductView(ModelView):
         assert obj.id is not None
 
 
-class TestMongoBasic:
+class TestBeanieRelations:
 
     @pytest_asyncio.fixture(loop_scope="function")
     async def admin(self):
@@ -170,6 +170,14 @@ class TestMongoBasic:
             "Huawei P30",
             "IPhone 9",
         ]
+        # get store data from detail endpoint (serialize list of links as 'HasMany' field)
+        response = await client.get(f"/admin/store/detail/{store.id}")
+        assert response.status_code == 200, response.text
+
+        # check select2
+        response = await client.get("/admin/api/store", params={"select2": True})
+        assert response.status_code == 200, response.text
+
         response = await client.post(
             "/admin/user/create",
             data={"name": "John", "store": store.id, "store_password": "secret-field"},

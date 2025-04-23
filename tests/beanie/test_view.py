@@ -4,12 +4,14 @@ import os
 from enum import Enum
 from typing import Annotated, Any, Dict
 
+import pymongo
 import pytest_asyncio
 from beanie import Document, Indexed, Link, init_beanie
 from beanie.operators import In
 from httpx import ASGITransport, AsyncClient
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import Field
+from pydantic import Field, SecretStr
+from pymongo import IndexModel
 from requests import Request
 from starlette.applications import Starlette
 from starlette_admin.contrib.beanie import Admin, ModelView
@@ -45,6 +47,22 @@ class User(Document):
     store: Link[Store]
 
 
+class ProductDescriptionTest(Document):
+    description: str
+    store: Link[Store]
+
+    class Settings:
+        indexes = [
+            IndexModel([("description", pymongo.TEXT)]),
+        ]
+
+
+class StoreLoginConfig(Document):
+    password: SecretStr
+    hostname: SecretStr
+    store: Link[Store]
+
+
 class ProductView(ModelView):
     async def before_create(
         self, request: Request, data: Dict[str, Any], obj: Any
@@ -75,7 +93,7 @@ class ProductView(ModelView):
         assert obj.id is not None
 
 
-class TestMongoBasic:
+class TestBeanieView:
 
     @pytest_asyncio.fixture(loop_scope="function")
     async def admin(self):
@@ -83,7 +101,13 @@ class TestMongoBasic:
         await self.motor_client.drop_database(MONGO_DATABASE)
         await init_beanie(
             database=self.motor_client.get_database(MONGO_DATABASE),
-            document_models=[Product, Store, User],
+            document_models=[
+                Product,
+                Store,
+                User,
+                ProductDescriptionTest,
+                StoreLoginConfig,
+            ],
         )
         with open("./tests/data/products.json") as f:
             for product in json.load(f):
@@ -98,6 +122,10 @@ class TestMongoBasic:
             )
         )
         admin.add_view(ModelView(User))
+        admin.add_view(
+            ModelView(ProductDescriptionTest, full_text_override_order_by=True)
+        )
+        admin.add_view(ModelView(StoreLoginConfig))
 
         yield admin
 
@@ -280,3 +308,51 @@ class TestMongoBasic:
                 In(Product.title, ["IPhone 9", "Huawei P30", "OPPOF19"])
             ).count()
         ) == 0
+
+    async def test_full_text_index(self, client):
+
+        # add store
+        store = Store(name="Store 1")
+        await store.save()
+
+        # add product with description
+        product = ProductDescriptionTest(
+            description="IPhone version 9. this is a very good phone",
+            store=store,
+        )
+        product2 = ProductDescriptionTest(
+            description="IPhone X this is a very good phone",
+            store=store,
+        )
+        await product.save()
+        await product2.save()
+
+        # search by description
+        response = await client.get(
+            "/admin/api/product-description-test?where=version%209"
+        )
+        data = response.json()
+        assert data["total"] == 1
+        assert [x["description"] for x in data["items"]] == [
+            "IPhone version 9. this is a very good phone"
+        ]
+
+    async def test_unsearchable_document(self, client):
+        # add store
+        store = Store(name="Store 1")
+        await store.save()
+
+        # add StoreLoginConfig
+        store_login_config = StoreLoginConfig(
+            password=SecretStr("password"),
+            hostname=SecretStr("hostname"),
+            store=store,
+        )
+
+        await store_login_config.save()
+
+        # try to search by password
+        response = await client.get("/admin/api/store-login-config?where=banana")
+
+        data = response.json()
+        assert data["total"] == 1  # no filtering done here

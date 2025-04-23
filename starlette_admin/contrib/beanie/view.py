@@ -193,11 +193,12 @@ class ModelView(BaseModelView):
             result = self.document.find(flattened_query, **kwargs)
         else:
             result = self.document.find(query.query, **kwargs)
-        if order_by:
-            if is_full_text_query and self.full_text_override_order_by:
-                result = result.sort(("score", {"$meta": "textScore"}))  # type: ignore
-            else:
-                result = result.sort(build_order_clauses(order_by))
+
+        # handle order_by
+        if is_full_text_query and self.full_text_override_order_by:
+            result = result.sort(("score", {"$meta": "textScore"}))  # type: ignore
+        elif order_by:
+            result = result.sort(build_order_clauses(order_by))
         return await result.skip(skip).limit(limit).to_list()
 
     async def find_by_pk(
@@ -317,10 +318,6 @@ class ModelView(BaseModelView):
                             None if not data[key] else PydanticObjectId(data[key])
                         )
                 elif is_list_of_links_type(field_type):
-                    if not isinstance(data[key], list):
-                        data[key] = (
-                            [] if not data[key] else [PydanticObjectId(data[key])]
-                        )
                     data[key] = [PydanticObjectId(item) for item in data[key] if item]
 
                 setattr(doc, key, data[key])
