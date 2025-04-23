@@ -11,20 +11,12 @@ from starlette.routing import Route
 
 admin = Admin()
 
+
 async def setup_db():
     models = await create_db_and_tables()
 
     for model in models:
         admin.add_view(ModelView(model, name=model.__name__, icon="database"))
-
-    admin.add_view(
-        DropDown(
-            "Resources",
-            icon="database",
-            views=[AdminLink(label="Docs", url="/docs")],
-            always_open=False,
-        )
-    )
 
 
 app = Starlette(

@@ -56,6 +56,7 @@ class ModelView(BaseModelView):
         exclude_fields_from_create: Optional[List[str]] = None,
         exclude_fields_from_edit: Optional[List[str]] = None,
         exclude_fields_from_list: Optional[List[str]] = None,
+        exclude_fields_from_detail: Optional[List[str]] = None,
         full_text_override_order_by: bool = False,
     ):
         self.document = document
@@ -83,6 +84,9 @@ class ModelView(BaseModelView):
 
         self.exclude_fields_from_list = exclude_fields_from_list or []
         self.exclude_fields_from_list.append("revision_id")
+
+        self.exclude_fields_from_detail = exclude_fields_from_detail or []
+        self.exclude_fields_from_detail.append("revision_id")
 
         for name, field in document.model_fields.items():
             field_type = field.annotation
