@@ -1,11 +1,12 @@
 import os
+from pathlib import Path
 from typing import List
 
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, TypeAdapter
-from pathlib import Path
-from .models import Product, Store, Manager, Category
+
+from .models import Category, Manager, Product, Store
 
 ALL_MODELS = [Product, Store, Manager]
 

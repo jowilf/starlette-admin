@@ -1,13 +1,9 @@
-from contextlib import asynccontextmanager
-
-from starlette_admin.contrib.beanie import Admin, ModelView
-from starlette_admin.views import Link as AdminLink
-from starlette_admin import DropDown
-from .dependencies import create_db_and_tables
-import uvicorn
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
+from starlette_admin.contrib.beanie import Admin, ModelView
+
+from .dependencies import create_db_and_tables
 
 admin = Admin()
 
