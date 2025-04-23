@@ -7,11 +7,11 @@ from pydantic import (  # type: ignore[attr-defined]
     AwareDatetime,
     BaseModel,
     EmailStr,
+    FutureDate,
     FutureDatetime,
     NaiveDatetime,
-    PastDatetime,
     PastDate,
-    FutureDate,
+    PastDatetime,
     SecretStr,
 )
 from starlette_admin.converters import StandardModelConverter, converts
@@ -67,7 +67,9 @@ class BeanieModelConverter(StandardModelConverter):
             **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
         )
 
-    @converts(AwareDatetime, NaiveDatetime, FutureDatetime, PastDatetime, PastDate, FutureDate)
+    @converts(
+        AwareDatetime, NaiveDatetime, FutureDatetime, PastDatetime, PastDate, FutureDate
+    )
     def conv_aware_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
         return DateTimeField(
             **self._standard_type_common(*args, **kwargs), label=kwargs.get("name")
