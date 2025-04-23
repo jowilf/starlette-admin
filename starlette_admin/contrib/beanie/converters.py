@@ -101,8 +101,7 @@ class BeanieModelConverter(StandardModelConverter):
         **kwargs: Any,
     ) -> BaseField:
         model_type: Type[BaseModel] | None = kwargs.get("type")
-        if model_type is None:
-            raise RuntimeError(f"Model type {model_type} is None")
+        assert model_type is not None
 
         _fields = []
         for subfield_name, subfield_field in model_type.model_fields.items():  # type: ignore[attr-defined]
@@ -117,15 +116,12 @@ class BeanieModelConverter(StandardModelConverter):
     ) -> Sequence[BaseField]:
         converted_fields = []
         for value in fields:
-            if isinstance(value, BaseField):
-                converted_fields.append(value)
-            else:
-                converted_fields.append(
-                    self.convert(
-                        name=value["name"],
-                        type=value["type"],
-                        required=value["required"],
-                        model=model,
-                    )
+            converted_fields.append(
+                self.convert(
+                    name=value["name"],
+                    type=value["type"],
+                    required=value["required"],
+                    model=model,
                 )
+            )
         return converted_fields
