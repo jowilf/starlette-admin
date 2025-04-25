@@ -31,10 +31,6 @@ from starlette_admin.contrib.beanie.helpers import (
     is_list_of_links_type,
     resolve_deep_query,
 )
-from starlette_admin.fields import (
-    HasOne,
-    RelationField,
-)
 from starlette_admin.helpers import (
     not_none,
     prettify_class_name,
@@ -213,7 +209,7 @@ class ModelView(BaseModelView):
             except bson.errors.InvalidId:
                 return None
 
-        return await self.document.get(pk)
+        return await self.document.get(pk, fetch_links=True, nesting_depth=1)
 
     async def find_by_pks(
         self, request: Request, pks: Iterable[PydanticObjectId]
@@ -230,70 +226,6 @@ class ModelView(BaseModelView):
             return getattr(obj.ref, not_none(self.pk_attr))
 
         return getattr(obj, not_none(self.pk_attr))
-
-    async def serialize(
-        self,
-        obj: Any,
-        request: Request,
-        action: RequestAction,
-        include_relationships: bool = True,
-        include_select2: bool = False,
-    ) -> Dict[str, Any]:
-        obj_serialized: Dict[str, Any] = {}
-        obj_meta: Dict[str, Any] = {}
-        for field in self.get_fields_list(request, action):
-            if isinstance(field, RelationField) and include_relationships:
-                value = getattr(obj, field.name, None)
-                foreign_model = self._find_foreign_model(field.identity)  # type: ignore
-                if value is None:
-                    obj_serialized[field.name] = None
-                elif isinstance(field, HasOne):
-                    if action == RequestAction.EDIT:
-                        obj_serialized[field.name] = (
-                            await foreign_model.get_serialized_pk_value(request, value)
-                        )
-                    else:
-                        obj_serialized[field.name] = await foreign_model.serialize(
-                            value.ref, request, action, include_relationships=False
-                        )
-                else:
-                    if action == RequestAction.EDIT:
-                        obj_serialized[field.name] = [
-                            (await foreign_model.get_serialized_pk_value(request, obj))
-                            for obj in value
-                        ]
-                    else:
-                        obj_serialized[field.name] = [
-                            await foreign_model.serialize(
-                                v.ref, request, action, include_relationships=False
-                            )
-                            for v in value
-                        ]
-            elif not isinstance(field, RelationField):
-                value = await field.parse_obj(request, obj)
-                obj_serialized[field.name] = await self.serialize_field_value(
-                    value, field, action, request
-                )
-        if include_select2:
-            obj_meta["select2"] = {
-                "selection": await self.select2_selection(obj, request),
-                "result": await self.select2_result(obj, request),
-            }
-        obj_meta["repr"] = await self.repr(obj, request)
-
-        # Make sure the primary key is always available
-        pk_attr = not_none(self.pk_attr)
-        if pk_attr not in obj_serialized:
-            pk_value = await self.get_serialized_pk_value(request, obj)
-            obj_serialized[pk_attr] = pk_value
-
-        pk = await self.get_pk_value(request, obj)
-        route_name = request.app.state.ROUTE_NAME
-        obj_meta["detailUrl"] = str(
-            request.url_for(route_name + ":detail", identity=self.identity, pk=pk)
-        )
-        obj_serialized["_meta"] = obj_meta
-        return obj_serialized
 
     async def create(self, request: Request, data: dict) -> Document:
         data = {
