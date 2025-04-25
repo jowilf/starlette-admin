@@ -64,6 +64,9 @@ class StoreLoginConfig(Document):
 
 
 class ProductView(ModelView):
+    exclude_fields_from_create = ["created_at"]
+    exclude_fields_from_edit = ["created_at"]
+
     async def before_create(
         self, request: Request, data: Dict[str, Any], obj: Any
     ) -> None:
@@ -114,13 +117,7 @@ class TestBeanieView:
                 await Product(**product).save()
         admin = Admin()
         admin.add_view(ModelView(Store))
-        admin.add_view(
-            ProductView(
-                Product,
-                exclude_fields_from_create=["created_at"],
-                exclude_fields_from_edit=["created_at"],
-            )
-        )
+        admin.add_view(ProductView(Product))
         admin.add_view(ModelView(User))
         admin.add_view(
             ModelView(ProductDescriptionTest, full_text_override_order_by=True)

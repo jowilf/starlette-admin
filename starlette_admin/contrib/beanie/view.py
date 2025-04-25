@@ -53,10 +53,6 @@ class ModelView(BaseModelView):
         label: Optional[str] = None,
         identity: Optional[str] = None,
         converter: Optional[BeanieModelConverter] = None,
-        exclude_fields_from_create: Optional[List[str]] = None,
-        exclude_fields_from_edit: Optional[List[str]] = None,
-        exclude_fields_from_list: Optional[List[str]] = None,
-        exclude_fields_from_detail: Optional[List[str]] = None,
         full_text_override_order_by: bool = False,
     ):
         self.document = document
@@ -76,17 +72,20 @@ class ModelView(BaseModelView):
 
         self.field_infos = []
         self.link_fields = []
-        self.exclude_fields_from_create = exclude_fields_from_create or []
-        self.exclude_fields_from_create.append("revision_id")
-
-        self.exclude_fields_from_edit = exclude_fields_from_edit or []
-        self.exclude_fields_from_edit.extend(("revision_id", "id"))
-
-        self.exclude_fields_from_list = exclude_fields_from_list or []
-        self.exclude_fields_from_list.append("revision_id")
-
-        self.exclude_fields_from_detail = exclude_fields_from_detail or []
-        self.exclude_fields_from_detail.append("revision_id")
+        self.exclude_fields_from_create = [
+            *self.exclude_fields_from_create,
+            "revision_id",
+        ]
+        self.exclude_fields_from_edit = [
+            *self.exclude_fields_from_edit,
+            "revision_id",
+            self.pk_attr,
+        ]
+        self.exclude_fields_from_list = [*self.exclude_fields_from_list, "revision_id"]
+        self.exclude_fields_from_detail = [
+            *self.exclude_fields_from_detail,
+            "revision_id",
+        ]
 
         for name, field in document.model_fields.items():
             field_type = field.annotation
@@ -298,7 +297,9 @@ class ModelView(BaseModelView):
 
     async def create(self, request: Request, data: dict) -> Document:
         data = {
-            k: v for k, v in data.items() if k not in self.exclude_fields_from_create
+            k: v
+            for k, v in data.items()
+            if k not in self.get_fields_list(request, action=RequestAction.CREATE)
         }
         try:
             doc = self.document(**data)
@@ -309,9 +310,13 @@ class ModelView(BaseModelView):
     async def edit(
         self, request: Request, pk: PydanticObjectId, data: dict
     ) -> Document:
-        doc: Document | None = await self.document.get(pk)
+        doc: Union[Document, None] = await self.document.get(pk)
         assert doc is not None, "Document not found"
-        data = {k: v for k, v in data.items() if k not in self.exclude_fields_from_edit}
+        data = {
+            k: v
+            for k, v in data.items()
+            if k not in self.get_fields_list(request, action=RequestAction.EDIT)
+        }
         try:
 
             for key in data:

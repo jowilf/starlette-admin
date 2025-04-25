@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Dict, Sequence, Type, get_args, get_origin
+from typing import Any, Dict, Sequence, Type, Union, get_args, get_origin
 
 from beanie import BackLink, Link, PydanticObjectId
 from pydantic import (  # type: ignore[attr-defined]
@@ -104,7 +104,7 @@ class BeanieModelConverter(StandardModelConverter):
         *args: Any,
         **kwargs: Any,
     ) -> BaseField:
-        model_type: Type[BaseModel] | None = kwargs.get("type")
+        model_type: Union[Type[BaseModel], None] = kwargs.get("type")
         assert model_type is not None
 
         _fields = []
