@@ -41,6 +41,8 @@ from starlette_admin.views import BaseModelView
 
 
 class ModelView(BaseModelView):
+    full_text_override_order_by: bool = False
+
     def __init__(
         self,
         document: Type[Document],
@@ -49,7 +51,6 @@ class ModelView(BaseModelView):
         label: Optional[str] = None,
         identity: Optional[str] = None,
         converter: Optional[BeanieModelConverter] = None,
-        full_text_override_order_by: bool = False,
     ):
         self.document = document
         self.identity = (
@@ -61,7 +62,6 @@ class ModelView(BaseModelView):
         self.name = name or self.name or prettify_class_name(self.document.__name__)
         self.icon = icon
         self.pk_attr = "id"
-        self.full_text_override_order_by = full_text_override_order_by
         self.has_full_text_index: Optional[bool] = None
 
         self.fields_pydantic = list(document.model_fields.items())

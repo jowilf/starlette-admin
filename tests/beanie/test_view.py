@@ -96,6 +96,10 @@ class ProductView(ModelView):
         assert obj.id is not None
 
 
+class ProductDescriptionTestView(ModelView):
+    full_text_override_order_by = True
+
+
 class TestBeanieView:
 
     @pytest_asyncio.fixture(loop_scope="function")
@@ -119,9 +123,7 @@ class TestBeanieView:
         admin.add_view(ModelView(Store))
         admin.add_view(ProductView(Product))
         admin.add_view(ModelView(User))
-        admin.add_view(
-            ModelView(ProductDescriptionTest, full_text_override_order_by=True)
-        )
+        admin.add_view(ProductDescriptionTestView(ProductDescriptionTest))
         admin.add_view(ModelView(StoreLoginConfig))
 
         yield admin
