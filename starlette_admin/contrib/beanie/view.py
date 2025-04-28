@@ -2,11 +2,13 @@ import functools
 from typing import (
     Any,
     Dict,
+    Generic,
     Iterable,
     List,
     Optional,
     Tuple,
     Type,
+    TypeVar,
     Union,
     get_args,
     get_origin,
@@ -39,13 +41,15 @@ from starlette_admin.helpers import (
 )
 from starlette_admin.views import BaseModelView
 
+T = TypeVar("T", bound=Document)
 
-class ModelView(BaseModelView):
+
+class ModelView(BaseModelView, Generic[T]):
     full_text_override_order_by: bool = False
 
     def __init__(
         self,
-        document: Type[Document],
+        document: Type[T],
         icon: Optional[str] = None,
         name: Optional[str] = None,
         label: Optional[str] = None,
@@ -183,7 +187,7 @@ class ModelView(BaseModelView):
         where: Union[Dict[str, Any], str, None] = None,
         order_by: Optional[List[str]] = None,
         **kwargs: Any,
-    ) -> List[Dict]:
+    ) -> List[T]:
         if not where:
             where = {}
         query, is_full_text_query = await self._build_query(request, where)
@@ -200,9 +204,7 @@ class ModelView(BaseModelView):
             result = result.sort(build_order_clauses(order_by))
         return await result.skip(skip).limit(limit).to_list()
 
-    async def find_by_pk(
-        self, request: Request, pk: PydanticObjectId
-    ) -> Optional[Document]:
+    async def find_by_pk(self, request: Request, pk: PydanticObjectId) -> Optional[T]:
         if not isinstance(pk, PydanticObjectId):
             try:
                 pk = PydanticObjectId(pk)
@@ -213,7 +215,7 @@ class ModelView(BaseModelView):
 
     async def find_by_pks(
         self, request: Request, pks: Iterable[PydanticObjectId]
-    ) -> List[Document]:
+    ) -> List[T]:
         docs = []
         for pk in pks:
             doc = await self.document.get(pk)
@@ -227,7 +229,7 @@ class ModelView(BaseModelView):
 
         return getattr(obj, not_none(self.pk_attr))
 
-    async def create(self, request: Request, data: dict) -> Document:
+    async def create(self, request: Request, data: dict) -> T:
         data = {
             k: v
             for k, v in data.items()
@@ -239,9 +241,7 @@ class ModelView(BaseModelView):
             raise pydantic_error_to_form_validation_errors(ve) from ve
         return await doc.create()
 
-    async def edit(
-        self, request: Request, pk: PydanticObjectId, data: dict
-    ) -> Document:
+    async def edit(self, request: Request, pk: PydanticObjectId, data: dict) -> T:
         doc: Union[Document, None] = await self.document.get(pk)
         assert doc is not None, "Document not found"
         data = {
@@ -264,7 +264,7 @@ class ModelView(BaseModelView):
                 setattr(doc, key, data[key])
 
             # ensure doc still passes validation
-            validated_doc: Document = self.document.model_validate(doc.model_dump())
+            validated_doc: T = self.document.model_validate(doc.model_dump())
             return await validated_doc.replace()
 
         except ValidationError as ve:
