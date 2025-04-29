@@ -2,7 +2,7 @@ import datetime
 import json
 import os
 from enum import Enum
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any, Dict, List
 
 import pymongo
 import pytest_asyncio
@@ -39,7 +39,7 @@ class Product(Document):
 
 class Store(Document):
     name: str = Field(min_length=3)
-    products: list[Link[Product]] = []
+    products: List[Link[Product]] = []
 
 
 class User(Document):

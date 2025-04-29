@@ -2,7 +2,7 @@ import datetime
 import json
 import os
 from enum import Enum
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any, Dict, List, Optional
 
 import pytest_asyncio
 from beanie import BackLink, Document, Indexed, Link, init_beanie
@@ -55,13 +55,13 @@ class Product(Document):
 
 class Store(Document):
     name: str = Field(min_length=3)
-    products: list[Link[Product]] = []
+    products: List[Link[Product]] = []
     website: AnyUrl = "https://example.com"
 
 
 class User(Document):
     name: str = Field(min_length=3)
-    store: Link[Store] | None = None
+    store: Optional[Link[Store]] = None
     store_password: SecretStr = "secret-field"
     store_email: EmailStr
 
