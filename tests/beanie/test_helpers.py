@@ -39,7 +39,7 @@ class TestBeanieHelpers:
 
         try:
             flatten_qcombination(combination)
-            pytest.fail("Expected ValueError not raised")
+            pytest.fail("Expected ValueError not raised")  # pragma: no cover
         except ValueError:
             pass
 

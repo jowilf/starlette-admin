@@ -2,7 +2,7 @@ import datetime
 import json
 import os
 from enum import Enum
-from typing import Annotated, Any, Dict, List
+from typing import Annotated, List
 
 import pymongo
 import pytest_asyncio
@@ -12,7 +12,6 @@ from httpx import ASGITransport, AsyncClient
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import Field, SecretStr
 from pymongo import IndexModel
-from requests import Request
 from starlette.applications import Starlette
 from starlette_admin.contrib.beanie import Admin, ModelView
 
@@ -66,34 +65,6 @@ class StoreLoginConfig(Document):
 class ProductView(ModelView):
     exclude_fields_from_create = ["created_at"]
     exclude_fields_from_edit = ["created_at"]
-
-    async def before_create(
-        self, request: Request, data: Dict[str, Any], obj: Any
-    ) -> None:
-        assert isinstance(obj, Product)
-        assert obj.id is None
-
-    async def after_create(self, request: Request, obj: Any) -> None:
-        assert isinstance(obj, Product)
-        assert obj.id is not None
-
-    async def before_edit(
-        self, request: Request, data: Dict[str, Any], obj: Any
-    ) -> None:
-        assert isinstance(obj, Product)
-        assert obj.id is not None
-
-    async def after_edit(self, request: Request, obj: Any) -> None:
-        assert isinstance(obj, Product)
-        assert obj.id is not None
-
-    async def before_delete(self, request: Request, obj: Any) -> None:
-        assert isinstance(obj, Product)
-        assert obj.id is not None
-
-    async def after_delete(self, request: Request, obj: Any) -> None:
-        assert isinstance(obj, Product)
-        assert obj.id is not None
 
 
 class ProductDescriptionTestView(ModelView):
