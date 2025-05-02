@@ -34,11 +34,11 @@ async def seed_db() -> None:
 
     stores_adapter = TypeAdapter(List[Store])
     stores: List[Store] = stores_adapter.validate_json(stores_data)
-    bestbuy: Store = next([store for store in stores if store.name == "Best Buy"])
+    bestbuy: Store = next(store for store in stores if store.name == "Best Buy")
     bestbuy.products.extend([p for p in products if p.category == Category.ELECTRONICS])
     bestbuy = await Store.insert(bestbuy)
 
-    walgreens: Store = next([store for store in stores if store.name == "Walgreens"])
+    walgreens: Store = next(store for store in stores if store.name == "Walgreens")
     walgreens.products = [
         p
         for p in products

@@ -113,7 +113,6 @@ lint = [
 ]
 all = "coverage run -m pytest tests"
 sqla = "coverage run -m pytest tests/sqla"
-beanie = "coverage run -m pytest -x -vv tests/beanie"
 
 [[tool.hatch.envs.test.matrix]]
 sqla_version = ["sqla14", "sqla2"]
@@ -127,7 +126,6 @@ matrix.sqla_version.dependencies = [
 matrix.sqla_version.scripts = [
     { key = "all", value = 'coverage run -m pytest tests --ignore=tests/odmantic --ignore=tests/beanie', if = ["sqla14"] },
     { key = "sqla", value = 'coverage run -m pytest tests/sqla --ignore=tests/odmantic', if = ["sqla14"] },
-    { key = "beanie", value = '', if = ["sqla14"] },
 ]
 
 [tool.hatch.envs.cov]
