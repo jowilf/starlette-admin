@@ -111,7 +111,7 @@ lint = [
     "ruff check starlette_admin tests",
     "black . --check"
 ]
-all = "coverage run -m pytest tests -s -x -vv"
+all = "coverage run -m pytest tests"
 sqla = "coverage run -m pytest tests/sqla"
 
 [[tool.hatch.envs.test.matrix]]
