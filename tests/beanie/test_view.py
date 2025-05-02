@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Annotated, List
 
 import pymongo
+import pytest
 import pytest_asyncio
 from beanie import Document, Indexed, Link, init_beanie
 from beanie.operators import In
@@ -62,11 +63,6 @@ class StoreLoginConfig(Document):
     store: Link[Store]
 
 
-class ProductView(ModelView):
-    exclude_fields_from_create = ["created_at"]
-    exclude_fields_from_edit = ["created_at"]
-
-
 class ProductDescriptionTestView(ModelView):
     full_text_override_order_by = True
 
@@ -90,6 +86,11 @@ class TestBeanieView:
         with open("./tests/data/products.json") as f:
             for product in json.load(f):
                 await Product(**product).save()
+
+        class ProductView(ModelView):
+            exclude_fields_from_create = [Product.created_at]
+            exclude_fields_from_edit = ["created_at"]
+
         admin = Admin()
         admin.add_view(ModelView(Store))
         admin.add_view(ProductView(Product))
@@ -326,3 +327,11 @@ class TestBeanieView:
 
         data = response.json()
         assert data["total"] == 1  # no filtering done here
+
+    async def test_init_modelview_invalid_field(self):
+
+        class BadProductModelView(ModelView):
+            exclude_fields_from_detail = ["non-existing-field"]
+
+        with pytest.raises(ValueError):
+            BadProductModelView(Product)

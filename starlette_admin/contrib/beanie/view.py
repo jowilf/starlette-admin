@@ -30,6 +30,7 @@ from starlette_admin.contrib.beanie.helpers import (
     build_order_clauses,
     is_link_type,
     is_list_of_links_type,
+    normalize_field_list,
     resolve_deep_query,
 )
 from starlette_admin.helpers import (
@@ -85,6 +86,19 @@ class ModelView(BaseModelView, Generic[T]):
             *self.exclude_fields_from_detail,
             "revision_id",
         ]
+
+        self.exclude_fields_from_create = normalize_field_list(
+            field_list=self.exclude_fields_from_create, document=document
+        )
+        self.exclude_fields_from_edit = normalize_field_list(
+            field_list=self.exclude_fields_from_edit, document=document
+        )
+        self.exclude_fields_from_list = normalize_field_list(
+            field_list=self.exclude_fields_from_list, document=document
+        )
+        self.exclude_fields_from_detail = normalize_field_list(
+            field_list=self.exclude_fields_from_detail, document=document
+        )
 
         for name, field in document.model_fields.items():
             field_type = field.annotation

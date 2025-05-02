@@ -14,6 +14,7 @@ from typing import (
 
 from beanie import Document, Link
 from beanie.odm.enums import SortDirection
+from beanie.odm.fields import ExpressionField
 from beanie.odm.operators.find import BaseFindOperator
 from beanie.odm.operators.find.logical import LogicalOperatorForListOfExpressions
 from beanie.operators import GT, GTE, LT, LTE, NE, And, Eq, In, Not, NotIn, Or, RegEx
@@ -76,6 +77,19 @@ def isvalid_field(document: Type[Document], field: str) -> bool:
 
     except Exception:  # pragma: no cover
         return False
+
+
+def normalize_field_list(
+    field_list: List[str | ExpressionField], document: Type[Document]
+) -> List[str]:
+
+    converted_field_list = []
+    for field in field_list:
+        field_name = str(field) if isinstance(field, ExpressionField) else field
+        if not isvalid_field(document, field_name):
+            raise ValueError(f"Invalid field: {field_name}")
+        converted_field_list.append(field_name)
+    return converted_field_list
 
 
 def is_link_type(field_type: Type) -> bool:
