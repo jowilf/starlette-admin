@@ -261,6 +261,29 @@ class TestBeanieView:
         assert (await Product.count()) == 5
         assert (await Product.find(Product.brand == "Infinix").first_or_none()) is None
 
+    async def test_edit_excluded_field(self, client):
+        doc = await Product.find(Product.title == "IPhone 9").first_or_none()
+        id = doc.id
+        response = await client.post(
+            f"/admin/product/edit/{id}",
+            data={
+                "title": "IPhone 9",
+                "description": (
+                    "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey - 1 Year"
+                    " Warranty"
+                ),
+                "price": 1049,
+                "brand": "Infinix",
+                "created_at": "2023-01-01T00:00:00Z",
+            },
+        )
+        assert response.status_code == 303
+        assert (await Product.count()) == 5
+        # get the product again
+        doc2 = await Product.find(Product.title == "IPhone 9").first_or_none()
+
+        assert doc2.created_at == doc.created_at
+
     async def test_delete(self, client):
         ids = [
             str(x.id)
