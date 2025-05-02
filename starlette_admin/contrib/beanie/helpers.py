@@ -14,89 +14,43 @@ from typing import (
 
 from beanie import Document, Link
 from beanie.odm.enums import SortDirection
-from mongoengine.queryset import Q as BaseQ  # noqa: N811
-from mongoengine.queryset import QNode
-from mongoengine.queryset.visitor import QCombination
+from beanie.odm.operators.find import BaseFindOperator
+from beanie.odm.operators.find.logical import LogicalOperatorForListOfExpressions
+from beanie.operators import GT, GTE, LT, LTE, NE, And, Eq, In, Not, NotIn, Or, RegEx
 
 
-def flatten_qcombination(q: QNode) -> Dict[str, Any]:
-    """
-    Flatten QCombination into a list of QNode
-    """
+class BeanieLogicalOperator(LogicalOperatorForListOfExpressions):
 
-    # if q is a QCombination, flatten it
-    if isinstance(q, QCombination):
-        if q.operation == QCombination.OR:
-            return {"$or": [flatten_qcombination(child) for child in q.children]}
-        if q.operation == QCombination.AND:
-            return {"$and": [flatten_qcombination(child) for child in q.children]}
-        raise ValueError(f"Unknown operation: {q.operation}")
-
-    return q.query
+    @property
+    def query(self) -> Dict[str, Any]:
+        if not self.expressions:
+            return {}
+        raise ValueError(
+            "BeanieLogicalOperator should not be used directly. Use resolve_deep_query instead."
+        )
 
 
-class Q(BaseQ):
-    """
-    Override mongoengine.Q class to support expression like this:
-    >>> Q('name', 'Jo', 'istartswith') # same as Q(name__istartswith = 'Jo')
-    or
-    >>> Q('name', 'John') # same as Q(name = 'John')
-    """
-
-    def __init__(self, field: str, value: Any, op: Optional[str] = None) -> None:
-        if op in TEXT_OPERATORS:
-            super().__init__(**{field: self.handle_text_operator(op, value)})
-        elif op is not None:
-            super().__init__(**{field: {op: value}})
-        else:
-            super().__init__(**{field: value})
-
-    def handle_text_operator(self, op: str, value: Any) -> Dict[str, Any]:
-        operator_map: Dict[str, dict[str, Any]] = {
-            "$istartswith": {"$regex": f"^{value}", "$options": "i"},
-            "$iendswith": {"$regex": f"{value}$", "$options": "i"},
-            "$icontains": {"$regex": f"{value}", "$options": "i"},
-            "$not__istartswith": {"$not": {"$regex": f"^{value}", "$options": "i"}},
-            "$not__iendswith": {"$not": {"$regex": f"{value}$", "$options": "i"}},
-            "$not__icontains": {"$not": {"$regex": f"{value}", "$options": "i"}},
-        }
-        return operator_map[op]
-
-    @classmethod
-    def empty(cls) -> BaseQ:
-        return BaseQ()
-
-
-TEXT_OPERATORS: List[str] = [
-    "$istartswith",
-    "$iendswith",
-    "$icontains",
-    "$not__istartswith",
-    "$not__iendswith",
-    "$not__icontains",
-]
-
-OPERATORS: Dict[str, Callable[[str, Any], Q]] = {
-    "eq": lambda f, v: Q(f, v),
-    "neq": lambda f, v: Q(f, v, "$ne"),
-    "lt": lambda f, v: Q(f, v, "$lt"),
-    "gt": lambda f, v: Q(f, v, "$gt"),
-    "le": lambda f, v: Q(f, v, "$lte"),
-    "ge": lambda f, v: Q(f, v, "$gte"),
-    "in": lambda f, v: Q(f, v, "$in"),
-    "not_in": lambda f, v: Q(f, v, "$nin"),
-    "startswith": lambda f, v: Q(f, v, "$istartswith"),
-    "not_startswith": lambda f, v: Q(f, v, "$not__istartswith"),
-    "endswith": lambda f, v: Q(f, v, "$iendswith"),
-    "not_endswith": lambda f, v: Q(f, v, "$not__iendswith"),
-    "contains": lambda f, v: Q(f, v, "$icontains"),
-    "not_contains": lambda f, v: Q(f, v, "$not__icontains"),
-    "is_false": lambda f, v: Q(f, False),
-    "is_true": lambda f, v: Q(f, True),
-    "is_null": lambda f, v: Q(f, None),
-    "is_not_null": lambda f, v: Q(f, None, "$ne"),
-    "between": lambda f, v: Q(f, v[0], "$gte") & Q(f, v[1], "$lte"),
-    "not_between": lambda f, v: Q(f, v[0], "$lt") | Q(f, v[1], "$gt"),
+OPERATORS: Dict[str, Callable[[str, Any], BaseFindOperator]] = {
+    "eq": lambda f, v: Eq(f, v),
+    "neq": lambda f, v: NE(f, v),
+    "lt": lambda f, v: LT(f, v),
+    "gt": lambda f, v: GT(f, v),
+    "le": lambda f, v: LTE(f, v),
+    "ge": lambda f, v: GTE(f, v),
+    "in": lambda f, v: In(f, v),
+    "not_in": lambda f, v: NotIn(f, v),
+    "startswith": lambda f, v: RegEx(f, f"^{v}", "i"),
+    "not_startswith": lambda f, v: Not(RegEx(f, f"^{v}", "i")),
+    "endswith": lambda f, v: RegEx(f, f"{v}$", "i"),
+    "not_endswith": lambda f, v: Not(RegEx(f, f"{v}$", "i")),
+    "contains": lambda f, v: RegEx(f, v, "i"),
+    "not_contains": lambda f, v: Not(RegEx(f, v, "i")),
+    "is_false": lambda f, v: Eq(f, False),
+    "is_true": lambda f, v: Eq(f, True),
+    "is_null": lambda f, v: Eq(f, None),
+    "is_not_null": lambda f, v: NE(f, None),
+    "between": lambda f, v: And(GTE(f, v[0]), LTE(f, v[1])),
+    "not_between": lambda f, v: Or(LT(f, v[0]), GT(f, v[1])),
 }
 
 
@@ -173,21 +127,24 @@ def resolve_deep_query(
     where: Dict[str, Any],
     document: Type[Document],
     latest_field: Optional[str] = None,
-) -> QNode:
+) -> LogicalOperatorForListOfExpressions:
     _all_queries = []
     for key in where:
         if key in ["or", "and"]:
             _arr = [(resolve_deep_query(q, document, latest_field)) for q in where[key]]
             if len(_arr) > 0:
-                funcs = {"or": lambda q1, q2: q1 | q2, "and": lambda q1, q2: q1 & q2}
+                funcs = {
+                    "or": lambda q1, q2: Or(q1, q2),
+                    "and": lambda q1, q2: And(q1, q2),
+                }
                 _all_queries.append(functools.reduce(funcs[key], _arr))
         elif key in OPERATORS:
             _all_queries.append(OPERATORS[key](latest_field, where[key]))  # type: ignore
         elif isvalid_field(document, key):
             _all_queries.append(resolve_deep_query(where[key], document, key))
     if _all_queries:
-        return functools.reduce(lambda q1, q2: q1 & q2, _all_queries)
-    return Q.empty()
+        return functools.reduce(lambda q1, q2: And(q1, q2), _all_queries)
+    return BeanieLogicalOperator()
 
 
 def build_order_clauses(order_list: List[str]) -> List[Tuple[str, SortDirection]]:

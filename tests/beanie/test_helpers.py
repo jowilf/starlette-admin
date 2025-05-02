@@ -3,11 +3,10 @@ from typing import List, Optional
 import pymongo
 import pytest
 from beanie import Link
-from mongoengine.queryset.visitor import QCombination
 from pydantic import BaseModel
 from starlette_admin.contrib.beanie.helpers import (
+    BeanieLogicalOperator,
     build_order_clauses,
-    flatten_qcombination,
     is_list_of_links_type,
     isvalid_field,
 )
@@ -34,14 +33,11 @@ class Car(BaseModel):
 
 class TestBeanieHelpers:
 
-    async def test_unknown_qcombination_operation(self):
-        combination = QCombination("unknown", [])
+    async def test_beanie_logical_operator_not_empty(self):
+        operator = BeanieLogicalOperator(None)
 
-        try:
-            flatten_qcombination(combination)
-            pytest.fail("Expected ValueError not raised")  # pragma: no cover
-        except ValueError:
-            pass
+        with pytest.raises(ValueError):
+            _ = operator.query
 
     async def test_isvalid_field(self):
 

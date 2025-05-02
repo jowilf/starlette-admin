@@ -17,8 +17,8 @@ from typing import (
 import bson.errors
 import starlette_admin.fields as sa
 from beanie import Document, Link, PydanticObjectId
-from mongoengine.queryset import QNode
-from mongoengine.queryset.visitor import QCombination
+from beanie.odm.operators.find import BaseFindOperator
+from beanie.operators import Or, RegEx, Text
 from pydantic import ValidationError
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
@@ -26,9 +26,8 @@ from starlette_admin.contrib.beanie.converters import (
     BeanieModelConverter,
 )
 from starlette_admin.contrib.beanie.helpers import (
-    Q,
+    BeanieLogicalOperator,
     build_order_clauses,
-    flatten_qcombination,
     is_link_type,
     is_list_of_links_type,
     resolve_deep_query,
@@ -122,26 +121,26 @@ class ModelView(BaseModelView, Generic[T]):
 
     async def _build_query(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
-    ) -> Tuple[QNode, bool]:
+    ) -> Tuple[BaseFindOperator, bool]:
         if where is None:
-            return Q.empty(), False
+            return BeanieLogicalOperator(), False
         if isinstance(where, dict):
             return resolve_deep_query(where, self.document), False
         return await self.build_full_text_search_query(request, where)
 
     async def build_full_text_search_query(
         self, request: Request, term: str
-    ) -> Tuple[QNode, bool]:
+    ) -> Tuple[Union[BaseFindOperator], bool]:
         # use a full text index if the collection has one,
-        # otherwise use a combination of $icontains queries
+        # otherwise use a combination of RegEx queries
         if self.has_full_text_index is None:
             await self.check_full_text_index()
         if self.has_full_text_index:
             return (
-                Q(field="$text", value={"$search": term, "$caseSensitive": False}),
+                Text(term, case_sensitive=False),
                 True,
             )
-        queries = []
+        queries: List[BaseFindOperator] = []
         for field in self.get_fields_list(request):
             if (
                 field.searchable
@@ -156,27 +155,21 @@ class ModelView(BaseModelView, Generic[T]):
                     sa.ColorField,
                 ]
             ):
-                queries.append(Q(field.name, term, "$icontains"))
+                queries.append(RegEx(field.name, term, options="i"))
         if queries:
             return (
-                functools.reduce(lambda q1, q2: QCombination(Q.OR, [q1, q2]), queries),
+                functools.reduce(lambda q1, q2: Or(q1, q2), queries),
                 False,
             )
-        return Q.empty(), False
+        return BeanieLogicalOperator(), False
 
     async def count(
         self, request: Request, where: Union[Dict[str, Any], str, None] = None
     ) -> int:
         query, _ = await self._build_query(request, where)
-        if isinstance(query, QCombination):
-            flattened_query = flatten_qcombination(query)
-            result = self.document.find(flattened_query)
-        else:
-            if not bool(query):
-                return (
-                    await self.document.get_motor_collection().estimated_document_count()
-                )
-            result = self.document.find(query.query)
+        if not bool(query):
+            return await self.document.get_motor_collection().estimated_document_count()
+        result = self.document.find(query.query)
         return await result.count()
 
     async def find_all(
@@ -191,11 +184,7 @@ class ModelView(BaseModelView, Generic[T]):
         if not where:
             where = {}
         query, is_full_text_query = await self._build_query(request, where)
-        if isinstance(query, QCombination):
-            flattened_query = flatten_qcombination(query)
-            result = self.document.find(flattened_query, **kwargs)
-        else:
-            result = self.document.find(query.query, **kwargs)
+        result = self.document.find(query.query, **kwargs)
 
         # handle order_by
         if is_full_text_query and self.full_text_override_order_by:
