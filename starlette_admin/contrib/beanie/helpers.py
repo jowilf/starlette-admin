@@ -80,7 +80,7 @@ def isvalid_field(document: Type[Document], field: str) -> bool:
 
 
 def normalize_field_list(
-    field_list: List[str | ExpressionField], document: Type[Document]
+    field_list: List[Union[str, ExpressionField]], document: Type[Document]
 ) -> List[str]:
 
     converted_field_list = []
