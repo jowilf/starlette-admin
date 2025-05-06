@@ -1,0 +1,3878 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications">
+      
+      
+      
+        <link rel="canonical" href="https://jowilf.github.io/starlette-admin/es/changelog/">
+      
+      
+        <link rel="prev" href="../api/actions/">
+      
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+    
+    
+      
+        <title>Registro de Cambios - Starlette Admin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2afb09e1.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-PRC6TQ4K82"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-PRC6TQ4K82",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-PRC6TQ4K82",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../" title="Starlette Admin" class="md-header__button md-logo" aria-label="Starlette Admin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 22h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zM12 3c4.42 0 8 1.79 8 4s-3.58 4-8 4-8-1.79-8-4 3.58-4 8-4M4 9c0 2.21 3.58 4 8 4s8-1.79 8-4v3c0 2.21-3.58 4-8 4s-8-1.79-8-4zm0 5c0 2.21 3.58 4 8 4s8-1.79 8-4v3c0 1.19-1.05 2.27-2.71 3H6.71C5.05 19.27 4 18.19 4 17z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Starlette Admin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Registro de Cambios
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../changelog/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="es" class="md-select__link">
+              Español
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jowilf/starlette-admin" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jowilf/starlette-admin
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Pestañas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Visión General
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../tutorials/" class="md-tabs__link">
+          
+  
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../user-guide/getting-started/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../advanced/custom-field/" class="md-tabs__link">
+          
+  
+  
+  Guía de Usuario Avanzada
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../deployment/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deployment
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../alternatives/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Alternativas, Inspiración y Comparaciones
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/contrib/sqlalchemy/modelview/" class="md-tabs__link">
+          
+  
+  
+  Referencia de la API
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Registro de Cambios
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="Starlette Admin" class="md-nav__button md-logo" aria-label="Starlette Admin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 22h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zM12 3c4.42 0 8 1.79 8 4s-3.58 4-8 4-8-1.79-8-4 3.58-4 8-4M4 9c0 2.21 3.58 4 8 4s8-1.79 8-4v3c0 2.21-3.58 4-8 4s-8-1.79-8-4zm0 5c0 2.21 3.58 4 8 4s8-1.79 8-4v3c0 1.19-1.05 2.27-2.71 3H6.71C5.05 19.27 4 18.19 4 17z"/></svg>
+
+    </a>
+    Starlette Admin
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jowilf/starlette-admin" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jowilf/starlette-admin
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visión General
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Tutorials
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Tutorials
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Building your first admin panel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Empezando
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Configuraciones
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            Configuraciones
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/configurations/admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Admin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/configurations/modelview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ModelView
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/validations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Validación de Formularios
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Autenticación
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Administrando Archivos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Actions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/multiple-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiples Admin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Guía de Usuario Avanzada
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Guía de Usuario Avanzada
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced/custom-field/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Campos Personalizados
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced/base-model-view/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Extendiendo BaseModelView
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Deployment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../alternatives/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Alternativas, Inspiración y Comparaciones
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Referencia de la API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Referencia de la API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_1" id="__nav_7_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Contrib
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_1">
+            <span class="md-nav__icon md-icon"></span>
+            Contrib
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_1_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_1_1" id="__nav_7_1_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    SQLAlchemy
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_7_1_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_1_1">
+            <span class="md-nav__icon md-icon"></span>
+            SQLAlchemy
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/contrib/sqlalchemy/modelview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ModelView
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/fields/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fields
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/views/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Views
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/base-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    BaseAdmin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Auth
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Actions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Registro de Cambios
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Registro de Cambios
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0141-2024-07-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.14.1] - 2024-07-12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.14.1] - 2024-07-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0140-2024-05-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.14.0] - 2024-05-28
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.14.0] - 2024-05-28">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0132-2024-02-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.13.2] - 2024-02-04
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.2] - 2024-02-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0131-2024-01-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.13.1] - 2024-01-21
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.1] - 2024-01-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0130-2024-01-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.13.0] - 2024-01-16
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.0] - 2024-01-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0122-2023-11-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.12.2] - 2023-11-13
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0121-2023-11-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.12.1] - 2023-11-07
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0120-2023-11-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.12.0] - 2023-11-07
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.12.0] - 2023-11-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0112-2023-08-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.11.2] - 2023-08-31
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.2] - 2023-08-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0111-2023-07-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.11.1] - 2023-07-29
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.1] - 2023-07-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0110-2023-07-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.11.0] - 2023-07-26
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.0] - 2023-07-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0101-2023-07-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.10.1] - 2023-07-22
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.10.1] - 2023-07-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0100-2023-06-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.10.0] - 2023-06-26
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.10.0] - 2023-06-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090-2023-05-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.9.0] - 2023-05-25
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.9.0] - 2023-05-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#082-2023-05-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.8.2] - 2023-05-12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.8.2] - 2023-05-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#081-2023-04-30" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.8.1] - 2023-04-30
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.8.1] - 2023-04-30">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#080-2023-04-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.8.0] - 2023-04-09
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.8.0] - 2023-04-09">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#070-2023-03-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.7.0] - 2023-03-24
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.0] - 2023-03-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#060-2023-03-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.6.0] - 2023-03-12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.6.0] - 2023-03-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprecated
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#055-2023-03-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.5] - 2023-03-06
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.5] - 2023-03-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#054-2023-03-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.4] - 2023-03-03
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.4] - 2023-03-03">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#053-2023-02-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.3] - 2023-02-25
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.3] - 2023-02-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#052-2022-12-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.2] - 2022-12-29
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.2] - 2022-12-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#051-2022-12-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.1] - 2022-12-27
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.1] - 2022-12-27">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050-2022-12-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.0] - 2022-12-17
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0] - 2022-12-17">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2022-12-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.4.0] - 2022-12-07
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0] - 2022-12-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#032-2022-12-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.3.2] - 2022-12-02
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.2] - 2022-12-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#031-2022-11-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.3.1] - 2022-11-22
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.1] - 2022-11-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2022-11-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.3.0] - 2022-11-21
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0] - 2022-11-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Removed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#022-2022-09-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.2.2] - 2022-09-20
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.2] - 2022-09-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#021-2022-09-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.2.1] - 2022-09-19
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.1] - 2022-09-19">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2022-09-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.2.0] - 2022-09-14
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0] - 2022-09-14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011-2022-09-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.1.1] - 2022-09-09
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.1] - 2022-09-09">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0141-2024-07-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.14.1] - 2024-07-12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.14.1] - 2024-07-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0140-2024-05-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.14.0] - 2024-05-28
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.14.0] - 2024-05-28">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0132-2024-02-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.13.2] - 2024-02-04
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.2] - 2024-02-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0131-2024-01-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.13.1] - 2024-01-21
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.1] - 2024-01-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0130-2024-01-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.13.0] - 2024-01-16
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.0] - 2024-01-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0122-2023-11-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.12.2] - 2023-11-13
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0121-2023-11-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.12.1] - 2023-11-07
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0120-2023-11-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.12.0] - 2023-11-07
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.12.0] - 2023-11-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0112-2023-08-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.11.2] - 2023-08-31
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.2] - 2023-08-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0111-2023-07-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.11.1] - 2023-07-29
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.1] - 2023-07-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0110-2023-07-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.11.0] - 2023-07-26
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.0] - 2023-07-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0101-2023-07-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.10.1] - 2023-07-22
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.10.1] - 2023-07-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0100-2023-06-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.10.0] - 2023-06-26
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.10.0] - 2023-06-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090-2023-05-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.9.0] - 2023-05-25
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.9.0] - 2023-05-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#082-2023-05-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.8.2] - 2023-05-12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.8.2] - 2023-05-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#081-2023-04-30" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.8.1] - 2023-04-30
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.8.1] - 2023-04-30">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#080-2023-04-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.8.0] - 2023-04-09
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.8.0] - 2023-04-09">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#070-2023-03-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.7.0] - 2023-03-24
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.0] - 2023-03-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#060-2023-03-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.6.0] - 2023-03-12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.6.0] - 2023-03-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprecated
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#055-2023-03-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.5] - 2023-03-06
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.5] - 2023-03-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#054-2023-03-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.4] - 2023-03-03
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.4] - 2023-03-03">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#053-2023-02-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.3] - 2023-02-25
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.3] - 2023-02-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#052-2022-12-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.2] - 2022-12-29
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.2] - 2022-12-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#051-2022-12-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.1] - 2022-12-27
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.1] - 2022-12-27">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050-2022-12-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.5.0] - 2022-12-17
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0] - 2022-12-17">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2022-12-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.4.0] - 2022-12-07
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0] - 2022-12-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#032-2022-12-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.3.2] - 2022-12-02
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.2] - 2022-12-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internals_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Internals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#031-2022-11-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.3.1] - 2022-11-22
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.1] - 2022-11-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2022-11-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.3.0] - 2022-11-21
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0] - 2022-11-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Removed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#022-2022-09-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.2.2] - 2022-09-20
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.2] - 2022-09-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#021-2022-09-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.2.1] - 2022-09-19
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.1] - 2022-09-19">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2022-09-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.2.0] - 2022-09-14
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0] - 2022-09-14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011-2022-09-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      [0.1.1] - 2022-09-09
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.1] - 2022-09-09">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+    
+      
+    
+    <a href="https://github.com/jowilf/starlette-admin/tree/main/docs/changelog/index.md" title="Ver código fuente de esta página" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="changelog">Changelog</h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>, and this project adheres
+to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="0141-2024-07-12">[0.14.1] - 2024-07-12</h2>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>Fix JSON serialization error for UUID primary keys when excluded from list by <a href="https://github.com/alg">@alg</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/553">#553</a></li>
+</ul>
+<h2 id="0140-2024-05-28">[0.14.0] - 2024-05-28</h2>
+<h3 id="added">Added</h3>
+<ul>
+<li>Add German translation
+  by <a href="https://github.com/disrupted">@disrupted</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/523">#523</a></li>
+<li>Add Support for favicon customization
+  by <a href="https://github.com/omarmoo5">@omarmoo5</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/520">#520</a></li>
+</ul>
+<h2 id="0132-2024-02-04">[0.13.2] - 2024-02-04</h2>
+<h3 id="fixed_1">Fixed</h3>
+<ul>
+<li>Remove extra whitespaces from TextAreaField form template (0.13.0 regression) by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/494">#494</a></li>
+</ul>
+<h2 id="0131-2024-01-21">[0.13.1] - 2024-01-21</h2>
+<h3 id="fixed_2">Fixed</h3>
+<ul>
+<li>Fixed the StopIteration exception raised in Sqlalchemy ModelView when the primary key is not included in the field
+  list by <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/pull/482">#482</a></li>
+</ul>
+<h2 id="0130-2024-01-16">[0.13.0] - 2024-01-16</h2>
+<h3 id="added_1">Added</h3>
+<ul>
+<li>Enhance AuthMiddleware, introduce <code>@login_not_required</code> decorator and <code>allow_routes</code>, deprecate <code>allow_paths</code>
+  by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/474">#474</a></li>
+<li>Add a search bar on detail page to search by attributes or values
+  by <a href="https://github.com/hasansezertasan">@hasansezertasan</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/461">#461</a></li>
+<li>Refactor TinyMCEEditorField: support custom TinyMCE configuration
+  by <a href="https://github.com/hasansezertasan">@hasansezertasan</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/380">#380</a></li>
+<li>Add support for SQLAlchemy <code>column_property</code> by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/408">#408</a></li>
+<li>Add support for SQLAlchemy Models with Multiple Primary Keys by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/402">#402</a></li>
+<li>Adds <code>AdminConfig</code> to override <code>app_title</code> and <code>logo_url</code> in the templates
+  by <a href="https://github.com/hasansezertasan">@hasansezertasan</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/374">#374</a></li>
+</ul>
+<h3 id="fixed_3">Fixed</h3>
+<ul>
+<li>Support translation for login form placeholders by <a href="https://github.com/hasansezertasan">@hasansezertasan</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/425">#425</a></li>
+<li>Fixes actions docstrings
+  by <a href="https://github.com/mrharpo">@mrharpo</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/401">#401</a></li>
+</ul>
+<h2 id="0122-2023-11-13">[0.12.2] - 2023-11-13</h2>
+<ul>
+<li>Fixed issue where "Empty" and "Not Empty" filters raised NotImplementedError on SQLAlchemy relationship attributes
+  by <a href="https://github.com/whchi">@whchi</a> in <a href="https://github.com/jowilf/starlette-admin/pull/394">#394</a></li>
+</ul>
+<h2 id="0121-2023-11-07">[0.12.1] - 2023-11-07</h2>
+<ul>
+<li>Fixed a regression caused by <a href="https://github.com/jowilf/starlette-admin/pull/361">#361</a> where SQLAlchemy models with
+  Mixin Classes raises AttributeError by <a href="https://github.com/hasansezertasan">@hasansezertasan</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/385">#385</a></li>
+</ul>
+<h2 id="0120-2023-11-07">[0.12.0] - 2023-11-07</h2>
+<h3 id="added_2">Added</h3>
+<ul>
+<li>Add Before and After Hooks for Create, Edit, and Delete Operations by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/327">#327</a></li>
+<li>Feature: Row actions by <a href="https://github.com/jowilf">@jowilf</a> &amp; <a href="https://github.com/mrharpo">@mrharpo</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/348">#348</a>
+  and <a href="https://github.com/jowilf/starlette-admin/pull/302">#302</a></li>
+<li>Add Support for Custom Sortable Field Mapping in SQLAlchemy ModelView by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/328">#328</a></li>
+</ul>
+<details class="usage" open="open">
+<summary>Usage</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Post</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;post&quot;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="nb">id</span><span class="p">:</span> <span class="n">Mapped</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapped_column</span><span class="p">(</span><span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">title</span><span class="p">:</span> <span class="n">Mapped</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapped_column</span><span class="p">()</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">user_id</span><span class="p">:</span> <span class="n">Mapped</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapped_column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;user.id&quot;</span><span class="p">))</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">user</span><span class="p">:</span> <span class="n">Mapped</span><span class="p">[</span><span class="n">User</span><span class="p">]</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;posts&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="k">class</span><span class="w"> </span><span class="nc">PostView</span><span class="p">(</span><span class="n">ModelView</span><span class="p">):</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">sortable_field</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">]</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">sortable_field_mapping</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="hll">        <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">User</span><span class="o">.</span><span class="n">age</span><span class="p">,</span>  <span class="c1"># Sort by the age of the related user</span>
+</span><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="p">}</span>
+</code></pre></div>
+</details>
+<ul>
+<li>Add support for Turkish language by <a href="https://github.com/hasansezertasan">@hasansezertasan</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/330">#330</a> &amp; <a href="https://github.com/jowilf/starlette-admin/pull/377">#377</a>.</li>
+<li>Allow the page title customization from the ModelView by <a href="https://github.com/mrharpo">@mrharpo</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/311">#311</a></li>
+<li>Add support for custom DataTables options by <a href="https://github.com/mrharpo">@mrharpo</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/308">#308</a></li>
+<li>Add support for datatables <a href="https://datatables.net/examples/basic_init/state_save.html">state saving</a></li>
+</ul>
+<details class="usage" open="open">
+<summary>Usage</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyModelView</span><span class="p">(</span><span class="n">ModelView</span><span class="p">):</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">save_state</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+</details>
+<h3 id="fixed_4">Fixed</h3>
+<ul>
+<li>
+<p>Fix <a href="https://github.com/jowilf/starlette-admin/issues/347">#347</a>: Detect SQLAlchemy primary key with custom column
+  name by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/361">#361</a></p>
+</li>
+<li>
+<p>Fixed a bug with field access authorization where restricted users could not modify a partial list of fields in an
+  entity by <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/pull/360">#360</a></p>
+</li>
+</ul>
+<h3 id="internals">Internals</h3>
+<ul>
+<li>Explicitly export all public functions and classes by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/362">#362</a></li>
+</ul>
+<h2 id="0112-2023-08-31">[0.11.2] - 2023-08-31</h2>
+<h3 id="fixed_5">Fixed</h3>
+<ul>
+<li>Bug Fix: Current Enum Value Not Pre-Selected on Edit by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/273">#273</a></li>
+</ul>
+<h2 id="0111-2023-07-29">[0.11.1] - 2023-07-29</h2>
+<h3 id="fixed_6">Fixed</h3>
+<ul>
+<li>Bug Fix: Ensure Excluded fields from a RequestAction are not treated by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/251">#251</a></li>
+</ul>
+<h2 id="0110-2023-07-26">[0.11.0] - 2023-07-26</h2>
+<h3 id="added_3">Added</h3>
+<ul>
+<li>Improve the Authentication Provider to support custom flow such as oauth2/OIDC by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/221">#221</a>.</li>
+</ul>
+<h3 id="internals_1">Internals</h3>
+<ul>
+<li>Drop python 3.7 support by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/248">#248</a></li>
+</ul>
+<h2 id="0101-2023-07-22">[0.10.1] - 2023-07-22</h2>
+<h3 id="fixed_7">Fixed</h3>
+<ul>
+<li>Fix <a href="https://github.com/jowilf/starlette-admin/issues/224">#224</a> by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/227">#227</a></li>
+<li>Fix <a href="https://github.com/jowilf/starlette-admin/issues/239">#239</a>: Order Select2 data by primary key during fetching by
+  <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/issues/241">#241</a></li>
+</ul>
+<h2 id="0100-2023-06-26">[0.10.0] - 2023-06-26</h2>
+<h3 id="added_4">Added</h3>
+<ul>
+<li>Added support for Russian language in the web interface by <a href="https://github.com/nessshon">@nessshon</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/201">#201</a></li>
+<li>i18n: Update message catalogs by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/202">#202</a></li>
+<li>Support custom response for batch actions by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/212">#212</a></li>
+</ul>
+<h3 id="fixed_8">Fixed</h3>
+<ul>
+<li>Fixed <a href="https://github.com/jowilf/starlette-admin/issues/206">#206</a>: Setting <code>add_to_menu=False</code> in CustomView still
+  results in the view being displayed in the menu</li>
+</ul>
+<h2 id="090-2023-05-25">[0.9.0] - 2023-05-25</h2>
+<h3 id="added_5">Added</h3>
+<ul>
+<li>Enhance fields conversion logic to support custom converters
+  by <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/pull/191">#191</a></li>
+<li>Add deployment section to documentation by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/195">#195</a></li>
+</ul>
+<h3 id="fixed_9">Fixed</h3>
+<ul>
+<li>Blank Edit Form Displayed for IntegerField with Value 0 by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/194">#194</a></li>
+</ul>
+<h2 id="082-2023-05-12">[0.8.2] - 2023-05-12</h2>
+<h3 id="added_6">Added</h3>
+<ul>
+<li>Add <code>allow_paths</code> parameter to AuthProvider to allow unauthenticated access to specific paths
+  by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/187">#187</a></li>
+<li>Allow Unauthenticated Access to <code>js.cookie.min.js</code> by <a href="https://github.com/mixartemev">@mixartemev</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/183">#183</a></li>
+</ul>
+<h2 id="081-2023-04-30">[0.8.1] - 2023-04-30</h2>
+<h3 id="added_7">Added</h3>
+<ul>
+<li>Update fontawesome to 6.4.0 &amp; add missings webfonts by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/176">#176</a></li>
+<li>Allow class level configuration for ModelView identity, name &amp; label by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/178">#178</a></li>
+</ul>
+<h2 id="080-2023-04-09">[0.8.0] - 2023-04-09</h2>
+<h3 id="added_8">Added</h3>
+<ul>
+<li>Add extension to autovalidate SQLAlchemy data with pydantic by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/144">#144</a></li>
+<li>Make <code>_extract_fields()</code> method in BaseModelView public and renamed
+  to <a class="autorefs autorefs-internal" href="../../api/views/#starlette_admin.views.BaseModelView.get_fields_list">get_fields_list()</a> by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/148">#148</a></li>
+<li>Add support for custom object representations in the admin interface with <code>__admin_repr__</code>
+  and <code>__admin_select2_repr__</code>  by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/152">#152</a>. The documentation can be
+  found <a href="../user-guide/configurations/modelview/#object-representation">here</a></li>
+</ul>
+<h3 id="internals_2">Internals</h3>
+<ul>
+<li>Enhance code quality with additional ruff rules by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/159">#159</a></li>
+</ul>
+<h2 id="070-2023-03-24">[0.7.0] - 2023-03-24</h2>
+<h3 id="added_9">Added</h3>
+<ul>
+<li>Allow custom form for batch actions by <a href="https://github.com/giaptx">@giaptx</a> and <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/61">#61</a></li>
+<li>Add <a class="autorefs autorefs-internal" href="../../api/fields/#starlette_admin.fields.TinyMCEEditorField">TinyMCEEditorField</a> by <a href="https://github.com/sinisaos">@sinisaos</a>
+  and <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/131">#131</a></li>
+</ul>
+<h3 id="internals_3">Internals</h3>
+<ul>
+<li>Add SQLAlchemy model with Pydantic validation example <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/125">#125</a></li>
+<li>Refactor and format HTML files for better readability by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/136">#136</a></li>
+</ul>
+<h2 id="060-2023-03-12">[0.6.0] - 2023-03-12</h2>
+<h3 id="added_10">Added</h3>
+<ul>
+<li>Setup i18n and Add French translations by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/74">#74</a>
+*</li>
+</ul>
+<p>Add <a class="autorefs autorefs-internal" href="../../api/fields/#starlette_admin.fields.TimeZoneField">TimeZoneField</a>, <a class="autorefs autorefs-internal" href="../../api/fields/#starlette_admin.fields.CountryField">CountryField</a>, <a class="autorefs autorefs-internal" href="../../api/fields/#starlette_admin.fields.CurrencyField">CurrencyField</a> &amp; <a class="autorefs autorefs-internal" href="../../api/fields/#starlette_admin.fields.ArrowField">ArrowField</a></p>
+<ul>
+<li>Add support for <a href="https://github.com/kvesteri/sqlalchemy-utils">sqlalchemy_utils</a> data types</li>
+<li>Add SQLAlchemy 2 support by  <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/113">#113</a></li>
+<li>Add support for initial order (sort) to apply to the table by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/115">#115</a></li>
+</ul>
+<div class="admonition usage">
+<p class="admonition-title">Usage</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">first_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">UserView</span><span class="p">(</span><span class="n">ModelView</span><span class="p">):</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">fields_default_sort</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)]</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">admin</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">UserView</span><span class="p">(</span><span class="n">User</span><span class="p">))</span>
+</code></pre></div>
+</div>
+<h3 id="fixed_10">Fixed</h3>
+<ul>
+<li>Fix <a href="https://github.com/jowilf/starlette-admin/issues/69">#69</a> : Return <code>HTTP_422_UNPROCESSABLE_ENTITY</code> when form data
+  is not valid</li>
+</ul>
+<h3 id="deprecated">Deprecated</h3>
+<ul>
+<li><code>EnumField.from_enum("status", Status)</code> is deprecated. Use <code>EnumField("status", enum=Status)</code> instead.</li>
+<li><code>EnumField.from_choices("language", [('cpp', 'C++'), ('py', 'Python')])</code> is deprecated.
+  Use <code>EnumField("name", choices=[('cpp', 'C++'), ('py', 'Python')])</code> instead.</li>
+</ul>
+<h2 id="055-2023-03-06">[0.5.5] - 2023-03-06</h2>
+<h3 id="fixed_11">Fixed</h3>
+<ul>
+<li>Fix <a href="https://github.com/jowilf/starlette-admin/issues/116">#116</a> : Internal Server Error when login credentials are
+  wrong by <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/pull/117">#117</a></li>
+</ul>
+<h2 id="054-2023-03-03">[0.5.4] - 2023-03-03</h2>
+<h3 id="fixed_12">Fixed</h3>
+<ul>
+<li>Fix <a href="https://github.com/jowilf/starlette-admin/issues/99">#99</a> : Show error message when an error occur on <code>delete</code>
+  action (detail view).</li>
+</ul>
+<h3 id="added_11">Added</h3>
+<ul>
+<li>Display meaningfully error message when SQLAlchemyError occur during action execution
+  by <a href="https://github.com/jowilf">@jowilf</a> and <a href="https://github.com/dolamroth">@dolamroth</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/105">#105</a></li>
+</ul>
+<h2 id="053-2023-02-25">[0.5.3] - 2023-02-25</h2>
+<h3 id="fixed_13">Fixed</h3>
+<ul>
+<li>Fix Bug with SQLAlchemy column converters by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/103">#103</a></li>
+</ul>
+<h2 id="052-2022-12-29">[0.5.2] - 2022-12-29</h2>
+<h3 id="fixed_14">Fixed</h3>
+<ul>
+<li>Fix Bug with <code>search_format</code> params for <a class="autorefs autorefs-internal" href="../../api/fields/#starlette_admin.fields.DateField">DateField</a>
+  and <a class="autorefs autorefs-internal" href="../../api/fields/#starlette_admin.fields.TimeField">TimeField</a>
+  by <a href="https://github.com/jowilf">@jowilf</a> &amp; <a href="https://github.com/ihuro">@ihuro</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/68">#68</a> &amp; <a href="https://github.com/jowilf/starlette-admin/pull/71">#71</a></li>
+</ul>
+<h2 id="051-2022-12-27">[0.5.1] - 2022-12-27</h2>
+<h3 id="fixed_15">Fixed</h3>
+<ul>
+<li>Fix Bug with <code>sqlalchemy.dialects.postgresql.base.UUID</code> column by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/65">#65</a></li>
+</ul>
+<h2 id="050-2022-12-17">[0.5.0] - 2022-12-17</h2>
+<h3 id="added_12">Added</h3>
+<ul>
+<li>Introduce <a class="autorefs autorefs-internal" href="../../api/auth/#starlette_admin.auth.BaseAuthProvider.get_admin_user"><code>AdminUser</code></a> and add navbar to show the
+  current <a class="autorefs autorefs-internal" href="../../api/auth/#starlette_admin.auth.BaseAuthProvider.get_admin_user"><code>AdminUser</code></a> information (<code>username</code> and <code>photo</code>)
+  by <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/pull/49">#49</a></li>
+</ul>
+<h3 id="internals_4">Internals</h3>
+<ul>
+<li>Add auth example by <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/pull/51">#51</a></li>
+</ul>
+<h2 id="040-2022-12-07">[0.4.0] - 2022-12-07</h2>
+<hr />
+<h3 id="added_13">Added</h3>
+<ul>
+<li>Custom batch actions by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/44">#44</a></li>
+<li>Add <code>get_list_query</code>, <code>get_count_query</code> and <code>get_search_query</code> methods to SQLAlchemy backend that can be inherited for
+  customization by <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/pull/47">#47</a></li>
+</ul>
+<h3 id="internals_5">Internals</h3>
+<ul>
+<li>Update datatables to <code>1.13.1</code></li>
+<li>Update Search builder UI to fit tabler design</li>
+</ul>
+<h2 id="032-2022-12-02">[0.3.2] - 2022-12-02</h2>
+<hr />
+<h3 id="fixed_16">Fixed</h3>
+<ul>
+<li>Fix Datatables warning when primary key is not included in <code>fields</code> by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/issues/23">#23</a></li>
+</ul>
+<h3 id="docs">Docs</h3>
+<ul>
+<li>Add spanish translation for <code>docs/index.md</code> by <a href="https://github.com/rafnixg">@rafnixg</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/35">#35</a></li>
+</ul>
+<h3 id="internals_6">Internals</h3>
+<ul>
+<li>Use Ruff for linting by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/29">#29</a></li>
+<li>Migrate to Hatch by <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/pull/30">#30</a></li>
+<li>Setup pre-commit by <a href="https://github.com/jowilf">@jowilf</a> in <a href="https://github.com/jowilf/starlette-admin/pull/33">#33</a></li>
+<li>Add support for Python 3.11 in test suite by <a href="https://github.com/jowilf">@jowilf</a>
+  in <a href="https://github.com/jowilf/starlette-admin/pull/34">#34</a></li>
+</ul>
+<h2 id="031-2022-11-22">[0.3.1] - 2022-11-22</h2>
+<hr />
+<h3 id="fixed_17">Fixed</h3>
+<ul>
+<li>Fix Regression on SQLModel backend: Duplicate instances when creating or updating a model with relationships
+  in <a href="https://github.com/jowilf/starlette-admin/issues/23">#23</a></li>
+</ul>
+<h2 id="030-2022-11-21">[0.3.0] - 2022-11-21</h2>
+<hr />
+<h3 id="breaking-changes">Breaking Changes</h3>
+<ul>
+<li>Changes in <code>ModelView</code> definition</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Now</label><label for="__tabbed_1_2">Before</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Post</span><span class="p">:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">admin</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">ModelView</span><span class="p">(</span><span class="n">Post</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;fa fa-blog&quot;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Blog Posts&quot;</span><span class="p">))</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Post</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">PostView</span><span class="p">(</span><span class="n">ModelView</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">Post</span><span class="p">):</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;fa fa-blog&quot;</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Blog Posts&quot;</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">admin</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">PostView</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<ul>
+<li>Changes in <code>CustomView</code> definition</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Now</label><label for="__tabbed_2_2">Before</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">admin</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">CustomView</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Home&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;fa fa-home&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/home&quot;</span><span class="p">,</span> <span class="n">template_path</span><span class="o">=</span><span class="s2">&quot;home.html&quot;</span><span class="p">))</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">HomeView</span><span class="p">(</span><span class="n">CustomView</span><span class="p">):</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Home&quot;</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;fa fa-home&quot;</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;/home&quot;</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">template_path</span> <span class="o">=</span> <span class="s2">&quot;home.html&quot;</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">admin</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">HomeView</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<ul>
+<li>Changes in <code>Link</code> definition</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Now</label><label for="__tabbed_3_2">Before</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">admin</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">Link</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Back to Home&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;fa fa-home&quot;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;_blank&quot;</span><span class="p">))</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BackToHome</span><span class="p">(</span><span class="n">Link</span><span class="p">):</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Back to Home&quot;</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;fa fa-home&quot;</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;_blank&quot;</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>These changes are inspired from <em>Flask-admin</em> and are introduced to help reduce code size and keep it simple.</p>
+<h3 id="added_14">Added</h3>
+<ul>
+<li>Add <code>CollectionField</code></li>
+<li>Add <code>ListField</code></li>
+<li>Add support for <a href="https://art049.github.io/odmantic/">Odmantic</a></li>
+<li>Add support for datatables <a href="https://datatables.net/extensions/responsive/">responsive extensions</a></li>
+</ul>
+<div class="admonition usage">
+<p class="admonition-title">Usage</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyModelView</span><span class="p">(</span><span class="n">ModelView</span><span class="p">):</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">responsive_table</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+</div>
+<h3 id="changed">Changed</h3>
+<ul>
+<li>Move <code>SQLModel</code> to it own contrib package</li>
+<li>MongoEngine <code>EmbeddedDocumentField</code> is now converted into <code>CollectionField</code></li>
+</ul>
+<h3 id="removed">Removed</h3>
+<ul>
+<li>Remove PDF from default <code>export_types</code></li>
+</ul>
+<h2 id="022-2022-09-20">[0.2.2] - 2022-09-20</h2>
+<hr />
+<h3 id="fixed_18">Fixed</h3>
+<ul>
+<li>Null support for EnumField in <a href="https://github.com/jowilf/starlette-admin/pull/17">#17</a></li>
+</ul>
+<h2 id="021-2022-09-19">[0.2.1] - 2022-09-19</h2>
+<hr />
+<h3 id="fixed_19">Fixed</h3>
+<ul>
+<li>Fix SearchBuilder not working with dates (SQLAlchemy) in <a href="https://github.com/jowilf/starlette-admin/pull/15">#15</a></li>
+</ul>
+<h2 id="020-2022-09-14">[0.2.0] - 2022-09-14</h2>
+<hr />
+<h3 id="changed_1">Changed</h3>
+<ul>
+<li>Date &amp; Time input now use Flatpickr in <a href="https://github.com/jowilf/starlette-admin/pull/10">#10</a></li>
+</ul>
+<h2 id="011-2022-09-09">[0.1.1] - 2022-09-09</h2>
+<hr />
+<h3 id="added_15">Added</h3>
+<ul>
+<li>Add <code>ColorField</code> in <a href="https://github.com/jowilf/starlette-admin/pull/7">#7</a></li>
+<li>AsyncEngine support for SQLAlchemy in <a href="https://github.com/jowilf/starlette-admin/pull/8">#8</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Pie" >
+        
+          
+          <a href="../api/actions/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Actions">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                Actions
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/jowilf" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/jowilf" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/in/jocelin-hounon-2008aa139" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3M135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5m282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.action.view", "search.suggest", "search.highlight", "navigation.tabs", "navigation.footer", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>
