@@ -69,6 +69,7 @@ test = [
     "Pillow >=9.4.0, <11.1.0",
     "itsdangerous >=2.2.0, <2.3.0",
     "pydantic[email] >=1.10.2, <2.10.0",
+    "beanie<2.0.0",
 ]
 cov = [
     "coverage[toml] >=7.0.0, <7.7.0"
@@ -123,7 +124,7 @@ matrix.sqla_version.dependencies = [
     { value = "SQLAlchemy[asyncio] >=1.4, <1.5", if = ["sqla14"] },
 ]
 matrix.sqla_version.scripts = [
-    { key = "all", value = 'coverage run -m pytest tests --ignore=tests/odmantic', if = ["sqla14"] },
+    { key = "all", value = 'coverage run -m pytest tests --ignore=tests/odmantic --ignore=tests/beanie', if = ["sqla14"] },
     { key = "sqla", value = 'coverage run -m pytest tests/sqla --ignore=tests/odmantic', if = ["sqla14"] },
 ]
 
@@ -244,7 +245,8 @@ module = [
     "starlette_admin.contrib.sqla.helpers",
     "starlette_admin.contrib.sqla.view",
     "starlette_admin.contrib.odmantic.helpers",
-    "starlette_admin.contrib.odmantic.view"
+    "starlette_admin.contrib.odmantic.view",
+    "starlette_admin.contrib.beanie.converters"
 ]
 warn_unused_ignores = false
 

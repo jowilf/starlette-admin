@@ -1,0 +1,11 @@
+[
+    {"name": "Best Buy",
+     "location": "https://bestbuy.com",
+     "email": "support@bestbuy.com",
+     "products": []
+    },
+    {"name": "Walgreens",
+     "location": "https://walgreens.com",
+     "email": "support@walgreens.com"
+    }
+]
