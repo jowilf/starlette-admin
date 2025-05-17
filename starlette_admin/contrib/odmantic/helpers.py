@@ -108,7 +108,7 @@ def resolve_deep_query(
     field_proxy: t.Optional[FieldProxy] = None,
 ) -> QueryExpression:
     _all_queries = []
-    for key in where:
+    for key, _ in where.items():
         if key == "or":
             _all_queries.append(
                 query.or_(

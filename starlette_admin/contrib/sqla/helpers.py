@@ -55,7 +55,7 @@ def build_query(
     latest_attr: Optional[InstrumentedAttribute] = None,
 ) -> Any:
     filters = []
-    for key in where:
+    for key, _ in where.items():
         if key == "or":
             filters.append(
                 or_(*[build_query(v, model, latest_attr) for v in where[key]])

@@ -65,7 +65,7 @@ def get_file_icon(mime_type: str) -> str:
         "application/zip": "fa-file-archive",
     }
     if mime_type:
-        for key in mapping:
+        for key, _ in mapping.items():
             if key in mime_type:
                 return mapping[key]
     return "fa-file"

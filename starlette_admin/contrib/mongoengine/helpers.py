@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Type
 
 import mongoengine.fields as me
 from mongoengine.base.fields import BaseField as MongoBaseField
-from mongoengine.queryset import Q as BaseQ  # noqa: N811
+from mongoengine.queryset import Q as BaseQ
 from mongoengine.queryset import QNode
 
 
@@ -67,7 +67,7 @@ def resolve_deep_query(
     latest_field: Optional[str] = None,
 ) -> QNode:
     _all_queries = []
-    for key in where:
+    for key, _ in where.items():
         if key in ["or", "and"]:
             _arr = [(resolve_deep_query(q, document, latest_field)) for q in where[key]]
             if len(_arr) > 0:

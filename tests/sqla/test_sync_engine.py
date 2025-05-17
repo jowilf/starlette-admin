@@ -600,7 +600,7 @@ async def test_create_with_relationships(client: AsyncClient, session: Session):
     assert product.user.name == "Doe"
 
     # Test rendering
-    response = await client.get("/admin/api/product?pks=%d" % product.id)
+    response = await client.get(f"/admin/api/product?pks={product.id}")
     assert response.status_code == 200
 
 

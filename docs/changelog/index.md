@@ -5,6 +5,85 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - Unreleased
+
+### Breaking Changes
+
+#### Updated Method Signatures in `ModelView` Class
+
+The following methods in the `ModelView` class now require an additional `request` parameter:
+
+1. **`get_list_query`**
+    - **Old Signature:** `def get_list_query(self) -> Select`
+    - **New Signature:** `def get_list_query(self, request: Request) -> Select`
+
+2. **`get_count_query`**
+    - **Old Signature:** `def get_count_query(self) -> Select`
+    - **New Signature:** `def get_count_query(self, request: Request) -> Select`
+
+#### Impact on Custom Implementations
+
+If you have extended or overridden the `get_list_query` or `get_count_query` methods in your custom views, you **must
+update** their definitions to include the `request` parameter.
+
+#### Example Update
+
+=== "Before"
+
+    ```python
+    def get_list_query(self) -> Select:
+        return super().get_list_query().where(Post.published == true())
+    ```
+
+=== "After"
+
+    ```python
+    def get_list_query(self, request: Request) -> Select:
+      return super().get_list_query(request).where(Post.published == true())
+    ```
+
+### Added
+
+* Implement Beanie ODM Support by [@alexdlukens](https://github.com/alexdlukens)
+  in [#656](https://github.com/jowilf/starlette-admin/pull/656)
+* Add zh_Hant (Traditional Chinese) translation by [@limouren](https://github.com/limouren)
+  in [#646](https://github.com/jowilf/starlette-admin/pull/646)
+* Add `get_details_query` to SQLAlchemy ModelView. by [@nimaxin](https://github.com/nimaxin)
+  in [#643](https://github.com/jowilf/starlette-admin/pull/643)
+* feat(sqla): add support for joined table polymorphic inheritance by [@noamsto](https://github.com/noamsto)
+  in [#633](https://github.com/jowilf/starlette-admin/pull/633)
+* Improve JsonField form template by [@jowilf](https://github.com/jowilf)
+  in [#639](https://github.com/jowilf/starlette-admin/pull/639)
+* bump httpx test dependency by [@pbsds](https://github.com/pbsds)
+  in [#630](https://github.com/jowilf/starlette-admin/pull/630)
+* Allow overriding the default templates by [@jowilf](https://github.com/jowilf)
+  in [#636](https://github.com/jowilf/starlette-admin/pull/636)
+* upgrade tabler to 1.1.0 by [@jowilf](https://github.com/jowilf)
+  in [#637](https://github.com/jowilf/starlette-admin/pull/637)
+* Add support for sqlalchemy `collection_class` property by [@jowilf](https://github.com/jowilf)
+  in [#625](https://github.com/jowilf/starlette-admin/pull/625)
+* feat(base): add redirect_slashes option to mount_to method by [@noamsto](https://github.com/noamsto)
+  in [#618](https://github.com/jowilf/starlette-admin/pull/618)
+* escape row and bulk actions form value in template by [@jowilf](https://github.com/jowilf)
+  in [#615](https://github.com/jowilf/starlette-admin/pull/615)
+* upgrade tabler to beta21 by [@jowilf](https://github.com/jowilf)
+  in [#599](https://github.com/jowilf/starlette-admin/pull/599)
+* Upgrade Odmantic support to v1.0+ by [@jowilf](https://github.com/jowilf)
+  in [#594](https://github.com/jowilf/starlette-admin/pull/594)
+* Add Portuguese translation by [@abnerjacobsen](https://github.com/abnerjacobsen)
+  in [#480](https://github.com/jowilf/starlette-admin/pull/480)
+
+### Fixed
+
+* Fix dictionary size change exception when using SQLAlchemy `association_proxy` by [@jowilf](https://github.com/jowilf)
+  in [#624](https://github.com/jowilf/starlette-admin/pull/624)
+* Update enum rendering to ensure 'selected' state is applied for data value of 0
+  by [@tomopy03](https://github.com/tomopy03) in [#621](https://github.com/jowilf/starlette-admin/pull/621)
+* escape json value in relation template by [@jowilf](https://github.com/jowilf)
+  in [#598](https://github.com/jowilf/starlette-admin/pull/598)
+* Fix Deprecation Warnings for TemplateResponse and Jinja2Templates by [@ptrstn](https://github.com/ptrstn)
+  in [#575](https://github.com/jowilf/starlette-admin/pull/575)
+
 ## [0.14.1] - 2024-07-12
 
 ### Fixed
