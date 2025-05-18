@@ -7,7 +7,7 @@ name = "starlette-admin"
 description = "Fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["sqlalchemy", "sqlmodel", "mongoengine", "odmantic", "starlette", "fastapi", "admin", "dashboard", "datatables"]
 authors = [
     { name = "Jocelin Hounon", email = "hounonj@gmail.com" },
