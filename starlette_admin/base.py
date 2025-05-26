@@ -211,6 +211,7 @@ class BaseAdmin:
                 ]
             ),
             extensions=["jinja2.ext.i18n"],
+            autoescape=True,
         )
         templates = Jinja2Templates(env=env)
 
