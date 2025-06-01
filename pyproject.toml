@@ -73,7 +73,7 @@ test = [
     "beanie<2.0.0",
 ]
 cov = [
-    "coverage[toml] >=7.0.0, <7.7.0"
+    "coverage[toml] >=7.0.0, <7.9.0"
 ]
 doc = [
     "mkdocs >=1.4.2, <2.0.0",
