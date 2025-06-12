@@ -459,14 +459,14 @@ class BaseAdmin:
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = await model.get_pk_value(request, obj)
-        url = request.url_for(self.route_name + ":list", identity=model.identity).path
+        url = request.url_for(self.route_name + ":list", identity=model.identity)
         if form.get("_continue_editing", None) is not None:
             url = request.url_for(
                 self.route_name + ":edit", identity=model.identity, pk=pk
-            ).path
+            )
         elif form.get("_add_another", None) is not None:
-            url = request.url.path
-        return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
+            url = request.url
+        return RedirectResponse(strip_host_filter(url), status_code=HTTP_303_SEE_OTHER)
 
     async def _render_edit(self, request: Request) -> Response:
         request.state.action = RequestAction.EDIT

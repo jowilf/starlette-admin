@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 from mongoengine import GridFSProxy
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
+from starlette_admin.helpers import strip_host_filter
 from starlette_admin.fields import FileField as BaseFileField
 from starlette_admin.fields import ImageField as BaseImageField
 
@@ -38,7 +39,7 @@ def _serialize_file_field(
         return {
             "filename": getattr(value, "filename", "unamed"),
             "content_type": getattr(value, "content_type", "application/octet-stream"),
-            "url": str(
+            "url": strip_host_filter(
                 request.url_for(
                     request.app.state.ROUTE_NAME + ":api:file",
                     db=value.db_alias,

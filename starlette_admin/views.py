@@ -481,7 +481,7 @@ class BaseModelView(BaseView):
     )
     def row_action_1_view(self, request: Request, pk: Any) -> str:
         route_name = request.app.state.ROUTE_NAME
-        return str(
+        return strip_host_filter(
             request.url_for(route_name + ":detail", identity=self.identity, pk=pk)
         )
 
@@ -493,7 +493,7 @@ class BaseModelView(BaseView):
     )
     def row_action_2_edit(self, request: Request, pk: Any) -> str:
         route_name = request.app.state.ROUTE_NAME
-        return str(request.url_for(route_name + ":edit", identity=self.identity, pk=pk))
+        return strip_host_filter(request.url_for(route_name + ":edit", identity=self.identity, pk=pk))
 
     @row_action(
         name="delete",
@@ -761,7 +761,7 @@ class BaseModelView(BaseView):
 
         pk = await self.get_pk_value(request, obj)
         route_name = request.app.state.ROUTE_NAME
-        obj_meta["detailUrl"] = str(
+        obj_meta["detailUrl"] = strip_host_filter(
             request.url_for(route_name + ":detail", identity=self.identity, pk=pk)
         )
         obj_serialized["_meta"] = obj_meta
