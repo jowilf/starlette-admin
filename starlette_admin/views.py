@@ -29,7 +29,7 @@ from starlette_admin.fields import (
     HasOne,
     RelationField,
 )
-from starlette_admin.helpers import extract_fields, not_none
+from starlette_admin.helpers import extract_fields, not_none, strip_host_filter
 from starlette_admin.i18n import get_locale, gettext, ngettext
 from starlette_admin.i18n import lazy_gettext as _
 
@@ -968,17 +968,17 @@ class BaseModelView(BaseView):
             "fields": [f.dict() for f in self.get_fields_list(request)],
             "pk": self.pk_attr,
             "locale": locale,
-            "apiUrl": request.url_for(
+            "apiUrl": strip_host_filter(request.url_for(
                 f"{request.app.state.ROUTE_NAME}:api", identity=self.identity
-            ),
-            "actionUrl": request.url_for(
+            )),
+            "actionUrl": strip_host_filter(request.url_for(
                 f"{request.app.state.ROUTE_NAME}:action", identity=self.identity
-            ),
-            "rowActionUrl": request.url_for(
+            )),
+            "rowActionUrl": strip_host_filter(request.url_for(
                 f"{request.app.state.ROUTE_NAME}:row-action", identity=self.identity
-            ),
-            "dt_i18n_url": request.url_for(
+            )),
+            "dt_i18n_url": strip_host_filter(request.url_for(
                 f"{request.app.state.ROUTE_NAME}:statics", path=f"i18n/dt/{locale}.json"
-            ),
+            )),
             "datatablesOptions": self.datatables_options,
         }
