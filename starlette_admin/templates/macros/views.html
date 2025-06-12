@@ -13,7 +13,7 @@
 {% macro custom_link(view) -%}
     <li class="nav-item">
         <a class="nav-link {% if view.is_active(request) %}active fw-bold{% endif %}"
-           href="{{ url_for(__name__,path=view.path) }}">
+           href="{{ url_for(__name__,path=view.path) | strip_host }}">
             {% if view.icon %}
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                     <i class="{{ view.icon }}"></i>
@@ -26,7 +26,7 @@
 {% macro model_link(view) -%}
     <li class="nav-item">
         <a class="nav-link {% if view.is_active(request) %}active fw-bold{% endif %}"
-           href="{{ url_for(__name__ ~ ':list', identity=view.identity) }}">
+           href="{{ url_for(__name__ ~ ':list', identity=view.identity) | strip_host }}">
             {% if view.icon %}
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                     <i class="{{ view.icon }}"></i>
@@ -56,9 +56,9 @@
                         {% if (item| is_link) %}
                             <a href="{{ item.url }}" class="dropdown-item" target="{{ item.target }}">{{ item.label }}</a>
                         {% elif (item| is_custom_view) and item.add_to_menu %}
-                            <a href="{{ url_for(__name__ ,path=item.path) }}" class="dropdown-item{% if item.is_active(request) %} active fw-bold{% endif %}">{{ item.label }}</a>
+                            <a href="{{ url_for(__name__ ,path=item.path)  | strip_host }}" class="dropdown-item{% if item.is_active(request) %} active fw-bold{% endif %}">{{ item.label }}</a>
                         {% elif (item| is_model) %}
-                            <a href="{{ url_for(__name__ ~ ':list', identity=item.identity) }}" class="dropdown-item{% if item.is_active(request) %} active fw-bold {% endif %}">{{ item.label }}</a>
+                            <a href="{{ url_for(__name__ ~ ':list', identity=item.identity) | strip_host }}" class="dropdown-item{% if item.is_active(request) %} active fw-bold {% endif %}">{{ item.label }}</a>
                         {% elif (item | is_dropdown) %}
                             {{ dropdown_link(item) }}
                         {% endif %}
