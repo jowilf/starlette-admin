@@ -29,7 +29,7 @@ from starlette.templating import Jinja2Templates
 from starlette_admin._types import RequestAction
 from starlette_admin.auth import BaseAuthProvider
 from starlette_admin.exceptions import ActionFailed, FormValidationError
-from starlette_admin.helpers import get_file_icon, not_none
+from starlette_admin.helpers import get_file_icon, not_none, strip_host_filter
 from starlette_admin.i18n import (
     I18nConfig,
     LocaleMiddleware,
@@ -249,6 +249,10 @@ class BaseAdmin:
         templates.env.filters["ra"] = lambda a: RequestAction(a)
         # install i18n
         templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
+        
+        # split_host filter
+        templates.env.filters["strip_host"] = strip_host_filter
+        
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:
@@ -455,13 +459,13 @@ class BaseAdmin:
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             )
         pk = await model.get_pk_value(request, obj)
-        url = request.url_for(self.route_name + ":list", identity=model.identity)
+        url = request.url_for(self.route_name + ":list", identity=model.identity).path
         if form.get("_continue_editing", None) is not None:
             url = request.url_for(
                 self.route_name + ":edit", identity=model.identity, pk=pk
-            )
+            ).path
         elif form.get("_add_another", None) is not None:
-            url = request.url
+            url = request.url.path
         return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_edit(self, request: Request) -> Response:
@@ -510,7 +514,7 @@ class BaseAdmin:
                 self.route_name + ":edit", identity=model.identity, pk=pk
             )
         elif form.get("_add_another", None) is not None:
-            url = request.url_for(self.route_name + ":create", identity=model.identity)
+            url = request.url_for(self.route_name + ":create", identity=model.identity).path
         return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_error(

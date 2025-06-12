@@ -88,9 +88,9 @@
 {% block head_css %}
     {{ super() }}
     <link rel="stylesheet"
-          href="{{ url_for(__name__ ~ ':statics', path='css/dt.min.css') }}"/>
+          href="{{ url_for(__name__ ~ ':statics', path='css/dt.min.css') | strip_host }}"/>
     <link rel="stylesheet"
-          href="{{ url_for(__name__ ~ ':statics', path='css/dt.checkboxes.css') }}"/>
+          href="{{ url_for(__name__ ~ ':statics', path='css/dt.checkboxes.css')  | strip_host }}"/>
     {% for link in model._additional_css_links(request, "LIST" | ra) %}
         <link rel="stylesheet" href="{{ link }}">
     {% endfor %}

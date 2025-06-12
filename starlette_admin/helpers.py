@@ -131,6 +131,10 @@ def wrap_endpoint_with_kwargs(
 
     return wrapper
 
+def strip_host_filter(url) -> str:
+    from urllib.parse import urlsplit
+    parsed = urlsplit(url)
+    return parsed.path + ("?" + parsed.query if parsed.query else "")
 
 T = TypeVar("T")
 
