@@ -249,10 +249,10 @@ class BaseAdmin:
         templates.env.filters["ra"] = lambda a: RequestAction(a)
         # install i18n
         templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
-        
+
         # split_host filter
         templates.env.filters["strip_host"] = strip_host_filter
-        
+
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:
@@ -514,7 +514,7 @@ class BaseAdmin:
                 self.route_name + ":edit", identity=model.identity, pk=pk
             )
         elif form.get("_add_another", None) is not None:
-            url = request.url_for(self.route_name + ":create", identity=model.identity).path
+            url = request.url_for(self.route_name + ":create", identity=model.identity)
         return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_error(

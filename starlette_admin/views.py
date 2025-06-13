@@ -493,7 +493,9 @@ class BaseModelView(BaseView):
     )
     def row_action_2_edit(self, request: Request, pk: Any) -> str:
         route_name = request.app.state.ROUTE_NAME
-        return strip_host_filter(request.url_for(route_name + ":edit", identity=self.identity, pk=pk))
+        return strip_host_filter(
+            request.url_for(route_name + ":edit", identity=self.identity, pk=pk)
+        )
 
     @row_action(
         name="delete",
@@ -968,17 +970,26 @@ class BaseModelView(BaseView):
             "fields": [f.dict() for f in self.get_fields_list(request)],
             "pk": self.pk_attr,
             "locale": locale,
-            "apiUrl": strip_host_filter(request.url_for(
-                f"{request.app.state.ROUTE_NAME}:api", identity=self.identity
-            )),
-            "actionUrl": strip_host_filter(request.url_for(
-                f"{request.app.state.ROUTE_NAME}:action", identity=self.identity
-            )),
-            "rowActionUrl": strip_host_filter(request.url_for(
-                f"{request.app.state.ROUTE_NAME}:row-action", identity=self.identity
-            )),
-            "dt_i18n_url": strip_host_filter(request.url_for(
-                f"{request.app.state.ROUTE_NAME}:statics", path=f"i18n/dt/{locale}.json"
-            )),
+            "apiUrl": strip_host_filter(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:api", identity=self.identity
+                )
+            ),
+            "actionUrl": strip_host_filter(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:action", identity=self.identity
+                )
+            ),
+            "rowActionUrl": strip_host_filter(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:row-action", identity=self.identity
+                )
+            ),
+            "dt_i18n_url": strip_host_filter(
+                request.url_for(
+                    f"{request.app.state.ROUTE_NAME}:statics",
+                    path=f"i18n/dt/{locale}.json",
+                )
+            ),
             "datatablesOptions": self.datatables_options,
         }
