@@ -2,7 +2,7 @@ import datetime
 import json
 import os
 from enum import Enum
-from typing import Annotated, List
+from typing import Annotated, Any, Dict, List
 
 import pymongo
 import pytest
@@ -14,6 +14,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import Field, SecretStr
 from pymongo import IndexModel
 from starlette.applications import Starlette
+from starlette.requests import Request
 from starlette_admin.contrib.beanie import Admin, ModelView
 
 from tests.beanie import MONGO_URL
@@ -65,10 +66,37 @@ class StoreLoginConfig(Document):
 
 class ProductDescriptionTestView(ModelView):
     full_text_override_order_by = True
+    before_create_count = 0
+    after_create_count = 0
+    before_delete_count = 0
+    after_delete_count = 0
+    before_edit_count = 0
+    after_edit_count = 0
+
+    async def before_create(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        self.before_create_count += 1
+
+    async def after_create(self, request: Request, obj: Any) -> None:
+        self.after_create_count -= 1
+
+    async def before_delete(self, request: Request, obj: Any) -> None:
+        self.before_delete_count += 1
+
+    async def after_delete(self, request: Request, obj: Any) -> None:
+        self.after_delete_count -= 1
+
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        self.before_edit_count += 1
+
+    async def after_edit(self, request: Request, obj: Any) -> None:
+        self.after_edit_count -= 1
 
 
 class TestBeanieView:
-
     @pytest_asyncio.fixture(loop_scope="function")
     async def admin(self):
         self.motor_client = AsyncIOMotorClient(host=MONGO_URL)
@@ -91,11 +119,13 @@ class TestBeanieView:
             exclude_fields_from_create = [Product.created_at]
             exclude_fields_from_edit = ["created_at"]
 
+        self.product_test_view = ProductDescriptionTestView(ProductDescriptionTest)
+
         admin = Admin()
         admin.add_view(ModelView(Store))
         admin.add_view(ProductView(Product))
         admin.add_view(ModelView(User))
-        admin.add_view(ProductDescriptionTestView(ProductDescriptionTest))
+        admin.add_view(self.product_test_view)
         admin.add_view(ModelView(StoreLoginConfig))
 
         yield admin
@@ -304,7 +334,6 @@ class TestBeanieView:
         ) == 0
 
     async def test_full_text_index(self, client):
-
         # add store
         store = Store(name="Store 1")
         await store.save()
@@ -331,6 +360,79 @@ class TestBeanieView:
             "IPhone version 9. this is a very good phone"
         ]
 
+    async def test_create_hooks(self, client):
+        # add store
+        store = Store(name="Store 1")
+        await store.save()
+
+        # add product with description
+        product = ProductDescriptionTest(
+            description="IPhone version 9. this is a very good phone",
+            store=store,
+        ).model_dump(mode="json")
+        product["store"] = store.id
+        assert self.product_test_view.before_create_count == 0
+        assert self.product_test_view.after_create_count == 0
+        response = await client.post(
+            "/admin/product-description-test/create",
+            data=product,
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        assert self.product_test_view.before_create_count == 1
+        assert self.product_test_view.after_create_count == -1
+
+    async def test_delete_hooks(self, client):
+        # add store
+        store = Store(name="Store 1")
+        await store.save()
+
+        # add product with description
+        product = await ProductDescriptionTest(
+            description="IPhone version 9. this is a very good phone",
+            store=store,
+        ).save()
+        assert self.product_test_view.before_delete_count == 0
+        assert self.product_test_view.after_delete_count == 0
+
+        response = await client.post(
+            "/admin/api/product-description-test/action",
+            params={"name": "delete", "pks": [product.id]},
+        )
+        assert response.status_code == 200
+
+        assert self.product_test_view.before_delete_count == 1
+        assert self.product_test_view.after_delete_count == -1
+
+    async def test_edit_hooks(self, client):
+        # add store
+        store = Store(name="Store 1")
+        await store.save()
+
+        # add product with description
+        product = await ProductDescriptionTest(
+            description="IPhone version 9. this is a very good phone",
+            store=store,
+        ).save()
+
+        assert self.product_test_view.before_edit_count == 0
+        assert self.product_test_view.after_edit_count == 0
+
+        response = await client.post(
+            f"/admin/product-description-test/edit/{product.id}",
+            data={"description": "Pinephone Pro", "store": store.id},
+            follow_redirects=True,
+        )
+
+        assert response.status_code == 200
+
+        assert self.product_test_view.before_edit_count == 1
+        assert self.product_test_view.after_edit_count == -1
+
+        await product.sync()
+
+        assert product.description == "Pinephone Pro"
+
     async def test_unsearchable_document(self, client):
         # add store
         store = Store(name="Store 1")
@@ -352,7 +454,6 @@ class TestBeanieView:
         assert data["total"] == 1  # no filtering done here
 
     async def test_init_modelview_invalid_field(self):
-
         class BadProductModelView(ModelView):
             exclude_fields_from_detail = ["non-existing-field"]
 
