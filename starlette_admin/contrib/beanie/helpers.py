@@ -79,15 +79,18 @@ def isvalid_field(document: Type[Document], field: str) -> bool:
         return False
 
 
-def normalize_field_list(
-    field_list: List[Union[str, ExpressionField]], document: Type[Document]
-) -> List[str]:
-
+def normalize_field_list(field_list: List[Union[str, ExpressionField]]) -> List[str]:
     converted_field_list = []
     for field in field_list:
-        field_name = str(field) if isinstance(field, ExpressionField) else field
-        if not isvalid_field(document, field_name):
-            raise ValueError(f"Invalid field: {field_name}")
+        if isinstance(field, ExpressionField):
+            field_name = str(field)
+        elif isinstance(field, str):
+            field_name = field
+        else:
+            raise ValueError(
+                f"Expected str or ExpressionField, got {type(field).__name__}"
+            )
+
         converted_field_list.append(field_name)
     return converted_field_list
 
