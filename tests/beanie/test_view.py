@@ -361,3 +361,7 @@ class TestBeanieView:
 
         with pytest.raises(ValueError):
             BadProductModelView(Product)
+
+    async def test_exception_raised_from_handle_exception(self):
+        with pytest.raises(Exception, match="Boom"):
+            ModelView(Product).handle_exception(Exception("Boom"))
