@@ -70,6 +70,8 @@ class ProductDescriptionTestView(ModelView):
     after_create_count = 0
     before_delete_count = 0
     after_delete_count = 0
+    before_edit_count = 0
+    after_edit_count = 0
 
     async def before_create(
         self, request: Request, data: Dict[str, Any], obj: Any
@@ -84,6 +86,14 @@ class ProductDescriptionTestView(ModelView):
 
     async def after_delete(self, request: Request, obj: Any) -> None:
         self.after_delete_count -= 1
+
+    async def before_edit(
+        self, request: Request, data: Dict[str, Any], obj: Any
+    ) -> None:
+        self.before_edit_count += 1
+
+    async def after_edit(self, request: Request, obj: Any) -> None:
+        self.after_edit_count -= 1
 
 
 class TestBeanieView:
@@ -393,6 +403,35 @@ class TestBeanieView:
 
         assert self.product_test_view.before_delete_count == 1
         assert self.product_test_view.after_delete_count == -1
+
+    async def test_edit_hooks(self, client):
+        # add store
+        store = Store(name="Store 1")
+        await store.save()
+
+        # add product with description
+        product = await ProductDescriptionTest(
+            description="IPhone version 9. this is a very good phone",
+            store=store,
+        ).save()
+
+        assert self.product_test_view.before_edit_count == 0
+        assert self.product_test_view.after_edit_count == 0
+
+        response = await client.post(
+            f"/admin/product-description-test/edit/{product.id}",
+            data={"description": "Pinephone Pro", "store": store.id},
+            follow_redirects=True,
+        )
+
+        assert response.status_code == 200
+
+        assert self.product_test_view.before_edit_count == 1
+        assert self.product_test_view.after_edit_count == -1
+
+        await product.sync()
+
+        assert product.description == "Pinephone Pro"
 
     async def test_unsearchable_document(self, client):
         # add store
