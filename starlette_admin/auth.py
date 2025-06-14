@@ -11,7 +11,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 from starlette_admin.exceptions import FormValidationError, LoginFailed
-from starlette_admin.helpers import wrap_endpoint_with_kwargs
+from starlette_admin.helpers import strip_host_filter, wrap_endpoint_with_kwargs
 from starlette_admin.i18n import lazy_gettext as _
 
 if TYPE_CHECKING:
@@ -270,7 +270,7 @@ class AuthProvider(BaseAuthProvider):
         return await self.logout(
             request,
             RedirectResponse(
-                request.url_for(admin.route_name + ":index"),
+                strip_host_filter(request.url_for(admin.route_name + ":index")),
                 status_code=HTTP_303_SEE_OTHER,
             ),
         )
@@ -363,7 +363,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         return RedirectResponse(
             "{url}?{query_params}".format(
-                url=request.url_for(request.app.state.ROUTE_NAME + ":login"),
+                url=strip_host_filter(
+                    request.url_for(request.app.state.ROUTE_NAME + ":login")
+                ),
                 query_params=urlencode({"next": str(request.url)}),
             ),
             status_code=HTTP_303_SEE_OTHER,

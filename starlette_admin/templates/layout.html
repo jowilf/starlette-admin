@@ -20,7 +20,7 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <h1 class="navbar-brand navbar-brand-autodark">
-                        <a class="brand-link" href="{{ url_for(__name__ ~ ':index') }}">
+                        <a class="brand-link" href="{{ url_for(__name__ ~ ':index') | strip_host }}">
                             {% if logo_url %}
                                 <img src="{{ logo_url }}"
                                      class="navbar-logo"/>
@@ -92,7 +92,7 @@
                                         </div>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <a href="{{ request.url_for(__name__ ~ ':logout') }}"
+                                        <a href="{{ request.url_for(__name__ ~ ':logout') | strip_host }}"
                                            class="dropdown-item">{{ _("Logout") }}</a>
                                     </div>
                                 </div>
@@ -113,7 +113,7 @@
                                 {% endif %}
                             {% endfor %}
                             {% if is_auth_enabled and current_user is none %}
-                                <a href="{{ request.url_for(__name__ ~ ':logout') }}"
+                                <a href="{{ request.url_for(__name__ ~ ':logout') | strip_host }}"
                                    class="btn btn-light mx-1 mt-2">
                                     <i class="fa fa-sign-out"></i>
                                     <span class="ms-2">{{ _("Logout") }}</span>
@@ -201,7 +201,7 @@
                                         </div>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                        <a href="{{ request.url_for(__name__ ~ ':logout') }}"
+                                        <a href="{{ request.url_for(__name__ ~ ':logout') | strip_host }}"
                                            class="dropdown-item">{{ _("Logout") }}</a>
                                     </div>
                                 </div>

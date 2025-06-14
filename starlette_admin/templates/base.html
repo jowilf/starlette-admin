@@ -9,8 +9,8 @@
     {% endif %}
     {% block head_meta %}{% endblock %}
     {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
-    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/tabler.min-1.1.0.css') }}">
-    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/fontawesome.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/tabler.min-1.1.0.css') | strip_host }}">
+    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/fontawesome.min.css') | strip_host }}">
     <style>
         @import url('https://rsms.me/inter/inter.css');
 
@@ -33,10 +33,10 @@
 <body>
 {% block body %}{% endblock %}
 {% block modal %}{% endblock %}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jquery.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/js.cookie.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jquery.min.js') | strip_host }}"></script>
+<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/js.cookie.min.js') | strip_host }}"></script>
 <script type="text/javascript"
-        src="{{ url_for(__name__ ~ ':statics', path='js/vendor/tabler.min-1.1.0.js') }}"></script>
+        src="{{ url_for(__name__ ~ ':statics', path='js/vendor/tabler.min-1.1.0.js') | strip_host }}"></script>
 {% block script %}{% endblock %}
 <script>
     $(function () {

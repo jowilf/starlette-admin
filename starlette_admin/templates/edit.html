@@ -4,10 +4,10 @@
         <h1>{{ model.label }}</h1>
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{{ url_for(__name__ ~ ':index') }}">{{ _("Admin") }}</a>
+                <a href="{{ url_for(__name__ ~ ':index') | strip_host }}">{{ _("Admin") }}</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{{ url_for(__name__ ~ ':list', identity=model.identity) }}">{{ model.label }}</a>
+                <a href="{{ url_for(__name__ ~ ':list', identity=model.identity) | strip_host }}">{{ model.label }}</a>
             </li>
             <li class="breadcrumb-item active">{{ _("Edit") }}</li>
         </ol>
@@ -18,7 +18,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <form action="{{ request.url | safe }}"
+                    <form action="{{ request.url | strip_host | safe }}"
                           method="POST"
                           enctype="multipart/form-data">
                         <div class="card-header">
@@ -42,7 +42,7 @@
                         </div>
                         <div class="card-footer text-black">
                             <div class="btn-list ms-auto justify-content-end">
-                                <a href="{{ url_for(__name__ ~ ':list', identity=model.identity) }}"
+                                <a href="{{ url_for(__name__ ~ ':list', identity=model.identity) | strip_host }}"
                                    class="btn btn-danger">{{ _("Cancel") }}</a>
                                 <button type="submit" name="_add_another"
                                         class="btn">{{ _("Save and add another") }}</button>
@@ -71,8 +71,8 @@
 {% block script %}
     {{ super() }}
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/form.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/form.js') | strip_host }}"></script>
     {% for link in model._additional_js_links(request, "EDIT" | ra) %}
-        <script type="text/javascript" src="{{ link }}"></script>
+        <script type="text/javascript" src="{{ link | strip_host}}"></script>
     {% endfor %}
 {% endblock %}

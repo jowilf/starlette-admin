@@ -5,10 +5,10 @@
         <h1>{{ model.label }}</h1>
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{{ url_for(__name__ ~ ':index') }}">{{ _("Admin") }}</a>
+                <a href="{{ url_for(__name__ ~ ':index') | strip_host }}">{{ _("Admin") }}</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{{ url_for(__name__ ~ ':list', identity=model.identity) }}">{{ model.label }}</a>
+                <a href="{{ url_for(__name__ ~ ':list', identity=model.identity) | strip_host }}">{{ model.label }}</a>
             </li>
             <li class="breadcrumb-item active">{{ _("Detail") }}</li>
         </ol>
@@ -105,18 +105,18 @@
 {% block script %}
     {{ super() }}
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js') | strip_host }}"></script>
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/actions.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/actions.js') | strip_host }}"></script>
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') | strip_host }}"></script>
     {% for link in model._additional_js_links(request, "DETAIL" | ra) %}
         <script type="text/javascript" src="{{ link }}"></script>
     {% endfor %}
     <script>
         var actionManager = new ActionManager(
             "", // not necessary
-            "{{ url_for(__name__ ~ ':row-action', identity=model.identity)  | safe }}",
+            "{{ url_for(__name__ ~ ':row-action', identity=model.identity)  | strip_host | safe }}",
             function (query, element) {
                 // appendQueryParams
                 query.append(
@@ -128,7 +128,7 @@
                 // onSuccess
                 localStorage.successAlert = msg;
                 if (actionName === 'delete') // special case for delete row action
-                    window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity)  | safe }}")
+                    window.location.replace("{{ url_for(__name__ ~ ':list', identity=model.identity) | strip_host | safe }}")
                 else
                     window.location.reload()
             },

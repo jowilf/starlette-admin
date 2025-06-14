@@ -29,7 +29,7 @@ from starlette.templating import Jinja2Templates
 from starlette_admin._types import RequestAction
 from starlette_admin.auth import BaseAuthProvider
 from starlette_admin.exceptions import ActionFailed, FormValidationError
-from starlette_admin.helpers import get_file_icon, not_none
+from starlette_admin.helpers import get_file_icon, not_none, strip_host_filter
 from starlette_admin.i18n import (
     I18nConfig,
     LocaleMiddleware,
@@ -249,6 +249,10 @@ class BaseAdmin:
         templates.env.filters["ra"] = lambda a: RequestAction(a)
         # install i18n
         templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
+
+        # split_host filter
+        templates.env.filters["strip_host"] = strip_host_filter
+
         self.templates = templates
 
     def setup_view(self, view: BaseView) -> None:
@@ -462,7 +466,7 @@ class BaseAdmin:
             )
         elif form.get("_add_another", None) is not None:
             url = request.url
-        return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
+        return RedirectResponse(strip_host_filter(url), status_code=HTTP_303_SEE_OTHER)
 
     async def _render_edit(self, request: Request) -> Response:
         request.state.action = RequestAction.EDIT
@@ -511,7 +515,7 @@ class BaseAdmin:
             )
         elif form.get("_add_another", None) is not None:
             url = request.url_for(self.route_name + ":create", identity=model.identity)
-        return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
+        return RedirectResponse(strip_host_filter(url), status_code=HTTP_303_SEE_OTHER)
 
     async def _render_error(
         self,

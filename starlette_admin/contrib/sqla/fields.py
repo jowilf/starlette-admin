@@ -7,6 +7,7 @@ from starlette_admin.contrib.sqla.exceptions import NotSupportedValue
 from starlette_admin.fields import FileField as BaseFileField
 from starlette_admin.fields import ImageField as BaseImageField
 from starlette_admin.fields import StringField
+from starlette_admin.helpers import strip_host_filter
 from starlette_admin.tools import iterencode
 
 
@@ -94,7 +95,7 @@ def _serialize_sqlalchemy_file_library(
                 {
                     "content_type": item["content_type"],
                     "filename": item["filename"],
-                    "url": str(
+                    "url": strip_host_filter(
                         request.url_for(
                             request.app.state.ROUTE_NAME + ":api:file",
                             storage=storage,
