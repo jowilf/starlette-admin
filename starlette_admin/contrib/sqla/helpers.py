@@ -1,7 +1,7 @@
+import datetime
 from typing import Any, Callable, Dict, Optional, Sequence
+
 from pydantic import TypeAdapter, ValidationError  # type: ignore[attr-defined]
-
-
 from sqlalchemy import String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
     InstrumentedAttribute,
@@ -9,7 +9,6 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
 from sqlalchemy.sql import ClauseElement
-import datetime
 
 
 def __is_null(latest_attr: InstrumentedAttribute) -> Any:
@@ -52,15 +51,12 @@ OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
 }
 
 
-
 def parse_datetime(value: str) -> bool:
     try:
         TypeAdapter(datetime.datetime).validate_python(value)
     except ValidationError:
         return False
     return True
-
-
 
 
 def _check_value(v: Any, attr: Optional[InstrumentedAttribute]) -> Any:
