@@ -7,7 +7,7 @@
         <p class="empty-title">{{ _("Oops… You just found an error page") }}</p>
         <p class="empty-subtitle text-muted">{{ exc.detail }}</p>
         <div class="empty-action">
-            <a class="btn btn-primary" href="{{ url_for(__name__ ~ ':index') }}">
+            <a class="btn btn-primary" href="{{ url_for(__name__ ~ ':index')  | strip_host }}">
                 <svg class="icon"
                      fill="none"
                      height="24"

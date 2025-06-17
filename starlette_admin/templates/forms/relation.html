@@ -6,7 +6,7 @@
             id="{{ field.id }}"
             name="{{ field.id }}"
             class="form-control {{ 'field-has-one' if not field.many else 'field-has-many' }} {% if error %}is-invalid{% endif %}"
-            data-url="{{ url_for(__name__ ~ ':api', identity=foreign_model.identity) }}"
+            data-url="{{ url_for(__name__ ~ ':api', identity=foreign_model.identity) | strip_host }}"
             data-pk="{{ fpk }}"
             {% if data %}data-initial="{{ (data if field.multiple else [data]) |tojson |forceescape }}" {% endif %}
             {% if field.multiple %}multiple{% endif %}>

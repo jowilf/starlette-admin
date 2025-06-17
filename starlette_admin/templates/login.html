@@ -11,7 +11,7 @@
                 </a>
             </div>
         {% endif %}
-        <form class="card card-md" action="{{ request.url }}" method="POST">
+        <form class="card card-md" action="{{ request.url | strip_host }}" method="POST">
             <div class="card-body">
                 <h2 class="card-title text-center mb-4">{{ _("Login to your account") }}</h2>
                 {% if error %}
