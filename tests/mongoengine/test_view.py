@@ -321,7 +321,7 @@ class TestMongoBasic:
         response = client.get(f"/admin/product/detail/{product.id}")
         assert response.status_code == 200
         assert (
-            f'src="http://testserver/admin/api/file/default/images/{product.image.grid_id}"'
+            f'src="/admin/api/file/default/images/{product.image.grid_id}"'
             in response.text
         )
 

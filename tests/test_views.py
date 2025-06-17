@@ -196,7 +196,7 @@ class TestViews:
             assert value["_meta"]["select2"]["selection"] is not None
             assert value["_meta"]["select2"]["result"] is not None
         assert data["items"][0]["_meta"] == {
-            "detailUrl": "http://testserver/admin/user/detail/1",
+            "detailUrl": "/admin/user/detail/1",
             "repr": "John Doe",
             "select2": {
                 "selection": "<span>John Doe</span>",
@@ -217,7 +217,7 @@ class TestViews:
             assert value["_meta"]["select2"]["selection"] is not None
         title = "Dave wasn't exactly sure how he had ended up"
         assert data["items"][0]["_meta"] == {
-            "detailUrl": "http://testserver/admin/post/detail/1",
+            "detailUrl": "/admin/post/detail/1",
             "repr": title,
             "select2": {
                 "selection": f"<span>{title}</span>",
@@ -241,7 +241,7 @@ class TestViews:
             "/admin/post/create", data=dummy_data, follow_redirects=False
         )
         assert response.status_code == 303
-        assert response.headers.get("location") == "http://testserver/admin/post/list"
+        assert response.headers.get("location") == "/admin/post/list"
         assert len(PostView.db) == 6
         assert PostView.db[6] == Post(id=6, **dummy_data)
 
@@ -251,7 +251,7 @@ class TestViews:
             follow_redirects=False,
         )
         assert response.status_code == 303
-        assert response.headers.get("location") == "http://testserver/admin/post/edit/7"
+        assert response.headers.get("location") == "/admin/post/edit/7"
 
         response = client.post(
             "/admin/post/create",
@@ -259,7 +259,7 @@ class TestViews:
             follow_redirects=False,
         )
         assert response.status_code == 303
-        assert response.headers.get("location") == "http://testserver/admin/post/create"
+        assert response.headers.get("location") == "/admin/post/create"
 
     def test_model_view_edit(self):
         admin = BaseAdmin()
@@ -277,7 +277,7 @@ class TestViews:
             "/admin/post/edit/5", data=dummy_data, follow_redirects=False
         )
         assert response.status_code == 303
-        assert response.headers.get("location") == "http://testserver/admin/post/list"
+        assert response.headers.get("location") == "/admin/post/list"
         assert len(PostView.db) == 5
         assert PostView.db[5] == Post(id=5, **dummy_data)
 
@@ -287,7 +287,7 @@ class TestViews:
             follow_redirects=False,
         )
         assert response.status_code == 303
-        assert response.headers.get("location") == "http://testserver/admin/post/edit/5"
+        assert response.headers.get("location") == "/admin/post/edit/5"
 
         response = client.post(
             "/admin/post/edit/5",
@@ -295,7 +295,7 @@ class TestViews:
             follow_redirects=False,
         )
         assert response.status_code == 303
-        assert response.headers.get("location") == "http://testserver/admin/post/create"
+        assert response.headers.get("location") == "/admin/post/create"
 
     def test_model_view_create_validation_error(self):
         class PostViewWithRestrictedTitle(PostView):
@@ -487,15 +487,13 @@ class TestViews:
         assert response.text.count('<span class="nav-link-title">') == 2
         assert (
             response.text.count(
-                '<a href="http://testserver/admin/user/list"'
-                ' class="dropdown-item">Users</a>'
+                '<a href="/admin/user/list"' ' class="dropdown-item">Users</a>'
             )
             == 1
         )
         assert (
             response.text.count(
-                '<a href="http://testserver/admin/report"'
-                ' class="dropdown-item">Report</a>'
+                '<a href="/admin/report"' ' class="dropdown-item">Report</a>'
             )
             == 1
         )

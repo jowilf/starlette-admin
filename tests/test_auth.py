@@ -113,7 +113,7 @@ class TestAuth:
         assert response.status_code == 303
         assert (
             response.headers.get("location")
-            == "http://testserver/admin/login?next=http%3A%2F%2Ftestserver%2Fadmin%2F"
+            == "/admin/login?next=http%3A%2F%2Ftestserver%2Fadmin%2F"
         )
 
     @pytest.mark.asyncio
@@ -144,7 +144,7 @@ class TestAuth:
         assert response.status_code == 303
         assert (
             response.headers.get("location")
-            == "http://testserver/admin/custom-login?next=http%3A%2F%2Ftestserver%2Fadmin%2F"
+            == "/admin/custom-login?next=http%3A%2F%2Ftestserver%2Fadmin%2F"
         )
 
     def test_deprecated_allow_paths(self):
