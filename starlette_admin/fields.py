@@ -22,7 +22,12 @@ from typing import (
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
-from starlette_admin.helpers import extract_fields, html_params, is_empty_file
+from starlette_admin.helpers import (
+    extract_fields,
+    html_params,
+    is_empty_file,
+    strip_host_filter,
+)
 from starlette_admin.i18n import (
     format_date,
     format_datetime,
@@ -440,7 +445,7 @@ class TagsField(BaseField):
     ) -> List[str]:
         if action.is_form():
             return [
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path="css/select2.min.css",
@@ -452,7 +457,7 @@ class TagsField(BaseField):
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path="js/vendor/select2.min.js",
@@ -604,7 +609,7 @@ class EnumField(StringField):
     ) -> List[str]:
         if self.select2 and action.is_form():
             return [
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path="css/select2.min.css",
@@ -616,7 +621,7 @@ class EnumField(StringField):
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if self.select2 and action.is_form():
             return [
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path="js/vendor/select2.min.js",
@@ -756,7 +761,7 @@ class DateTimeField(NumberField):
     ) -> List[str]:
         if action.is_form():
             return [
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path="css/flatpickr.min.css",
@@ -767,7 +772,7 @@ class DateTimeField(NumberField):
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         _links = [
-            str(
+            strip_host_filter(
                 request.url_for(
                     f"{request.app.state.ROUTE_NAME}:statics",
                     path="js/vendor/flatpickr.min.js",
@@ -776,7 +781,7 @@ class DateTimeField(NumberField):
         ]
         if get_locale() != "en":
             _links.append(
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path=f"i18n/flatpickr/{get_locale()}.js",
@@ -913,7 +918,7 @@ class JSONField(BaseField):
     ) -> List[str]:
         if action.is_form():
             return [
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path="css/jsoneditor.min.css",
@@ -925,7 +930,7 @@ class JSONField(BaseField):
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path="js/vendor/jsoneditor.min.js",
@@ -1061,7 +1066,7 @@ class RelationField(BaseField):
     ) -> List[str]:
         if action.is_form():
             return [
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path="css/select2.min.css",
@@ -1073,7 +1078,7 @@ class RelationField(BaseField):
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         if action.is_form():
             return [
-                str(
+                strip_host_filter(
                     request.url_for(
                         f"{request.app.state.ROUTE_NAME}:statics",
                         path="js/vendor/select2.min.js",
