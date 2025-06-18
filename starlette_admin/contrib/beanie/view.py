@@ -232,6 +232,9 @@ class ModelView(BaseModelView, Generic[T]):
 
         return getattr(obj, not_none(self.pk_attr))
 
+    async def get_serialized_pk_value(self, request: Request, obj: Any) -> Any:
+        return str(await self.get_pk_value(request, obj))
+
     async def create(self, request: Request, data: dict) -> T:
         data = {
             k: v
