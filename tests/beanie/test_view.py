@@ -119,6 +119,7 @@ class TestBeanieView:
             ]
             exclude_fields_from_create = [Product.created_at]
             exclude_fields_from_edit = ["created_at"]
+            exclude_fields_from_list = [Product.id]
 
         admin = Admin()
         admin.add_view(StoreView(Store))

@@ -79,11 +79,16 @@ def isvalid_field(document: Type[Document], field: str) -> bool:
         return False
 
 
+def resolve_expression_field_name(field: ExpressionField) -> str:
+    field_str = str(field)
+    return "id" if field_str == "_id" else field_str
+
+
 def normalize_field_list(field_list: List[Union[str, ExpressionField]]) -> List[str]:
     converted_field_list = []
     for field in field_list:
         if isinstance(field, ExpressionField):
-            field_name = str(field)
+            field_name = resolve_expression_field_name(field)
         elif isinstance(field, str):
             field_name = field
         else:

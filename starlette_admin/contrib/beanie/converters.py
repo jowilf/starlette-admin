@@ -19,6 +19,7 @@ from starlette_admin.contrib.beanie.helpers import (
     is_link_type,
     is_list_of_links_type,
     isvalid_field,
+    resolve_expression_field_name,
 )
 from starlette_admin.converters import StandardModelConverter, converts
 from starlette_admin.fields import (
@@ -136,7 +137,11 @@ class BeanieModelConverter(StandardModelConverter):
             if isinstance(value, BaseField):
                 converted_fields.append(value)
             else:
-                field = str(value) if isinstance(value, ExpressionField) else value
+                field = (
+                    resolve_expression_field_name(value)
+                    if isinstance(value, ExpressionField)
+                    else value
+                )
                 if not isvalid_field(model, field):
                     raise ValueError(f"Invalid field: {field}")
                 field_type = self.get_type_beanie(model.model_fields, value)
