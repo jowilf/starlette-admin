@@ -235,7 +235,7 @@ class ModelView(BaseModelView, Generic[T]):
     async def get_serialized_pk_value(self, request: Request, obj: Any) -> Any:
         return str(await self.get_pk_value(request, obj))
 
-    async def create(self, request: Request, data: dict) -> T:
+    async def create(self, request: Request, data: dict) -> Any:
         data = {
             k: v
             for k, v in data.items()
@@ -243,11 +243,11 @@ class ModelView(BaseModelView, Generic[T]):
         }
         try:
             doc = self.document(**data)
-        except ValidationError as ve:
-            raise pydantic_error_to_form_validation_errors(ve) from ve
-        return await doc.create()
+            return await doc.create()
+        except Exception as e:
+            return self.handle_exception(e)
 
-    async def edit(self, request: Request, pk: PydanticObjectId, data: dict) -> T:
+    async def edit(self, request: Request, pk: PydanticObjectId, data: dict) -> Any:
         doc: Union[Document, None] = await self.document.get(pk)
         assert doc is not None, "Document not found"
         data = {
@@ -273,8 +273,8 @@ class ModelView(BaseModelView, Generic[T]):
             validated_doc: T = self.document.model_validate(doc.model_dump())
             return await validated_doc.replace()
 
-        except ValidationError as ve:
-            raise pydantic_error_to_form_validation_errors(ve) from ve
+        except Exception as e:
+            return self.handle_exception(e)
 
     async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
         cnt = 0
@@ -284,3 +284,8 @@ class ModelView(BaseModelView, Generic[T]):
                 await value.delete()
                 cnt += 1
         return cnt
+
+    def handle_exception(self, exc: Exception) -> None:
+        if isinstance(exc, ValidationError):
+            raise pydantic_error_to_form_validation_errors(exc) from exc
+        raise exc
