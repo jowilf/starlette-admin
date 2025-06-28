@@ -3,7 +3,7 @@ import json
 import warnings
 from dataclasses import asdict, dataclass
 from dataclasses import field as dc_field
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timezone
 from enum import Enum, IntEnum
 from json import JSONDecodeError
 from typing import (
@@ -30,6 +30,7 @@ from starlette_admin.i18n import (
     get_countries_list,
     get_currencies_list,
     get_locale,
+    get_tzinfo,
 )
 from starlette_admin.utils.timezones import common_timezones
 
@@ -737,19 +738,36 @@ class DateTimeField(NumberField):
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
         try:
-            return datetime.fromisoformat(form_data.get(self.id))  # type: ignore
+            dt = datetime.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
             return None
+
+        if dt.tzinfo is not None:
+            return dt.astimezone(timezone.utc).replace(tzinfo=None)
+
+        # dt is naive, assume it's in the user's timezone
+        user_tz = get_tzinfo()
+        dt_with_tz = dt.replace(tzinfo=user_tz)
+        dt_utc = dt_with_tz.astimezone(timezone.utc)
+
+        return dt_utc.replace(tzinfo=None)
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> str:
-        assert isinstance(
-            value, (datetime, date, time)
-        ), f"Expect datetime | date | time, got  {type(value)}"
+        assert isinstance(value, datetime), f"Expected datetime, got {type(value)}"
+
+        user_tz = get_tzinfo()
+
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+
         if action != RequestAction.EDIT:
-            return format_datetime(value, self.output_format)
-        return value.isoformat()
+            return format_datetime(value, self.output_format, user_tz)
+
+        # For EDIT action, convert to user timezone and return as naive datetime for datetime-local input
+        converted_value = value.astimezone(user_tz)
+        return converted_value.replace(tzinfo=None).isoformat()
 
     def additional_css_links(
         self, request: Request, action: RequestAction
