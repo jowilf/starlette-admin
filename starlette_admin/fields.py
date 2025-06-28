@@ -3,7 +3,7 @@ import json
 import warnings
 from dataclasses import asdict, dataclass
 from dataclasses import field as dc_field
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time
 from enum import Enum, IntEnum
 from json import JSONDecodeError
 from typing import (
@@ -29,6 +29,7 @@ from starlette_admin.i18n import (
     format_time,
     get_countries_list,
     get_currencies_list,
+    get_database_tzinfo,
     get_locale,
     get_tzinfo,
 )
@@ -743,14 +744,16 @@ class DateTimeField(NumberField):
             return None
 
         if dt.tzinfo is not None:
-            return dt.astimezone(timezone.utc).replace(tzinfo=None)
+            # Convert timezone-aware datetime to database timezone
+            database_tz = get_database_tzinfo()
+            return dt.astimezone(database_tz).replace(tzinfo=None)
 
         # dt is naive, assume it's in the user's timezone
         user_tz = get_tzinfo()
-        dt_with_tz = dt.replace(tzinfo=user_tz)
-        dt_utc = dt_with_tz.astimezone(timezone.utc)
+        database_tz = get_database_tzinfo()
+        dt_db_tz = dt.replace(tzinfo=user_tz).astimezone(database_tz)
 
-        return dt_utc.replace(tzinfo=None)
+        return dt_db_tz.replace(tzinfo=None)
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
@@ -760,7 +763,8 @@ class DateTimeField(NumberField):
         user_tz = get_tzinfo()
 
         if value.tzinfo is None:
-            value = value.replace(tzinfo=timezone.utc)
+            database_tz = get_database_tzinfo()
+            value = value.replace(tzinfo=database_tz)
 
         if action != RequestAction.EDIT:
             return format_datetime(value, self.output_format, user_tz)

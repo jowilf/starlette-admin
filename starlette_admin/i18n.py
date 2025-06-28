@@ -31,6 +31,9 @@ SUPPORTED_LOCALES = [
 _current_timezone: ContextVar[str] = ContextVar(
     "current_timezone", default=DEFAULT_TIMEZONE
 )
+_current_database_timezone: ContextVar[str] = ContextVar(
+    "current_database_timezone", default="UTC"
+)
 
 
 def set_timezone(timezone: str) -> None:
@@ -56,6 +59,30 @@ def get_tzinfo() -> datetime.tzinfo:
         return datetime.timezone.utc
 
     return zoneinfo.ZoneInfo(get_timezone())
+
+
+def set_database_timezone(timezone: str) -> None:
+    if zoneinfo is None:
+        _current_database_timezone.set("UTC")
+        return
+
+    try:
+        # Validate timezone
+        zoneinfo.ZoneInfo(timezone)
+        _current_database_timezone.set(timezone)
+    except zoneinfo.ZoneInfoNotFoundError:
+        _current_database_timezone.set("UTC")
+
+
+def get_database_timezone() -> str:
+    return _current_database_timezone.get()
+
+
+def get_database_tzinfo() -> datetime.tzinfo:
+    if zoneinfo is None:
+        return datetime.timezone.utc
+
+    return zoneinfo.ZoneInfo(get_database_timezone())
 
 
 try:
@@ -188,6 +215,7 @@ class TimezoneConfig:
 
     default_timezone: str = DEFAULT_TIMEZONE
     timezone_cookie_name: Optional[str] = "timezone"
+    database_timezone: str = "UTC"
 
 
 class LocaleMiddleware:
@@ -233,4 +261,5 @@ class TimezoneMiddleware:
                 timezone = cookie_timezone
 
         set_timezone(timezone or DEFAULT_TIMEZONE)
+        set_database_timezone(self.timezone_config.database_timezone)
         await self.app(scope, receive, send)
