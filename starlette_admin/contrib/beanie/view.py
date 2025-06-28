@@ -223,7 +223,10 @@ class ModelView(BaseModelView, Generic[T]):
         }
         try:
             doc = self.document(**data)
-            return await doc.create()
+            await self.before_create(request, data, doc)
+            doc = await doc.create()
+            await self.after_create(request, doc)
+            return doc
         except Exception as e:
             return self.handle_exception(e)
 
@@ -254,7 +257,12 @@ class ModelView(BaseModelView, Generic[T]):
 
             # ensure doc still passes validation
             validated_doc: T = self.document.model_validate(doc.model_dump())
-            return await validated_doc.replace()
+
+            await self.before_edit(request, data=data, obj=doc)
+            updated_doc = await validated_doc.replace()
+            await self.after_edit(request, updated_doc)
+
+            return updated_doc
 
         except Exception as e:
             return self.handle_exception(e)
@@ -264,7 +272,9 @@ class ModelView(BaseModelView, Generic[T]):
         for pk in pks:
             value = await self.find_by_pk(request, pk)
             if value is not None:
+                await self.before_delete(request, value)
                 await value.delete()
+                await self.after_delete(request, value)
                 cnt += 1
         return cnt
 
