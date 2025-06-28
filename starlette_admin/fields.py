@@ -737,7 +737,7 @@ class DateTimeField(NumberField):
 
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
-    ) -> Any:
+    ) -> datetime | None:
         try:
             dt = datetime.fromisoformat(form_data.get(self.id))  # type: ignore
         except (TypeError, ValueError):
@@ -751,9 +751,7 @@ class DateTimeField(NumberField):
         # dt is naive, assume it's in the user's timezone
         user_tz = get_tzinfo()
         database_tz = get_database_tzinfo()
-        dt_db_tz = dt.replace(tzinfo=user_tz).astimezone(database_tz)
-
-        return dt_db_tz.replace(tzinfo=None)
+        return dt.replace(tzinfo=user_tz).astimezone(database_tz).replace(tzinfo=None)
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
@@ -890,18 +888,21 @@ class ArrowField(DateTimeField):
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
-        try:
-            return arrow.get(form_data.get(self.id))  # type: ignore
-        except (TypeError, arrow.parser.ParserError):  # pragma: no cover
+        dt = await super().parse_form_data(request, form_data, action)
+        if dt is None:
             return None
+
+        return arrow.get(dt, get_database_tzinfo())
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> str:
         assert isinstance(value, arrow.Arrow), f"Expected Arrow, got  {type(value)}"
         if action != RequestAction.EDIT:
-            return value.humanize(locale=get_locale())
-        return value.isoformat()
+            user_tz = get_tzinfo()
+            return value.to(user_tz).humanize(locale=get_locale())
+
+        return await super().serialize_value(request, value.datetime, action)
 
 
 @dataclass
@@ -981,7 +982,9 @@ class FileField(BaseField):
             files = form_data.getlist(self.id)
             return [f for f in files if not is_empty_file(f.file)], should_be_deleted  # type: ignore
         file = form_data.get(self.id)
-        return (None if (file and is_empty_file(file.file)) else file), should_be_deleted  # type: ignore
+        return (
+            None if (file and is_empty_file(file.file)) else file
+        ), should_be_deleted  # type: ignore
 
     def _isvalid_value(self, value: Any) -> bool:
         return value is not None and all(
