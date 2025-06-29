@@ -2,13 +2,16 @@ import datetime
 import pathlib
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
+import zoneinfo
 from starlette.requests import HTTPConnection
 from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette_admin.utils.countries import countries_codes
 
 DEFAULT_LOCALE = "en"
+DEFAULT_TIMEZONE = "UTC"
+DEFAULT_DB_TIMEZONE = "UTC"
 SUPPORTED_LOCALES = [
     "de",  # German
     "en",  # English
@@ -18,6 +21,47 @@ SUPPORTED_LOCALES = [
     "tr",  # Turkish
     "zh_Hant",  # Traditional Chinese
 ]
+
+_current_timezone: ContextVar[str] = ContextVar(
+    "current_timezone", default=DEFAULT_TIMEZONE
+)
+_current_database_timezone: ContextVar[str] = ContextVar(
+    "current_database_timezone", default=DEFAULT_DB_TIMEZONE
+)
+
+
+def set_timezone(timezone: str) -> None:
+    try:
+        # Validate timezone
+        zoneinfo.ZoneInfo(timezone)
+        _current_timezone.set(timezone)
+    except zoneinfo.ZoneInfoNotFoundError:
+        _current_timezone.set(DEFAULT_TIMEZONE)
+
+
+def get_timezone() -> str:
+    return _current_timezone.get()
+
+
+def get_tzinfo() -> datetime.tzinfo:
+    return zoneinfo.ZoneInfo(get_timezone())
+
+
+def set_database_timezone(timezone: str) -> None:
+    try:
+        # Validate timezone
+        zoneinfo.ZoneInfo(timezone)
+        _current_database_timezone.set(timezone)
+    except zoneinfo.ZoneInfoNotFoundError:
+        _current_database_timezone.set(DEFAULT_DB_TIMEZONE)
+
+
+def get_database_timezone() -> str:
+    return _current_database_timezone.get()
+
+
+def get_database_tzinfo() -> datetime.tzinfo:
+    return zoneinfo.ZoneInfo(get_database_timezone())
 
 
 try:
@@ -57,7 +101,7 @@ try:
         return LazyProxy(gettext, message)  # type: ignore[return-value]
 
     def format_datetime(
-        datetime: Union[datetime.date, datetime.time],
+        datetime: datetime.datetime,
         format: Optional[str] = None,
         tzinfo: Any = None,
     ) -> str:
@@ -103,10 +147,13 @@ except ImportError:
         return gettext(message)
 
     def format_datetime(
-        datetime: Union[datetime.date, datetime.time],
+        datetime: datetime.datetime,
         format: Optional[str] = None,
         tzinfo: Any = None,
     ) -> str:
+        if tzinfo is not None:
+            datetime = datetime.astimezone(tzinfo)
+
         return datetime.strftime(format or "%B %d, %Y %H:%M:%S")
 
     def format_date(date: datetime.date, format: Optional[str] = None) -> str:
@@ -139,6 +186,17 @@ class I18nConfig:
     language_switcher: Optional[List[str]] = None
 
 
+@dataclass
+class TimezoneConfig:
+    """
+    Timezone config for your admin interface
+    """
+
+    default_timezone: str = DEFAULT_TIMEZONE
+    timezone_cookie_name: Optional[str] = "timezone"
+    database_timezone: str = DEFAULT_DB_TIMEZONE
+
+
 class LocaleMiddleware:
     def __init__(self, app: ASGIApp, i18n_config: I18nConfig) -> None:
         self.app = app
@@ -162,4 +220,25 @@ class LocaleMiddleware:
             """detect locale in headers"""
             locale = conn.headers.get(self.i18n_config.language_header_name)
         set_locale(locale or DEFAULT_LOCALE)
+        await self.app(scope, receive, send)
+
+
+class TimezoneMiddleware:
+    def __init__(self, app: ASGIApp, timezone_config: TimezoneConfig) -> None:
+        self.app = app
+        self.timezone_config = timezone_config
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        conn = HTTPConnection(scope)
+        timezone: Optional[str] = self.timezone_config.default_timezone
+
+        if self.timezone_config.timezone_cookie_name:
+            cookie_timezone = conn.cookies.get(
+                self.timezone_config.timezone_cookie_name
+            )
+            if cookie_timezone:
+                timezone = cookie_timezone
+
+        set_timezone(timezone or DEFAULT_TIMEZONE)
+        set_database_timezone(self.timezone_config.database_timezone)
         await self.app(scope, receive, send)
