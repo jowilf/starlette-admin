@@ -4,17 +4,10 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
+import zoneinfo
 from starlette.requests import HTTPConnection
 from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette_admin.utils.countries import countries_codes
-
-try:
-    import zoneinfo
-except ImportError:
-    try:
-        from backports import zoneinfo  # type: ignore
-    except ImportError:
-        zoneinfo = None  # type: ignore
 
 DEFAULT_LOCALE = "en"
 DEFAULT_TIMEZONE = "UTC"
@@ -37,11 +30,6 @@ _current_database_timezone: ContextVar[str] = ContextVar(
 
 
 def set_timezone(timezone: str) -> None:
-    if zoneinfo is None:
-        _current_timezone.set(DEFAULT_TIMEZONE)
-
-        return
-
     try:
         # Validate timezone
         zoneinfo.ZoneInfo(timezone)
@@ -55,17 +43,10 @@ def get_timezone() -> str:
 
 
 def get_tzinfo() -> datetime.tzinfo:
-    if zoneinfo is None:
-        return datetime.timezone.utc
-
     return zoneinfo.ZoneInfo(get_timezone())
 
 
 def set_database_timezone(timezone: str) -> None:
-    if zoneinfo is None:
-        _current_database_timezone.set("UTC")
-        return
-
     try:
         # Validate timezone
         zoneinfo.ZoneInfo(timezone)
@@ -79,9 +60,6 @@ def get_database_timezone() -> str:
 
 
 def get_database_tzinfo() -> datetime.tzinfo:
-    if zoneinfo is None:
-        return datetime.timezone.utc
-
     return zoneinfo.ZoneInfo(get_database_timezone())
 
 
