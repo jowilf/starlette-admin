@@ -11,6 +11,7 @@ from starlette_admin.utils.countries import countries_codes
 
 DEFAULT_LOCALE = "en"
 DEFAULT_TIMEZONE = "UTC"
+DEFAULT_DB_TIMEZONE = "UTC"
 SUPPORTED_LOCALES = [
     "de",  # German
     "en",  # English
@@ -25,7 +26,7 @@ _current_timezone: ContextVar[str] = ContextVar(
     "current_timezone", default=DEFAULT_TIMEZONE
 )
 _current_database_timezone: ContextVar[str] = ContextVar(
-    "current_database_timezone", default="UTC"
+    "current_database_timezone", default=DEFAULT_DB_TIMEZONE
 )
 
 
@@ -52,7 +53,7 @@ def set_database_timezone(timezone: str) -> None:
         zoneinfo.ZoneInfo(timezone)
         _current_database_timezone.set(timezone)
     except zoneinfo.ZoneInfoNotFoundError:
-        _current_database_timezone.set("UTC")
+        _current_database_timezone.set(DEFAULT_DB_TIMEZONE)
 
 
 def get_database_timezone() -> str:
@@ -193,7 +194,7 @@ class TimezoneConfig:
 
     default_timezone: str = DEFAULT_TIMEZONE
     timezone_cookie_name: Optional[str] = "timezone"
-    database_timezone: str = "UTC"
+    database_timezone: str = DEFAULT_DB_TIMEZONE
 
 
 class LocaleMiddleware:

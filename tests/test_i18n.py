@@ -15,7 +15,13 @@ from starlette_admin import (
     TimezoneConfig,
 )
 from starlette_admin.fields import ArrowField
-from starlette_admin.i18n import SUPPORTED_LOCALES
+from starlette_admin.i18n import (
+    SUPPORTED_LOCALES,
+    get_database_timezone,
+    get_timezone,
+    set_database_timezone,
+    set_timezone,
+)
 
 from tests.dummy_model_view import DummyBaseModel, DummyModelView
 
@@ -219,3 +225,11 @@ def test_timezone_edit_form_display_and_submission():
     # Tokyo 15:45 -> Eastern 01:45 (14 hour difference)
     expected_eastern_time = "2025-01-08 01:45:00"
     assert str(saved_post.created_at) == expected_eastern_time
+
+
+def test_timezone_functions_with_invalid_timezone():
+    set_timezone("Invalid/Timezone")
+    assert get_timezone() == "UTC"
+
+    set_database_timezone("Invalid/Database_Timezone")
+    assert get_database_timezone() == "UTC"
