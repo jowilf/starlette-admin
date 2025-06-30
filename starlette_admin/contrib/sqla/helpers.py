@@ -1,7 +1,5 @@
 import datetime
 from typing import Any, Callable, Dict, Optional, Sequence
-
-from pydantic import TypeAdapter, ValidationError  # type: ignore[attr-defined]
 from sqlalchemy import String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
     InstrumentedAttribute,
@@ -53,10 +51,13 @@ OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
 
 def parse_datetime(value: str) -> bool:
     try:
-        TypeAdapter(datetime.datetime).validate_python(value)
-    except ValidationError:
+        # Try parsing the string using ISO format first
+        datetime.datetime.fromisoformat(value)
+        return True
+    except ValueError:
         return False
-    return True
+
+
 
 
 def _check_value(v: Any, attr: Optional[InstrumentedAttribute]) -> Any:
