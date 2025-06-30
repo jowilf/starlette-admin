@@ -1,5 +1,6 @@
 import datetime
 from typing import Any, Callable, Dict, Optional, Sequence
+
 from sqlalchemy import String, and_, cast, false, not_, or_, true
 from sqlalchemy.orm import (
     InstrumentedAttribute,
@@ -56,8 +57,6 @@ def parse_datetime(value: str) -> bool:
         return True
     except ValueError:
         return False
-
-
 
 
 def _check_value(v: Any, attr: Optional[InstrumentedAttribute]) -> Any:
