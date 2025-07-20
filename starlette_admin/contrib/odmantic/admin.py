@@ -5,7 +5,7 @@ from starlette.middleware import Middleware
 from starlette_admin.auth import BaseAuthProvider
 from starlette_admin.base import BaseAdmin
 from starlette_admin.contrib.odmantic.middleware import EngineMiddleware
-from starlette_admin.i18n import I18nConfig
+from starlette_admin.i18n import I18nConfig, TimezoneConfig
 from starlette_admin.i18n import lazy_gettext as _
 from starlette_admin.views import CustomView
 
@@ -26,6 +26,7 @@ class Admin(BaseAdmin):
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
         i18n_config: Optional[I18nConfig] = None,
+        timezone_config: Optional[TimezoneConfig] = None,
         favicon_url: Optional[str] = None,
     ) -> None:
         super().__init__(
@@ -41,6 +42,7 @@ class Admin(BaseAdmin):
             middlewares=middlewares,
             debug=debug,
             i18n_config=i18n_config,
+            timezone_config=timezone_config,
             favicon_url=favicon_url,
         )
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)

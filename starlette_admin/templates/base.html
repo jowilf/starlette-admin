@@ -47,6 +47,12 @@
                 window.location.reload();
             });
         });
+
+        // Set timezone cookie from browser
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (timezone) {
+            Cookies.set('timezone', timezone);
+        }
     });
 </script>
 </body>
