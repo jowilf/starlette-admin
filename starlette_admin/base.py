@@ -100,7 +100,7 @@ class BaseAdmin:
         self.routes: List[Union[Route, Mount]] = []
         self.debug = debug
         self.i18n_config = i18n_config
-        self.timezone_config = timezone_config or TimezoneConfig()
+        self.timezone_config = timezone_config
         self._setup_templates()
         self.init_locale()
         self.init_auth()
@@ -138,9 +138,10 @@ class BaseAdmin:
                 0, Middleware(LocaleMiddleware, i18n_config=self.i18n_config)
             )
 
-        self.middlewares.insert(
-            0, Middleware(TimezoneMiddleware, timezone_config=self.timezone_config)
-        )
+        if self.timezone_config is not None:
+            self.middlewares.insert(
+                0, Middleware(TimezoneMiddleware, timezone_config=self.timezone_config)
+            )
 
     def init_auth(self) -> None:
         if self.auth_provider is not None:
