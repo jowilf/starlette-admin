@@ -32,6 +32,7 @@ from starlette_admin.i18n import (
     get_database_tzinfo,
     get_locale,
     get_tzinfo,
+    is_timezone_conversion_enabled,
 )
 from starlette_admin.utils.timezones import common_timezones
 
@@ -743,14 +744,18 @@ class DateTimeField(NumberField):
         except (TypeError, ValueError):
             return None
 
+        # Preserve pre-timezone conversion behaviour
+        if not is_timezone_conversion_enabled():
+            return dt
+
         if dt.tzinfo is not None:
-            # Convert timezone-aware datetime to database timezone
             database_tz = get_database_tzinfo()
             return dt.astimezone(database_tz).replace(tzinfo=None)
 
-        # dt is naive, assume it's in the user's timezone
+        # Native datetime, assume it's in the user's timezone
         user_tz = get_tzinfo()
         database_tz = get_database_tzinfo()
+
         return dt.replace(tzinfo=user_tz).astimezone(database_tz).replace(tzinfo=None)
 
     async def serialize_value(
@@ -758,9 +763,16 @@ class DateTimeField(NumberField):
     ) -> str:
         assert isinstance(value, datetime), f"Expected datetime, got {type(value)}"
 
+        # Preserve pre-timezone conversion behaviour
+        if not is_timezone_conversion_enabled():
+            if action != RequestAction.EDIT:
+                return format_datetime(value, self.output_format)
+            return value.isoformat()
+
         user_tz = get_tzinfo()
 
         if value.tzinfo is None:
+            # native datetime from db, assume it's in database timezone
             database_tz = get_database_tzinfo()
             value = value.replace(tzinfo=database_tz)
 
@@ -888,16 +900,31 @@ class ArrowField(DateTimeField):
     async def parse_form_data(
         self, request: Request, form_data: FormData, action: RequestAction
     ) -> Any:
+        # Preserve pre-timezone conversion behaviour
+        if not is_timezone_conversion_enabled():
+            try:
+                return arrow.get(form_data.get(self.id))  # type: ignore
+            except (TypeError, arrow.parser.ParserError):  # pragma: no cover
+                return None
+
         dt = await super().parse_form_data(request, form_data, action)
         if dt is None:
             return None
 
-        return arrow.get(dt, get_database_tzinfo())
+        return arrow.get(dt)
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
     ) -> str:
         assert isinstance(value, arrow.Arrow), f"Expected Arrow, got  {type(value)}"
+
+        # Preserve pre-timezone conversion behaviour
+        if not is_timezone_conversion_enabled():
+            if action != RequestAction.EDIT:
+                return value.humanize(locale=get_locale())
+
+            return value.isoformat()
+
         if action != RequestAction.EDIT:
             user_tz = get_tzinfo()
             return value.to(user_tz).humanize(locale=get_locale())
@@ -982,7 +1009,9 @@ class FileField(BaseField):
             files = form_data.getlist(self.id)
             return [f for f in files if not is_empty_file(f.file)], should_be_deleted  # type: ignore
         file = form_data.get(self.id)
-        return (None if (file and is_empty_file(file.file)) else file), should_be_deleted  # type: ignore
+        return (
+            None if (file and is_empty_file(file.file)) else file
+        ), should_be_deleted  # type: ignore
 
     def _isvalid_value(self, value: Any) -> bool:
         return value is not None and all(

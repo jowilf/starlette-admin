@@ -2,6 +2,7 @@ import datetime
 import pathlib
 from contextvars import ContextVar
 from dataclasses import dataclass
+from functools import cache
 from typing import Any, Dict, List, Optional, Tuple
 
 import zoneinfo
@@ -30,13 +31,18 @@ _current_database_timezone: ContextVar[str] = ContextVar(
 )
 
 
-def set_timezone(timezone: str) -> None:
+@cache
+def _validate_timezone(timezone: str, default: str = DEFAULT_TIMEZONE) -> str:
     try:
-        # Validate timezone
         zoneinfo.ZoneInfo(timezone)
-        _current_timezone.set(timezone)
+        return timezone
     except zoneinfo.ZoneInfoNotFoundError:
-        _current_timezone.set(DEFAULT_TIMEZONE)
+        return default
+
+
+def set_timezone(timezone: str) -> None:
+    validated = _validate_timezone(timezone, DEFAULT_TIMEZONE)
+    _current_timezone.set(validated)
 
 
 def get_timezone() -> str:
@@ -48,12 +54,8 @@ def get_tzinfo() -> datetime.tzinfo:
 
 
 def set_database_timezone(timezone: str) -> None:
-    try:
-        # Validate timezone
-        zoneinfo.ZoneInfo(timezone)
-        _current_database_timezone.set(timezone)
-    except zoneinfo.ZoneInfoNotFoundError:
-        _current_database_timezone.set(DEFAULT_DB_TIMEZONE)
+    validated = _validate_timezone(timezone, DEFAULT_DB_TIMEZONE)
+    _current_database_timezone.set(validated)
 
 
 def get_database_timezone() -> str:
@@ -62,6 +64,17 @@ def get_database_timezone() -> str:
 
 def get_database_tzinfo() -> datetime.tzinfo:
     return zoneinfo.ZoneInfo(get_database_timezone())
+
+
+def is_timezone_conversion_enabled() -> bool:
+    """Check if timezone conversion is enabled by testing if timezone context is available."""
+    try:
+        get_timezone()
+        get_database_timezone()
+
+        return True
+    except LookupError:
+        return False
 
 
 try:
@@ -230,7 +243,8 @@ class TimezoneMiddleware:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         conn = HTTPConnection(scope)
-        timezone: Optional[str] = self.timezone_config.default_timezone
+
+        timezone = self.timezone_config.default_timezone
 
         if self.timezone_config.timezone_cookie_name:
             cookie_timezone = conn.cookies.get(
@@ -239,6 +253,7 @@ class TimezoneMiddleware:
             if cookie_timezone:
                 timezone = cookie_timezone
 
-        set_timezone(timezone or DEFAULT_TIMEZONE)
+        set_timezone(timezone)
         set_database_timezone(self.timezone_config.database_timezone)
+
         await self.app(scope, receive, send)
