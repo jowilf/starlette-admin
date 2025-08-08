@@ -82,9 +82,19 @@ try:
     from babel.dates import get_timezone_name
     from babel.support import LazyProxy, NullTranslations, Translations
 
-    def get_timezone_display_name(timezone: str) -> str:
+    def get_timezone_display_name(timezone: str, show_offset: bool = False) -> str:
         tz = zoneinfo.ZoneInfo(timezone)
-        return get_timezone_name(tz, locale=get_locale())
+        tz_name = get_timezone_name(tz, locale=get_locale())
+
+        if not show_offset:
+            return tz_name
+
+        # get UTC offset
+        now = datetime.datetime.now(tz)
+        offset = now.strftime("%z")
+        formatted_offset = f"UTC{offset[:3]}:{offset[3:]}"
+
+        return f"{tz_name} ({formatted_offset})"
 
     translations: Dict[str, NullTranslations] = {
         locale: Translations.load(
@@ -191,7 +201,7 @@ except ImportError:
     def get_locale_display_name(locale: str) -> str:
         raise NotImplementedError()
 
-    def get_timezone_display_name(timezone: str) -> str:
+    def get_timezone_display_name(timezone: str, show_offset: bool = False) -> str:
         raise NotImplementedError()
 
 

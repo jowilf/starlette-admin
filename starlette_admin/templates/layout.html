@@ -197,7 +197,7 @@
                                             <a href="#"
                                                class="dropdown-item timezone-switcher-item"
                                                data-tz="{{ tz }}"
-                                               data-cookie-name="{{ timezone_config.timezone_cookie_name }}">{{ get_timezone_display_name(tz) }}</a>
+                                               data-cookie-name="{{ timezone_config.timezone_cookie_name }}">{{ get_timezone_display_name(tz, show_offset=True) }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>
