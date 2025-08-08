@@ -48,11 +48,22 @@
             });
         });
 
-        // Set timezone cookie from browser
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (timezone) {
-            Cookies.set('timezone', timezone);
+        $(".timezone-switcher-item").each(function () {
+            let el = $(this);
+            el.on("click", function () {
+                Cookies.set(String(el.data("cookie-name")), String(el.data("tz")));
+                window.location.reload();
+            });
+        });
+
+        {% if timezone_config and not timezone_config.timezone_switcher %}
+        if (!Cookies.get('timezone')) {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (timezone) {
+                Cookies.set('timezone', timezone);
+            }
         }
+        {% endif %}
     });
 </script>
 </body>

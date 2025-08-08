@@ -79,7 +79,12 @@ def is_timezone_conversion_enabled() -> bool:
 
 try:
     from babel import Locale, dates
+    from babel.dates import get_timezone_name
     from babel.support import LazyProxy, NullTranslations, Translations
+
+    def get_timezone_display_name(timezone: str) -> str:
+        tz = zoneinfo.ZoneInfo(timezone)
+        return get_timezone_name(tz, locale=get_locale())
 
     translations: Dict[str, NullTranslations] = {
         locale: Translations.load(
@@ -186,6 +191,9 @@ except ImportError:
     def get_locale_display_name(locale: str) -> str:
         raise NotImplementedError()
 
+    def get_timezone_display_name(timezone: str) -> str:
+        raise NotImplementedError()
+
 
 @dataclass
 class I18nConfig:
@@ -208,6 +216,7 @@ class TimezoneConfig:
     default_timezone: str = DEFAULT_TIMEZONE
     timezone_cookie_name: Optional[str] = "timezone"
     database_timezone: str = DEFAULT_DB_TIMEZONE
+    timezone_switcher: Optional[List[str]] = None
 
 
 class LocaleMiddleware:

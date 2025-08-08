@@ -37,6 +37,8 @@ from starlette_admin.i18n import (
     TimezoneMiddleware,
     get_locale,
     get_locale_display_name,
+    get_timezone,
+    get_timezone_display_name,
     gettext,
     ngettext,
 )
@@ -237,6 +239,9 @@ class BaseAdmin:
         templates.env.globals["get_locale"] = get_locale
         templates.env.globals["get_locale_display_name"] = get_locale_display_name
         templates.env.globals["i18n_config"] = self.i18n_config or I18nConfig()
+        templates.env.globals["get_timezone"] = get_timezone
+        templates.env.globals["get_timezone_display_name"] = get_timezone_display_name
+        templates.env.globals["timezone_config"] = self.timezone_config
         # filters
         templates.env.filters["is_custom_view"] = lambda r: isinstance(r, CustomView)
         templates.env.filters["is_link"] = lambda res: isinstance(res, Link)
