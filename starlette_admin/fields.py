@@ -1010,8 +1010,8 @@ class FileField(BaseField):
             return [f for f in files if not is_empty_file(f.file)], should_be_deleted  # type: ignore
         file = form_data.get(self.id)
         return (
-            None if (file and is_empty_file(file.file)) else file
-        ), should_be_deleted  # type: ignore
+            None if (file and is_empty_file(file.file)) else file  # type: ignore
+        ), should_be_deleted
 
     def _isvalid_value(self, value: Any) -> bool:
         return value is not None and all(
