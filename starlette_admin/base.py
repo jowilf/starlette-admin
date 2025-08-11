@@ -33,8 +33,12 @@ from starlette_admin.helpers import get_file_icon, not_none
 from starlette_admin.i18n import (
     I18nConfig,
     LocaleMiddleware,
+    TimezoneConfig,
+    TimezoneMiddleware,
     get_locale,
     get_locale_display_name,
+    get_timezone,
+    get_timezone_display_name,
     gettext,
     ngettext,
 )
@@ -59,6 +63,7 @@ class BaseAdmin:
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
         i18n_config: Optional[I18nConfig] = None,
+        timezone_config: Optional[TimezoneConfig] = None,
         favicon_url: Optional[str] = None,
     ):
         """
@@ -74,6 +79,7 @@ class BaseAdmin:
             auth_provider: Authentication Provider
             middlewares: Starlette middlewares
             i18n_config: i18n configuration
+            timezone_config: timezone configuration
             favicon_url: URL of favicon.
         """
         self.title = title
@@ -96,6 +102,7 @@ class BaseAdmin:
         self.routes: List[Union[Route, Mount]] = []
         self.debug = debug
         self.i18n_config = i18n_config
+        self.timezone_config = timezone_config
         self._setup_templates()
         self.init_locale()
         self.init_auth()
@@ -131,6 +138,11 @@ class BaseAdmin:
                 ) from err
             self.middlewares.insert(
                 0, Middleware(LocaleMiddleware, i18n_config=self.i18n_config)
+            )
+
+        if self.timezone_config is not None:
+            self.middlewares.insert(
+                0, Middleware(TimezoneMiddleware, timezone_config=self.timezone_config)
             )
 
     def init_auth(self) -> None:
@@ -227,6 +239,9 @@ class BaseAdmin:
         templates.env.globals["get_locale"] = get_locale
         templates.env.globals["get_locale_display_name"] = get_locale_display_name
         templates.env.globals["i18n_config"] = self.i18n_config or I18nConfig()
+        templates.env.globals["get_timezone"] = get_timezone
+        templates.env.globals["get_timezone_display_name"] = get_timezone_display_name
+        templates.env.globals["timezone_config"] = self.timezone_config
         # filters
         templates.env.filters["is_custom_view"] = lambda r: isinstance(r, CustomView)
         templates.env.filters["is_link"] = lambda res: isinstance(res, Link)

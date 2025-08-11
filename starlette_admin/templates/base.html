@@ -47,6 +47,21 @@
                 window.location.reload();
             });
         });
+
+        $(".timezone-switcher-item").each(function () {
+            let el = $(this);
+            el.on("click", function () {
+                Cookies.set(String(el.data("cookie-name")), String(el.data("tz")));
+                window.location.reload();
+            });
+        });
+
+        {% if timezone_config and timezone_config.use_user_locale_timezone %}
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (!Cookies.get('timezone') && timezone) {
+            Cookies.set('timezone', timezone);
+        }
+        {% endif %}
     });
 </script>
 </body>
