@@ -56,9 +56,9 @@
             });
         });
 
-        {% if timezone_config and not timezone_config.timezone_switcher %}
+        {% if timezone_config and timezone_config.use_user_locale_timezone %}
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (timezone) {
+        if (!Cookies.get('timezone') && timezone) {
             Cookies.set('timezone', timezone);
         }
         {% endif %}

@@ -228,6 +228,10 @@ class TimezoneConfig:
     database_timezone: str = DEFAULT_DB_TIMEZONE
     timezone_switcher: Optional[List[str]] = None
 
+    # If True, the user's locale-based timezone will be used
+    # instead of the `default_timezone` (when available).
+    use_user_locale_timezone: bool = True
+
 
 class LocaleMiddleware:
     def __init__(self, app: ASGIApp, i18n_config: I18nConfig) -> None:
