@@ -11,7 +11,7 @@ from sqlalchemy.orm import declarative_base, relationship
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
-from starlette_admin import I18nConfig
+from starlette_admin import I18nConfig, TimezoneConfig
 from starlette_admin.contrib.sqla import Admin, ModelView
 from starlette_admin.i18n import SUPPORTED_LOCALES
 
@@ -62,6 +62,18 @@ admin = Admin(
     engine,
     title="Example: Babel",
     i18n_config=I18nConfig(default_locale="fr", language_switcher=SUPPORTED_LOCALES),
+    timezone_config=TimezoneConfig(
+        default_timezone="Europe/Paris",
+        timezone_switcher=[
+            "Europe/Berlin",
+            "America/New_York",
+            "Europe/Paris",
+            "Europe/Lisbon",
+            "Europe/Moscow",
+            "Europe/Istanbul",
+            "Asia/Taipei",
+        ],
+    ),
 )
 
 # Add views
