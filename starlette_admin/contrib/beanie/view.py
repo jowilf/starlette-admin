@@ -258,7 +258,7 @@ class ModelView(BaseModelView, Generic[T]):
             # ensure doc still passes validation
             validated_doc: T = self.document.model_validate(doc.model_dump())
 
-            await self.before_edit(request, data=data, obj=doc)
+            await self.before_edit(request, data=data, obj=validated_doc)
             updated_doc = await validated_doc.replace()
             await self.after_edit(request, updated_doc)
 
