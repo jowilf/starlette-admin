@@ -6,9 +6,9 @@ $(function () {
   var selectedRows = [];
 
   /*
-  contains all fields including nested fields inside all CollectionField.
-  Each nested field name is prefixed by it parent CollectionField name (ex: 'category.name')
-  */
+    contains all fields including nested fields inside all CollectionField.
+    Each nested field name is prefixed by it parent CollectionField name (ex: 'category.name')
+    */
   var dt_fields = [];
 
   /* datatables columns generated from model.fields */
@@ -211,9 +211,9 @@ $(function () {
   // End Buttons declarations
 
   /*
-  Convert datatables searchBuilder conditions into custom dict
-  with custom operators before send it to the backend.
-  */
+    Convert datatables searchBuilder conditions into custom dict
+    with custom operators before send it to the backend.
+    */
   function extractCriteria(c) {
     var d = {};
     if ((c.logic && c.logic == "OR") || c.logic == "AND") {
@@ -277,6 +277,7 @@ $(function () {
     }
     return d;
   }
+
   // End Search builder
 
   // Datatable instance
@@ -411,6 +412,72 @@ $(function () {
     },
     drawCallback: function (settings) {
       actionManager.initNoConfirmationActions();
+    },
+
+    stateSaveCallback: function (settings, data) {
+      const params = {
+        page: data?.page + 1,
+        page_size: data?.length,
+        search: data?.search?.search,
+        order: data?.order
+          ? data.order.map(
+              ([col, dir]) =>
+                `${dir === "asc" ? "" : "-"}${dt_columns[col - 2].name}`
+            )
+          : undefined,
+        searchBuilder:
+          data?.searchBuilder && !$.isEmptyObject(data?.searchBuilder)
+            ? JSON.stringify(data?.searchBuilder)
+            : undefined,
+      };
+
+      const query = Qs.stringify(params, { encode: false, indices: false });
+
+      history.replaceState(
+        null,
+        "",
+        location.pathname + (query ? "?" + query : "")
+      );
+    },
+
+    stateLoadCallback: function (settings, callback) {
+      const params = Qs.parse(location.search, { ignoreQueryPrefix: true });
+      if (!Object.keys(params).length) return null;
+
+      let length = isNaN(parseInt(params?.page_size))
+        ? model.pageSize
+        : parseInt(params?.page_size);
+      let page = isNaN(parseInt(params?.page)) ? 0 : parseInt(params?.page) - 1;
+      let order = [];
+      if (params?.order) {
+        if (typeof params.order === "string") params.order = [params.order];
+        params.order.forEach((o) => {
+          const isDesc = o.startsWith("-");
+          const colName =
+            o.startsWith("-") || o.startsWith("+") ? o.substring(1) : o;
+          let idx = dt_columns.findIndex((it) => colName === it.name);
+          if (idx > -1) order.push([idx + 2, isDesc ? "desc" : "asc"]);
+        });
+      }
+
+      var state = {
+        time: Date.now(),
+        length: length,
+        order: order.length > 0 ? order : undefined,
+        search: {
+          search: params?.search ?? undefined,
+          smart: true,
+          regex: false,
+          caseInsensitive: true,
+        },
+        searchBuilder: params?.searchBuilder
+          ? JSON.parse(params?.searchBuilder)
+          : undefined,
+        page: page,
+        start: length * page,
+      };
+      if (params?.search) $("#searchInput").val(params.search);
+      callback(state);
     },
     ...model.datatablesOptions,
   });
