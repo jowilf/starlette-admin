@@ -416,7 +416,7 @@ $(function () {
 
     stateSaveCallback: function (settings, data) {
       const params = {
-        page: data?.page + 1,
+        page: (data?.page ?? 0) + 1,
         page_size: data?.length,
         search: data?.search?.search,
         order: data?.order
