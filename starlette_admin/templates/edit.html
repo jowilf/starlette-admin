@@ -71,7 +71,7 @@
 {% block script %}
     {{ super() }}
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/form.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/form.js').include_query_params(v=1) }}"></script>
     {% for link in model._additional_js_links(request, "EDIT" | ra) %}
         <script type="text/javascript" src="{{ link }}"></script>
     {% endfor %}
