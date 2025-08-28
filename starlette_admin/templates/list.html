@@ -143,10 +143,10 @@
     <script type="text/javascript"
             src="{{ url_for(__name__ ~ ':statics', path='js/vendor/qs.min.js') }}"></script>
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/utils.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/utils.js').include_query_params(v=1) }}"></script>
     <script>var model = {{__js_model__ | tojson | safe}};</script>
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/render.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/render.js').include_query_params(v=1) }}"></script>
     {% if custom_render_js(request) %}
         <script type="text/javascript" src="{{ custom_render_js(request) }}"></script>
     {% endif %}
@@ -154,9 +154,9 @@
         <script type="text/javascript" src="{{ link }}"></script>
     {% endfor %}
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js').include_query_params(v=1) }}"></script>
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/actions.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/actions.js').include_query_params(v=1) }}"></script>
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/list.js') }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/list.js').include_query_params(v=1) }}"></script>
 {% endblock %}
