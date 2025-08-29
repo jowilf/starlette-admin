@@ -415,8 +415,12 @@ $(function () {
     },
 
     stateSaveCallback: function (settings, data) {
+      let page = 0;
+      try {
+        page = (data?.page ?? data?.start / data?.length ?? 0) + 1;
+      } catch (e) {}
       const params = {
-        page: (data?.page ?? 0) + 1,
+        page: page,
         page_size: data?.length,
         search: data?.search?.search,
         order: data?.order
