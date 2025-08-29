@@ -480,7 +480,6 @@ $(function () {
         page: page,
         start: length * page,
       };
-      console.log("state", state);
       if (params?.search) $("#searchInput").val(params.search);
       callback(state);
     },
