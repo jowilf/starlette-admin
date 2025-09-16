@@ -543,6 +543,7 @@ class ModelView(BaseModelView):
                     arranged_data[field.name] = await foreign_model.find_by_pk(
                         request, data[field.name]
                     )
+                    arranged_data[f"{field.name}_id"] = arranged_data[field.name].id
             else:
                 arranged_data[field.name] = data[field.name]
         return arranged_data
@@ -617,11 +618,16 @@ class ModelView(BaseModelView):
 
     def handle_exception(self, exc: Exception) -> None:
         try:
-            """Automatically handle sqlalchemy_file error"""
-            from sqlalchemy_file.exceptions import ValidationError
+            """Automatically handle sqlalchemy_file and pydantic error"""
+            import sqlalchemy_file.exceptions
 
-            if isinstance(exc, ValidationError):
+            if isinstance(exc, sqlalchemy_file.exceptions.ValidationError):
                 raise FormValidationError({exc.key: exc.msg})
+
+            import pydantic
+
+            if isinstance(exc, pydantic.ValidationError):
+                raise pydantic_error_to_form_validation_errors(exc)
         except ImportError:  # pragma: no cover
             pass
         raise exc  # pragma: no cover
