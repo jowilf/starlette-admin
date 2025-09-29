@@ -3,7 +3,7 @@ import json
 import warnings
 from dataclasses import asdict, dataclass
 from dataclasses import field as dc_field
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum
 from json import JSONDecodeError
 from typing import (
@@ -22,7 +22,13 @@ from typing import (
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 from starlette_admin._types import RequestAction
-from starlette_admin.helpers import extract_fields, html_params, is_empty_file
+from starlette_admin.helpers import (
+    extract_fields,
+    html_params,
+    is_empty_file,
+    parse_int_or_zero,
+    timedelta_to_components,
+)
 from starlette_admin.i18n import (
     format_date,
     format_datetime,
@@ -1321,3 +1327,93 @@ class ListField(BaseField):
 
     def additional_js_links(self, request: Request, action: RequestAction) -> List[str]:
         return self.field.additional_js_links(request, action)
+
+
+@dataclass
+class IntervalField(StringField):
+    form_template: str = "forms/interval.html"
+
+    def __post_init__(self) -> None:
+        try:
+            import babel  # noqa
+        except ImportError as err:
+            raise ImportError(
+                "'babel' package is required to use 'IntervalField'. Install it with `pip install starlette-admin[i18n]`"
+            ) from err
+        super().__post_init__()
+
+    async def parse_form_data(
+        self, request: Request, form_data: FormData, action: RequestAction
+    ) -> Any:
+        timedelta_params: Dict[str, int] = {
+            unit: parse_int_or_zero(form_data.get(f"{self.id}_{unit}", ""))  # type: ignore[arg-type]
+            for unit in (
+                "weeks",
+                "days",
+                "hours",
+                "minutes",
+                "seconds",
+                "microseconds",
+                "milliseconds",
+            )
+        }
+
+        return timedelta(**timedelta_params)
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
+        from babel.dates import format_timedelta
+
+        params = timedelta_to_components(value)
+        if action != RequestAction.EDIT:
+            string = (
+                format_timedelta(
+                    timedelta(weeks=params["weeks"]),
+                    granularity="week",
+                    threshold=params["weeks"],
+                    locale=get_locale(),
+                )
+                + " "
+                if params["weeks"] > 0
+                else ""
+            )
+            string += (
+                format_timedelta(
+                    timedelta(days=params["days"]),
+                    granularity="day",
+                    threshold=1,
+                    locale=get_locale(),
+                )
+                + " "
+            )
+            string += (
+                format_timedelta(
+                    timedelta(hours=params["hours"]),
+                    granularity="hour",
+                    threshold=1,
+                    locale=get_locale(),
+                )
+                + " "
+            )
+            string += (
+                format_timedelta(
+                    timedelta(minutes=params["minutes"]),
+                    granularity="minute",
+                    threshold=1,
+                    locale=get_locale(),
+                )
+                + " "
+            )
+            string += format_timedelta(
+                timedelta(
+                    seconds=params["seconds"],
+                    milliseconds=params["milliseconds"],
+                    microseconds=params["microseconds"],
+                ),
+                granularity="second",
+                threshold=1,
+                locale=get_locale(),
+            )
+            return string
+        return params
