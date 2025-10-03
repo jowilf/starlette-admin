@@ -67,7 +67,7 @@ test = [
     "aiomysql >=0.1.1, <0.3.0",
     "mongoengine >=0.25.0, <0.30.0",
     "tinydb >=4.7.0, <4.9.0",
-    "Pillow >=9.4.0, <11.1.0",
+    "Pillow >=9.4.0, <11.4.0",
     "itsdangerous >=2.2.0, <2.3.0",
     "pydantic[email] >=1.10.2, <2.10.0",
     "beanie<2.0.0",
