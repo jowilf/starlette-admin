@@ -23,7 +23,7 @@ jobs:
         options: --health-cmd "mongosh mongodb://localhost:27017" --health-interval 10s --health-timeout 5s --health-retries 10
 
       minio:
-        image: bitnami/minio
+        image: bitnamilegacy/minio
         env:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadmin
