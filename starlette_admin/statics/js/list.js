@@ -271,7 +271,7 @@ $(function () {
       } else if (c.condition == "!between") {
         cnd["not_between"] = c.value;
       } else if (c_map[c.condition]) {
-        cnd[c_map[c.condition]] = c.value1 || "";
+        cnd[c_map[c.condition]] = c.value1 ?? "";
       }
       d[c.origData] = cnd;
     }
