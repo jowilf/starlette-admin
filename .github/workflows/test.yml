@@ -92,7 +92,7 @@ jobs:
           MINIO_SECURE: false
         run: hatch run test:sqla
       - name: store coverage files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-${{ matrix.python-version }}
           path: .coverage*
