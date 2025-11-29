@@ -171,7 +171,7 @@ class CustomView(BaseView):
         )
 
     def is_active(self, request: Request) -> bool:
-        return request.scope["path"] == self.path
+        return request.scope["path"] == request.scope["root_path"] + self.path
 
 
 class BaseModelView(BaseView):
