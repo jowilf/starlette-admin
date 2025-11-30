@@ -177,7 +177,7 @@ def test_invalid_field_list():
 
 def test_invalid_exclude_list():
     with pytest.raises(
-        ValueError, match="Expected str or monogoengine.BaseField, got int"
+        ValueError, match=r"Expected str or monogoengine.BaseField, got int"
     ):
 
         class CustomDocumentView(ModelView):

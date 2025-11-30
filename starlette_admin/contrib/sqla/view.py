@@ -557,7 +557,7 @@ class ModelView(BaseModelView):
         for field in self.get_fields_list(request, request.state.action):
             name, value = field.name, data.get(field.name, None)
             if isinstance(field, FileField):
-                value, should_be_deleted = value
+                value, should_be_deleted = not_none(value)
                 if should_be_deleted:
                     setattr(obj, name, None)
                 elif (not field.multiple and value is not None) or (

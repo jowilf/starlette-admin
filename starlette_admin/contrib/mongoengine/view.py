@@ -22,7 +22,7 @@ from starlette_admin.contrib.mongoengine.helpers import (
     resolve_deep_query,
 )
 from starlette_admin.exceptions import FormValidationError
-from starlette_admin.helpers import prettify_class_name, slugify_class_name
+from starlette_admin.helpers import not_none, prettify_class_name, slugify_class_name
 from starlette_admin.views import BaseModelView
 
 
@@ -135,7 +135,7 @@ class ModelView(BaseModelView):
             me_field = getattr(document, name)
             if isinstance(field, (FileField, ImageField)):
                 proxy: GridFSProxy = getattr(obj, name)
-                value, should_be_deleted = value
+                value, should_be_deleted = not_none(value)
                 if should_be_deleted:
                     proxy.delete()
                 elif isinstance(value, UploadFile):
