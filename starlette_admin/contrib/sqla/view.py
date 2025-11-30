@@ -602,7 +602,7 @@ class ModelView(BaseModelView):
                 stmt = stmt.outerjoin(model_attr)
             sorting_attr = self.sortable_field_mapping.get(attr_key, model_attr)
             stmt = stmt.order_by(
-                not_none(sorting_attr).desc()
+                not_none(sorting_attr).desc()  # type: ignore [attr-defined]
                 if order.lower() == "desc"
                 else sorting_attr
             )
