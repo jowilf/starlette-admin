@@ -557,7 +557,7 @@ class ModelView(BaseModelView):
         for field in self.get_fields_list(request, request.state.action):
             name, value = field.name, data.get(field.name, None)
             if isinstance(field, FileField):
-                value, should_be_deleted = value
+                value, should_be_deleted = not_none(value)
                 if should_be_deleted:
                     setattr(obj, name, None)
                 elif (not field.multiple and value is not None) or (
@@ -602,7 +602,7 @@ class ModelView(BaseModelView):
                 stmt = stmt.outerjoin(model_attr)
             sorting_attr = self.sortable_field_mapping.get(attr_key, model_attr)
             stmt = stmt.order_by(
-                not_none(sorting_attr).desc()
+                not_none(sorting_attr).desc()  # type: ignore [attr-defined]
                 if order.lower() == "desc"
                 else sorting_attr
             )

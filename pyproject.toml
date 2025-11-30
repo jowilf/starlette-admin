@@ -47,9 +47,9 @@ i18n = [
 test = [
     "pytest >=8.3.0, <8.4.0",
     "pytest-asyncio >=0.24.0, <0.25.0",
-    "mypy ==1.15.0",
-    "ruff ==0.11.9",
-    "black ==25.1.0",
+    "mypy ==1.19.0",
+    "ruff ==0.14.7",
+    "black ==25.11.0",
     "httpx >=0.23.3, <0.29.0",
     "SQLAlchemy-Utils >=0.40.0, <0.42.0",
     "sqlmodel >=0.0.11, <0.1.0",
@@ -123,6 +123,7 @@ matrix.sqla_version.dependencies = [
     { value = "SQLAlchemy[asyncio] >=2.0, <2.1", if = ["sqla2"] },
     { value = "odmantic >=1.0.0,<1.1.0", if = ["sqla2"] },
     { value = "SQLAlchemy[asyncio] >=1.4, <1.5", if = ["sqla14"] },
+    { value = "sqlmodel >=0.0.11, <0.0.26", if = ["sqla14"] },
 ]
 matrix.sqla_version.scripts = [
     { key = "all", value = 'coverage run -m pytest tests --ignore=tests/odmantic --ignore=tests/beanie', if = ["sqla14"] },
@@ -217,7 +218,8 @@ lint.ignore = [
     "B008", # Do not perform function call `_` in argument defaults, neccessary for lazy_gettext
     "B905", # `zip()` without an explicit `strict=` parameter
     "E501", # line too long, handled by black
-    "N818", # Exception {name} should be named with an Error suffix
+    "N818", # Exception {name} should be named with an Error suffix,
+    "PLC0415", # `import` should be at the top-level of a file
 ]
 target-version = "py38"
 
@@ -244,6 +246,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = [
     "starlette_admin.contrib.sqla.helpers",
+    "starlette_admin.contrib.sqla.converters",
     "starlette_admin.contrib.sqla.view",
     "starlette_admin.contrib.odmantic.helpers",
     "starlette_admin.contrib.odmantic.view",
