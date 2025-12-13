@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2025-12-13
+
+### Added
+
+- Add Beanie exception handler function by [@wanderer056](https://github.com/wanderer056)
+  in [#680](https://github.com/jowilf/starlette-admin/pull/680)
+- Add support for Beanie hooks by [@alexdlukens](https://github.com/alexdlukens)
+  in [#671](https://github.com/jowilf/starlette-admin/pull/671)
+- Show and edit datetime values in the user’s local timezone by [@limouren](https://github.com/limouren)
+  in [#682](https://github.com/jowilf/starlette-admin/pull/682)
+- Persist application state in URL query parameters by [@jowilf](https://github.com/jowilf)
+  in [#700](https://github.com/jowilf/starlette-admin/pull/700)
+- Set versions for custom JavaScript files by [@jowilf](https://github.com/jowilf)
+  in [#702](https://github.com/jowilf/starlette-admin/pull/702)
+
+### Fixed
+
+- Fix Beanie serialization error when `id` is excluded in list views by [@wanderer056](https://github.com/wanderer056)
+  in [#678](https://github.com/jowilf/starlette-admin/pull/678)
+- Fix Beanie field resolution when overridden in `ModelView` by [@wanderer056](https://github.com/wanderer056)
+  in [#676](https://github.com/jowilf/starlette-admin/pull/676)
+- Fix Beanie validation order to persist `before_edit` hook changes by [@abishek0057](https://github.com/abishek0057)
+  in [#697](https://github.com/jowilf/starlette-admin/pull/697)
+- Fix issue where page number could be `NaN` in URL query parameters by [@jowilf](https://github.com/jowilf)
+  in [#701](https://github.com/jowilf/starlette-admin/pull/701)
+- Fix page number not updating correctly in URL query parameters by [@jowilf](https://github.com/jowilf)
+  in [#703](https://github.com/jowilf/starlette-admin/pull/703)
+- Fix numerical filter where `0` was sent to the backend as an empty string
+  by [@MajorXaker](https://github.com/MajorXaker)
+  in [#708](https://github.com/jowilf/starlette-admin/pull/708)
+- Fix `CustomView.is_active` when using a custom root path by [@Alwinator](https://github.com/Alwinator)
+  in [#715](https://github.com/jowilf/starlette-admin/pull/715)
+
 ## [0.15.1] - 2025-05-26
 
 ### Fixed
