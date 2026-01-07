@@ -523,6 +523,39 @@ class ModelView(BaseModelView):
         except Exception as e:
             self.handle_exception(e)
 
+    def _populate_fk_columns(
+        self, field_name: str, related_obj: Any, arranged_data: Dict[str, Any]
+    ) -> None:
+        """
+        Populate foreign key columns for a MANYTOONE relationship.
+
+        This uses SQLAlchemy introspection to discover and populate FK columns,
+        regardless of naming convention (user_id, owner_id, etc.).
+
+        Fixes: https://github.com/jowilf/starlette-admin/issues/485
+               https://github.com/jowilf/starlette-admin/issues/687
+        """
+        try:
+            mapper = inspect(self.model)
+            rel_prop = mapper.relationships.get(field_name)
+
+            if rel_prop is not None:
+                # For each (remote_pk_col, local_fk_col) pair in the relationship
+                # Note: synchronize_pairs returns (remote, local) order
+                for remote_col, local_col in rel_prop.synchronize_pairs:
+                    if related_obj is not None:
+                        # Get the PK value from the loaded related object
+                        pk_value = getattr(related_obj, remote_col.name)
+                        # Set the FK column value in arranged_data
+                        arranged_data[local_col.name] = pk_value
+                    else:
+                        # If relationship is None, set FK column to None
+                        arranged_data[local_col.name] = None
+        except Exception:
+            # If introspection fails for any reason, don't break the flow
+            # The relationship is still set, SQLAlchemy will handle it during flush
+            pass
+
     async def _arrange_data(
         self,
         request: Request,
@@ -540,8 +573,13 @@ class ModelView(BaseModelView):
                 if isinstance(field, HasMany):
                     arranged_data[field.name] = field.collection_class(await foreign_model.find_by_pks(request, data[field.name]))  # type: ignore[call-arg]
                 else:
+                    # Load the related object (HasOne/MANYTOONE relationship)
                     arranged_data[field.name] = await foreign_model.find_by_pk(
                         request, data[field.name]
+                    )
+                    # Populate FK columns using SQLAlchemy introspection
+                    self._populate_fk_columns(
+                        field.name, arranged_data[field.name], arranged_data
                     )
             else:
                 arranged_data[field.name] = data[field.name]
