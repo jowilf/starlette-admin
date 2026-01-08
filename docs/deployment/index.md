@@ -36,7 +36,7 @@ class CloudProxyMiddleware(BaseHTTPMiddleware):
 
         if forwarded_proto == "https":
             request.scope["scheme"] = "https"
-        
+
         return await call_next(request)
 
 app.add_middleware(CloudProxyMiddleware)
