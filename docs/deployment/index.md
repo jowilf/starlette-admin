@@ -18,3 +18,28 @@ To address this issue, follow the steps below:
 ```shell title="Example"
 uvicorn app.main:app --forwarded-allow-ips='*' --proxy-headers
 ```
+
+If you cannot modify your proxy (for example, running your FastAPI application in Cloud Run), you will have to enable middleware to properly authenticate the HTTP links. This is addressed as below:
+
+```shel title="Example"
+from fastapi import FastAPI, Request
+from starlette.middleware.base import BaseHTTPMiddleware
+
+app = FastAPI()
+
+class CloudProxyMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path in ["/health", "/healthz", "/"]:
+            return await call_next(request)
+
+        forwarded_proto = request.headers.get("X-Forwarded-Proto")
+
+        if forwarded_proto == "https":
+            request.scope["scheme"] = "https"
+        
+        return await call_next(request)
+
+app.add_middleware(CloudProxyMiddleware)
+```
+
+This middleware will break the application during local hosting however, so only activate it in the production environment as shown above.
