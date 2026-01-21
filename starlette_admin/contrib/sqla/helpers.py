@@ -1,3 +1,4 @@
+import datetime
 from typing import Any, Callable, Dict, Optional, Sequence
 
 from sqlalchemy import String, and_, cast, false, not_, or_, true
@@ -49,6 +50,25 @@ OPERATORS: Dict[str, Callable[[InstrumentedAttribute, Any], ClauseElement]] = {
 }
 
 
+def parse_datetime(value: str) -> bool:
+    try:
+        # Try parsing the string using ISO format first
+        datetime.datetime.fromisoformat(value)
+        return True
+    except ValueError:
+        return False
+
+
+def _check_value(v: Any, attr: Optional[InstrumentedAttribute]) -> Any:
+    """
+    The purpose of this function is to detect datetime string
+    and convert it into the appropriate python type.
+    """
+    if isinstance(v, str) and parse_datetime(v):
+        return datetime.datetime.fromisoformat(v)
+    return v
+
+
 def build_query(
     where: Dict[str, Any],
     model: Any,
@@ -65,7 +85,13 @@ def build_query(
                 and_(*[build_query(v, model, latest_attr) for v in where[key]])
             )
         elif key in OPERATORS:
-            filters.append(OPERATORS[key](latest_attr, where[key]))  # type: ignore
+            v = where[key]
+            v = (
+                [_check_value(it, latest_attr) for it in v]
+                if isinstance(v, list)
+                else _check_value(v, latest_attr)
+            )
+            filters.append(OPERATORS[key](latest_attr, v))  # type: ignore
         else:
             attr: Optional[InstrumentedAttribute] = getattr(model, key, None)
             if attr is not None:
