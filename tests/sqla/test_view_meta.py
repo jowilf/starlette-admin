@@ -15,6 +15,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    Interval,
     String,
     Text,
     Time,
@@ -45,6 +46,7 @@ from starlette_admin.contrib.sqla.exceptions import (
 )
 from starlette_admin.contrib.sqla.fields import FileField, ImageField
 from starlette_admin.contrib.sqla.view import ModelView
+from starlette_admin.fields import IntervalField
 
 Base = declarative_base()
 
@@ -85,6 +87,7 @@ class Document(Base):
     datetime = Column(DateTime)
     date = Column(Date)
     time = Column(Time)
+    interval = Column(Interval)
     enum = Column(Enum(Status))
     json_field = Column(JSON)
     tags = Column(ARRAY(String, dimensions=1))
@@ -180,6 +183,7 @@ def test_document_fields_conversion():
         DateTimeField("datetime"),
         DateField("date"),
         TimeField("time"),
+        IntervalField("interval"),
         EnumField("enum", enum=Status),
         JSONField("json_field"),
         ListField(StringField("tags")),
