@@ -75,6 +75,7 @@
         if (!Cookies.get('timezone') && timezone) {
             Cookies.set('timezone', timezone);
         }
+        {% endif %}
 
         /* Enable and update dark-mode based on system settings */
         function applyTheme() {
@@ -87,7 +88,6 @@
         }
         applyTheme();
         window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
-        {% endif %}
     });
 </script>
 </body>
