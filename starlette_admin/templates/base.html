@@ -26,6 +26,20 @@
             width: auto;
             height: 2rem;
         }
+        /* Fix dark mode for select2 */
+        body[data-bs-theme="dark"] .select2-container--default .select2-selection--single,
+        body[data-bs-theme="dark"] .select2-container--default .select2-selection--multiple {
+            background-color: #151f2c;
+            border: 1px solid #25384f;
+        }
+        body[data-bs-theme="dark"] .select2-dropdown {
+            background-color: #151f2c;
+            border: 1px solid #25384f;
+        }
+        body[data-bs-theme="dark"] .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1px solid #25384f;
+            background: #151f2c;
+        }
     </style>
     {% block head_css %}{% endblock %}
 </head>
@@ -61,6 +75,18 @@
         if (!Cookies.get('timezone') && timezone) {
             Cookies.set('timezone', timezone);
         }
+
+        /* Enable and update dark-mode based on system settings */
+        function applyTheme() {
+            const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            if (prefersDarkScheme) {
+                $("body").attr("data-bs-theme", "dark");
+            } else {
+                $("body").removeAttr("data-bs-theme");
+            }
+        }
+        applyTheme();
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
         {% endif %}
     });
 </script>
