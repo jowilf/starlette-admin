@@ -39,7 +39,7 @@ def converts(
     Callable[..., BaseField],
 ]:
     def wrap(func: Callable[..., BaseField]) -> Callable[..., BaseField]:
-        func._converter_for = frozenset(args)  # type:ignore [attr-defined]
+        func._converter_for = frozenset(args)  # type: ignore [attr-defined]
         return func
 
     return wrap
