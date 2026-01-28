@@ -26,6 +26,23 @@
             width: auto;
             height: 2rem;
         }
+        /* Fix dark mode for select2 and collection */
+        body[data-bs-theme="dark"] .select2-dropdown,
+        body[data-bs-theme="dark"] .select2-container--default .select2-selection--single,
+        body[data-bs-theme="dark"] .select2-container--default .select2-selection--multiple,
+        body[data-bs-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice,
+        body[data-bs-theme="dark"] .select2-container--default .select2-search--dropdown .select2-search__field,
+        body[data-bs-theme="dark"] .select2-container--default .select2-results__option--selected{
+            background-color: #151f2c;
+            border: 1px solid #25384f;
+            color: #dce1e7;
+        }
+        body[data-bs-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered{
+            color: #dce1e7;
+        }
+        body[data-bs-theme="dark"] div.dt-button-collection{
+            background-color: #16202c;
+        }
     </style>
     {% block head_css %}{% endblock %}
 </head>
@@ -62,6 +79,18 @@
             Cookies.set('timezone', timezone);
         }
         {% endif %}
+
+        /* Enable and update dark-mode based on system settings */
+        function applyTheme() {
+            const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            if (prefersDarkScheme) {
+                $("body").attr("data-bs-theme", "dark");
+            } else {
+                $("body").removeAttr("data-bs-theme");
+            }
+        }
+        applyTheme();
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
     });
 </script>
 </body>
