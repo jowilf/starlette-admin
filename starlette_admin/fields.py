@@ -936,10 +936,15 @@ class ArrowField(DateTimeField):
 class JSONField(BaseField):
     """
     This field render jsoneditor and represent a value that stores python dict object.
-    Erroneous input is ignored and will not be accepted as a value."""
+    Erroneous input is ignored and will not be accepted as a value.
+
+    You may optionally use the `validation_schema` property to provide a dict with
+    a [JSONSchema](https://json-schema.org/) to have it be used to provide
+    validation feedback on the client side."""
 
     height: str = "20em"
     modes: Optional[Sequence[str]] = None
+    validation_schema: Optional[Dict[str, Any]] = None
     render_function_key: str = "json"
     form_template: str = "forms/json.html"
     display_template: str = "displays/json.html"

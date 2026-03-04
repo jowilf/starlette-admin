@@ -1,6 +1,7 @@
 <div id="{{ field.id }}"
      class="field-json {% if error %}is-invalid{% endif %}"
      style="height: {{ field.height }}"
+     data-validation-schema="{{ field.validation_schema|tojson|forceescape }}"
      data-modes="{{ field.modes | join(',') }}">
 </div>
 <input type="text"
