@@ -42,10 +42,10 @@ registerFieldInitializer(function (element) {
         modes: String(el.data("modes")).split(","),
         schema: el.data("validationSchema") ?? undefined,
         onChangeText: function (json) {
-          $(`input[name=${name}]`).val(json);
+          $(`input[name='${name}']`).val(json);
         },
       },
-      JSON.parse($(`input[name=${name}]`).val())
+      JSON.parse($(`input[name='${name}']`).val())
     );
   });
 
