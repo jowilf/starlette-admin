@@ -1102,6 +1102,7 @@ class RelationField(BaseField):
 
     identity: Optional[str] = None
     multiple: bool = False
+    search_builder_type: Optional[str] = "string"
     render_function_key: str = "relation"
     form_template: str = "forms/relation.html"
     display_template: str = "displays/relation.html"
