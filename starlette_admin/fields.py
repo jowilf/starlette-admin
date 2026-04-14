@@ -904,10 +904,8 @@ class ArrowField(DateTimeField):
                 return None
 
         dt = await super().parse_form_data(request, form_data, action)
-        if dt is None:
-            return None
 
-        return arrow.get(dt)
+        return None if dt is None else arrow.get(dt)
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
