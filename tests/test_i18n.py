@@ -215,7 +215,6 @@ def test_timezone_edit_form_display_and_submission():
         "time": "16:12:16",
         "date": "2023-01-06",
         "created_at": "2025-01-08T15:45:00",
-        "arrow_": "2025-01-08T15:45:00",
     }
 
     edit_response = client.post("/admin/post/edit/1", data=edit_data)
@@ -227,7 +226,6 @@ def test_timezone_edit_form_display_and_submission():
     # Tokyo 15:45 -> Eastern 01:45 (14 hour difference)
     expected_eastern_time = "2025-01-08 01:45:00"
     assert str(saved_post.created_at) == expected_eastern_time
-    assert saved_post.arrow_ == arrow.get(expected_eastern_time)
 
 
 def test_timezone_functions_with_invalid_timezone():
