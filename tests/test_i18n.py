@@ -214,7 +214,7 @@ def test_timezone_edit_form_display_and_submission():
         "title": "Updated Edit Test Post",
         "time": "16:12:16",
         "date": "2023-01-06",
-        "created_at": "2025-01-08T15:45:00+00:00",
+        "created_at": "2025-01-08T15:45:00",
         "arrow_": "2025-01-08T15:45:00",
     }
 
