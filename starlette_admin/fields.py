@@ -748,10 +748,6 @@ class DateTimeField(NumberField):
         if not is_timezone_conversion_enabled():
             return dt
 
-        if dt.tzinfo is not None:
-            database_tz = get_database_tzinfo()
-            return dt.astimezone(database_tz).replace(tzinfo=None)
-
         # Native datetime, assume it's in the user's timezone
         user_tz = get_tzinfo()
         database_tz = get_database_tzinfo()

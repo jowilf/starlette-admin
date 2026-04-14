@@ -28,7 +28,11 @@ app = Starlette(
 )
 
 # Create admin
-admin = Admin(engine, title="Example: SQLAlchemy")
+admin = Admin(
+    engine,
+    title="Example: SQLAlchemy",
+    templates_dir="./examples/sqla/templates",
+)
 
 # Add views
 admin.add_view(UserView(User, icon="fa fa-users"))
