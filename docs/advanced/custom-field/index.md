@@ -132,7 +132,7 @@ class CustomField(BaseField):
 
 For data processing you will need to override two functions:
 
-* `process_form_data`:  Will be call when converting field value into python dict object
+* `parse_form_data`:  Will be call when converting field value into python dict object
 * `serialize_field_value`: Will be call when serializing value to send through the API. This is the same data
 you will get in your *render* function
 
@@ -140,9 +140,9 @@ you will get in your *render* function
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from requests import Request
 from starlette.datastructures import FormData
-from starlette_admin import BaseField
+from starlette.requests import Request
+from starlette_admin import BaseField, RequestAction
 
 
 @dataclass
@@ -151,7 +151,7 @@ class CustomField(BaseField):
     form_template: str = "forms/custom.html"
     display_template: str = "displays/custom.html"
 
-    async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+    async def parse_form_data(self, request: Request, form_data: FormData, action: RequestAction) -> Any:
         return form_data.get(self.name)
 
     async def serialize_value(self, request: Request, value: Any, action: RequestAction) -> Any:

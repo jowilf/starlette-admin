@@ -554,6 +554,7 @@ class EnumField(StringField):
     class_: str = "field-enum form-control form-select"
     coerce: Callable[[Any], Any] = str
     select2: bool = True
+    search_builder_type: Optional[str] = "select"
 
     def __post_init__(self) -> None:
         if self.choices and not isinstance(self.choices[0], (list, tuple)):
@@ -748,10 +749,6 @@ class DateTimeField(NumberField):
         if not is_timezone_conversion_enabled():
             return dt
 
-        if dt.tzinfo is not None:
-            database_tz = get_database_tzinfo()
-            return dt.astimezone(database_tz).replace(tzinfo=None)
-
         # Native datetime, assume it's in the user's timezone
         user_tz = get_tzinfo()
         database_tz = get_database_tzinfo()
@@ -908,10 +905,8 @@ class ArrowField(DateTimeField):
                 return None
 
         dt = await super().parse_form_data(request, form_data, action)
-        if dt is None:
-            return None
 
-        return arrow.get(dt)
+        return None if dt is None else arrow.get(dt)
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
@@ -936,10 +931,15 @@ class ArrowField(DateTimeField):
 class JSONField(BaseField):
     """
     This field render jsoneditor and represent a value that stores python dict object.
-    Erroneous input is ignored and will not be accepted as a value."""
+    Erroneous input is ignored and will not be accepted as a value.
+
+    You may optionally use the `validation_schema` property to provide a dict with
+    a [JSONSchema](https://json-schema.org/) to have it be used to provide
+    validation feedback on the client side."""
 
     height: str = "20em"
     modes: Optional[Sequence[str]] = None
+    validation_schema: Optional[Dict[str, Any]] = None
     render_function_key: str = "json"
     form_template: str = "forms/json.html"
     display_template: str = "displays/json.html"

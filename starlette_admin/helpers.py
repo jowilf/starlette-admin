@@ -14,6 +14,7 @@ from typing import (
 )
 
 from markupsafe import escape
+from starlette import status
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette_admin._types import RequestAction
@@ -21,6 +22,12 @@ from starlette_admin.exceptions import FormValidationError
 
 if TYPE_CHECKING:
     from starlette_admin.fields import BaseField
+
+HTTP_422 = (
+    status.HTTP_422_UNPROCESSABLE_CONTENT
+    if hasattr(status, "HTTP_422_UNPROCESSABLE_CONTENT")
+    else status.HTTP_422_UNPROCESSABLE_ENTITY
+)
 
 
 def prettify_class_name(name: str) -> str:

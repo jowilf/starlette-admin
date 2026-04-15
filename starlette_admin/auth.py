@@ -6,12 +6,9 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.routing import Match, Mount, Route, WebSocketRoute
-from starlette.status import (
-    HTTP_400_BAD_REQUEST,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
+from starlette.status import HTTP_303_SEE_OTHER, HTTP_400_BAD_REQUEST
 from starlette_admin.exceptions import FormValidationError, LoginFailed
-from starlette_admin.helpers import wrap_endpoint_with_kwargs
+from starlette_admin.helpers import HTTP_422, wrap_endpoint_with_kwargs
 from starlette_admin.i18n import lazy_gettext as _
 
 if TYPE_CHECKING:
@@ -22,9 +19,6 @@ from urllib.parse import urlencode
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
-from starlette.status import (
-    HTTP_303_SEE_OTHER,
-)
 from starlette.types import ASGIApp
 
 
@@ -255,7 +249,7 @@ class AuthProvider(BaseAuthProvider):
                 request=request,
                 name="login.html",
                 context={"form_errors": errors, "_is_login_path": True},
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=HTTP_422,
             )
         except LoginFailed as error:
             return admin.templates.TemplateResponse(
