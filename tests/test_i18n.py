@@ -19,6 +19,7 @@ from starlette_admin.i18n import (
     SUPPORTED_LOCALES,
     get_database_timezone,
     get_timezone,
+    get_timezone_display_name,
     set_database_timezone,
     set_timezone,
 )
@@ -233,3 +234,15 @@ def test_timezone_functions_with_invalid_timezone():
 
     set_database_timezone("Invalid/Database_Timezone")
     assert get_database_timezone() == "UTC"
+
+
+@pytest.mark.parametrize(
+    "timezone, show_offset, expected",
+    [
+        ("America/Los_Angeles", False, "Pacific Time"),
+        ("America/Los_Angeles", True, "Pacific Time (UTC-07:00)"),
+    ],
+)
+def test_get_timezone_display_name(timezone, show_offset, expected):
+    result = get_timezone_display_name(timezone, show_offset)
+    assert result == expected

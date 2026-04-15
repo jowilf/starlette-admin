@@ -29,6 +29,9 @@ _current_timezone: ContextVar[str] = ContextVar(
 _current_database_timezone: ContextVar[str] = ContextVar(
     "current_database_timezone", default=DEFAULT_DB_TIMEZONE
 )
+_timezone_conversion_enabled: ContextVar[bool] = ContextVar(
+    "timezone_conversion_enabled", default=False
+)
 
 
 @cache
@@ -43,6 +46,7 @@ def _validate_timezone(timezone: str, default: str = DEFAULT_TIMEZONE) -> str:
 def set_timezone(timezone: str) -> None:
     validated = _validate_timezone(timezone, DEFAULT_TIMEZONE)
     _current_timezone.set(validated)
+    _timezone_conversion_enabled.set(True)
 
 
 def get_timezone() -> str:
@@ -56,6 +60,7 @@ def get_tzinfo() -> datetime.tzinfo:
 def set_database_timezone(timezone: str) -> None:
     validated = _validate_timezone(timezone, DEFAULT_DB_TIMEZONE)
     _current_database_timezone.set(validated)
+    _timezone_conversion_enabled.set(True)
 
 
 def get_database_timezone() -> str:
@@ -67,14 +72,8 @@ def get_database_tzinfo() -> datetime.tzinfo:
 
 
 def is_timezone_conversion_enabled() -> bool:
-    """Check if timezone conversion is enabled by testing if timezone context is available."""
-    try:
-        get_timezone()
-        get_database_timezone()
-
-        return True
-    except LookupError:
-        return False
+    """Check if timezone conversion is enabled"""
+    return _timezone_conversion_enabled.get()
 
 
 try:

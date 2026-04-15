@@ -749,10 +749,6 @@ class DateTimeField(NumberField):
         if not is_timezone_conversion_enabled():
             return dt
 
-        if dt.tzinfo is not None:
-            database_tz = get_database_tzinfo()
-            return dt.astimezone(database_tz).replace(tzinfo=None)
-
         # Native datetime, assume it's in the user's timezone
         user_tz = get_tzinfo()
         database_tz = get_database_tzinfo()
@@ -909,10 +905,8 @@ class ArrowField(DateTimeField):
                 return None
 
         dt = await super().parse_form_data(request, form_data, action)
-        if dt is None:
-            return None
 
-        return arrow.get(dt)
+        return None if dt is None else arrow.get(dt)
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
