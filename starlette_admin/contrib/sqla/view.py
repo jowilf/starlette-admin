@@ -111,10 +111,13 @@ class ModelView(BaseModelView):
             for field in self.fields
             if not isinstance(field, (RelationField, FileField))
         ]
+        _searchable_default_list = [
+            field.name for field in self.fields if not isinstance(field, FileField)
+        ]
         self.searchable_fields = normalize_list(
             self.searchable_fields
             if (self.searchable_fields is not None)
-            else _default_list
+            else _searchable_default_list
         )
         self.sortable_fields = normalize_list(
             self.sortable_fields
@@ -271,7 +274,11 @@ class ModelView(BaseModelView):
         stmt = self.get_count_query(request)
         if where is not None:
             if isinstance(where, dict):
-                where = build_query(where, self.model)
+                where = build_query(
+                    where,
+                    self.model,
+                    searchable_relation_fields=self.searchable_relation_fields,
+                )
             else:
                 where = await self.build_full_text_search_query(
                     request, where, self.model
@@ -295,7 +302,11 @@ class ModelView(BaseModelView):
             stmt = stmt.limit(limit)
         if where is not None:
             if isinstance(where, dict):
-                where = build_query(where, self.model)
+                where = build_query(
+                    where,
+                    self.model,
+                    searchable_relation_fields=self.searchable_relation_fields,
+                )
             else:
                 where = await self.build_full_text_search_query(
                     request, where, self.model

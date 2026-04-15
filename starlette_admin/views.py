@@ -238,6 +238,21 @@ class BaseModelView(BaseView):
     exclude_fields_from_create: Sequence[str] = []
     exclude_fields_from_edit: Sequence[str] = []
     searchable_fields: Optional[Sequence[str]] = None
+    searchable_relation_fields: Optional[Dict[str, List[str]]] = None
+    """Optional mapping of relation field names to lists of column names on
+    the related model that should be searched when filtering by that relation.
+
+    When ``None`` (the default), all string columns of the related model are
+    searched.  Setting this for a specific relation restricts the search to
+    the listed columns, which can improve query performance on large datasets.
+
+    Example::
+
+        class PostView(ModelView):
+            searchable_relation_fields = {
+                "publisher": ["last_name", "first_name"],
+            }
+    """
     sortable_fields: Optional[Sequence[str]] = None
     fields_default_sort: Optional[Sequence[Union[Tuple[str, bool], str]]] = None
     export_types: Sequence[ExportType] = [
