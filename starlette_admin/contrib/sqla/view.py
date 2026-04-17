@@ -548,7 +548,7 @@ class ModelView(BaseModelView):
                         pk_value = getattr(related_obj, remote_col.name)
                         # Set the FK column value in arranged_data
                         arranged_data[local_col.name] = pk_value
-                    else:
+                    else:  # pragma: no cover
                         # If relationship is None, set FK column to None
                         arranged_data[local_col.name] = None
         except Exception:  # pragma: no cover
