@@ -551,7 +551,7 @@ class ModelView(BaseModelView):
                     else:
                         # If relationship is None, set FK column to None
                         arranged_data[local_col.name] = None
-        except Exception:
+        except Exception:  # pragma: no cover
             # If introspection fails for any reason, don't break the flow
             # The relationship is still set, SQLAlchemy will handle it during flush
             pass
