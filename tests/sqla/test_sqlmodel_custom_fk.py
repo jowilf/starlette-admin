@@ -43,6 +43,17 @@ class Member(SQLModel, table=True):
     organization: Optional[Organization] = Relationship(back_populates="members")
 
 
+class Project(SQLModel, table=True):
+    """Project with optional FK - can be cleared to None"""
+
+    id: Optional[int] = Field(None, primary_key=True)
+    name: str
+
+    # Optional FK - can be set to None
+    org_ref: Optional[int] = Field(None, foreign_key="org.id")
+    organization: Optional[Organization] = Relationship()
+
+
 @pytest.fixture
 def engine() -> Engine:
     _engine = get_test_engine()
@@ -62,6 +73,7 @@ def admin(engine: Engine):
     admin = Admin(engine)
     admin.add_view(ModelView(Organization))
     admin.add_view(ModelView(Member))
+    admin.add_view(ModelView(Project))
     return admin
 
 
@@ -170,3 +182,39 @@ async def test_create_with_optional_custom_fk(client: AsyncClient, session: Sess
     # This will fail because owner_id is required (int, not Optional[int])
     # But this is expected behavior - the FK is correctly being validated
     assert response.status_code == 422  # Validation error expected
+
+
+async def test_nonexistent_relationship_id(client: AsyncClient, session: Session):
+    """
+    Test submitting a non-existent relationship ID triggers the else branch in
+    _populate_fk_columns (find_by_pk returns None) and results in a 422.
+
+    Note: clearing a relationship through the UI works correctly — select2 omits
+    the field entirely, parse_form_data returns None, and _arrange_data sets the
+    relationship to None without ever calling _populate_fk_columns.
+    """
+    project = Project(name="Alpha Project")
+    session.add(project)
+    session.commit()
+    project_id = project.id
+
+    # Submit a relationship ID that does not exist in the DB
+    response = await client.post(
+        f"/admin/project/edit/{project_id}",
+        data={
+            "name": "Alpha Project",
+            "organization": "99999",  # non-existent ID -> find_by_pk returns None
+        },
+        follow_redirects=False,
+    )
+
+    # find_by_pk returns None -> else branch sets org_ref=None ->
+    # Pydantic accepts Optional[int]=None -> saves with org_ref=None
+    assert response.status_code == 303
+
+    session.commit()
+    session.expire(project)
+    stmt = select(Project).where(Project.id == project_id)
+    updated_project = session.exec(stmt).one()
+    assert updated_project.org_ref is None
+    assert updated_project.organization is None
