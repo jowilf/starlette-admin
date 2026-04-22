@@ -74,6 +74,10 @@ msgstr "Düzenle"
 msgid "Are you sure you want to delete this item?"
 msgstr "Bu öğeyi silmek istediğinizden emin misiniz?"
 
+#: starlette_admin/views.py:503
+msgid "Yes, delete"
+msgstr "Evet, sil"
+
 #: starlette_admin/views.py:818
 msgid "All"
 msgstr "Hepsi"
