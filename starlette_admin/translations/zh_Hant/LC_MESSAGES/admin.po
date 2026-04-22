@@ -196,4 +196,3 @@ msgstr "新增項目"
 #: starlette_admin/templates/modals/loading.html:7
 msgid "Loading"
 msgstr "載入中"
-

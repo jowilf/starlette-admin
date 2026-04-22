@@ -196,4 +196,3 @@ msgstr "Element hinzufügen"
 #: starlette_admin/templates/modals/loading.html:7
 msgid "Loading"
 msgstr "Laden"
-
