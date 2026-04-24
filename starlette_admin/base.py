@@ -246,16 +246,17 @@ class BaseAdmin:
         templates.env.filters["is_link"] = lambda res: isinstance(res, Link)
         templates.env.filters["is_model"] = lambda res: isinstance(res, BaseModelView)
         templates.env.filters["is_dropdown"] = lambda res: isinstance(res, DropDown)
+
         # Wrap provider callbacks in a safe filter so an unauthenticated
         # request reaching the layout template (e.g. the exception handler
         # rendering error.html for a missing static asset before the auth
         # redirect fires — issue #754) doesn't crash get_admin_user's
         # session lookup and turn a 404 into a 500.
-        def _safe_filter(fn):  # noqa: ANN001,ANN202 — jinja filter shape
+        def _safe_filter(fn):
             if fn is None:
                 return None
 
-            def _wrapped(request):  # noqa: ANN001
+            def _wrapped(request):
                 try:
                     return fn(request)
                 except Exception:
