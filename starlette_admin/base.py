@@ -246,10 +246,27 @@ class BaseAdmin:
         templates.env.filters["is_link"] = lambda res: isinstance(res, Link)
         templates.env.filters["is_model"] = lambda res: isinstance(res, BaseModelView)
         templates.env.filters["is_dropdown"] = lambda res: isinstance(res, DropDown)
-        templates.env.filters["get_admin_user"] = (
+        # Wrap provider callbacks in a safe filter so an unauthenticated
+        # request reaching the layout template (e.g. the exception handler
+        # rendering error.html for a missing static asset before the auth
+        # redirect fires — issue #754) doesn't crash get_admin_user's
+        # session lookup and turn a 404 into a 500.
+        def _safe_filter(fn):  # noqa: ANN001,ANN202 — jinja filter shape
+            if fn is None:
+                return None
+
+            def _wrapped(request):  # noqa: ANN001
+                try:
+                    return fn(request)
+                except Exception:
+                    return None
+
+            return _wrapped
+
+        templates.env.filters["get_admin_user"] = _safe_filter(
             self.auth_provider.get_admin_user if self.auth_provider else None
         )
-        templates.env.filters["get_admin_config"] = (
+        templates.env.filters["get_admin_config"] = _safe_filter(
             self.auth_provider.get_admin_config if self.auth_provider else None
         )
         templates.env.filters["tojson"] = lambda data: json.dumps(data, default=str)
