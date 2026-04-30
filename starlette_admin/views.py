@@ -980,5 +980,24 @@ class BaseModelView(BaseView):
             "dt_i18n_url": request.url_for(
                 f"{request.app.state.ROUTE_NAME}:statics", path=f"i18n/dt/{locale}.json"
             ),
-            "datatablesOptions": self.datatables_options,
+            "datatablesOptions": self._merged_datatables_options(request),
         }
+
+    def _merged_datatables_options(self, request: "Request") -> "Dict[str, Any]":
+        """Merge user-defined datatables_options with auto-generated columnDefs
+        for fields that have ``hidden_from_list=True``."""
+        import copy
+
+        opts = copy.deepcopy(self.datatables_options) if self.datatables_options else {}
+        fields_list = self.get_fields_list(request)
+        # +1 offset for the leading checkbox column
+        hidden_targets = [
+            i + 2
+            for i, f in enumerate(fields_list)
+            if getattr(f, "hidden_from_list", False)
+        ]
+        if hidden_targets:
+            defs = list(opts.get("columnDefs", []))
+            defs.append({"visible": False, "targets": hidden_targets})
+            opts["columnDefs"] = defs
+        return opts
