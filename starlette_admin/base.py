@@ -250,7 +250,7 @@ class BaseAdmin:
         # Wrap provider callbacks in a safe filter so an unauthenticated
         # request reaching the layout template (e.g. the exception handler
         # rendering error.html for a missing static asset before the auth
-        # redirect fires — issue #754) doesn't crash get_admin_user's
+        # redirect fires, issue #754) doesn't crash get_admin_user's
         # session lookup and turn a 404 into a 500.
         def _safe_filter(fn):
             if fn is None:
