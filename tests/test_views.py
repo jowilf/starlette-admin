@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import pytest
 from pydantic import Field
@@ -506,3 +506,43 @@ class TestViews:
             )
             == 1
         )
+
+    def test_json_field_falsy_values(self):
+        """Test that JSONField correctly serializes falsy values in API response."""
+
+        class FalsyModel(DummyBaseModel):
+            json_field: Optional[Any] = None
+
+        class FalsyModelView(DummyModelView):
+            fields = [
+                IntegerField("id"),
+                JSONField("json_field"),
+            ]
+            model = FalsyModel
+            db = {}
+            seq = 1
+
+        admin = BaseAdmin()
+        app = Starlette()
+        admin.add_view(FalsyModelView)
+        admin.mount_to(app)
+        client = TestClient(app)
+
+        # Create with a normal dict value first
+        response = client.post(
+            "/admin/falsy-model/create",
+            data={"json_field": '{"key":"value"}'},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+
+        # Now manually set falsy values directly on the model and verify API serialization
+        falsy_values = [0, False, "", [], {}, None]
+        for val in falsy_values:
+            FalsyModelView.db[99] = FalsyModel(id=99, json_field=val)
+            response = client.get("/admin/api/falsy-model?pks=99")
+            assert response.status_code == 200
+            item = response.json()["items"][0]
+            assert (
+                item["json_field"] == val
+            ), f"Expected {val!r}, got {item['json_field']!r}"

@@ -64,7 +64,7 @@ const render = {
   },
   json: function render(data, type, full, meta, fieldOptions) {
     if (type != "display") return escape(JSON.stringify(data));
-    if (data) {
+    if (data != null) {
       return `<span class="align-middle d-inline-block text-truncate" data-toggle="tooltip" data-placement="bottom" title='${escape(
         JSON.stringify(data)
       )}' style="max-width: 30em;">${pretty_print_json(data)}</span>`;
