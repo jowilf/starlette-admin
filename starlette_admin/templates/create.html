@@ -19,6 +19,7 @@
             <div class="col-12">
                 <div class="card">
                     <form action="{{ request.url | safe }}" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="returnTo" value="{{ return_url | e }}">
                         <div class="card-header">
                             <div class="container-fluid">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -40,7 +41,7 @@
                         </div>
                         <div class="card-footer text-black">
                             <div class="btn-list ms-auto justify-content-end">
-                                <a href="{{ url_for(__name__ ~ ':list', identity=model.identity) }}"
+                                <a href="{{ return_url | e }}"
                                    class="btn btn-danger">{{ _("Cancel") }}</a>
                                 <button type="submit" name="_add_another"
                                         class="btn">{{ _("Save and add another") }}</button>

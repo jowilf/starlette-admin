@@ -5,6 +5,15 @@ $(function () {
   /* list of primary keys of selected rows */
   var selectedRows = [];
 
+  /* searchBuilder state loaded from URL, to be applied after init */
+  var loadedSearchBuilder = null;
+
+  /* hidden column indices (0-based from dt_columns) loaded from URL */
+  var loadedHiddenColumns = [];
+
+  /* flag to suppress stateSaveCallback during state restoration */
+  var isRestoring = false;
+
   /*
     contains all fields including nested fields inside all CollectionField.
     Each nested field name is prefixed by it parent CollectionField name (ex: 'category.name')
@@ -458,16 +467,91 @@ $(function () {
         .buttons("pageLength", null)
         .container()
         .appendTo("#pageLength_container");
+
+      // Rebuild SearchBuilder from URL state and force redraw
+      if (loadedSearchBuilder) {
+        isRestoring = true;
+        // Read the desired page from URL params before rebuild resets it
+        var sbParams = Qs.parse(location.search, { ignoreQueryPrefix: true });
+        var sbPage = isNaN(parseInt(sbParams?.page)) ? 0 : parseInt(sbParams.page) - 1;
+
+        table.searchBuilder.rebuild(loadedSearchBuilder);
+        loadedSearchBuilder = null;
+
+        // After the rebuild-triggered draw completes, restore page & columns
+        table.one('draw', function () {
+          setTimeout(function () {
+            // Restore hidden columns
+            loadedHiddenColumns.forEach(function (ci) {
+              table.column(ci + 2).visible(false, false);
+            });
+            if (loadedHiddenColumns.length > 0) table.columns.adjust();
+            loadedHiddenColumns = [];
+
+            // Restore page
+            if (sbPage > 0 && table.page() !== sbPage) {
+              table.page(sbPage).draw(false);
+            }
+
+            isRestoring = false;
+          }, 0);
+        });
+        table.draw();
+      } else if (loadedHiddenColumns.length > 0) {
+        // No searchBuilder but columns need restoring (shouldn't normally happen
+        // since stateLoadCallback returns column state, but just in case)
+        loadedHiddenColumns.forEach(function (ci) {
+          table.column(ci + 2).visible(false, false);
+        });
+        table.columns.adjust();
+        loadedHiddenColumns = [];
+      }
+
+      // Append returnTo to the "New" create button (use path+search, not full URL, to pass server-side validation)
+      var returnTo = encodeURIComponent(location.pathname + location.search);
+      $("a[href*='/create']").each(function () {
+        var href = $(this).attr("href");
+        if (href && href.indexOf("returnTo") === -1) {
+          $(this).attr(
+            "href",
+            href + (href.indexOf("?") === -1 ? "?" : "&") + "returnTo=" + returnTo
+          );
+        }
+      });
     },
     drawCallback: function (settings) {
       actionManager.initNoConfirmationActions();
+
+      // Append returnTo to edit/create links so navigation back preserves list state (use path+search, not full URL)
+      var returnTo = encodeURIComponent(location.pathname + location.search);
+      $(".row-actions-container a[href*='/edit/']").each(function () {
+        var href = $(this).attr("href");
+        if (href && href.indexOf("returnTo") === -1) {
+          $(this).attr(
+            "href",
+            href + (href.indexOf("?") === -1 ? "?" : "&") + "returnTo=" + returnTo
+          );
+        }
+      });
     },
 
     stateSaveCallback: function (settings, data) {
+      if (isRestoring) return;
       let page = 0;
       try {
         page = (data?.page ?? data?.start / data?.length ?? 0) + 1;
       } catch (e) {}
+
+      // Determine hidden columns
+      var hiddenCols = [];
+      if (data?.columns) {
+        data.columns.forEach(function (col, idx) {
+          if (idx >= 2 && col.visible === false) {
+            hiddenCols.push(idx - 2);
+          }
+        });
+      }
+
       const params = {
         page: page,
         page_size: data?.length,
@@ -482,6 +566,7 @@ $(function () {
           data?.searchBuilder && !$.isEmptyObject(data?.searchBuilder)
             ? JSON.stringify(data?.searchBuilder)
             : undefined,
+        columns: hiddenCols.length > 0 ? hiddenCols.join(",") : undefined,
       };
 
       const query = Qs.stringify(params, { encode: false, indices: false });
@@ -513,6 +598,32 @@ $(function () {
         });
       }
 
+      // Parse hidden columns
+      var columns = [];
+      var hiddenIndices = [];
+      if (params?.columns) {
+        hiddenIndices = params.columns
+          .split(",")
+          .map((v) => parseInt(v))
+          .filter((v) => !isNaN(v));
+      }
+      // Build columns array (offset by 2 for checkbox + row actions columns)
+      var totalCols = dt_columns.length + 2;
+      for (var ci = 0; ci < totalCols; ci++) {
+        columns.push({
+          visible: ci < 2 ? true : !hiddenIndices.includes(ci - 2),
+          search: { search: "", smart: true, regex: false, caseInsensitive: true },
+        });
+      }
+
+      // Store searchBuilder for later rebuild in initComplete
+      if (params?.searchBuilder) {
+        loadedSearchBuilder = JSON.parse(params.searchBuilder);
+      }
+
+      // Store hidden columns for restoration in initComplete
+      loadedHiddenColumns = hiddenIndices;
+
       var state = {
         time: Date.now(),
         length: length,
@@ -523,9 +634,8 @@ $(function () {
           regex: false,
           caseInsensitive: true,
         },
-        searchBuilder: params?.searchBuilder
-          ? JSON.parse(params?.searchBuilder)
-          : undefined,
+        searchBuilder: loadedSearchBuilder || undefined,
+        columns: columns.length > 0 ? columns : undefined,
         page: page,
         start: length * page,
       };

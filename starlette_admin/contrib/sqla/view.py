@@ -68,6 +68,20 @@ class ModelView(BaseModelView):
         ```
     """
 
+    searchable_relation_fields: Optional[Dict[str, List[str]]] = None
+    """A dictionary mapping relation field names to lists of column names
+    that should be searchable within those relations. When provided, the
+    SearchBuilder can filter on related model attributes.
+
+    Example:
+        ```python
+        class PostView(ModelView):
+            searchable_relation_fields = {
+                "user": ["name", "email"],
+            }
+        ```
+    """
+
     def __init__(
         self,
         model: Type[Any],

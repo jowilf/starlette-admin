@@ -438,20 +438,44 @@ class BaseAdmin:
             },
         )
 
+    def _validate_return_url(self, return_url: Optional[str]) -> Optional[str]:
+        """Validate that returnTo URL is safe (relative, within admin base)."""
+        if not return_url:
+            return None
+        if return_url.startswith("//"):
+            return None
+        if "://" in return_url:
+            return None
+        if not return_url.startswith(self.base_url):
+            return None
+        return return_url
+
     async def _render_create(self, request: Request) -> Response:
         request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        config = {"title": model.title(request), "model": model}
+        list_url = str(
+            request.url_for(self.route_name + ":list", identity=model.identity)
+        )
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
+            return_url = self._validate_return_url(
+                request.query_params.get("returnTo")
+            ) or list_url
+            config = {
+                "title": model.title(request),
+                "model": model,
+                "return_url": return_url,
+            }
             return self.templates.TemplateResponse(
                 request=request,
                 name=model.create_template,
                 context=config,
             )
         form = await request.form()
+        return_url = self._validate_return_url(str(form.get("returnTo", ""))) or list_url
+        config = {"title": model.title(request), "model": model, "return_url": return_url}
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.CREATE)
         try:
             obj = await model.create(request, dict_obj)
@@ -469,7 +493,7 @@ class BaseAdmin:
                 status_code=HTTP_422,
             )
         pk = await model.get_pk_value(request, obj)
-        url = request.url_for(self.route_name + ":list", identity=model.identity)
+        url = return_url
         if form.get("_continue_editing", None) is not None:
             url = request.url_for(
                 self.route_name + ":edit", identity=model.identity, pk=pk
@@ -488,19 +512,34 @@ class BaseAdmin:
         obj = await model.find_by_pk(request, pk)
         if obj is None:
             raise HTTPException(HTTP_404_NOT_FOUND)
-        config = {
-            "title": model.title(request),
-            "model": model,
-            "raw_obj": obj,
-            "obj": await model.serialize(obj, request, RequestAction.EDIT),
-        }
+        list_url = str(
+            request.url_for(self.route_name + ":list", identity=model.identity)
+        )
         if request.method == "GET":
+            return_url = self._validate_return_url(
+                request.query_params.get("returnTo")
+            ) or list_url
+            config = {
+                "title": model.title(request),
+                "model": model,
+                "raw_obj": obj,
+                "obj": await model.serialize(obj, request, RequestAction.EDIT),
+                "return_url": return_url,
+            }
             return self.templates.TemplateResponse(
                 request=request,
                 name=model.edit_template,
                 context=config,
             )
         form = await request.form()
+        return_url = self._validate_return_url(str(form.get("returnTo", ""))) or list_url
+        config = {
+            "title": model.title(request),
+            "model": model,
+            "raw_obj": obj,
+            "obj": await model.serialize(obj, request, RequestAction.EDIT),
+            "return_url": return_url,
+        }
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.EDIT)
         try:
             obj = await model.edit(request, pk, dict_obj)
@@ -518,7 +557,7 @@ class BaseAdmin:
                 status_code=HTTP_422,
             )
         pk = await model.get_pk_value(request, obj)
-        url = request.url_for(self.route_name + ":list", identity=model.identity)
+        url = return_url
         if form.get("_continue_editing", None) is not None:
             url = request.url_for(
                 self.route_name + ":edit", identity=model.identity, pk=pk
