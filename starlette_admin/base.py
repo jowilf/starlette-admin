@@ -460,9 +460,10 @@ class BaseAdmin:
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
         if request.method == "GET":
-            return_url = self._validate_return_url(
-                request.query_params.get("returnTo")
-            ) or list_url
+            return_url = (
+                self._validate_return_url(request.query_params.get("returnTo"))
+                or list_url
+            )
             config = {
                 "title": model.title(request),
                 "model": model,
@@ -474,8 +475,14 @@ class BaseAdmin:
                 context=config,
             )
         form = await request.form()
-        return_url = self._validate_return_url(str(form.get("returnTo", ""))) or list_url
-        config = {"title": model.title(request), "model": model, "return_url": return_url}
+        return_url = (
+            self._validate_return_url(str(form.get("returnTo", ""))) or list_url
+        )
+        config = {
+            "title": model.title(request),
+            "model": model,
+            "return_url": return_url,
+        }
         dict_obj = await self.form_to_dict(request, form, model, RequestAction.CREATE)
         try:
             obj = await model.create(request, dict_obj)
@@ -516,9 +523,10 @@ class BaseAdmin:
             request.url_for(self.route_name + ":list", identity=model.identity)
         )
         if request.method == "GET":
-            return_url = self._validate_return_url(
-                request.query_params.get("returnTo")
-            ) or list_url
+            return_url = (
+                self._validate_return_url(request.query_params.get("returnTo"))
+                or list_url
+            )
             config = {
                 "title": model.title(request),
                 "model": model,
@@ -532,7 +540,9 @@ class BaseAdmin:
                 context=config,
             )
         form = await request.form()
-        return_url = self._validate_return_url(str(form.get("returnTo", ""))) or list_url
+        return_url = (
+            self._validate_return_url(str(form.get("returnTo", ""))) or list_url
+        )
         config = {
             "title": model.title(request),
             "model": model,

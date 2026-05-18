@@ -129,17 +129,13 @@ class TestReturnUrl:
     def test_edit_get_passes_return_url_to_template(self):
         """Edit GET with returnTo query param renders it in the page."""
         return_url = "/admin/article/list?page=2"
-        response = self.client.get(
-            f"/admin/article/edit/1?returnTo={return_url}"
-        )
+        response = self.client.get(f"/admin/article/edit/1?returnTo={return_url}")
         assert response.status_code == 200
         assert return_url in response.text
 
     def test_create_get_passes_return_url_to_template(self):
         """Create GET with returnTo query param renders it in the page."""
         return_url = "/admin/article/list?page=3"
-        response = self.client.get(
-            f"/admin/article/create?returnTo={return_url}"
-        )
+        response = self.client.get(f"/admin/article/create?returnTo={return_url}")
         assert response.status_code == 200
         assert return_url in response.text
