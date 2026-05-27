@@ -214,6 +214,9 @@ class BaseModelView(BaseView):
             Default value is set to `[10, 25, 50, 100]`. Use `-1`to display All
         responsive_table: Enable/Disable [responsive](https://datatables.net/extensions/responsive/)
             extension
+        infinite_scroll: Enable/Disable infinite scroll mode for the list view.
+            When enabled, items are loaded dynamically as the user scrolls
+            instead of using traditional pagination.
         save_state: Enable/Disable [state saving](https://datatables.net/examples/basic_init/state_save.html)
         datatables_options: Dict of [Datatables options](https://datatables.net/reference/option/).
             These will overwrite any default options set for the datatable.
@@ -251,6 +254,7 @@ class BaseModelView(BaseView):
     page_size: int = 10
     page_size_options: Sequence[int] = [10, 25, 50, 100]
     responsive_table: bool = False
+    infinite_scroll: bool = False
     save_state: bool = True
     datatables_options: ClassVar[Dict[str, Any]] = {}
     list_template: str = "list.html"
@@ -315,6 +319,9 @@ class BaseModelView(BaseView):
             OrderedDict()
         )
         self._init_actions()
+
+        if self.infinite_scroll and self.list_template == "list.html":
+            self.list_template = "list_infinite.html"
 
     def is_active(self, request: Request) -> bool:
         return request.path_params.get("identity", None) == self.identity
@@ -964,6 +971,7 @@ class BaseModelView(BaseView):
             "columnVisibility": self.column_visibility,
             "searchBuilder": self.search_builder,
             "responsiveTable": self.responsive_table,
+            "infiniteScroll": self.infinite_scroll,
             "stateSave": self.save_state,
             "fields": [f.dict() for f in self.get_fields_list(request)],
             "pk": self.pk_attr,
@@ -981,4 +989,5 @@ class BaseModelView(BaseView):
                 f"{request.app.state.ROUTE_NAME}:statics", path=f"i18n/dt/{locale}.json"
             ),
             "datatablesOptions": self.datatables_options,
+            "noItemsMessage": str(_("No items found.")),
         }

@@ -44,7 +44,6 @@
                                 <div class="ms-2 d-inline-block">
                                     <div class="input-icon">
                                         <span class="input-icon-addon">
-                                            <!-- Download SVG icon from http://tabler-icons.io/i/search -->
                                             <svg xmlns="http://www.w3.org/2000/svg"
                                                  class="icon"
                                                  width="24"
@@ -72,18 +71,57 @@
                         </div>
                         <div id="alertContainer"></div>
                     </div>
-                    <table id="dt" class="table table-vcenter text-nowrap">
-                        <thead>
-                        <tr id="table-header">
-                            <th></th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                    </table>
+                    <!-- Hidden DataTable for export/searchBuilder -->
+                    <div id="dt-hidden-wrapper" style="visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; pointer-events: none;">
+                        <table id="dt" class="table table-vcenter text-nowrap">
+                            <thead>
+                            <tr id="table-header">
+                                <th></th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <!-- Infinite scroll container -->
+                    <div id="infinite-scroll-container" class="table-responsive">
+                        <table class="table table-vcenter text-nowrap" id="infinite-table">
+                            <thead id="infinite-thead">
+                                <tr>
+                                    <th style="width:1%"><input class="form-check-input" type="checkbox" id="infinite-select-all"></th>
+                                    <th style="width:1%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="infinite-tbody">
+                            </tbody>
+                        </table>
+                        <div id="scroll-sentinel" style="height: 1px;"></div>
+                        <div id="infinite-loading" class="text-center p-3" style="display:none;">
+                            <div class="spinner-border spinner-border-sm text-muted" role="status"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center">
+                        <span id="infinite-info" class="m-0 text-muted"></span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Scroll to top button -->
+    <button id="scroll-to-top-btn" type="button" aria-label="Scroll to top"
+            onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
+    <script>
+    (function(){
+        var btn = document.getElementById('scroll-to-top-btn');
+        if (!btn) return;
+        function toggle() {
+            btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+        }
+        window.addEventListener('scroll', toggle, {passive: true});
+        toggle();
+    })();
+    </script>
 {% endblock %}
 {% block head_css %}
     {{ super() }}
@@ -95,28 +133,41 @@
         <link rel="stylesheet" href="{{ link }}">
     {% endfor %}
     <style>
-        div.dataTables_wrapper div.dataTables_info {
-            padding-top: 0;
+        div.dt-button-collection.dtb-collection-closeable {
+            width: calc(100% - 20px) !important;
         }
-
-        table.dataTable span.highlight {
-            background-color: #ffff88;
-            border-radius: 0.28571429rem;
-        }
-
-        table.dataTable span.column_highlight {
-            background-color: #ffcc99;
-            border-radius: 0.28571429rem;
-        }
-
-        table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before,
-        table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control:before {
-            background-color: #206bc4;
-        }
-
-        table.dataTable {
+        #infinite-scroll-container table.table {
             margin-top: 0px !important;
             margin-bottom: 0px !important;
+        }
+        #infinite-tbody tr:hover {
+            background-color: rgba(var(--tblr-primary-rgb), 0.04);
+        }
+        #infinite-tbody tr.row-selected {
+            background-color: rgba(var(--tblr-primary-rgb), 0.08);
+        }
+        #scroll-to-top-btn {
+            display: none;
+            position: fixed;
+            bottom: 44px;
+            right: 44px;
+            z-index: 9999;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s, transform 0.2s;
+            opacity: 0.85;
+            background: var(--tblr-primary, #206bc4);
+            color: #fff;
+        }
+        #scroll-to-top-btn:hover {
+            opacity: 1;
+            transform: translateY(-2px);
         }
     </style>
 {% endblock %}
@@ -160,5 +211,5 @@
     <script type="text/javascript"
             src="{{ url_for(__name__ ~ ':statics', path='js/export_all.js').include_query_params(v=1) }}"></script>
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/list.js').include_query_params(v=3) }}"></script>
+            src="{{ url_for(__name__ ~ ':statics', path='js/list_infinite.js').include_query_params(v=2) }}"></script>
 {% endblock %}
