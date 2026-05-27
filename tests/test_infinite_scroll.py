@@ -1,9 +1,7 @@
 """Tests for infinite_scroll feature on BaseModelView."""
 
-import json
-from typing import List, Optional
+from typing import Optional
 
-import pytest
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 from starlette_admin import BaseAdmin, IntegerField, StringField, TextAreaField
@@ -103,7 +101,10 @@ class TestInfiniteScroll:
         client = TestClient(app)
         response = client.get("/admin/article/list")
         assert response.status_code == 200
-        assert '"infiniteScroll": true' in response.text or '"infiniteScroll":true' in response.text
+        assert (
+            '"infiniteScroll": true' in response.text
+            or '"infiniteScroll":true' in response.text
+        )
 
     def test_export_all_js_included(self):
         """The infinite scroll template should include export_all.js."""
