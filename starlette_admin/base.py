@@ -324,6 +324,14 @@ class BaseAdmin:
                     where = json.loads(where)
                 except JSONDecodeError:
                     where = str(where)
+            if order_by:
+                error = model._validate_order_by(request, order_by)
+                if error:
+                    return JSONResponse({"detail": error}, status_code=HTTP_422)
+            if isinstance(where, dict):
+                error = model._validate_where(request, where)
+                if error:
+                    return JSONResponse({"detail": error}, status_code=HTTP_422)
             items = await model.find_all(
                 request=request,
                 skip=skip,
