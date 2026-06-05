@@ -26,7 +26,9 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -e . pytest pytest-codspeed
+        # pytest is pinned to match the project's supported range (the
+        # pyproject.toml pytest config is incompatible with pytest >=8.4).
+        run: pip install -e . "pytest>=8.3.0,<8.4.0" pytest-codspeed
 
       - name: Run benchmarks
         uses: CodSpeedHQ/action@v4
