@@ -42,7 +42,7 @@ Changelog = "https://jowilf.github.io/starlette-admin/changelog/"
 
 [project.optional-dependencies]
 i18n = [
-    "babel >=2.13.0"
+    "babel >=2.17.0"
 ]
 test = [
     "pytest >=8.3.0, <8.4.0",
