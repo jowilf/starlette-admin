@@ -99,6 +99,7 @@ class BaseAdmin:
         self._views: List[BaseView] = []
         self._models: List[BaseModelView] = []
         self.routes: List[Union[Route, Mount]] = []
+        self._mounted_app: Optional[Starlette] = None
         self.debug = debug
         self.i18n_config = i18n_config
         self.timezone_config = timezone_config
@@ -270,15 +271,20 @@ class BaseAdmin:
             for sub_view in view.views:
                 self.setup_view(sub_view)
         elif isinstance(view, CustomView):
-            self.routes.insert(
-                0,
-                Route(
+            route = Route(
+                view.path,
+                endpoint=self._render_custom_view(view),
+                methods=view.methods,
+                name=view.name,
+            )
+            self.routes.insert(0, route)
+            if self._mounted_app is not None:
+                self._mounted_app.router.add_route(
                     view.path,
-                    endpoint=self._render_custom_view(view),
+                    endpoint=route.endpoint,
                     methods=view.methods,
                     name=view.name,
-                ),
-            )
+                )
         elif isinstance(view, BaseModelView):
             view._find_foreign_model = self._find_model_from_identity
             self._models.append(view)
@@ -564,6 +570,7 @@ class BaseAdmin:
             exception_handlers={HTTPException: self._render_error},
         )
         admin_app.state.ROUTE_NAME = self.route_name
+        self._mounted_app = admin_app
         app.mount(
             self.base_url,
             app=admin_app,

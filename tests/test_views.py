@@ -506,3 +506,25 @@ class TestViews:
             )
             == 1
         )
+
+    def test_custom_view_after_mount(self):
+        """Test that CustomView added after mount_to is still accessible."""
+
+        admin = BaseAdmin()
+        app = Starlette()
+        admin.add_view(
+            CustomView(label="Home", path="/home", template_path="index.html")
+        )
+        admin.mount_to(app)
+
+        # Add CustomView after mount
+        admin.add_view(
+            CustomView(label="Dashboard", path="/dashboard", template_path="index.html")
+        )
+
+        client = TestClient(app)
+        # Both CustomViews should be accessible
+        response = client.get("/admin/home")
+        assert response.status_code == 200
+        response = client.get("/admin/dashboard")
+        assert response.status_code == 200
