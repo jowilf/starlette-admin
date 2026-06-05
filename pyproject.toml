@@ -109,7 +109,7 @@ features = [
 [tool.hatch.envs.test.scripts]
 lint = [
     "mypy starlette_admin",
-    "ruff check starlette_admin tests",
+    "ruff check starlette_admin tests examples",
     "black . --check"
 ]
 all = "coverage run -m pytest tests"
@@ -181,7 +181,7 @@ exclude_lines = [
 [tool.coverage.run]
 parallel = true
 concurrency = ["thread", "greenlet"]
-source = ["starlette_admin", "tests", "examples"]
+source = ["starlette_admin", "tests"]
 
 [tool.pytest]
 asyncio_mode = "auto"
