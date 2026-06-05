@@ -152,7 +152,7 @@ class ModelView(BaseModelView, Generic[T]):
                 queries.append(RegEx(field.name, term, options="i"))
         if queries:
             return (
-                functools.reduce(lambda q1, q2: Or(q1, q2), queries),
+                functools.reduce(Or, queries),
                 False,
             )
         return BeanieLogicalOperator(), False

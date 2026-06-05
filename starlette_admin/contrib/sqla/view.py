@@ -555,7 +555,7 @@ class ModelView(BaseModelView):
         is_edit: bool = False,
     ) -> Any:
         for field in self.get_fields_list(request, request.state.action):
-            name, value = field.name, data.get(field.name, None)
+            name, value = field.name, data.get(field.name)
             if isinstance(field, FileField):
                 value, should_be_deleted = not_none(value)
                 if should_be_deleted:

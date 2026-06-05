@@ -937,9 +937,7 @@ class BaseModelView(BaseView):
             if key in ("and", "or") and isinstance(value, list):
                 for sub in value:
                     if isinstance(sub, dict):
-                        fields.update(
-                            BaseModelView._extract_fields_from_where(sub)
-                        )
+                        fields.update(BaseModelView._extract_fields_from_where(sub))
             elif key == "not" and isinstance(value, dict):
                 fields.update(BaseModelView._extract_fields_from_where(value))
             else:
@@ -968,9 +966,7 @@ class BaseModelView(BaseView):
                 return f"Field '{field_name}' is not sortable"
         return None
 
-    def _validate_where(
-        self, request: Request, where: Dict[str, Any]
-    ) -> Optional[str]:
+    def _validate_where(self, request: Request, where: Dict[str, Any]) -> Optional[str]:
         """Validate that all field names in a where dict are visible list fields.
 
         Returns an error message string if invalid, otherwise None.
