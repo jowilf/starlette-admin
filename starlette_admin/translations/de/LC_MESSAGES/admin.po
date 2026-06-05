@@ -74,6 +74,10 @@ msgstr "Bearbeiten"
 msgid "Are you sure you want to delete this item?"
 msgstr "Sind Sie sicher, dass Sie dieses Element löschen möchten?"
 
+#: starlette_admin/views.py:503
+msgid "Yes, delete"
+msgstr "Ja, löschen"
+
 #: starlette_admin/views.py:818
 msgid "All"
 msgstr "Alle"
