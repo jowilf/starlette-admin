@@ -527,6 +527,12 @@ class TestApiFieldValidation:
 
     # --- order_by ---
 
+    def test_order_by_missing_direction_returns_422(self):
+        # "title" alone, without "asc" or "desc", is not a valid clause
+        response = self._client().get("/admin/api/post?order_by=title")
+        assert response.status_code == 422
+        assert "title" in response.json()["detail"]
+
     def test_order_by_unknown_field_returns_422(self):
         response = self._client().get("/admin/api/post?order_by=nonexistent asc")
         assert response.status_code == 422
@@ -576,6 +582,21 @@ class TestApiFieldValidation:
         )
         assert response.status_code == 422
         assert "ghost" in response.json()["detail"]
+
+    def test_where_dict_not_operator_unknown_field_returns_422(self):
+        where = {"not": {"ghost": {"eq": "x"}}}
+        response = self._client().get(
+            "/admin/api/post", params={"where": json.dumps(where)}
+        )
+        assert response.status_code == 422
+        assert "ghost" in response.json()["detail"]
+
+    def test_where_dict_not_operator_valid_field_succeeds(self):
+        where = {"not": {"id": {"eq": 0}}}
+        response = self._client().get(
+            "/admin/api/post", params={"where": json.dumps(where)}
+        )
+        assert response.status_code == 200
 
     def test_where_dict_field_excluded_from_list_returns_422(self):
         class PostViewExcluded(PostView):
