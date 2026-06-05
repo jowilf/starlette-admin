@@ -506,3 +506,116 @@ class TestViews:
             )
             == 1
         )
+
+
+class TestApiFieldValidation:
+    """Validates that direct API calls cannot use undeclared or non-sortable fields."""
+
+    def setup_method(self, method):
+        PostView.db.clear()
+        with open("./tests/data/posts.json") as f:
+            for post in json.load(f):
+                PostView.db[post["id"]] = Post(**post)
+        PostView.seq = len(PostView.db.keys()) + 1
+
+    def _client(self, view=PostView):
+        admin = BaseAdmin()
+        app = Starlette()
+        admin.add_view(view)
+        admin.mount_to(app)
+        return TestClient(app)
+
+    # --- order_by ---
+
+    def test_order_by_missing_direction_returns_422(self):
+        # "title" alone, without "asc" or "desc", is not a valid clause
+        response = self._client().get("/admin/api/post?order_by=title")
+        assert response.status_code == 422
+        assert "title" in response.json()["detail"]
+
+    def test_order_by_unknown_field_returns_422(self):
+        response = self._client().get("/admin/api/post?order_by=nonexistent asc")
+        assert response.status_code == 422
+        assert "nonexistent" in response.json()["detail"]
+
+    def test_order_by_non_sortable_field_returns_422(self):
+        # PostView.sortable_fields does not include "tags"
+        response = self._client().get("/admin/api/post?order_by=tags asc")
+        assert response.status_code == 422
+        assert "tags" in response.json()["detail"]
+
+    def test_order_by_field_excluded_from_list_returns_422(self):
+        class PostViewExcluded(PostView):
+            exclude_fields_from_list = ["views"]
+
+        response = self._client(PostViewExcluded).get(
+            "/admin/api/post?order_by=views asc"
+        )
+        assert response.status_code == 422
+        assert "views" in response.json()["detail"]
+
+    def test_order_by_valid_sortable_field_succeeds(self):
+        response = self._client().get("/admin/api/post?order_by=title asc")
+        assert response.status_code == 200
+
+    def test_order_by_multiple_clauses_first_invalid_returns_422(self):
+        response = self._client().get(
+            "/admin/api/post", params={"order_by": ["id asc", "ghost desc"]}
+        )
+        assert response.status_code == 422
+        assert "ghost" in response.json()["detail"]
+
+    # --- where ---
+
+    def test_where_dict_unknown_field_returns_422(self):
+        response = self._client().get(
+            "/admin/api/post",
+            params={"where": json.dumps({"nonexistent": {"eq": "value"}})},
+        )
+        assert response.status_code == 422
+        assert "nonexistent" in response.json()["detail"]
+
+    def test_where_dict_nested_unknown_field_returns_422(self):
+        where = {"and": [{"id": {"gt": 1}}, {"ghost": {"eq": "x"}}]}
+        response = self._client().get(
+            "/admin/api/post", params={"where": json.dumps(where)}
+        )
+        assert response.status_code == 422
+        assert "ghost" in response.json()["detail"]
+
+    def test_where_dict_not_operator_unknown_field_returns_422(self):
+        where = {"not": {"ghost": {"eq": "x"}}}
+        response = self._client().get(
+            "/admin/api/post", params={"where": json.dumps(where)}
+        )
+        assert response.status_code == 422
+        assert "ghost" in response.json()["detail"]
+
+    def test_where_dict_not_operator_valid_field_succeeds(self):
+        where = {"not": {"id": {"eq": 0}}}
+        response = self._client().get(
+            "/admin/api/post", params={"where": json.dumps(where)}
+        )
+        assert response.status_code == 200
+
+    def test_where_dict_field_excluded_from_list_returns_422(self):
+        class PostViewExcluded(PostView):
+            exclude_fields_from_list = ["views"]
+
+        response = self._client(PostViewExcluded).get(
+            "/admin/api/post",
+            params={"where": json.dumps({"views": {"gt": 0}})},
+        )
+        assert response.status_code == 422
+        assert "views" in response.json()["detail"]
+
+    def test_where_dict_valid_field_succeeds(self):
+        response = self._client().get(
+            "/admin/api/post", params={"where": json.dumps({"id": {"gt": 0}})}
+        )
+        assert response.status_code == 200
+
+    def test_where_string_skips_field_validation(self):
+        # Plain-text where is a full-text search term; no field name to validate
+        response = self._client().get("/admin/api/post?where=someterm")
+        assert response.status_code == 200

@@ -10,6 +10,7 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Set,
     Tuple,
     Type,
     Union,
@@ -927,6 +928,56 @@ class BaseModelView(BaseView):
              action: The type of action being performed on the view.
         """
         return extract_fields(self.fields, action)
+
+    @staticmethod
+    def _extract_fields_from_where(where: Dict[str, Any]) -> Set[str]:
+        """Recursively collect field names from a structured where dict."""
+        fields: Set[str] = set()
+        for key, value in where.items():
+            if key in ("and", "or") and isinstance(value, list):
+                for sub in value:
+                    if isinstance(sub, dict):
+                        fields.update(BaseModelView._extract_fields_from_where(sub))
+            elif key == "not" and isinstance(value, dict):
+                fields.update(BaseModelView._extract_fields_from_where(value))
+            else:
+                fields.add(key)
+        return fields
+
+    def _validate_order_by(
+        self, request: Request, order_by: List[str]
+    ) -> Optional[str]:
+        """Validate order_by clauses against list fields and sortable_fields.
+
+        Returns an error message string if invalid, otherwise None.
+        """
+        list_field_names = {
+            f.name for f in self.get_fields_list(request, RequestAction.LIST)
+        }
+        sortable: Set[str] = set(self.sortable_fields or [])
+        for clause in order_by:
+            parts = clause.split(maxsplit=1)
+            if len(parts) < 2:
+                return f"Invalid order_by clause: '{clause}'"
+            field_name = parts[0]
+            if field_name not in list_field_names:
+                return f"Unknown field in order_by: '{field_name}'"
+            if field_name not in sortable:
+                return f"Field '{field_name}' is not sortable"
+        return None
+
+    def _validate_where(self, request: Request, where: Dict[str, Any]) -> Optional[str]:
+        """Validate that all field names in a where dict are visible list fields.
+
+        Returns an error message string if invalid, otherwise None.
+        """
+        list_field_names = {
+            f.name for f in self.get_fields_list(request, RequestAction.LIST)
+        }
+        for field_name in self._extract_fields_from_where(where):
+            if field_name not in list_field_names:
+                return f"Unknown field in where: '{field_name}'"
+        return None
 
     def _additional_css_links(
         self, request: Request, action: RequestAction

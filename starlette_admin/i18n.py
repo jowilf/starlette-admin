@@ -20,6 +20,7 @@ SUPPORTED_LOCALES = [
     "pt",  # Portuguese
     "ru",  # Russian
     "tr",  # Turkish
+    "zh",  # Chinese (Simplified)
     "zh_Hant",  # Traditional Chinese
 ]
 

@@ -27,7 +27,7 @@ class Q(BaseQ):
 
 
 OPERATORS: Dict[str, Callable[[str, Any], Q]] = {
-    "eq": lambda f, v: Q(f, v),
+    "eq": Q,
     "neq": lambda f, v: Q(f, v, "ne"),
     "lt": lambda f, v: Q(f, v, "lt"),
     "gt": lambda f, v: Q(f, v, "gt"),
