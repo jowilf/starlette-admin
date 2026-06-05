@@ -131,7 +131,7 @@ class ModelView(BaseModelView):
         if fields is None:
             fields = self.get_fields_list(request, request.state.action)
         for field in fields:
-            name, value = field.name, data.get(field.name, None)
+            name, value = field.name, data.get(field.name)
             me_field = getattr(document, name)
             if isinstance(field, (FileField, ImageField)):
                 proxy: GridFSProxy = getattr(obj, name)

@@ -47,9 +47,9 @@ i18n = [
 test = [
     "pytest >=8.3.0, <8.4.0",
     "pytest-asyncio >=0.24.0, <0.25.0",
-    "mypy ==1.19.0",
-    "ruff ==0.14.7",
-    "black ==25.11.0",
+    "mypy ==2.1.0",
+    "ruff ==0.15.6",
+    "black ==26.5.1",
     "httpx >=0.23.3, <0.29.0",
     "SQLAlchemy-Utils >=0.40.0, <0.42.0",
     "sqlmodel >=0.0.11, <0.1.0",
@@ -109,7 +109,7 @@ features = [
 [tool.hatch.envs.test.scripts]
 lint = [
     "mypy starlette_admin",
-    "ruff check starlette_admin tests",
+    "ruff check starlette_admin tests examples",
     "black . --check"
 ]
 all = "coverage run -m pytest tests"
