@@ -13,6 +13,9 @@
 <a href="https://codecov.io/gh/jowilf/starlette-admin">
     <img src="https://codecov.io/gh/jowilf/starlette-admin/branch/main/graph/badge.svg" alt="Codecov">
 </a>
+<a href="https://app.codspeed.io/jowilf/starlette-admin?utm_source=badge">
+    <img src="https://img.shields.io/endpoint?url=https://codspeed.io/badge.json" alt="CodSpeed">
+</a>
 <a href="https://pypi.org/project/starlette-admin/">
     <img src="https://badge.fury.io/py/starlette-admin.svg" alt="Package version">
 </a>
