@@ -1,20 +1,20 @@
 # Authentication & Authorization
 
 To protect your admin interface from unwanted users, you can create an Authentication Provider by extending
-the [AuthProvider][starlette_admin.auth.AuthProvider] class and set `auth_provider` when declaring your admin app
+the [AuthProvider](../../api/auth/#starlette_admin.auth.AuthProvider) class and set `auth_provider` when declaring your admin app
 
 ## Username and Password Authentication
 
-By default, [AuthProvider][starlette_admin.auth.AuthProvider] provides a login form with `username` and `password`
+By default, [AuthProvider](../../api/auth/#starlette_admin.auth.AuthProvider) provides a login form with `username` and `password`
 fields for basic username and password authentication. To fully support this authentication method, you need to
 implement the following methods in your custom Authentication Provider:
 
-* [is_authenticated][starlette_admin.auth.BaseAuthProvider.is_authenticated]: This method will be called to validate
+* [is_authenticated](../../api/auth/#starlette_admin.auth.BaseAuthProvider.is_authenticated): This method will be called to validate
   each incoming request.
-* [get_admin_user][starlette_admin.auth.BaseAuthProvider.get_admin_user]: Return connected user `name` and/or `avatar`
-* [get_admin_config][starlette_admin.auth.BaseAuthProvider.get_admin_config]: Return `logo_url` or `app_title` according to connected user or any other condition.
-* [login][starlette_admin.auth.AuthProvider.login]: will be called to validate user credentials.
-* [logout][starlette_admin.auth.AuthProvider.logout]: Will be called to logout (clear sessions, cookies, ...)
+* [get_admin_user](../../api/auth/#starlette_admin.auth.BaseAuthProvider.get_admin_user): Return connected user `name` and/or `avatar`
+* [get_admin_config](../../api/auth/#starlette_admin.auth.BaseAuthProvider.get_admin_config): Return `logo_url` or `app_title` according to connected user or any other condition.
+* [login](../../api/auth/#starlette_admin.auth.AuthProvider.login): will be called to validate user credentials.
+* [logout](../../api/auth/#starlette_admin.auth.AuthProvider.logout): Will be called to logout (clear sessions, cookies, ...)
 
 ```python
 from starlette.requests import Request
@@ -110,16 +110,16 @@ at [`https://github.com/jowilf/starlette-admin/tree/main/examples/auth`](https:/
 If you prefer to use a custom authentication flow, such as OAuth2 or OIDC, you can implement the following methods in
 your custom Authentication Provider:
 
-* [is_authenticated][starlette_admin.auth.BaseAuthProvider.is_authenticated]: This method will be called to validate each incoming request.
-* [get_admin_user][starlette_admin.auth.BaseAuthProvider.get_admin_user]: Return connected user `name` and/or `profile`
-* [render_login][starlette_admin.auth.AuthProvider.render_login]: Override the default behavior to render a custom login page.
-* [render_logout][starlette_admin.auth.AuthProvider.render_logout]: Implement the custom logout logic.
+* [is_authenticated](../../api/auth/#starlette_admin.auth.BaseAuthProvider.is_authenticated): This method will be called to validate each incoming request.
+* [get_admin_user](../../api/auth/#starlette_admin.auth.BaseAuthProvider.get_admin_user): Return connected user `name` and/or `profile`
+* [render_login](../../api/auth/#starlette_admin.auth.AuthProvider.render_login): Override the default behavior to render a custom login page.
+* [render_logout](../../api/auth/#starlette_admin.auth.AuthProvider.render_logout): Implement the custom logout logic.
 
 Additionally, you can override these methods depending on your needs:
 
-* [get_middleware][starlette_admin.auth.BaseAuthProvider.get_middleware]: To provide a custom authentication middleware
+* [get_middleware](../../api/auth/#starlette_admin.auth.BaseAuthProvider.get_middleware): To provide a custom authentication middleware
   for the admin interface
-* [setup_admin][starlette_admin.auth.BaseAuthProvider.setup_admin]: This method is called during the setup process of
+* [setup_admin](../../api/auth/#starlette_admin.auth.BaseAuthProvider.setup_admin): This method is called during the setup process of
   the admin interface and allows for custom configuration and setup.
 
 ```python
@@ -222,7 +222,7 @@ admin = Admin(
 
 ### For all views
 
-Each [view][starlette_admin.views.BaseView] implement [is_accessible][starlette_admin.views.BaseView.is_accessible] method which can be used to restrict access
+Each [view](../../api/views/#starlette_admin.views.BaseView) implement [is_accessible](../../api/views/#starlette_admin.views.BaseView.is_accessible) method which can be used to restrict access
 to current user.
 
 ```python
@@ -239,9 +239,9 @@ class ReportView(CustomView):
 
     When view is inaccessible, it does not appear in menu structure
 
-### For [ModelView][starlette_admin.views.BaseModelView]
+### For [ModelView](../../api/views/#starlette_admin.views.BaseModelView)
 
-In [ModelView][starlette_admin.views.BaseModelView], you can override the following methods to restrict access to
+In [ModelView](../../api/views/#starlette_admin.views.BaseModelView), you can override the following methods to restrict access to
 the current connected user.
 
 * `can_view_details`: Permission for viewing full details of Items

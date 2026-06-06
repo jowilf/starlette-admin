@@ -110,7 +110,7 @@ This gives you a set of fully featured CRUD views for your model:
 
 ### CustomView
 
-With [CustomView][starlette_admin.views.CustomView] you can add your own views (not tied to any particular model). For example,
+With [CustomView](../../api/views/#starlette_admin.views.CustomView) you can add your own views (not tied to any particular model). For example,
 a custom home page that displays some analytics data.
 
 ```python
@@ -143,7 +143,7 @@ admin.add_view(HomeView(label="Home", icon="fa fa-home", path="/home"))
 
 ### Link
 
-Use [Link][starlette_admin.views.Link] to add arbitrary hyperlinks to the menu
+Use [Link](../../api/views/#starlette_admin.views.Link) to add arbitrary hyperlinks to the menu
 
 ```python
 from starlette_admin.views import Link
@@ -153,7 +153,7 @@ admin.add_view(Link(label="Home Page", icon="fa fa-link", url="/"))
 
 ### DropDown
 
-Use [DropDown][starlette_admin.views.DropDown] to group views together in menu structure
+Use [DropDown](../../api/views/#starlette_admin.views.DropDown) to group views together in menu structure
 
 ```python
 from starlette_admin import CustomView, DropDown
