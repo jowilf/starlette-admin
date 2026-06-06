@@ -300,7 +300,7 @@ class BaseModelView(BaseView):
                 field.orderable = (self.sortable_fields is None) or (
                     name in self.sortable_fields
                 )
-        all_fields_names = [f._name for f in all_fields]
+        all_fields_names: List[str] = [f._name for f in all_fields]  # type: ignore[attr-defined]
         if self.searchable_fields is None:
             self.searchable_fields = all_fields_names[:]
         if self.sortable_fields is None:
