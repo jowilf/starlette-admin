@@ -73,7 +73,7 @@ class PostView(DummyModelView):
         IntegerField("views"),
         TagsField("tags"),
     )
-    searchable_fields = ("title", "content")
+    searchable_fields = ("id", "title", "content")
     sortable_fields = ("id", "title", "content", "views")
     db = {}
     seq = 1
@@ -592,7 +592,7 @@ class TestApiFieldValidation:
         assert "ghost" in response.json()["detail"]
 
     def test_where_dict_not_operator_valid_field_succeeds(self):
-        where = {"not": {"id": {"eq": 0}}}
+        where = {"not": {"title": {"eq": "x"}}}
         response = self._client().get(
             "/admin/api/post", params={"where": json.dumps(where)}
         )
@@ -609,9 +609,19 @@ class TestApiFieldValidation:
         assert response.status_code == 422
         assert "views" in response.json()["detail"]
 
-    def test_where_dict_valid_field_succeeds(self):
+    def test_where_dict_field_not_in_searchable_fields_returns_422(self):
+        # PostView.searchable_fields = ("title", "content"); "views" is not in it
         response = self._client().get(
-            "/admin/api/post", params={"where": json.dumps({"id": {"gt": 0}})}
+            "/admin/api/post",
+            params={"where": json.dumps({"views": {"gt": 0}})},
+        )
+        assert response.status_code == 422
+        assert "views" in response.json()["detail"]
+
+    def test_where_dict_valid_field_succeeds(self):
+        # "title" is in PostView.searchable_fields = ("title", "content")
+        response = self._client().get(
+            "/admin/api/post", params={"where": json.dumps({"title": {"eq": "x"}})}
         )
         assert response.status_code == 200
 
