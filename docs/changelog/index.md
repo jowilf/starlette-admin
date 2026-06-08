@@ -7,7 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## \[0.16.1\] - 2026-06-06
 
-###  Security Fixed
+###  Security Fix
 
 - Server-side validation for sortable and searchable fields [Full Changelog](https://github.com/jowilf/starlette-admin/compare/0.16.0...0.16.1)
 
