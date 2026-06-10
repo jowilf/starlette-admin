@@ -234,7 +234,7 @@ class BaseAdmin:
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["login_logo_url"] = self.login_logo_url
         templates.env.globals["favicon_url"] = self.favicon_url
-        templates.env.globals["custom_render_js"] = lambda r: self.custom_render_js(r)
+        templates.env.globals["custom_render_js"] = self.custom_render_js
         templates.env.globals["get_locale"] = get_locale
         templates.env.globals["get_locale_display_name"] = get_locale_display_name
         templates.env.globals["i18n_config"] = self.i18n_config or I18nConfig()
@@ -254,13 +254,11 @@ class BaseAdmin:
         )
         templates.env.filters["tojson"] = lambda data: json.dumps(data, default=str)
         templates.env.filters["file_icon"] = get_file_icon
-        templates.env.filters["to_model"] = (
-            lambda identity: self._find_model_from_identity(identity)
-        )
+        templates.env.filters["to_model"] = self._find_model_from_identity
         templates.env.filters["is_iter"] = lambda v: isinstance(v, (list, tuple))
         templates.env.filters["is_str"] = lambda v: isinstance(v, str)
         templates.env.filters["is_dict"] = lambda v: isinstance(v, dict)
-        templates.env.filters["ra"] = lambda a: RequestAction(a)
+        templates.env.filters["ra"] = RequestAction
         # install i18n
         templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
         self.templates = templates
@@ -303,7 +301,7 @@ class BaseAdmin:
 
         return wrapper
 
-    async def _render_api(self, request: Request) -> Response:
+    async def _render_api(self, request: Request) -> Response:  # noqa: C901
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
         if not model.is_accessible(request):
@@ -324,6 +322,14 @@ class BaseAdmin:
                     where = json.loads(where)
                 except JSONDecodeError:
                     where = str(where)
+            if order_by:
+                error = model._validate_order_by(request, order_by)
+                if error:
+                    return JSONResponse({"detail": error}, status_code=HTTP_422)
+            if isinstance(where, dict):
+                error = model._validate_where(request, where)
+                if error:
+                    return JSONResponse({"detail": error}, status_code=HTTP_422)
             items = await model.find_all(
                 request=request,
                 skip=skip,

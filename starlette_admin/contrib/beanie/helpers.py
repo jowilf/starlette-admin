@@ -32,14 +32,14 @@ class BeanieLogicalOperator(LogicalOperatorForListOfExpressions):
 
 
 OPERATORS: Dict[str, Callable[[str, Any], BaseFindOperator]] = {
-    "eq": lambda f, v: Eq(f, v),
-    "neq": lambda f, v: NE(f, v),
-    "lt": lambda f, v: LT(f, v),
-    "gt": lambda f, v: GT(f, v),
-    "le": lambda f, v: LTE(f, v),
-    "ge": lambda f, v: GTE(f, v),
-    "in": lambda f, v: In(f, v),
-    "not_in": lambda f, v: NotIn(f, v),
+    "eq": Eq,
+    "neq": NE,
+    "lt": LT,
+    "gt": GT,
+    "le": LTE,
+    "ge": GTE,
+    "in": In,
+    "not_in": NotIn,
     "startswith": lambda f, v: RegEx(f, f"^{v}", "i"),
     "not_startswith": lambda f, v: Not(RegEx(f, f"^{v}", "i")),
     "endswith": lambda f, v: RegEx(f, f"{v}$", "i"),
@@ -156,8 +156,8 @@ def resolve_deep_query(
             _arr = [(resolve_deep_query(q, document, latest_field)) for q in where[key]]
             if len(_arr) > 0:
                 funcs = {
-                    "or": lambda q1, q2: Or(q1, q2),
-                    "and": lambda q1, q2: And(q1, q2),
+                    "or": Or,
+                    "and": And,
                 }
                 _all_queries.append(functools.reduce(funcs[key], _arr))
         elif key in OPERATORS:
@@ -165,7 +165,7 @@ def resolve_deep_query(
         elif isvalid_field(document, key):
             _all_queries.append(resolve_deep_query(where[key], document, key))
     if _all_queries:
-        return functools.reduce(lambda q1, q2: And(q1, q2), _all_queries)
+        return functools.reduce(And, _all_queries)
     return BeanieLogicalOperator()
 
 

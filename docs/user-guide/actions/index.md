@@ -14,9 +14,9 @@ In these cases, you can write a *custom batch action* to bulk update many object
 
     *starlette-admin* add by default an action named `delete` to delete many object at once
 
-To add other batch actions to your [ModelView][starlette_admin.views.BaseModelView], besides the default delete action,
+To add other batch actions to your [ModelView](../../api/views/#starlette_admin.views.BaseModelView), besides the default delete action,
 you can define a
-function that implements the desired logic and wrap it with the [@action][starlette_admin.actions.action] decorator (
+function that implements the desired logic and wrap it with the [@action](../../api/actions/#starlette_admin.actions.action) decorator (
 Heavily inspired by Flask-Admin).
 
 !!! warning
@@ -97,20 +97,20 @@ Row actions allow you to perform actions on individual items within a list view.
     - `edit`: redirects to the item's edit page
     - `delete`: deletes the selected item
 
-To add other row actions to your [ModelView][starlette_admin.views.BaseModelView], besides the default ones, you can
+To add other row actions to your [ModelView](../../api/views/#starlette_admin.views.BaseModelView), besides the default ones, you can
 define a function that implements the desired logic and wrap it with
-the [@row_action][starlette_admin.actions.row_action] decorator
+the [@row_action](../../api/actions/#starlette_admin.actions.row_action) decorator
 
 For cases where a row action should simply navigate users to a website or internal page, it is preferable to
-use the [@link_row_action][starlette_admin.actions.link_row_action] decorator. The key difference is
+use the [@link_row_action](../../api/actions/#starlette_admin.actions.link_row_action) decorator. The key difference is
 that `link_row_action`
 eliminates the need to call the action API. Instead, the link is included directly in the href attribute of the
 generated html element (e.g. `<a href='https://example.com/?pk=4' ...>`).
 
 !!! warning
 
-    The row actions (both [@row_action][starlette_admin.actions.row_action]
-    and [@link_row_action][starlette_admin.actions.link_row_action]) name should be unique within a ModelView.
+    The row actions (both [@row_action](../../api/actions/#starlette_admin.actions.row_action)
+    and [@link_row_action](../../api/actions/#starlette_admin.actions.link_row_action)) name should be unique within a ModelView.
 
 ### Example
 

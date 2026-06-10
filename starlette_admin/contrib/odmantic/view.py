@@ -191,7 +191,7 @@ class ModelView(BaseModelView):
         if fields is None:
             fields = self.get_fields_list(request, request.state.action)
         for field in fields:
-            name, value = field.name, data.get(field.name, None)
+            name, value = field.name, data.get(field.name)
             if isinstance(field, CollectionField) and value is not None:
                 arranged_data[name] = await self._arrange_data(
                     request,
