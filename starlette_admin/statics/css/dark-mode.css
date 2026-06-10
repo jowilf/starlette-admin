@@ -1,0 +1,126 @@
+/*
+ * Dark mode fixes for bundled third-party widgets.
+ *
+ * Tabler/Bootstrap toggles dark mode via the `data-bs-theme="dark"` attribute
+ * on the <body>. The widgets bundled with starlette-admin (Select2, DataTables
+ * buttons and Flatpickr) do not ship dark variants, so we restyle them here.
+ */
+
+/* Select2 */
+body[data-bs-theme="dark"] .select2-dropdown,
+body[data-bs-theme="dark"] .select2-container--default .select2-selection--single,
+body[data-bs-theme="dark"] .select2-container--default .select2-selection--multiple,
+body[data-bs-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice,
+body[data-bs-theme="dark"] .select2-container--default .select2-search--dropdown .select2-search__field,
+body[data-bs-theme="dark"] .select2-container--default .select2-results__option--selected {
+    background-color: #151f2c;
+    border: 1px solid #25384f;
+    color: #dce1e7;
+}
+body[data-bs-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #dce1e7;
+}
+
+/* DataTables buttons */
+body[data-bs-theme="dark"] div.dt-button-collection {
+    background-color: #16202c;
+}
+body[data-bs-theme="dark"] .dtb-popover-close {
+    background-color: #1a2332;
+    color: #dce1e7;
+    border-color: #25384f;
+}
+body[data-bs-theme="dark"] .dtb-popover-close:hover {
+    background-color: #25384f;
+    color: #fff;
+}
+
+/* Flatpickr */
+body[data-bs-theme="dark"] .flatpickr-calendar {
+    background-color: #1a2332;
+    border-color: #25384f;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+body[data-bs-theme="dark"] .flatpickr-months .flatpickr-month,
+body[data-bs-theme="dark"] .flatpickr-current-month .flatpickr-monthDropdown-months,
+body[data-bs-theme="dark"] .flatpickr-weekdays,
+body[data-bs-theme="dark"] .flatpickr-weekdaycontainer {
+    background-color: #1a2332;
+    color: #dce1e7;
+}
+body[data-bs-theme="dark"] .flatpickr-months .flatpickr-prev-month svg,
+body[data-bs-theme="dark"] .flatpickr-months .flatpickr-next-month svg {
+    fill: #dce1e7;
+}
+body[data-bs-theme="dark"] .flatpickr-months .flatpickr-prev-month:hover svg,
+body[data-bs-theme="dark"] .flatpickr-months .flatpickr-next-month:hover svg {
+    fill: #fff;
+}
+body[data-bs-theme="dark"] span.flatpickr-weekday {
+    color: #8899aa;
+}
+body[data-bs-theme="dark"] .flatpickr-current-month .numInputWrapper .cur-year {
+    color: #dce1e7;
+    background-color: transparent;
+}
+body[data-bs-theme="dark"] .flatpickr-current-month .flatpickr-monthDropdown-months option {
+    background-color: #1a2332;
+    color: #dce1e7;
+}
+body[data-bs-theme="dark"] .flatpickr-day {
+    color: #dce1e7;
+}
+body[data-bs-theme="dark"] .flatpickr-day:hover,
+body[data-bs-theme="dark"] .flatpickr-day:focus {
+    background-color: #25384f;
+    border-color: #25384f;
+    color: #fff;
+}
+body[data-bs-theme="dark"] .flatpickr-day.today {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+body[data-bs-theme="dark"] .flatpickr-day.today:hover {
+    background-color: #3b82f6;
+    color: #fff;
+}
+body[data-bs-theme="dark"] .flatpickr-day.selected,
+body[data-bs-theme="dark"] .flatpickr-day.selected:hover {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+}
+body[data-bs-theme="dark"] .flatpickr-day.prevMonthDay,
+body[data-bs-theme="dark"] .flatpickr-day.nextMonthDay {
+    color: #4a5568;
+}
+body[data-bs-theme="dark"] .flatpickr-day.prevMonthDay:hover,
+body[data-bs-theme="dark"] .flatpickr-day.nextMonthDay:hover {
+    background-color: #25384f;
+    border-color: #25384f;
+    color: #8899aa;
+}
+body[data-bs-theme="dark"] .flatpickr-time {
+    border-top-color: #25384f;
+}
+body[data-bs-theme="dark"] .flatpickr-time input,
+body[data-bs-theme="dark"] .flatpickr-time .flatpickr-time-separator,
+body[data-bs-theme="dark"] .flatpickr-time .flatpickr-am-pm {
+    color: #dce1e7;
+}
+body[data-bs-theme="dark"] .flatpickr-time input:hover,
+body[data-bs-theme="dark"] .flatpickr-time input:focus {
+    background-color: #25384f;
+}
+body[data-bs-theme="dark"] .flatpickr-time .numInputWrapper span.arrowUp::after {
+    border-bottom-color: #dce1e7;
+}
+body[data-bs-theme="dark"] .flatpickr-time .numInputWrapper span.arrowDown::after {
+    border-top-color: #dce1e7;
+}
+body[data-bs-theme="dark"] .flatpickr-months .numInputWrapper span.arrowUp::after {
+    border-bottom-color: #dce1e7;
+}
+body[data-bs-theme="dark"] .flatpickr-months .numInputWrapper span.arrowDown::after {
+    border-top-color: #dce1e7;
+}
