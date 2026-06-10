@@ -83,7 +83,7 @@
                         </table>
                     </div>
                     <!-- Infinite scroll container -->
-                    <div id="infinite-scroll-container" class="table-responsive">
+                    <div id="infinite-scroll-container">
                         <table class="table table-vcenter text-nowrap" id="infinite-table">
                             <thead id="infinite-thead">
                                 <tr>
@@ -108,17 +108,18 @@
     </div>
     <!-- Scroll to top button -->
     <button id="scroll-to-top-btn" type="button" aria-label="Scroll to top"
-            onclick="window.scrollTo({top:0,behavior:'smooth'})">
+            onclick="document.getElementById('infinite-scroll-container').scrollTo({top:0,behavior:'smooth'})">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
     </button>
     <script>
     (function(){
         var btn = document.getElementById('scroll-to-top-btn');
-        if (!btn) return;
+        var container = document.getElementById('infinite-scroll-container');
+        if (!btn || !container) return;
         function toggle() {
-            btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+            btn.style.display = container.scrollTop > 300 ? 'flex' : 'none';
         }
-        window.addEventListener('scroll', toggle, {passive: true});
+        container.addEventListener('scroll', toggle, {passive: true});
         toggle();
     })();
     </script>
@@ -136,9 +137,19 @@
         div.dt-button-collection.dtb-collection-closeable {
             width: calc(100% - 20px) !important;
         }
+        #infinite-scroll-container {
+            max-height: calc(100vh - 280px);
+            overflow: auto;
+        }
         #infinite-scroll-container table.table {
             margin-top: 0px !important;
             margin-bottom: 0px !important;
+        }
+        #infinite-thead {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: var(--tblr-card-bg, #fff);
         }
         #infinite-tbody tr:hover {
             background-color: rgba(var(--tblr-primary-rgb), 0.04);
