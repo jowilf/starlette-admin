@@ -68,6 +68,7 @@ class User(Base):
 class ProductView(ModelView):
     sortable_fields = ["id", "title", "price", "user"]
     sortable_field_mapping = {"user": User.name}
+    searchable_fields = ["id", "title", "price", "description", "user", "in_stock"]
 
     async def before_create(
         self, request: Request, data: Dict[str, Any], obj: Any
@@ -100,6 +101,7 @@ class ProductView(ModelView):
 
 class UserView(ModelView):
     form_include_pk = True
+    searchable_fields = ["name", "products"]
 
 
 @pytest.fixture

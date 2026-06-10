@@ -260,11 +260,11 @@ Now that the admin interface is initialized, the next step is to add a view for 
 admin.add_view(ModelView(Todo))
 ```
 
-In the code above, we use the function [add_view][starlette_admin.base.BaseAdmin.add_view] of
-the [Admin][starlette_admin.base.BaseAdmin] class to include a view for
+In the code above, we use the function [add_view](../../api/base-admin/#starlette_admin.base.BaseAdmin.add_view) of
+the [Admin](../../api/base-admin/#starlette_admin.base.BaseAdmin) class to include a view for
 the `Todo` model within the admin interface.
 
-The [ModelView][starlette_admin.base.BaseAdmin.add_view] class allow you to add a dedicated set of admin pages for
+The [ModelView](../../api/base-admin/#starlette_admin.base.BaseAdmin.add_view) class allow you to add a dedicated set of admin pages for
 managing any model.
 
 !!! important
@@ -279,7 +279,7 @@ managing any model.
 ## Mount `admin` to your application
 
 We can mount the `admin` on a Starlette or FastAPI application by using
-the [mount_to][starlette_admin.base.BaseAdmin.mount_to] function and passing the app instance:
+the [mount_to](../../api/base-admin/#starlette_admin.base.BaseAdmin) function and passing the app instance:
 
 === "Starlette"
 

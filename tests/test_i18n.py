@@ -60,6 +60,7 @@ class PostView(DummyModelView):
         ("ru", "Добавить Post"),
         ("tr", "Yeni Post"),
         ("pt", "Novo(a) Post"),
+        ("zh", "新增Post"),
         ("zh_Hant", "新增Post"),
     ],
 )

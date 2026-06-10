@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.16.0] - 2025-12-13
+## \[0.16.1\] - 2026-06-06
+
+###  Security Fix
+
+- Server-side validation for sortable and searchable fields [Full Changelog](https://github.com/jowilf/starlette-admin/compare/0.16.0...0.16.1)
+
+## \[0.16.0\] - 2025-12-13
 
 ### Added
 
@@ -38,14 +44,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fix `CustomView.is_active` when using a custom root path by [@Alwinator](https://github.com/Alwinator)
   in [#715](https://github.com/jowilf/starlette-admin/pull/715)
 
-## [0.15.1] - 2025-05-26
+## \[0.15.1\] - 2025-05-26
 
 ### Fixed
 
 - Reenable autoescaping in template rendering by [@jowilf](https://github.com/jowilf)
   in [#662](https://github.com/jowilf/starlette-admin/pull/662)
 
-## [0.15.0] - 2025-05-21
+## \[0.15.0\] - 2025-05-21
 
 ### Breaking Changes
 
@@ -124,14 +130,14 @@ update** their definitions to include the `request` parameter.
 * Fix Deprecation Warnings for TemplateResponse and Jinja2Templates by [@ptrstn](https://github.com/ptrstn)
   in [#575](https://github.com/jowilf/starlette-admin/pull/575)
 
-## [0.14.1] - 2024-07-12
+## \[0.14.1\] - 2024-07-12
 
 ### Fixed
 
 * Fix JSON serialization error for UUID primary keys when excluded from list by [@alg](https://github.com/alg)
   in [#553](https://github.com/jowilf/starlette-admin/pull/553)
 
-## [0.14.0] - 2024-05-28
+## \[0.14.0\] - 2024-05-28
 
 ### Added
 
@@ -142,21 +148,21 @@ update** their definitions to include the `request` parameter.
   by [@omarmoo5](https://github.com/omarmoo5)
   in [#520](https://github.com/jowilf/starlette-admin/pull/520)
 
-## [0.13.2] - 2024-02-04
+## \[0.13.2\] - 2024-02-04
 
 ### Fixed
 
 * Remove extra whitespaces from TextAreaField form template (0.13.0 regression) by [@jowilf](https://github.com/jowilf)
   in [#494](https://github.com/jowilf/starlette-admin/pull/494)
 
-## [0.13.1] - 2024-01-21
+## \[0.13.1\] - 2024-01-21
 
 ### Fixed
 
 * Fixed the StopIteration exception raised in Sqlalchemy ModelView when the primary key is not included in the field
   list by [@jowilf](https://github.com/jowilf) in [#482](https://github.com/jowilf/starlette-admin/pull/482)
 
-## [0.13.0] - 2024-01-16
+## \[0.13.0\] - 2024-01-16
 
 ### Added
 
@@ -185,18 +191,18 @@ update** their definitions to include the `request` parameter.
   by [@mrharpo](https://github.com/mrharpo)
   in [#401](https://github.com/jowilf/starlette-admin/pull/401)
 
-## [0.12.2] - 2023-11-13
+## \[0.12.2\] - 2023-11-13
 
 * Fixed issue where "Empty" and "Not Empty" filters raised NotImplementedError on SQLAlchemy relationship attributes
   by [@whchi](https://github.com/whchi) in [#394](https://github.com/jowilf/starlette-admin/pull/394)
 
-## [0.12.1] - 2023-11-07
+## \[0.12.1\] - 2023-11-07
 
 * Fixed a regression caused by [#361](https://github.com/jowilf/starlette-admin/pull/361) where SQLAlchemy models with
   Mixin Classes raises AttributeError by [@hasansezertasan](https://github.com/hasansezertasan)
   in [#385](https://github.com/jowilf/starlette-admin/pull/385)
 
-## [0.12.0] - 2023-11-07
+## \[0.12.0\] - 2023-11-07
 
 ### Added
 
@@ -255,21 +261,21 @@ update** their definitions to include the `request` parameter.
 * Explicitly export all public functions and classes by [@jowilf](https://github.com/jowilf)
   in [#362](https://github.com/jowilf/starlette-admin/pull/362)
 
-## [0.11.2] - 2023-08-31
+## \[0.11.2\] - 2023-08-31
 
 ### Fixed
 
 * Bug Fix: Current Enum Value Not Pre-Selected on Edit by [@jowilf](https://github.com/jowilf)
   in [#273](https://github.com/jowilf/starlette-admin/pull/273)
 
-## [0.11.1] - 2023-07-29
+## \[0.11.1\] - 2023-07-29
 
 ### Fixed
 
 * Bug Fix: Ensure Excluded fields from a RequestAction are not treated by [@jowilf](https://github.com/jowilf)
   in [#251](https://github.com/jowilf/starlette-admin/pull/251)
 
-## [0.11.0] - 2023-07-26
+## \[0.11.0\] - 2023-07-26
 
 ### Added
 
@@ -281,7 +287,7 @@ update** their definitions to include the `request` parameter.
 * Drop python 3.7 support by [@jowilf](https://github.com/jowilf)
   in [#248](https://github.com/jowilf/starlette-admin/pull/248)
 
-## [0.10.1] - 2023-07-22
+## \[0.10.1\] - 2023-07-22
 
 ### Fixed
 
@@ -290,7 +296,7 @@ update** their definitions to include the `request` parameter.
 * Fix [#239](https://github.com/jowilf/starlette-admin/issues/239): Order Select2 data by primary key during fetching by
   [@jowilf](https://github.com/jowilf) in [#241](https://github.com/jowilf/starlette-admin/issues/241)
 
-## [0.10.0] - 2023-06-26
+## \[0.10.0\] - 2023-06-26
 
 ### Added
 
@@ -306,7 +312,7 @@ update** their definitions to include the `request` parameter.
 * Fixed [#206](https://github.com/jowilf/starlette-admin/issues/206): Setting `add_to_menu=False` in CustomView still
   results in the view being displayed in the menu
 
-## [0.9.0] - 2023-05-25
+## \[0.9.0\] - 2023-05-25
 
 ### Added
 
@@ -320,7 +326,7 @@ update** their definitions to include the `request` parameter.
 * Blank Edit Form Displayed for IntegerField with Value 0 by [@jowilf](https://github.com/jowilf)
   in [#194](https://github.com/jowilf/starlette-admin/pull/194)
 
-## [0.8.2] - 2023-05-12
+## \[0.8.2\] - 2023-05-12
 
 ### Added
 
@@ -330,7 +336,7 @@ update** their definitions to include the `request` parameter.
 * Allow Unauthenticated Access to `js.cookie.min.js` by [@mixartemev](https://github.com/mixartemev)
   in [#183](https://github.com/jowilf/starlette-admin/pull/183)
 
-## [0.8.1] - 2023-04-30
+## \[0.8.1\] - 2023-04-30
 
 ### Added
 
@@ -339,14 +345,14 @@ update** their definitions to include the `request` parameter.
 * Allow class level configuration for ModelView identity, name & label by [@jowilf](https://github.com/jowilf)
   in [#178](https://github.com/jowilf/starlette-admin/pull/178)
 
-## [0.8.0] - 2023-04-09
+## \[0.8.0\] - 2023-04-09
 
 ### Added
 
 * Add extension to autovalidate SQLAlchemy data with pydantic by [@jowilf](https://github.com/jowilf)
   in [#144](https://github.com/jowilf/starlette-admin/pull/144)
 * Make `_extract_fields()` method in BaseModelView public and renamed
-  to [get_fields_list()][starlette_admin.views.BaseModelView.get_fields_list] by [@jowilf](https://github.com/jowilf)
+  to [get_fields_list()](../api/views/#starlette_admin.views.BaseModelView.get_fields_list) by [@jowilf](https://github.com/jowilf)
   in [#148](https://github.com/jowilf/starlette-admin/pull/148)
 * Add support for custom object representations in the admin interface with `__admin_repr__`
   and `__admin_select2_repr__`  by [@jowilf](https://github.com/jowilf)
@@ -358,13 +364,13 @@ update** their definitions to include the `request` parameter.
 * Enhance code quality with additional ruff rules by [@jowilf](https://github.com/jowilf)
   in [#159](https://github.com/jowilf/starlette-admin/pull/159)
 
-## [0.7.0] - 2023-03-24
+## \[0.7.0\] - 2023-03-24
 
 ### Added
 
 * Allow custom form for batch actions by [@giaptx](https://github.com/giaptx) and [@jowilf](https://github.com/jowilf)
   in [#61](https://github.com/jowilf/starlette-admin/pull/61)
-* Add [TinyMCEEditorField][starlette_admin.fields.TinyMCEEditorField] by [@sinisaos](https://github.com/sinisaos)
+* Add [TinyMCEEditorField](../api/fields/#starlette_admin.fields.TinyMCEEditorField) by [@sinisaos](https://github.com/sinisaos)
   and [@jowilf](https://github.com/jowilf)
   in [#131](https://github.com/jowilf/starlette-admin/pull/131)
 
@@ -375,7 +381,7 @@ update** their definitions to include the `request` parameter.
 * Refactor and format HTML files for better readability by [@jowilf](https://github.com/jowilf)
   in [#136](https://github.com/jowilf/starlette-admin/pull/136)
 
-## [0.6.0] - 2023-03-12
+## \[0.6.0\] - 2023-03-12
 
 ### Added
 
@@ -383,7 +389,7 @@ update** their definitions to include the `request` parameter.
   in [#74](https://github.com/jowilf/starlette-admin/pull/74)
 *
 
-Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starlette_admin.fields.CountryField], [CurrencyField][starlette_admin.fields.CurrencyField] & [ArrowField][starlette_admin.fields.ArrowField]
+Add [TimeZoneField](../api/fields/#starlette_admin.fields.TimeZoneField), [CountryField](../api/fields/#starlette_admin.fields.CountryField), [CurrencyField](../api/fields/#starlette_admin.fields.CurrencyField) & [ArrowField](../api/fields/#starlette_admin.fields.ArrowField)
 
 * Add support for [sqlalchemy_utils](https://github.com/kvesteri/sqlalchemy-utils) data types
 * Add SQLAlchemy 2 support by  [@jowilf](https://github.com/jowilf)
@@ -417,14 +423,14 @@ Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starle
 * `EnumField.from_choices("language", [('cpp', 'C++'), ('py', 'Python')])` is deprecated.
   Use `EnumField("name", choices=[('cpp', 'C++'), ('py', 'Python')])` instead.
 
-## [0.5.5] - 2023-03-06
+## \[0.5.5\] - 2023-03-06
 
 ### Fixed
 
 * Fix [#116](https://github.com/jowilf/starlette-admin/issues/116) : Internal Server Error when login credentials are
   wrong by [@jowilf](https://github.com/jowilf) in [#117](https://github.com/jowilf/starlette-admin/pull/117)
 
-## [0.5.4] - 2023-03-03
+## \[0.5.4\] - 2023-03-03
 
 ### Fixed
 
@@ -437,42 +443,42 @@ Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starle
   by [@jowilf](https://github.com/jowilf) and [@dolamroth](https://github.com/dolamroth)
   in [#105](https://github.com/jowilf/starlette-admin/pull/105)
 
-## [0.5.3] - 2023-02-25
+## \[0.5.3\] - 2023-02-25
 
 ### Fixed
 
 * Fix Bug with SQLAlchemy column converters by [@jowilf](https://github.com/jowilf)
   in [#103](https://github.com/jowilf/starlette-admin/pull/103)
 
-## [0.5.2] - 2022-12-29
+## \[0.5.2\] - 2022-12-29
 
 ### Fixed
 
-* Fix Bug with `search_format` params for [DateField][starlette_admin.fields.DateField]
-  and [TimeField][starlette_admin.fields.TimeField]
+* Fix Bug with `search_format` params for [DateField](../api/fields/#starlette_admin.fields.DateField)
+  and [TimeField](../api/fields/#starlette_admin.fields.TimeField)
   by [@jowilf](https://github.com/jowilf) & [@ihuro](https://github.com/ihuro)
   in [#68](https://github.com/jowilf/starlette-admin/pull/68) & [#71](https://github.com/jowilf/starlette-admin/pull/71)
 
-## [0.5.1] - 2022-12-27
+## \[0.5.1\] - 2022-12-27
 
 ### Fixed
 
 * Fix Bug with `sqlalchemy.dialects.postgresql.base.UUID` column by [@jowilf](https://github.com/jowilf)
   in [#65](https://github.com/jowilf/starlette-admin/pull/65)
 
-## [0.5.0] - 2022-12-17
+## \[0.5.0\] - 2022-12-17
 
 ### Added
 
-* Introduce [`AdminUser`][starlette_admin.auth.AuthProvider.get_admin_user] and add navbar to show the
-  current [`AdminUser`][starlette_admin.auth.AuthProvider.get_admin_user] information (`username` and `photo`)
+* Introduce [`AdminUser`](../api/auth/#starlette_admin.auth.BaseAuthProvider.get_admin_user) and add navbar to show the
+  current [`AdminUser`](../api/auth/#starlette_admin.auth.BaseAuthProvider.get_admin_user) information (`username` and `photo`)
   by [@jowilf](https://github.com/jowilf) in [#49](https://github.com/jowilf/starlette-admin/pull/49)
 
 ### Internals
 
 * Add auth example by [@jowilf](https://github.com/jowilf) in [#51](https://github.com/jowilf/starlette-admin/pull/51)
 
-## [0.4.0] - 2022-12-07
+## \[0.4.0\] - 2022-12-07
 
 ---
 
@@ -488,7 +494,7 @@ Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starle
 * Update datatables to `1.13.1`
 * Update Search builder UI to fit tabler design
 
-## [0.3.2] - 2022-12-02
+## \[0.3.2\] - 2022-12-02
 
 ---
 
@@ -511,7 +517,7 @@ Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starle
 * Add support for Python 3.11 in test suite by [@jowilf](https://github.com/jowilf)
   in [#34](https://github.com/jowilf/starlette-admin/pull/34)
 
-## [0.3.1] - 2022-11-22
+## \[0.3.1\] - 2022-11-22
 
 ---
 
@@ -520,7 +526,7 @@ Add [TimeZoneField][starlette_admin.fields.TimeZoneField], [CountryField][starle
 * Fix Regression on SQLModel backend: Duplicate instances when creating or updating a model with relationships
   in [#23](https://github.com/jowilf/starlette-admin/issues/23)
 
-## [0.3.0] - 2022-11-21
+## \[0.3.0\] - 2022-11-21
 
 ---
 
@@ -616,7 +622,7 @@ These changes are inspired from *Flask-admin* and are introduced to help reduce 
 
 * Remove PDF from default `export_types`
 
-## [0.2.2] - 2022-09-20
+## \[0.2.2\] - 2022-09-20
 
 ---
 
@@ -624,7 +630,7 @@ These changes are inspired from *Flask-admin* and are introduced to help reduce 
 
 * Null support for EnumField in [#17](https://github.com/jowilf/starlette-admin/pull/17)
 
-## [0.2.1] - 2022-09-19
+## \[0.2.1\] - 2022-09-19
 
 ---
 
@@ -632,7 +638,7 @@ These changes are inspired from *Flask-admin* and are introduced to help reduce 
 
 * Fix SearchBuilder not working with dates (SQLAlchemy) in [#15](https://github.com/jowilf/starlette-admin/pull/15)
 
-## [0.2.0] - 2022-09-14
+## \[0.2.0\] - 2022-09-14
 
 ---
 
@@ -640,7 +646,7 @@ These changes are inspired from *Flask-admin* and are introduced to help reduce 
 
 * Date & Time input now use Flatpickr in [#10](https://github.com/jowilf/starlette-admin/pull/10)
 
-## [0.1.1] - 2022-09-09
+## \[0.1.1\] - 2022-09-09
 
 ---
 

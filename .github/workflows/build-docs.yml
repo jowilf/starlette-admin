@@ -2,8 +2,15 @@ name: Build docs
 on:
   push:
     branches: ["main"]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -13,4 +20,9 @@ jobs:
           cache: "pip"
       - name: Install Dependencies
         run: pip install hatch
-      - run: hatch run docs:deploy
+      - run: hatch run docs:build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+      - uses: actions/deploy-pages@v5
+        id: deployment

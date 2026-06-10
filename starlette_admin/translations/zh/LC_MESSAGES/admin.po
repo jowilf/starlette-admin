@@ -1,4 +1,4 @@
-# Portuguese translations for starlette-admin.
+# Chinese translations for starlette-admin.
 # Copyright (C) 2023 ORGANIZATION
 # This file is distributed under the same license as the starlette-admin
 # project.
@@ -9,11 +9,11 @@ msgstr ""
 "Project-Id-Version: starlette-admin VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-06-05 11:34-0700\n"
-"PO-Revision-Date: 2024-01-18 22:30-0300\n"
+"PO-Revision-Date: 2026-05-16 18:41+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: pt\n"
-"Language-Team: pt <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,11 +22,11 @@ msgstr ""
 #: starlette_admin/actions.py:11 starlette_admin/actions.py:107
 #: starlette_admin/templates/modals/actions.html:12
 msgid "Yes, Proceed"
-msgstr "Sim, Prosseguir"
+msgstr "是，继续"
 
 #: starlette_admin/auth.py:37
 msgid "Administrator"
-msgstr "Administrador"
+msgstr "管理员"
 
 #: starlette_admin/base.py:53 starlette_admin/contrib/odmantic/admin.py:17
 #: starlette_admin/contrib/sqla/admin.py:28
@@ -34,162 +34,161 @@ msgstr "Administrador"
 #: starlette_admin/templates/detail.html:8
 #: starlette_admin/templates/edit.html:7 starlette_admin/templates/list.html:7
 msgid "Admin"
-msgstr "Admin"
+msgstr "后台"
 
 #: starlette_admin/base.py:291
 #, python-format
 msgid "Model with identity %(identity)s not found"
-msgstr "Modelo com identidade %(identity)s não encontrado"
+msgstr "找不到标识为 %(identity)s 的模型"
 
 #: starlette_admin/templates/forms/_delete.html:8
 #: starlette_admin/templates/modals/delete.html:25 starlette_admin/views.py:464
 #: starlette_admin/views.py:501
 msgid "Delete"
-msgstr "Excluir"
+msgstr "删除"
 
 #: starlette_admin/views.py:465
 msgid "Are you sure you want to delete selected items?"
-msgstr "Tem certeza de que deseja excluir os itens selecionados?"
+msgstr "确定要删除所选项目吗？"
 
 #: starlette_admin/views.py:466
 msgid "Yes, delete all"
-msgstr "Sim, exclua tudo"
+msgstr "是，全部删除"
 
 #: starlette_admin/views.py:472 starlette_admin/views.py:510
 #, python-format
 msgid "Item was successfully deleted"
 msgid_plural "%(count)d items were successfully deleted"
-msgstr[0] "O item foi excluído com sucesso"
-msgstr[1] "%(count)d itens foram excluídos com sucesso"
+msgstr[0] "已成功删除 %(count)d 个项目"
 
 #: starlette_admin/views.py:479
 msgid "View"
-msgstr "Visualizar"
+msgstr "查看"
 
 #: starlette_admin/templates/edit.html:12 starlette_admin/views.py:491
 msgid "Edit"
-msgstr "Editar"
+msgstr "编辑"
 
 #: starlette_admin/templates/modals/delete.html:15 starlette_admin/views.py:502
 msgid "Are you sure you want to delete this item?"
-msgstr "Tem certeza de que deseja excluir este item?"
+msgstr "确定要删除此项目吗？"
 
 #: starlette_admin/views.py:908
 msgid "All"
-msgstr "Todos"
+msgstr "全部"
 
 #: starlette_admin/templates/actions.html:6
 msgid "With selected"
-msgstr "Com selecionado(s)"
+msgstr "已选择"
 
 #: starlette_admin/templates/create.html:12
 msgid "Create"
-msgstr "Criar"
+msgstr "创建"
 
 #: starlette_admin/templates/create.html:25
 #: starlette_admin/templates/list.html:34
 #, python-format
 msgid "New %(name)s"
-msgstr "Novo(a) %(name)s"
+msgstr "新增%(name)s"
 
 #: starlette_admin/templates/create.html:44
 #: starlette_admin/templates/edit.html:46
 #: starlette_admin/templates/modals/actions.html:10
 #: starlette_admin/templates/modals/delete.html:21
 msgid "Cancel"
-msgstr "Cancelar"
+msgstr "取消"
 
 #: starlette_admin/templates/create.html:46
 #: starlette_admin/templates/edit.html:48
 msgid "Save and add another"
-msgstr "Salvar e adicione outro"
+msgstr "保存并新增另一个"
 
 #: starlette_admin/templates/create.html:48
 #: starlette_admin/templates/edit.html:50
 msgid "Save and continue editing"
-msgstr "Salvar e continue editando"
+msgstr "保存并继续编辑"
 
 #: starlette_admin/templates/create.html:49
 #: starlette_admin/templates/edit.html:51
 msgid "Save"
-msgstr "Salvar"
+msgstr "保存"
 
 #: starlette_admin/templates/detail.html:13
 msgid "Detail"
-msgstr "Detalhe"
+msgstr "详细信息"
 
 #: starlette_admin/templates/detail.html:53
 #: starlette_admin/templates/list.html:67
 msgid "Search"
-msgstr "Procurar"
+msgstr "搜索"
 
 #: starlette_admin/templates/detail.html:64
 msgid "Attribute"
-msgstr "Atributo"
+msgstr "属性"
 
 #: starlette_admin/templates/detail.html:65
 msgid "Value"
-msgstr "Valor"
+msgstr "值"
 
 #: starlette_admin/templates/edit.html:27
 #, python-format
 msgid "Edit %(name)s"
-msgstr "Editar %(name)s"
+msgstr "编辑%(name)s"
 
 #: starlette_admin/templates/error.html:7
 msgid "Oops… You just found an error page"
-msgstr "Ops… Você acabou de encontrar uma página de erro"
+msgstr "哎呀…您发现了一个错误页面"
 
 #: starlette_admin/templates/error.html:29
 msgid "Take me home"
-msgstr "Me leve ao início"
+msgstr "返回首页"
 
 #: starlette_admin/templates/layout.html:96
 #: starlette_admin/templates/layout.html:119
 #: starlette_admin/templates/layout.html:237
 msgid "Logout"
-msgstr "Sair"
+msgstr "退出登录"
 
 #: starlette_admin/templates/login.html:16
 msgid "Login to your account"
-msgstr "Faça login na sua conta"
+msgstr "登录您的账户"
 
 #: starlette_admin/templates/login.html:32
 #: starlette_admin/templates/login.html:36
 msgid "Username"
-msgstr "Usuário"
+msgstr "用户名"
 
 #: starlette_admin/templates/login.html:43
 #: starlette_admin/templates/login.html:47
 msgid "Password"
-msgstr "Senha"
+msgstr "密码"
 
 #: starlette_admin/templates/login.html:56
 msgid "Remember me"
-msgstr "Lembre de mim"
+msgstr "记住我"
 
 #: starlette_admin/templates/login.html:60
 msgid "Sign in"
-msgstr "Entrar"
+msgstr "登录"
 
 #: starlette_admin/templates/row-actions.html:38
 msgid "Actions"
-msgstr "Ações"
+msgstr "操作"
 
 #: starlette_admin/templates/forms/_delete.html:13
 #, fuzzy
 msgid "Check this to delete the current content of this field"
-msgstr "Marquei isto para excluir o conteúdo atual deste campo"
+msgstr "勾选此项以删除此字段的当前内容"
 
 #: starlette_admin/templates/forms/enum.html:5
 #, python-format
 msgid "Select a %(label)s"
-msgstr "Selecione um %(label)s"
+msgstr "选择一个%(label)s"
 
 #: starlette_admin/templates/forms/list.html:44
 msgid "Add item"
-msgstr "Adicionar Item"
+msgstr "新增项目"
 
 #: starlette_admin/templates/modals/loading.html:7
 msgid "Loading"
-msgstr "Carregando"
+msgstr "加载中"
