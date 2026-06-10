@@ -1,6 +1,6 @@
 import inspect
 from abc import abstractmethod
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from typing import (
     Any,
     Awaitable,
@@ -10,6 +10,7 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Set,
     Tuple,
     Type,
     Union,
@@ -27,6 +28,7 @@ from starlette_admin.fields import (
     CollectionField,
     FileField,
     HasOne,
+    ListField,
     RelationField,
 )
 from starlette_admin.helpers import extract_fields, not_none
@@ -266,16 +268,18 @@ class BaseModelView(BaseView):
     _find_foreign_model: Callable[[str], "BaseModelView"]
 
     def __init__(self) -> None:  # noqa: C901
-        fringe = list(self.fields)
-        all_field_names = []
-        while len(fringe) > 0:
-            field = fringe.pop(0)
+        queue = deque(self.fields)
+        all_fields: list[BaseField] = []
+        while len(queue) > 0:
+            field = queue.popleft()
             if not hasattr(field, "_name"):
                 field._name = field.name  # type: ignore
             if isinstance(field, CollectionField):
                 for f in field.fields:
                     f._name = f"{field._name}.{f.name}"  # type: ignore
-                fringe.extend(field.fields)
+                queue.extend(field.fields)
+            if isinstance(field, ListField):
+                queue.append(field.field)
             name = field._name  # type: ignore
             if name == self.pk_attr and not self.form_include_pk:
                 field.exclude_from_create = True
@@ -289,21 +293,24 @@ class BaseModelView(BaseView):
             if name in self.exclude_fields_from_edit:
                 field.exclude_from_edit = True
             if not isinstance(field, CollectionField):
-                all_field_names.append(name)
+                all_fields.append(field)
                 field.searchable = (self.searchable_fields is None) or (
                     name in self.searchable_fields
                 )
                 field.orderable = (self.sortable_fields is None) or (
                     name in self.sortable_fields
                 )
+        all_fields_names: List[str] = [f._name for f in all_fields]  # type: ignore[attr-defined]
         if self.searchable_fields is None:
-            self.searchable_fields = all_field_names[:]
+            self.searchable_fields = all_fields_names[:]
         if self.sortable_fields is None:
-            self.sortable_fields = all_field_names[:]
+            self.sortable_fields = all_fields_names[:]
         if self.export_fields is None:
-            self.export_fields = all_field_names[:]
+            self.export_fields = all_fields_names[:]
         if self.fields_default_sort is None:
             self.fields_default_sort = [self.pk_attr]  # type: ignore[list-item]
+
+        self._all_fields: list[BaseField] = all_fields
 
         # Actions
         self._actions: Dict[str, Dict[str, str]] = OrderedDict()
@@ -927,6 +934,56 @@ class BaseModelView(BaseView):
              action: The type of action being performed on the view.
         """
         return extract_fields(self.fields, action)
+
+    @staticmethod
+    def _extract_fields_from_where(where: Dict[str, Any]) -> Set[str]:
+        """Recursively collect field names from a structured where dict."""
+        fields: Set[str] = set()
+        for key, value in where.items():
+            if key in ("and", "or") and isinstance(value, list):
+                for sub in value:
+                    if isinstance(sub, dict):
+                        fields.update(BaseModelView._extract_fields_from_where(sub))
+            elif key == "not" and isinstance(value, dict):
+                fields.update(BaseModelView._extract_fields_from_where(value))
+            else:
+                fields.add(key)
+        return fields
+
+    def _validate_order_by(
+        self, request: Request, order_by: List[str]
+    ) -> Optional[str]:
+        """Validate order_by clauses against list fields and sortable_fields.
+
+        Returns an error message string if invalid, otherwise None.
+        """
+        list_field_names = {f.name for f in self._all_fields if not f.exclude_from_list}
+        sortable: Set[str] = set(self.sortable_fields or [])
+        for clause in order_by:
+            parts = clause.split(maxsplit=1)
+            if len(parts) < 2:
+                return f"Invalid order_by clause: '{clause}'"
+            field_name = parts[0]
+            if field_name not in list_field_names or field_name not in sortable:
+                return f"Unknown field or field is not sortable in order_by: '{field_name}'"
+        return None
+
+    def _validate_where(self, request: Request, where: Dict[str, Any]) -> Optional[str]:
+        """Validate that all field names in a where dict are visible list fields
+        and are declared as searchable.
+
+        Returns an error message string if invalid, otherwise None.
+        """
+        list_field_names = {f.name for f in self._all_fields if not f.exclude_from_list}
+        searchable = set(self.searchable_fields or [])
+        for field_name in self._extract_fields_from_where(where):
+            if field_name not in list_field_names or (
+                searchable and field_name not in searchable
+            ):
+                return (
+                    f"Unknown field or field is not searchable in where: '{field_name}'"
+                )
+        return None
 
     def _additional_css_links(
         self, request: Request, action: RequestAction

@@ -1,7 +1,7 @@
 # ModelView Configurations
 
 There are multiple options available to customize your ModelView. For a complete list, please refer to the API
-documentation for [BaseModelView()][starlette_admin.views.BaseModelView].
+documentation for [BaseModelView()](../../../api/views/#starlette_admin.views.BaseModelView).
 
 Here are some of the most commonly used options:
 
@@ -58,7 +58,7 @@ class PostView(ModelView):
 !!! note
 
     For more advanced use cases, you can override
-    the [ModelView.get_fields_list()][starlette_admin.views.BaseModelView.get_fields_list] function.
+    the [ModelView.get_fields_list()](../../../api/views/#starlette_admin.views.BaseModelView.get_fields_list) function.
 
 ## Searching & Sorting
 
@@ -219,19 +219,19 @@ hooks to perform actions before or after specific operations such as item creati
 
 The following hooks are available:
 
-- [before_create(request, data, obj)][starlette_admin.views.BaseModelView.before_create]: Called before a new object is
+- [before_create(request, data, obj)](../../../api/views/#starlette_admin.views.BaseModelView.before_create): Called before a new object is
   created
 
-- [after_create(request, obj)][starlette_admin.views.BaseModelView.after_create]: Called after a new object is created
+- [after_create(request, obj)](../../../api/views/#starlette_admin.views.BaseModelView.after_create): Called after a new object is created
 
-- [before_edit(request, data, obj)][starlette_admin.views.BaseModelView.before_edit]: Called before an existing object is
+- [before_edit(request, data, obj)](../../../api/views/#starlette_admin.views.BaseModelView.before_edit): Called before an existing object is
   updated
 
-- [after_edit(request, obj)][starlette_admin.views.BaseModelView.after_edit]: Called after an existing object is updated
+- [after_edit(request, obj)](../../../api/views/#starlette_admin.views.BaseModelView.after_edit): Called after an existing object is updated
 
-- [before_delete(request, obj)][starlette_admin.views.BaseModelView.before_delete]:  Called before an object is deleted
+- [before_delete(request, obj)](../../../api/views/#starlette_admin.views.BaseModelView.before_delete):  Called before an object is deleted
 
-- [after_delete(request, obj)][starlette_admin.views.BaseModelView.after_delete]: Called after an object is deleted
+- [after_delete(request, obj)](../../../api/views/#starlette_admin.views.BaseModelView.after_delete): Called after an object is deleted
 
 ### Example
 

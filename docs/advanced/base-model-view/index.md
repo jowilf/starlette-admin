@@ -9,7 +9,7 @@ following:
 2. Models must make their data accessible as python properties.
 
 If that is the case, then you can implement your own database backend by extending the
-[BaseModelView][starlette_admin.BaseModelView] class, and implementing the set of methods listed below.
+[BaseModelView](../../api/views/#starlette_admin.views.BaseModelView) class, and implementing the set of methods listed below.
 
 Let's say you've defined your models like this:
 
@@ -27,7 +27,7 @@ class Post:
 
 ```
 
-First you need to define a new class, which derives from [BaseModelView][starlette_admin.views.BaseModelView].
+First you need to define a new class, which derives from [BaseModelView](../../api/views/#starlette_admin.views.BaseModelView).
 
 ```python
 from starlette_admin import BaseModelView
@@ -70,9 +70,9 @@ class PostView(BaseModelView):
 
 ## Fields
 
-Internally, *Starlette-Admin*  uses custom fields all inherit from [BaseField][starlette_admin.fields.BaseField] to
+Internally, *Starlette-Admin*  uses custom fields all inherit from [BaseField](../../api/fields/#starlette_admin.fields.BaseField) to
 represent each attribute. So, you need to choose the right field for each attribute or create a new field if needed.
-See [API Reference][starlette_admin.fields.BaseField] for full list of default fields.
+See [API Reference](../../api/fields/#starlette_admin.fields.BaseField) for full list of default fields.
 
 ```python
 from starlette_admin import BaseModelView
@@ -91,11 +91,11 @@ class PostView(BaseModelView):
 
 Finally, you need to implement these CRUD methods:
 
-* [count()][starlette_admin.BaseModelView.count]
-* [find_all()][starlette_admin.BaseModelView.find_all]
-* [create()][starlette_admin.BaseModelView.create]
-* [edit()][starlette_admin.BaseModelView.edit]
-* [delete()][starlette_admin.BaseModelView.delete]
+* [count()](../../api/views/#starlette_admin.views.BaseModelView.count)
+* [find_all()](../../api/views/#starlette_admin.views.BaseModelView.find_all)
+* [create()](../../api/views/#starlette_admin.views.BaseModelView.create)
+* [edit()](../../api/views/#starlette_admin.views.BaseModelView.edit)
+* [delete()](../../api/views/#starlette_admin.views.BaseModelView.delete)
 
 ## Full example
 

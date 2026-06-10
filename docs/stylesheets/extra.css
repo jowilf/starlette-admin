@@ -1,4 +1,8 @@
 :root > * {
-  --md-primary-fg-color:        #0073BB;
-  --md-primary-fg-color--dark:  #005c96;
+  --md-primary-fg-color: #0073bb;
+  --md-primary-fg-color--dark: #005c96;
+  --md-accent-fg-color: #0073bb;
+}
+.md-logo svg {
+  fill: #4da6d9 !important;
 }

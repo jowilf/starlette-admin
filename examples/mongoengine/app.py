@@ -15,7 +15,7 @@ app = Starlette(
         )
     ],
     on_startup=[lambda: connect("example")],
-    on_shutdown=[lambda: disconnect()],
+    on_shutdown=[disconnect],
 )
 
 # Create admin

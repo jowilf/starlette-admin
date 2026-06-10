@@ -1,13 +1,13 @@
 # Custom Field
 
-*Starlette-Admin* has a lot of built-in [fields][starlette_admin.fields.BaseField] available. But you can override or create your own field
+*Starlette-Admin* has a lot of built-in [fields](../../api/fields/#starlette_admin.fields.BaseField) available. But you can override or create your own field
 according to your need.
 
 !!! important
 
     Before creating a new field, try first to extend the existing ones. They are flexible enough to fit most use cases.
 
-The first step is to define a new class, which derives from [BaseField][starlette_admin.fields.BaseField] or any others fields to customize it
+The first step is to define a new class, which derives from [BaseField](../../api/fields/#starlette_admin.fields.BaseField) or any others fields to customize it
 
 ```python
 from starlette_admin import BaseField
