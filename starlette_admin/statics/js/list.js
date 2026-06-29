@@ -29,6 +29,7 @@ $(function () {
           .concat(fringe);
       else if (field.type === "ListField") {
         // To reduce complexity, List of CollectionField will render as json
+        // List of EnumField preserves array, allowing multiple selections
         if (field.field.type === "CollectionField" || field.field.type === "EnumField") {
           $("#table-header").append(`<th>${field.label}</th>`);
           dt_columns.push({
@@ -237,13 +238,7 @@ $(function () {
       },
       init: function (a, fn, preDefined = null) {
         const field = dt_fields.find((f) => f.name === a.s.origData);
-
-        if (field.field.type === "EnumField") {
-          return enumInit(a, fn, preDefined, field.field);
-        }
-        else {
-          return DataTable.Criteria.initSelectArray(a, fn, preDefined, field);
-        }
+        return enumInit(a, fn, preDefined, field.field);
       },
       inputValue: function (el, that) {
         return [$(el[0]).val()];
