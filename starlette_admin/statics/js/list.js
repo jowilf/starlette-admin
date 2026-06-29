@@ -29,7 +29,7 @@ $(function () {
           .concat(fringe);
       else if (field.type === "ListField") {
         // To reduce complexity, List of CollectionField will render as json
-        if (field.field.type == "CollectionField") {
+        if (field.field.type === "CollectionField" || field.field.type === "EnumField") {
           $("#table-header").append(`<th>${field.label}</th>`);
           dt_columns.push({
             name: field.name,
@@ -46,6 +46,9 @@ $(function () {
               );
             },
           });
+          if (field.field.type === "EnumField") {
+            dt_fields.push(field);
+          }
         } else {
           field.field.name = field.name;
           field.field.label = field.label;
@@ -180,38 +183,67 @@ $(function () {
     };
   };
 
+  enumInit = function (a, fn, preDefined = null, field = null) {
+      if (field == null) {
+        field = dt_fields.find((f) => f.name === a.s.origData);
+      }
+
+      const choices = Array.isArray(field?.choices) ? field.choices : [];
+
+      const select = $("<select/>")
+        .addClass(a.classes.input)
+        .addClass(a.classes.value)
+        .addClass(a.classes.dropDown)
+        .addClass(a.classes.select)
+        .append(a.dom.valueTitle)
+        .on("change.dtsb", function () {
+          fn(a, this);
+        });
+
+      choices.forEach((choice) => {
+        const option = $("<option>", {
+          text: choice[1],
+          value: choice[0],
+        });
+        select.append(option);
+      });
+
+      if (preDefined !== null && choices.some(choice => choice[0] == preDefined[0])) {
+        select.val(preDefined[0]);
+      }
+
+      return select;
+    }
+
   enumCondition = function (cn) {
+    return {
+      conditionName: function (t, i) {
+        return t.i18n(cn);
+      },
+      init: enumInit,
+      inputValue: function (el, that) {
+        return [$(el[0]).val()];
+      },
+      isInputValid: function (el, that) {
+        return ($(el[0]).val() ?? "") !== "";
+      },
+    };
+  };
+
+  enumArrayCondition = function (cn) {
     return {
       conditionName: function (t, i) {
         return t.i18n(cn);
       },
       init: function (a, fn, preDefined = null) {
         const field = dt_fields.find((f) => f.name === a.s.origData);
-        const choices = Array.isArray(field?.choices) ? field.choices : [];
 
-        const select = $("<select/>")
-          .addClass(a.classes.input)
-          .addClass(a.classes.value)
-          .addClass(a.classes.dropDown)
-          .addClass(a.classes.select)
-          .append(a.dom.valueTitle)
-          .on("change.dtsb", function () {
-            fn(a, this);
-          });
-
-        choices.forEach((choice) => {
-          const option = $("<option>", {
-            text: choice[1],
-            value: choice[0],
-          });
-          select.append(option);
-        });
-
-        if (preDefined !== null && choices.some(choice => choice[0] == preDefined[0])) {
-          select.val(preDefined[0]);
+        if (field.field.type === "EnumField") {
+          return enumInit(a, fn, preDefined, field.field);
         }
-
-        return select;
+        else {
+          return DataTable.Criteria.initSelectArray(a, fn, preDefined, field);
+        }
       },
       inputValue: function (el, that) {
         return [$(el[0]).val()];
@@ -252,6 +284,10 @@ $(function () {
             null: noInputCondition("starlette-admin.conditions.empty"),
             "!null": noInputCondition("starlette-admin.conditions.notEmpty"),
           },
+          array: {
+            contains: enumArrayCondition("searchBuilder.conditions.array.contains"),
+            without: enumArrayCondition("searchBuilder.conditions.array.without"),
+          }
         },
         greyscale: true,
       },
