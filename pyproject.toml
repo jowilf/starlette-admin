@@ -73,7 +73,7 @@ test = [
     "beanie<2.0.0",
 ]
 cov = [
-    "coverage[toml] >=7.0.0, <7.11.0"
+    "coverage[toml] >=7.0.0, <7.15.0"
 ]
 doc = [
     "zensical >=0.0.44",
