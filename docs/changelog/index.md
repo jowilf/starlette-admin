@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[0.17.0\] - 2026-07-11
+
+### Added
+
+- Add optional JSON Schema validation to `JSONField` by [@ricardogsilva](https://github.com/ricardogsilva)
+  in [#740](https://github.com/jowilf/starlette-admin/pull/740)
+- Add Simplified Chinese (zh) translation by [@SHYXIN](https://github.com/SHYXIN)
+  in [#763](https://github.com/jowilf/starlette-admin/pull/763)
+
+### Changed
+
+- Replace text input with a select dropdown for `EnumField` filters by [@shana0440](https://github.com/shana0440)
+  in [#746](https://github.com/jowilf/starlette-admin/pull/746)
+- Standardize error status code usage and remove `HTTP_422_UNPROCESSABLE_ENTITY` references
+  by [@danielGetafe](https://github.com/danielGetafe)
+  in [#730](https://github.com/jowilf/starlette-admin/pull/730)
+
+### Fixed
+
+- Quote JSON field names when selecting to account for possible numeric parts in the name
+  by [@ricardogsilva](https://github.com/ricardogsilva)
+  in [#741](https://github.com/jowilf/starlette-admin/pull/741)
+
 ## \[0.16.1\] - 2026-06-06
 
 ###  Security Fix
