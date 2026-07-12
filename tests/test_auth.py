@@ -191,6 +191,64 @@ class TestAuth:
         assert response.status_code == 303
         assert "session" not in response.cookies
 
+    @pytest.mark.asyncio
+    async def test_login_redirects_back_to_same_origin_next(self):
+        admin = BaseAdmin(auth_provider=MyAuthProvider())
+        app = Starlette()
+        admin.mount_to(app)
+        client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
+        # Unauthenticated request to a protected route: the middleware builds
+        # an absolute-URL `next` from the original request (including query
+        # string), which must survive the login round trip unchanged.
+        response = await client.get("/admin/?foo=bar", follow_redirects=False)
+        assert response.status_code == 303
+        login_location = response.headers.get("location")
+        assert (
+            login_location
+            == "http://testserver/admin/login?next=http%3A%2F%2Ftestserver%2Fadmin%2F%3Ffoo%3Dbar"
+        )
+        response = await client.post(
+            login_location,
+            data={"username": "admin", "password": "password", "remember_me": "on"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert response.headers.get("location") == "http://testserver/admin/?foo=bar"
+
+    @pytest.mark.asyncio
+    async def test_login_redirects_to_relative_next(self):
+        admin = BaseAdmin(auth_provider=MyAuthProvider())
+        app = Starlette()
+        admin.mount_to(app)
+        client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
+        response = await client.post(
+            "/admin/login?next=/admin/post/list",
+            data={"username": "admin", "password": "password", "remember_me": "on"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert response.headers.get("location") == "/admin/post/list"
+
+    @pytest.mark.asyncio
+    async def test_login_rejects_open_redirect(self):
+        admin = BaseAdmin(auth_provider=MyAuthProvider())
+        app = Starlette()
+        admin.mount_to(app)
+        client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
+        response = await client.post(
+            "/admin/login?next=https://evil.com",
+            data={"username": "admin", "password": "password", "remember_me": "on"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert response.headers.get("location") == "http://testserver/admin/"
+
 
 class TestViewAccess:
     def setup_method(self, method):

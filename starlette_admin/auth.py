@@ -1,7 +1,7 @@
 import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union, cast
 
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
@@ -14,12 +14,22 @@ from starlette_admin.i18n import lazy_gettext as _
 if TYPE_CHECKING:
     from starlette_admin.base import BaseAdmin
 
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
 from starlette.types import ASGIApp
+
+
+def _is_safe_redirect_url(request: Request, url: Optional[str]) -> bool:
+    """Only allow relative paths or absolute URLs on the same origin as the request."""
+    if not url or "\\" in url:
+        return False
+    parsed = urlparse(url)
+    if not parsed.scheme and not parsed.netloc:
+        return True
+    return parsed.scheme == request.url.scheme and parsed.netloc == request.url.netloc
 
 
 def login_not_required(
@@ -232,6 +242,9 @@ class AuthProvider(BaseAuthProvider):
                 context={"_is_login_path": True},
             )
         form = await request.form()
+        next_url = request.query_params.get("next")
+        if not _is_safe_redirect_url(request, next_url):
+            next_url = str(request.url_for(admin.route_name + ":index"))
         try:
             return await self.login(
                 form.get("username"),  # type: ignore
@@ -239,8 +252,7 @@ class AuthProvider(BaseAuthProvider):
                 form.get("remember_me") == "on",
                 request,
                 RedirectResponse(
-                    request.query_params.get("next")
-                    or request.url_for(admin.route_name + ":index"),
+                    cast(str, next_url),
                     status_code=HTTP_303_SEE_OTHER,
                 ),
             )
