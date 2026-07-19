@@ -1,7 +1,9 @@
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Literal
+from typing import Any, Literal
 
+from starlette.requests import Request
 from starlette_admin.filters.base import FilterGroup
 
 
@@ -38,6 +40,23 @@ class RequestAction(StrEnum):
 
     def is_form(self) -> bool:
         return self.value in [self.CREATE, self.EDIT, self.INLINE_EDIT]
+
+
+Getter = Callable[[Request, Any], "Any | Awaitable[Any]"]
+"""`(request, obj) -> value`, sync or async. Overrides `BaseField.parse_obj`'s
+default `getattr(obj, self.name, None)` lookup."""
+
+Formatter = Callable[[Request, Any], "Any | Awaitable[Any]"]
+"""`(request, value) -> formatted_value`, sync or async. Replaces
+`serialize_value` / `serialize_none_value` entirely for the value parsed by
+`parse_obj`/`getter`; its return value is used as the final output."""
+
+Parser = Callable[[Request, Any], "Any | Awaitable[Any]"]
+"""`(request, raw) -> value`, sync or async. Maps a `RequestAction` to a
+callable that replaces this field's default parsing for that action. `raw` is
+`form_data.get(self.id)` (or `getlist` when the field is `multiple`) for
+CREATE, EDIT, INLINE_EDIT, or the unprocessed cell value read from the import
+file for IMPORT. See `BaseField.parse_input`."""
 
 
 class RowActionsDisplayType(StrEnum):

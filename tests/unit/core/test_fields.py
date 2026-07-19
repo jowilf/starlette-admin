@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 
 import arrow
 import pytest
+from starlette.datastructures import FormData
 from starlette_admin import BooleanField, IntegerField, StringField
 from starlette_admin.fields import (
     ArrowField,
@@ -21,6 +22,7 @@ from starlette_admin.fields import (
     EmailField,
     FileField,
     FloatField,
+    HasMany,
     ImageField,
     IPAddressField,
     JSONField,
@@ -34,6 +36,7 @@ from starlette_admin.fields import (
 )
 from starlette_admin.helpers import to_form_entry
 from starlette_admin.types import RequestAction
+from starlette_admin.views import BaseModelView
 
 
 def make_request(action: RequestAction) -> MagicMock:
@@ -110,6 +113,288 @@ def test_base_field_input_params_returns_string():
 def test_base_field_input_params_disabled():
     field = StringField("title", disabled=True)
     assert "disabled" in field.input_params()
+
+
+# ── BaseField.getter ─────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_parse_obj_without_getter_uses_attribute_lookup():
+    """No getter set: parse_obj falls back to getattr(obj, self.name, None)."""
+    field = StringField("title")
+    obj = MagicMock(title="Hello")
+    result = await field.parse_obj(MagicMock(), obj)
+    assert result == "Hello"
+
+
+@pytest.mark.asyncio
+async def test_parse_obj_without_getter_missing_attribute_returns_none():
+    field = StringField("missing")
+    result = await field.parse_obj(MagicMock(), object())
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_parse_obj_sync_getter_overrides_attribute_lookup():
+    obj = MagicMock(first_name="Ada", last_name="Lovelace")
+    field = StringField(
+        "full_name", getter=lambda request, obj: f"{obj.first_name} {obj.last_name}"
+    )
+    result = await field.parse_obj(MagicMock(), obj)
+    assert result == "Ada Lovelace"
+
+
+@pytest.mark.asyncio
+async def test_parse_obj_async_getter_is_awaited():
+    obj = MagicMock(first_name="Ada", last_name="Lovelace")
+
+    async def getter(request, obj):
+        return f"{obj.first_name} {obj.last_name}"
+
+    field = StringField("full_name", getter=getter)
+    result = await field.parse_obj(MagicMock(), obj)
+    assert result == "Ada Lovelace"
+
+
+@pytest.mark.asyncio
+async def test_parse_obj_getter_receives_request():
+    seen = {}
+
+    def getter(request, obj):
+        seen["request"] = request
+        return "value"
+
+    request = MagicMock()
+    field = StringField("x", getter=getter)
+    await field.parse_obj(request, object())
+    assert seen["request"] is request
+
+
+# ── BaseField.formatter ───────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_serialize_field_value_no_formatter_falls_back_to_serialize_value():
+    field = StringField("title")
+    request = make_request(RequestAction.LIST)
+    result = await BaseModelView.serialize_field_value(
+        MagicMock(), "hello", field, request
+    )
+    assert result == "hello"
+
+
+@pytest.mark.asyncio
+async def test_serialize_field_value_no_formatter_falls_back_to_serialize_none_value():
+    field = StringField("title")
+    request = make_request(RequestAction.LIST)
+    result = await BaseModelView.serialize_field_value(
+        MagicMock(), None, field, request
+    )
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_serialize_field_value_matching_formatter_overrides_value():
+    field = StringField(
+        "title",
+        formatter={RequestAction.LIST: lambda request, value: value.upper()},
+    )
+    request = make_request(RequestAction.LIST)
+    result = await BaseModelView.serialize_field_value(
+        MagicMock(), "hello", field, request
+    )
+    assert result == "HELLO"
+
+
+@pytest.mark.asyncio
+async def test_serialize_field_value_matching_formatter_handles_none():
+    """A formatter also runs on `None`, replacing serialize_none_value."""
+    field = StringField(
+        "title",
+        formatter={RequestAction.LIST: lambda request, value: value or "N/A"},
+    )
+    request = make_request(RequestAction.LIST)
+    result = await BaseModelView.serialize_field_value(
+        MagicMock(), None, field, request
+    )
+    assert result == "N/A"
+
+
+@pytest.mark.asyncio
+async def test_serialize_field_value_formatter_for_other_action_is_ignored():
+    """A formatter only registered for DETAIL is not applied on LIST."""
+    field = StringField(
+        "title",
+        formatter={RequestAction.DETAIL: lambda request, value: value.upper()},
+    )
+    request = make_request(RequestAction.LIST)
+    result = await BaseModelView.serialize_field_value(
+        MagicMock(), "hello", field, request
+    )
+    assert result == "hello"
+
+
+@pytest.mark.asyncio
+async def test_serialize_field_value_async_formatter_is_awaited():
+    async def formatter(request, value):
+        return value.upper()
+
+    field = StringField("title", formatter={RequestAction.LIST: formatter})
+    request = make_request(RequestAction.LIST)
+    result = await BaseModelView.serialize_field_value(
+        MagicMock(), "hello", field, request
+    )
+    assert result == "HELLO"
+
+
+@pytest.mark.asyncio
+async def test_serialize_field_value_formatter_per_action():
+    """Different actions can be routed to different formatters on the same field."""
+    field = StringField(
+        "title",
+        formatter={
+            RequestAction.LIST: lambda request, value: f"list:{value}",
+            RequestAction.DETAIL: lambda request, value: f"detail:{value}",
+        },
+    )
+    list_result = await BaseModelView.serialize_field_value(
+        MagicMock(), "hello", field, make_request(RequestAction.LIST)
+    )
+    detail_result = await BaseModelView.serialize_field_value(
+        MagicMock(), "hello", field, make_request(RequestAction.DETAIL)
+    )
+    assert list_result == "list:hello"
+    assert detail_result == "detail:hello"
+
+
+# ── BaseField.parser / parse_input ──────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_parse_input_no_parser_form_action_falls_back_to_parse_form_data():
+    """No parser set: parse_input routes a form action to parse_form_data."""
+    field = StringField("title")
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("title", "hello")])
+    result = await field.parse_input(request, form_data)
+    assert result == "hello"
+
+
+@pytest.mark.asyncio
+async def test_parse_input_no_parser_import_action_falls_back_to_parse_import_value():
+    """No parser set: parse_input routes IMPORT to parse_import_value."""
+    field = StringField("title")
+    request = make_request(RequestAction.IMPORT)
+    result = await field.parse_input(request, "hello")
+    assert result == "hello"
+
+
+@pytest.mark.asyncio
+async def test_parse_input_matching_parser_overrides_form_parsing():
+    field = StringField(
+        "title",
+        parser={RequestAction.CREATE: lambda request, raw: (raw or "").upper()},
+    )
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("title", "hello")])
+    result = await field.parse_input(request, form_data)
+    assert result == "HELLO"
+
+
+@pytest.mark.asyncio
+async def test_parse_input_matching_parser_overrides_import_parsing():
+    field = StringField(
+        "title",
+        parser={RequestAction.IMPORT: lambda request, raw: f"imported:{raw}"},
+    )
+    request = make_request(RequestAction.IMPORT)
+    result = await field.parse_input(request, "hello")
+    assert result == "imported:hello"
+
+
+@pytest.mark.asyncio
+async def test_parse_input_parser_for_other_action_is_ignored():
+    """A parser only registered for EDIT is not applied on CREATE."""
+    field = StringField(
+        "title",
+        parser={RequestAction.EDIT: lambda request, raw: "overridden"},
+    )
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("title", "hello")])
+    result = await field.parse_input(request, form_data)
+    assert result == "hello"
+
+
+@pytest.mark.asyncio
+async def test_parse_input_async_parser_is_awaited():
+    async def parser(request, raw):
+        return (raw or "").upper()
+
+    field = StringField("title", parser={RequestAction.CREATE: parser})
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("title", "hello")])
+    result = await field.parse_input(request, form_data)
+    assert result == "HELLO"
+
+
+@pytest.mark.asyncio
+async def test_parse_input_form_parser_receives_get_value_for_single_field():
+    seen = {}
+
+    def parser(request, raw):
+        seen["raw"] = raw
+        return raw
+
+    field = StringField("title", parser={RequestAction.CREATE: parser})
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("title", "first"), ("title", "second")])
+    await field.parse_input(request, form_data)
+    assert seen["raw"] == "second"
+
+
+@pytest.mark.asyncio
+async def test_parse_input_form_parser_receives_getlist_value_for_multiple_field():
+    """A `multiple` field's parser receives `form_data.getlist(...)`, not `.get(...)`."""
+    seen = {}
+
+    def parser(request, raw):
+        seen["raw"] = raw
+        return raw
+
+    field = HasMany("tags", key="tag", parser={RequestAction.CREATE: parser})
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("tags", "1"), ("tags", "2")])
+    await field.parse_input(request, form_data)
+    assert seen["raw"] == ["1", "2"]
+
+
+@pytest.mark.asyncio
+async def test_parse_input_import_parser_receives_raw_value_unchanged():
+    """The IMPORT parser receives `raw` unchanged, not routed through FormData."""
+    seen = {}
+
+    def parser(request, raw):
+        seen["raw"] = raw
+        return raw
+
+    field = StringField("title", parser={RequestAction.IMPORT: parser})
+    request = make_request(RequestAction.IMPORT)
+    await field.parse_input(request, [1, 2, 3])
+    assert seen["raw"] == [1, 2, 3]
+
+
+@pytest.mark.asyncio
+async def test_parse_input_parser_receives_request():
+    seen = {}
+
+    def parser(request, raw):
+        seen["request"] = request
+        return raw
+
+    field = StringField("title", parser={RequestAction.CREATE: parser})
+    request = make_request(RequestAction.CREATE)
+    await field.parse_input(request, FormData([("title", "hello")]))
+    assert seen["request"] is request
 
 
 # ── BaseField.validate / validators chain ───────────────────────────────────
@@ -1019,49 +1304,26 @@ async def test_list_field_serialize_value_export_json_returns_list():
 @pytest.mark.asyncio
 async def test_list_field_parse_import_value_from_list():
     """ListField parses a list of raw values using its inner field."""
-    from starlette_admin.importers.base import ImportContext
-
     field = ListField(StringField("values"))
-    ctx = ImportContext(
-        fields=[field],
-        content=b"",
-        view=MagicMock(),
-        request=MagicMock(),
-    )
-    result = await field.parse_import_value(["a", "b"], ctx)
+    result = await field.parse_import_value(MagicMock(), ["a", "b"])
     assert result == ["a", "b"]
 
 
 @pytest.mark.asyncio
 async def test_list_field_parse_import_value_from_string():
     """ListField splits a newline-separated string into individual items."""
-    from starlette_admin.importers.base import ImportContext
-
     field = ListField(StringField("values"))
-    ctx = ImportContext(
-        fields=[field],
-        content=b"",
-        view=MagicMock(),
-        request=MagicMock(),
-    )
-    result = await field.parse_import_value("a\nb\n", ctx)
+    result = await field.parse_import_value(MagicMock(), "a\nb\n")
     assert result == ["a", "b"]
 
 
 @pytest.mark.asyncio
 async def test_list_field_parse_import_value_fallback():
     """ListField returns an empty list when encountering unsupported value types."""
-    from starlette_admin.importers.base import ImportContext
-
     field = ListField(StringField("values"))
-    ctx = ImportContext(
-        fields=[field],
-        content=b"",
-        view=MagicMock(),
-        request=MagicMock(),
-    )
-    assert await field.parse_import_value(None, ctx) == []
-    assert await field.parse_import_value(123, ctx) == []
+    request = MagicMock()
+    assert await field.parse_import_value(request, None) == []
+    assert await field.parse_import_value(request, 123) == []
 
 
 # ── BaseField.parse_import_value ───────────────────────────────────────────────
@@ -1070,77 +1332,32 @@ async def test_list_field_parse_import_value_fallback():
 @pytest.mark.asyncio
 async def test_base_field_parse_import_value_list():
     """BaseField processes a list import value as multiple form entries."""
-    from starlette_admin.importers.base import ImportContext
-
     field = StringField("name")
-    ctx = ImportContext(
-        fields=[field],
-        content=b"",
-        view=MagicMock(),
-        request=MagicMock(),
-    )
-    assert await field.parse_import_value(["a", "b"], ctx) == "b"
+    assert await field.parse_import_value(MagicMock(), ["a", "b"]) == "b"
 
 
 @pytest.mark.asyncio
 async def test_base_field_parse_import_value_none():
     """BaseField processes a None import value as an empty form."""
-    from starlette_admin.importers.base import ImportContext
-
     field = StringField("name")
-    ctx = ImportContext(
-        fields=[field],
-        content=b"",
-        view=MagicMock(),
-        request=MagicMock(),
-    )
-    assert await field.parse_import_value(None, ctx) is None
-
-
-# ── BaseField.parse_value ───────────────────────────────────────────────────────
+    assert await field.parse_import_value(MagicMock(), None) is None
 
 
 @pytest.mark.asyncio
-async def test_parse_value_none_yields_none():
-    field = StringField("name")
-    assert await field.parse_value(MagicMock(), None) is None
-
-
-@pytest.mark.asyncio
-async def test_parse_value_bool_round_trips():
+async def test_base_field_parse_import_value_bool_round_trips():
     field = BooleanField("active")
-    assert await field.parse_value(MagicMock(), True) is True
-    assert await field.parse_value(MagicMock(), False) is False
+    assert await field.parse_import_value(MagicMock(), True) is True
+    assert await field.parse_import_value(MagicMock(), False) is False
 
 
 @pytest.mark.asyncio
-async def test_parse_value_list_round_trips_each_item():
-    field = TagsField("tags")
-    assert await field.parse_value(MagicMock(), ["a", "b"]) == ["a", "b"]
-
-
-@pytest.mark.asyncio
-async def test_parse_value_dict_uses_json_dumps_not_repr():
-    """Regression: a dict/list serialized value must round-trip through
+async def test_base_field_parse_import_value_dict_uses_json_dumps_not_repr():
+    """Regression: a dict/list import value must round-trip through
     `json.dumps`, not Python `repr`, so `JSONField.parse_form_data`
     (which calls `json.loads`) can parse it back."""
     field = JSONField("config")
-    request = MagicMock()
-    result = await field.parse_value(request, {"a": 1, "nested": [1, 2]})
+    result = await field.parse_import_value(MagicMock(), {"a": 1, "nested": [1, 2]})
     assert result == {"a": 1, "nested": [1, 2]}
-
-
-@pytest.mark.asyncio
-async def test_parse_import_value_delegates_to_parse_value():
-    """`parse_import_value` keeps its public signature but delegates to the
-    `parse_value` round-trip primitive."""
-    from starlette_admin.importers.base import ImportContext
-
-    field = JSONField("config")
-    ctx = ImportContext(
-        fields=[field], content=b"", view=MagicMock(), request=MagicMock()
-    )
-    assert await field.parse_import_value({"a": 1}, ctx) == {"a": 1}
 
 
 # ── Numeric field parse_import_value validation ────────────────────────────────
@@ -1149,33 +1366,30 @@ async def test_parse_import_value_delegates_to_parse_value():
 @pytest.mark.asyncio
 async def test_integer_field_parse_import_value_invalid():
     field = IntegerField("count")
-    ctx = MagicMock()
     with pytest.raises(ValueError, match="Invalid integer value"):
-        await field.parse_import_value("not-a-number", ctx)
+        await field.parse_import_value(MagicMock(), "not-a-number")
 
 
 @pytest.mark.asyncio
 async def test_decimal_field_parse_import_value_invalid():
     field = DecimalField("amount")
-    ctx = MagicMock()
     with pytest.raises(ValueError, match="Invalid decimal value"):
-        await field.parse_import_value("not-a-number", ctx)
+        await field.parse_import_value(MagicMock(), "not-a-number")
 
 
 @pytest.mark.asyncio
 async def test_decimal_field_parse_import_value_valid():
     field = DecimalField("amount")
-    ctx = MagicMock()
-    result = await field.parse_import_value("3.14", ctx)
+    result = await field.parse_import_value(MagicMock(), "3.14")
     assert result == decimal.Decimal("3.14")
 
 
 @pytest.mark.asyncio
 async def test_float_field_parse_import_value_empty():
     field = FloatField("score")
-    ctx = MagicMock()
-    assert await field.parse_import_value(None, ctx) is None
-    assert await field.parse_import_value("", ctx) is None
+    request = MagicMock()
+    assert await field.parse_import_value(request, None) is None
+    assert await field.parse_import_value(request, "") is None
 
 
 # ── TagsField export and import operations ─────────────────────────────────────
@@ -1196,46 +1410,22 @@ async def test_tags_field_serialize_value_export_json_non_list():
 @pytest.mark.asyncio
 async def test_tags_field_parse_import_value_from_list():
     """TagsField parses a list of raw tag values."""
-    from starlette_admin.importers.base import ImportContext
-
     field = TagsField("tags")
-    ctx = ImportContext(
-        fields=[field],
-        content=b"",
-        view=MagicMock(),
-        request=MagicMock(),
-    )
-    assert await field.parse_import_value(["a", "b"], ctx) == ["a", "b"]
+    assert await field.parse_import_value(MagicMock(), ["a", "b"]) == ["a", "b"]
 
 
 @pytest.mark.asyncio
 async def test_tags_field_parse_import_value_from_string():
     """TagsField splits a newline-separated string into individual tag values."""
-    from starlette_admin.importers.base import ImportContext
-
     field = TagsField("tags")
-    ctx = ImportContext(
-        fields=[field],
-        content=b"",
-        view=MagicMock(),
-        request=MagicMock(),
-    )
-    assert await field.parse_import_value("a\nb\n", ctx) == ["a", "b"]
+    assert await field.parse_import_value(MagicMock(), "a\nb\n") == ["a", "b"]
 
 
 @pytest.mark.asyncio
 async def test_tags_field_parse_import_value_from_non_string():
     """TagsField coerces non-string import values into strings."""
-    from starlette_admin.importers.base import ImportContext
-
     field = TagsField("tags")
-    ctx = ImportContext(
-        fields=[field],
-        content=b"",
-        view=MagicMock(),
-        request=MagicMock(),
-    )
-    assert await field.parse_import_value(123, ctx) == []
+    assert await field.parse_import_value(MagicMock(), 123) == []
 
 
 # ── FileField upload validation / import exclusion ─────────────────────────────
@@ -1280,38 +1470,26 @@ async def test_image_field_rejects_invalid_image():
 
 @pytest.mark.asyncio
 async def test_integer_field_parse_import_value_none():
-    from starlette_admin.importers.base import ImportContext
-
     field = IntegerField("count")
-    ctx = ImportContext(fields=[], content=b"", view=MagicMock(), request=MagicMock())
-    assert await field.parse_import_value(None, ctx) is None
+    assert await field.parse_import_value(MagicMock(), None) is None
 
 
 @pytest.mark.asyncio
 async def test_integer_field_parse_import_value_empty_string():
-    from starlette_admin.importers.base import ImportContext
-
     field = IntegerField("count")
-    ctx = ImportContext(fields=[], content=b"", view=MagicMock(), request=MagicMock())
-    assert await field.parse_import_value("", ctx) is None
+    assert await field.parse_import_value(MagicMock(), "") is None
 
 
 @pytest.mark.asyncio
 async def test_decimal_field_parse_import_value_none():
-    from starlette_admin.importers.base import ImportContext
-
     field = DecimalField("price")
-    ctx = ImportContext(fields=[], content=b"", view=MagicMock(), request=MagicMock())
-    assert await field.parse_import_value(None, ctx) is None
+    assert await field.parse_import_value(MagicMock(), None) is None
 
 
 @pytest.mark.asyncio
 async def test_decimal_field_parse_import_value_empty_string():
-    from starlette_admin.importers.base import ImportContext
-
     field = DecimalField("price")
-    ctx = ImportContext(fields=[], content=b"", view=MagicMock(), request=MagicMock())
-    assert await field.parse_import_value("", ctx) is None
+    assert await field.parse_import_value(MagicMock(), "") is None
 
 
 # ── TagsField parse_import_value non-iterable fallback ─────────────────────────
@@ -1319,12 +1497,8 @@ async def test_decimal_field_parse_import_value_empty_string():
 
 @pytest.mark.asyncio
 async def test_tags_field_parse_import_value_non_str_non_list():
-    from starlette_admin.importers.base import ImportContext
-
     field = TagsField("labels")
-    request = MagicMock()
-    ctx = ImportContext(fields=[], content=b"", view=MagicMock(), request=request)
-    result = await field.parse_import_value(42, ctx)
+    result = await field.parse_import_value(MagicMock(), 42)
     assert result == []
 
 
@@ -1380,19 +1554,12 @@ async def test_relation_field_serialize_export_multiple_json():
 # ── RelationField parse_import_value (all branches) ────────────────────────────
 
 
-def _make_import_ctx():
-    from starlette_admin.importers.base import ImportContext
-
-    return ImportContext(fields=[], content=b"", view=MagicMock(), request=MagicMock())
-
-
 @pytest.mark.asyncio
 async def test_relation_field_parse_import_value_multiple_str():
     from starlette_admin.fields import HasMany
 
     field = HasMany("tags", key="tag")
-    ctx = _make_import_ctx()
-    result = await field.parse_import_value("1\n2\n3", ctx)
+    result = await field.parse_import_value(MagicMock(), "1\n2\n3")
     assert result == ["1", "2", "3"]
 
 
@@ -1401,8 +1568,7 @@ async def test_relation_field_parse_import_value_multiple_list():
     from starlette_admin.fields import HasMany
 
     field = HasMany("tags", key="tag")
-    ctx = _make_import_ctx()
-    result = await field.parse_import_value([10, 20, None], ctx)
+    result = await field.parse_import_value(MagicMock(), [10, 20, None])
     assert result == ["10", "20"]
 
 
@@ -1411,8 +1577,7 @@ async def test_relation_field_parse_import_value_multiple_none():
     from starlette_admin.fields import HasMany
 
     field = HasMany("tags", key="tag")
-    ctx = _make_import_ctx()
-    result = await field.parse_import_value(None, ctx)
+    result = await field.parse_import_value(MagicMock(), None)
     assert result == []
 
 
@@ -1421,8 +1586,7 @@ async def test_relation_field_parse_import_value_multiple_other():
     from starlette_admin.fields import HasMany
 
     field = HasMany("tags", key="tag")
-    ctx = _make_import_ctx()
-    result = await field.parse_import_value(99, ctx)
+    result = await field.parse_import_value(MagicMock(), 99)
     assert result == ["99"]
 
 
@@ -1431,8 +1595,7 @@ async def test_relation_field_parse_import_value_single_none():
     from starlette_admin.fields import HasOne
 
     field = HasOne("author", key="user")
-    ctx = _make_import_ctx()
-    result = await field.parse_import_value(None, ctx)
+    result = await field.parse_import_value(MagicMock(), None)
     assert result is None
 
 
@@ -1441,8 +1604,7 @@ async def test_relation_field_parse_import_value_single_empty():
     from starlette_admin.fields import HasOne
 
     field = HasOne("author", key="user")
-    ctx = _make_import_ctx()
-    result = await field.parse_import_value("", ctx)
+    result = await field.parse_import_value(MagicMock(), "")
     assert result is None
 
 
@@ -1451,8 +1613,7 @@ async def test_relation_field_parse_import_value_single_value():
     from starlette_admin.fields import HasOne
 
     field = HasOne("author", key="user")
-    ctx = _make_import_ctx()
-    result = await field.parse_import_value("42", ctx)
+    result = await field.parse_import_value(MagicMock(), "42")
     assert result == "42"
 
 
@@ -1499,8 +1660,12 @@ async def test_collection_field_serialize_value_missing_subfield():
 
 
 class _FullName(ComputedField):
-    def compute(self, obj) -> str:
+    async def parse_obj(self, request, obj) -> str:
         return f"{obj.first_name} {obj.last_name}"
+
+
+def test_computed_field_is_string_field():
+    assert issubclass(ComputedField, StringField)
 
 
 def test_computed_field_defaults():
@@ -1527,9 +1692,9 @@ async def test_computed_field_parse_form_data_returns_none():
 
 
 @pytest.mark.asyncio
-async def test_computed_field_serialize_value_none():
+async def test_computed_field_serialize_none_value():
     field = _FullName("full_name")
-    result = await field.serialize_value(MagicMock(), None)
+    result = await field.serialize_none_value(MagicMock())
     assert result is None
 
 
@@ -1540,22 +1705,24 @@ async def test_computed_field_serialize_value_str():
     assert result == "Ada Lovelace"
 
 
-def test_computed_field_compute_not_implemented():
-    field = ComputedField("computed")
-    with pytest.raises(NotImplementedError):
-        field.compute(object())
-
-
-def test_computed_field_fn_lambda():
+@pytest.mark.asyncio
+async def test_computed_field_getter():
     obj = MagicMock(first_name="Ada", last_name="Lovelace")
-    field = ComputedField("full_name", fn=lambda o: f"{o.first_name} {o.last_name}")
-    assert field.compute(obj) == "Ada Lovelace"
+    field = ComputedField(
+        "full_name", getter=lambda request, obj: f"{obj.first_name} {obj.last_name}"
+    )
+    result = await field.parse_obj(MagicMock(), obj)
+    assert result == "Ada Lovelace"
 
 
 @pytest.mark.asyncio
-async def test_computed_field_fn_parse_obj():
+async def test_computed_field_getter_async():
     obj = MagicMock(first_name="Ada", last_name="Lovelace")
-    field = ComputedField("full_name", fn=lambda o: f"{o.first_name} {o.last_name}")
+
+    async def getter(request, obj):
+        return f"{obj.first_name} {obj.last_name}"
+
+    field = ComputedField("full_name", getter=getter)
     result = await field.parse_obj(MagicMock(), obj)
     assert result == "Ada Lovelace"
 
@@ -1600,7 +1767,7 @@ async def test_slug_field_parse_form_data():
 async def test_integer_field_parse_import_value_valid():
     """The `parse_import_value` method returns an integer and executes the debug log branch."""
     field = IntegerField("count")
-    result = await field.parse_import_value("42", MagicMock())
+    result = await field.parse_import_value(MagicMock(), "42")
     assert result == 42
 
 

@@ -77,6 +77,7 @@ from starlette_admin.helpers import (
 )
 from starlette_admin.helpers import (
     list_url,
+    maybe_async,
     not_none,
 )
 from starlette_admin.helpers import (
@@ -1835,6 +1836,9 @@ class BaseModelView(BaseView):
             field: The Starlette Admin field associated with this attribute.
             request: The request being processed.
         """
+        formatter = (field.formatter or {}).get(request.state.action)
+        if formatter is not None:
+            return await maybe_async(formatter(request, value))
         if value is None:
             return await field.serialize_none_value(request)
         return await field.serialize_value(request, value)

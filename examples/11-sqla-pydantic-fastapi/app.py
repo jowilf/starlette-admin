@@ -102,7 +102,7 @@ class PostView(ModelView):
         ComputedField(
             "word_count",
             label="Word Count",
-            fn=lambda post: len((post.content or "").split()),
+            getter=lambda request, post: len((post.content or "").split()),
         ),
         "content",
         "user",

@@ -128,7 +128,7 @@ class PostView(ModelView):
         ComputedField(
             "word_count",
             label="Word Count",
-            fn=lambda post: len((post.content or "").split()),
+            getter=lambda request, post: len((post.content or "").split()),
         ),
         TextAreaField(
             "content", required=True, validators=[validators.length(min=10, max=600)]

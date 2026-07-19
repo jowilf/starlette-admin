@@ -60,6 +60,10 @@ The remainder of this guide explains how to override methods when a field requir
 
 `StatusBadgeField` does not require these overrides because `EnumField` already parses the submitted value against `choices` and reads the raw string from `obj.status`. The badge acts purely as a presentation layer on top of that string. You should override these three methods when the value itself must be computed or reshaped instead of just being re-rendered.
 
+!!! tip "Hooks vs. Subclassing"
+    For a one-off customization on a single field, you rarely need a subclass. Instead, you can pass the [`getter`, `formatter`, and `parser` hooks](../user-guide/fields.md#computing-formatting-and-parsing-values) directly as constructor arguments to handle reading, display formatting, and input parsing.
+    **When to subclass:** Create a subclass only if you need to reuse the logic across multiple views or modify the rendering templates.
+
 `parse_form_data` receives the raw `FormData` (from `starlette.datastructures`) from the request and returns the data that `view.create()` or `view.edit()` should receive for this field. The default implementation reads `form_data.get(self.id)` and returns it unchanged. Most fields only need to add type coercion:
 
 ```python

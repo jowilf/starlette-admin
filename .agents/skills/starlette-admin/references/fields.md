@@ -5,11 +5,14 @@ Fields are plain Python dataclasses; every constructor argument is a dataclass f
 ## Attribute notes
 
 - `default` accepts a static value, a zero-argument callable, or a request-aware callable: `StringField("locale", default=lambda request: request.state.admin_user.locale)`.
+- `getter` is a sync or async `(request, obj) -> value` callable that overrides `parse_obj`'s default `getattr(obj, self.name, None)` lookup, on any field, with no subclassing needed.
+- `formatter` is a `dict[RequestAction, (request, value) -> value]` (sync or async callables). When the current action has an entry, its callable replaces `serialize_value`/`serialize_none_value` entirely; its return value (`None` included) is used as the final output as-is.
+- `parser` is a `dict[RequestAction, (request, raw) -> value]` (sync or async callables). When the current action has an entry, its callable replaces the field's default parsing entirely: `raw` is the submitted form value (a list when `multiple`) for CREATE/EDIT/INLINE_EDIT, or the unprocessed cell value for IMPORT. The result still goes through `required`/`validators`.
 - `extra` is a free `dict` the framework never reads or writes; attach integration metadata without subclassing.
 - Visibility flags per field: `exclude_from_list`, `exclude_from_detail`, `exclude_from_create`, `exclude_from_edit`, `exclude_from_export`, `exclude_from_import` (all default `False`). The view-level `exclude_fields_from_*` lists do the same by name.
 - `FloatField` renders a plain text input coerced to float; it does not support `min`/`max`/`step` (use `IntegerField` or `DecimalField` for those).
 - `SlugField(populate_from=...)` auto-fills client-side from another field on the same form; manual edits stop the auto-fill. `populate_from` is required.
-- `ComputedField` is virtual and read-only: pass `fn=lambda obj: ...` or subclass and override `compute(obj)`. Automatically excluded from create forms, non-editable, non-searchable, non-orderable.
+- `ComputedField` is virtual and read-only: pass `getter=lambda request, obj: ...` or subclass and override `parse_obj(request, obj)`. Automatically excluded from create forms, non-editable, non-searchable, non-orderable.
 - `EnumField(multiple=True)` renders a select2 multi-select and stores a list. `TimeZoneField`, `CountryField`, `CurrencyField` are `EnumField` subclasses backed by Babel data (i18n extra).
 - `JSONField` renders a tree/code editor storing a `dict`; pass a JSON Schema to `validation_schema` for client-side feedback.
 - `DateTimeField(output_format=...)` accepts Babel formats (`"short"`, `"medium"`, `"long"`, `"full"`, or custom) and converts timezones automatically when timezone support is enabled.
@@ -93,6 +96,8 @@ Point `Admin(templates_dir="templates/")` at the directory. Extending `EnumField
 | `serialize_value(request, value)` | Formatting for list, detail, API, export | passthrough |
 
 Override them when the value must be computed or reshaped, not just re-rendered. Branch on `request.state.action` (a `RequestAction`) when the shape differs per context. Whatever `serialize_value` returns for `RequestAction.LIST` and `RequestAction.RELATION_LOOKUP` goes straight into a JSON response, so it must be JSON-serializable.
+
+For the common cases, `getter=`, `formatter=`, and `parser=` (see Attribute notes above) cover computing, reshaping, and parsing a value without a subclass at all.
 
 ### Template attributes
 

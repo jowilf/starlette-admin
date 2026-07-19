@@ -1102,8 +1102,8 @@ class BaseAdmin:
             if matched_field is None:
                 unknown_headers.append(header)
                 continue
-            data[matched_field.name] = await matched_field.parse_import_value(
-                value, ctx
+            data[matched_field.name] = await matched_field.parse_input(
+                ctx.request, value
             )
         if unknown_headers:
             _log.debug("import row: ignored unknown headers: %s", unknown_headers)
@@ -1804,7 +1804,7 @@ class BaseAdmin:
         for field in view.get_fields_list(request):
             if field.read_only:
                 continue
-            data[field.name] = await field.parse_form_data(request, form_data)
+            data[field.name] = await field.parse_input(request, form_data)
         return data
 
     async def _create_default_obj(
@@ -1882,7 +1882,7 @@ class BaseAdmin:
                 field.id = f"{row_prefix}{field.name}"
                 if isinstance(field, CollectionField):
                     field._propagate_id()
-                data[field.name] = await field.parse_form_data(request, form_data)
+                data[field.name] = await field.parse_input(request, form_data)
                 if validate:
                     await field.validate(request, data[field.name])
             except Exception as exc:

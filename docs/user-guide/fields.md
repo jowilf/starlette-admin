@@ -16,6 +16,9 @@ All field types inherit a standard set of configuration attributes from `BaseFie
 | `disabled` | `bool` | `False` | Greys out and locks the input in forms. |
 | `read_only` | `bool` | `False` | Displays the field but prevents edits. |
 | `default` | `Any | Callable` | `None` | The prefill value on the create form. |
+| `getter` | `Callable | None` | `None` | Replaces the model attribute lookup when reading the value. See [Computing, Formatting, and Parsing Values](#computing-formatting-and-parsing-values). |
+| `formatter` | `dict[RequestAction, Callable] | None` | `None` | Per-action display formatting, replacing serialization for that action. See [Computing, Formatting, and Parsing Values](#computing-formatting-and-parsing-values). |
+| `parser` | `dict[RequestAction, Callable] | None` | `None` | Per-action input parsing, replacing the field's default parsing. See [Computing, Formatting, and Parsing Values](#computing-formatting-and-parsing-values). |
 | `searchable` | `bool` | `True` | Included when the `q` search parameter matches. |
 | `orderable` | `bool` | `True` | Enables a sort link in the list header. |
 | `copy_to_clipboard` | `bool` | `False` | Adds a copy button next to the value on the detail page. |
@@ -48,6 +51,74 @@ StringField(
 )  # Request-aware
 ```
 
+### Computing, Formatting, and Parsing Values
+
+Every field accepts three callable hooks (`getter`, `formatter`, and `parser`) to intercept and transform data as it flows between your model and the UI. These hooks accept both synchronous and asynchronous functions.
+
+#### `getter`: Reading Custom Values
+
+The `getter` hook replaces the default `getattr()` lookup when reading a model instance. The field calls `getter(request, obj)` and displays the return value.
+
+```python
+from starlette_admin import StringField
+
+# Displays a related author's email instead of a direct column value
+StringField("author_email", getter=lambda request, obj: obj.author.email)
+```
+
+Because `getter` values rarely map to physical database columns, they pair best with a read-only display. The [`ComputedField`](#computedfield) is a built-in shortcut for this exact combination.
+
+#### `formatter`: Transforming Display Output
+
+The `formatter` hook dictates how a stored value renders on specific pages. It maps a `RequestAction` (`LIST`, `DETAIL`, `EXPORT`, etc.) to a `(request, value) -> value` callable.
+
+```python
+from starlette_admin import RequestAction, StringField
+
+StringField(
+    "api_key",
+    formatter={
+        # Mask the key on list views; show the full key on detail/export views
+        RequestAction.LIST: lambda request, value: (
+            f"{value[:4]}..." if value else "unset"
+        ),
+    },
+)
+```
+
+**Formatting behavior to note:**
+
+* **Handles nulls:** Unlike default serialization, formatters receive `None` values, allowing you to provide fallback text (like `"unset"` in the example above).
+* **Bypasses serialization:** A matched formatter completely replaces the field's default `serialize_value` and `serialize_none_value` methods. The return value is used exactly as-is, making the formatter fully responsible for producing the final displayable output.
+* **JSON requirement:** Values returned for `LIST` and `RELATION_LOOKUP` actions must remain JSON serializable.
+
+#### `parser`: Processing Incoming Data
+
+The `parser` hook overrides the field's default logic for parsing submitted or imported data. It maps a `RequestAction` to a `(request, raw) -> value` callable.
+
+* **Forms (`CREATE`, `EDIT`, `INLINE_EDIT`):** `raw` is the submitted form input (a list if `multiple=True`).
+* **Imports (`IMPORT`):** `raw` is the unprocessed cell value from the file.
+
+```python
+from starlette_admin import IntegerField, RequestAction
+
+IntegerField(
+    "price",
+    parser={
+        # Strip currency symbols during import and convert to integer cents
+        RequestAction.IMPORT: lambda request, raw: int(
+            float(str(raw).strip("$")) * 100
+        ),
+    },
+)
+```
+
+After parsing, the returned value proceeds through the standard validation chain (`required`, then `validators`) exactly as if the field had parsed the data itself.
+
+!!! tip "Hooks vs. Subclassing"
+    For a one-off customization on a single field, you rarely need a subclass. Instead, pass these hooks directly as constructor arguments to handle reading, display formatting, and input parsing.
+    **When to subclass:** [Subclass the field](../advanced/custom-fields.md) only if you need to reuse the logic across multiple views or if you need to modify the HTML rendering templates.
+
 ### Validation
 
 Server-side validation occurs for every field when a create or edit form is submitted, ensuring data integrity before any database interaction. The validation lifecycle follows a strict sequence:
@@ -67,7 +138,6 @@ from starlette_admin.validators import length, number_range
 
 StringField("title", validators=[length(min=3, max=100)])
 IntegerField("price", validators=[number_range(min=0)])
-
 ```
 
 **Custom and Asynchronous Validation**
@@ -79,14 +149,14 @@ async def unique_slug(request, field, value):
     if await slug_exists(request.state.session, value):
         raise ValueError("This slug is already taken")
 
-StringField("slug", validators=[unique_slug])
 
+StringField("slug", validators=[unique_slug])
 ```
 
 **Context-Specific Validation Rules**
 
 * **Relation Fields:** Fields such as `HasOne` and `HasMany` receive the primary keys of the related records during validation.
-* **File Fields:** Validation runs independently for every `UploadFile` provided in the upload payload. See [File & Media Fields](%23file-media-fields) for more details.
+* **File Fields:** Validation runs independently for every `UploadFile` provided in the upload payload. See [File & Media Fields](#file-media-fields) for more details.
 * **Cross-Field Validation:** For rules that depend on the combined state of multiple fields, do not use field-level validators. Instead, override the `validate()` method on your view. This view-level validation executes in the backend only after every individual field has successfully cleared its own validation chain.
 
 ### Storing Custom Metadata
@@ -162,7 +232,6 @@ Renders an `<input type="password">` element on forms to obscure user input.
     `PasswordField` only masks the input on create/edit forms. It does not override the display templates, meaning values render as **plain text** in lists and detail pages. It also logs raw submitted values at the `DEBUG` level.
     > **Best Practice:** Set `exclude_from_list = True` and `exclude_from_detail = True` on password fields, and disable `DEBUG` logging in production.
 
-
 ## Numeric Fields
 
 Numeric fields handle integers, floats, and decimals.
@@ -187,7 +256,6 @@ class ProductView(ModelView):
 
 !!! note
     `FloatField` operates uniquely. It renders as a plain text input coerced to a `float` upon submission and does not support `min`, `max`, or `step`.
-
 
 ## Date & Time Fields
 
@@ -217,7 +285,6 @@ class EventView(ModelView):
 ### ArrowField
 
 A variant of `DateTimeField` backed by an `Arrow` object. It displays as a humanized relative time (e.g., "3 hours ago") outside of edit forms. Requires the `arrow` package.
-
 
 ## Selection & Collection Fields
 
@@ -289,7 +356,6 @@ fields = [
 ]
 ```
 
-
 ## Specialized Fields
 
 ### JSONField
@@ -314,7 +380,7 @@ fields = [
 
 ### ComputedField
 
-A read-only, virtual field derived dynamically from the model instance at display time. It requires no underlying database column.
+A read-only, virtual field derived dynamically from the model instance at display time. It requires no underlying database column. It builds on the [`getter` hook](#computing-formatting-and-parsing-values) available on every field, adding the defaults a virtual column needs: excluded from create forms, read-only, non-searchable, and non-orderable.
 
 ```python
 from starlette_admin import ComputedField
@@ -322,21 +388,23 @@ from starlette_admin import ComputedField
 fields = [
     "first_name",
     "last_name",
-    ComputedField("full_name", fn=lambda obj: f"{obj.first_name} {obj.last_name}"),
+    ComputedField(
+        "full_name", getter=lambda request, obj: f"{obj.first_name} {obj.last_name}"
+    ),
 ]
 ```
 
-For complex or reusable logic, you can subclass `ComputedField` and override the `compute()` method instead of passing an inline `fn`:
+For complex or reusable logic, you can subclass `ComputedField` and override `parse_obj()` instead of passing an inline `getter`:
 
 ```python
 class FullNameField(ComputedField):
-    def compute(self, obj) -> str:
+    async def parse_obj(self, request, obj) -> str:
         return f"{obj.first_name} {obj.last_name}"
 ```
 
-`fn` and `compute` accomplish the same task: use `fn` for brief expressions, or subclass `ComputedField` when the logic spans multiple lines or is reused across views. Computed fields are automatically excluded from create forms and are permanently set to be non-editable, non-searchable, and non-orderable.
+`getter` and `parse_obj` accomplish the same task: use `getter` for brief expressions, or subclass `ComputedField` when the logic spans multiple lines or is reused across views. On edit forms the field still appears as a plain-text display, so the user sees the current computed value.
 
-Here is the updated documentation markdown with the em dashes removed and the sentences adjusted for clarity and flow:
+Any subclass of `ComputedField` keeps `StringField` rendering. To compute a value that should render as another type (a date, a badge, an image), set `getter=` on that field type directly along with the relevant `read_only` and `exclude_from_*` flags.
 
 ## File & Media Fields
 
@@ -447,7 +515,6 @@ class AuthorView(ModelView):
 
 See [examples/13-sqlachemy-file](https://github.com/jowilf/starlette-admin/tree/main/examples/13-sqlachemy-file) for a full app with multiple storages, content-type validation, and `multiple=True` fields.
 
-
 ### HasOne & HasMany
 
 Relational fields that render as `select2` inputs, seamlessly backed by the related view's search endpoint.
@@ -479,7 +546,6 @@ The `key` parameter links to the corresponding `ModelView`. Both views must be r
 
 ### What's Next
 
-- [Filters](filters.md): Learn how to customize the filter builder on your list pages.
-- [File Storage](file-storage.md): Configure storage backends for `FileField` and `ImageField`.
-- [Custom Fields](../advanced/custom-fields.md): build a custom field
-
+* [Filters](filters.md): Learn how to customize the filter builder on your list pages.
+* [File Storage](file-storage.md): Configure storage backends for `FileField` and `ImageField`.
+* [Custom Fields](../advanced/custom-fields.md): build a custom field

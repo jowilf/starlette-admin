@@ -60,15 +60,16 @@ There are two key structural differences to notice here:
 | Django Admin | starlette-admin | Notes |
 | --- | --- | --- |
 | `list_display` | `fields` minus [`exclude_fields_from_list`](../user-guide/views.md#field-selection-customization) | A single field list drives every page. |
-| `list_display` with a callable | [`ComputedField`](../user-guide/fields.md#computedfield) | Example: `ComputedField("full_name", fn=lambda obj: ...)` |
+| `list_display` with a callable or `@admin.display` | [`ComputedField`](../user-guide/fields.md#computedfield), or `getter=` on any field | Example: `ComputedField("full_name", getter=lambda request, obj: ...)`. Use `getter=` on a typed field (date, image, ...) to keep that type's rendering. |
+| Reformatting a real column for display | [`formatter=`](../user-guide/fields.md#computing-formatting-and-parsing-values) on the field | A `dict[RequestAction, callable]`, so list, detail, and export can format differently. Django needs a callable plus `admin_order_field` to keep sorting; here the column stays sortable. |
 | `search_fields` | [`searchable_fields`](../user-guide/views.md#search-sort) | Powers both full-text search and the filter builder. |
 | `list_filter` | `searchable_fields` combined with per-field `filters=` | Users get a visual builder with nested `AND`/`OR` groups instead of a fixed sidebar. See [Filters](../user-guide/filters.md). |
 | `ordering` | [`fields_default_sort`](../user-guide/views.md#search-sort) | Example: `fields_default_sort = [("created_at", True)]` for descending order. |
 | `admin_order_field` / sortability | [`sortable_fields`](../user-guide/views.md#search-sort) | Defaults to all fields being sortable. |
 | `list_editable` | [`inline_editable_fields`](../user-guide/inline-edit.md) | Allows clicking a cell to edit in place. |
-| `list_per_page` | [`page_size`, `page_size_options](../user-guide/views.md#pagination-ui-controls)` | Controls pagination limits. |
+| `list_per_page` | [`page_size`, `page_size_options`](../user-guide/views.md#pagination-ui-controls) | Controls pagination limits. |
 | `date_hierarchy` | Date filters (`between`, `in the past`, etc.) | There is no dedicated drill-down bar; the filter builder covers this use case. |
-| `empty_value_display` | Field-level rendering | Override [`serialize_value`](../advanced/custom-fields.md) or use a `ComputedField`. |
+| `empty_value_display` | A `formatter=` entry, or `null_template` | Formatters receive `None` values, so they can substitute a placeholder; `null_template` swaps the rendered markup instead. |
 
 ## Forms
 
@@ -78,10 +79,11 @@ There are two key structural differences to notice here:
 | `fieldsets` | [`form_layout`](../advanced/form-layout.md) | Compose freely with `FieldsetWidget`, `TabsWidget`, `GridWidget`, and `RowWidget`. |
 | `readonly_fields` | `read_only=True` on the field | Alternatively, exclude the field from the create/edit views. |
 | `prepopulated_fields` | [`SlugField("slug", populate_from="title")`](../user-guide/fields.md#slugfield) | Provides the same live slugification behavior. |
-| `autocomplete_fields`, `raw_id_fields` | Default behavior of [`HasOne` / `HasMany](../user-guide/fields.md#hasone-hasmany)` | Relation widgets are Select2 inputs with server-side search out of the box. |
+| `autocomplete_fields`, `raw_id_fields` | Default behavior of [`HasOne` / `HasMany`](../user-guide/fields.md#hasone-hasmany) | Relation widgets are Select2 inputs with server-side search out of the box. |
 | `filter_horizontal` / `filter_vertical` | [`HasMany`](../user-guide/fields.md#hasone-hasmany) | Rendered as a multi-select component with search capability. |
 | `formfield_overrides` | Explicit entries in the `fields` list | Replace the auto-detected field directly: `fields = ["id", TextAreaField("bio")]` |
 | Custom form validation | Field `validators=` or `FormValidationError` in hooks | See [Validators](../api/validators.md). |
+| Form field `to_python()` / custom coercion | [`parser=`](../user-guide/fields.md#computing-formatting-and-parsing-values) on the field | Replaces the field's default form or import parsing per `RequestAction`. |
 | Model form help text | `help_text=` | Available on any field definition. |
 
 ### Fieldsets Example
@@ -181,7 +183,7 @@ Foreign keys are auto-detected when unambiguous, and composite foreign keys are 
 
 Unlike Django Admin, which passes a `QuerySet`, the starlette-admin handler receives an [`ActionSelection`](../user-guide/actions.md) object. This object evaluates rows, primary keys, and active filters lazily. It also behaves consistently when a user chooses to "select all matching" records.
 
-Furthermore, actions support custom HTML forms directly in the confirmation dialog, a feature that requires building an intermediate page in Django Admin. For per-row operations, starlette-admin provides [`@row_action` and `@link_row_action](../user-guide/actions.md#row-actions)`, which have no direct equivalent in Django Admin.
+Furthermore, actions support custom HTML forms directly in the confirmation dialog, a feature that requires building an intermediate page in Django Admin. For per-row operations, starlette-admin provides [`@row_action` and `@link_row_action`](../user-guide/actions.md#row-actions), which have no direct equivalent in Django Admin.
 
 ## Permissions and Authentication
 
@@ -213,7 +215,7 @@ Because every `can_*` method receives the request object, authorization decision
 
 | Django Admin | starlette-admin | Notes |
 | --- | --- | --- |
-| `save_model(request, obj, form, change)` | [`before_create` / `before_edit](../user-guide/views.md#lifecycle-hooks)` on the view | Async-native; receives the parsed form data and the model instance. |
+| `save_model(request, obj, form, change)` | [`before_create` / `before_edit`](../user-guide/views.md#lifecycle-hooks) on the view | Async-native; receives the parsed form data and the model instance. |
 | `delete_model` | `before_delete` | Handles pre-deletion logic. |
 | `post_save` and other signals | [Events](../advanced/events.md) | Example: `admin.events.on(AdminEvent.AFTER_CREATE, handler)` broadcasts to all views. |
 | `LogEntry` change history | Build using the event system | Subscribe to `AFTER_CREATE`, `AFTER_EDIT`, and `AFTER_DELETE` to populate your own audit table. |

@@ -19,6 +19,7 @@ from starlette_admin.importers.base import ImportContext
 from starlette_admin.importers.csv import CsvImporter
 from starlette_admin.importers.excel import ExcelImporter
 from starlette_admin.importers.json import JsonImporter
+from starlette_admin.types import RequestAction
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -289,6 +290,7 @@ async def test_parse_import_row_fills_none_for_missing_field():
     field_by_header = {"Name": name_field, "name": name_field}
 
     ctx = MagicMock()
+    ctx.request.state.action = RequestAction.IMPORT
     row = {"Name": "Alice"}
     data = await admin._parse_import_row(row, fields, field_by_header, False, None, ctx)
 
@@ -313,6 +315,7 @@ async def test_parse_import_row_skip_pk_nulls_pk_in_data():
     }
 
     ctx = MagicMock()
+    ctx.request.state.action = RequestAction.IMPORT
     row = {"Id": "999", "Name": "Alice"}
     data = await admin._parse_import_row(row, fields, field_by_header, True, "id", ctx)
 

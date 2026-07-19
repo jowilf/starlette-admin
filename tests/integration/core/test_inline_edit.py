@@ -158,7 +158,7 @@ class TestInlineEditStartupValidation:
         class BadView(TinydbModelView):
             fields = [
                 IntegerField("id"),
-                ComputedField("summary", fn=lambda obj: "x"),
+                ComputedField("summary", getter=lambda request, obj: "x"),
             ]
             inline_editable_fields = ["summary"]
 

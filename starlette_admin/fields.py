@@ -21,6 +21,7 @@ from starlette_admin.helpers import (
     html_params,
     is_empty_file,
     is_empty_value,
+    maybe_async,
     not_none,
     safe_url,
     static_url,
@@ -47,7 +48,7 @@ from starlette_admin.storage.base import (
     UnknownStorageError,
     get_storage,
 )
-from starlette_admin.types import RequestAction
+from starlette_admin.types import Formatter, Getter, Parser, RequestAction
 from starlette_admin.utils.timezones import common_timezones
 from starlette_admin.validators import (
     Validator,
@@ -64,7 +65,6 @@ _log = get_logger(__name__)
 
 if TYPE_CHECKING:
     from starlette_admin.filters.base import BaseFilter
-    from starlette_admin.importers.base import ImportContext
 
 try:
     import arrow
@@ -87,6 +87,21 @@ class BaseField:
         default: The default value used to prefill the field on creation forms.
             This can be a static value or a callable that accepts zero or one
             positional argument (the current request).
+        getter: `(request, obj) -> value`, sync or async. When set, used by
+            [parse_obj][starlette_admin.fields.BaseField.parse_obj] instead of
+            `getattr(obj, self.name, None)`, so a field's value can be derived
+            without subclassing. See [ComputedField][starlette_admin.fields.ComputedField].
+        formatter: Maps a [RequestAction][starlette_admin.types.RequestAction] to a
+            `(request, value) -> value` callable, sync or async. When the current
+            action has an entry, its callable replaces `serialize_value` /
+            `serialize_none_value` entirely; its return value (including for a
+            `None` input) is used as-is.
+        parser: Maps a [RequestAction][starlette_admin.types.RequestAction] to a
+            `(request, raw) -> value` callable, sync or async. When the current
+            action has an entry, its callable replaces this field's default
+            parsing entirely, so custom form/import parsing can be attached
+            without subclassing. See
+            [parse_input][starlette_admin.fields.BaseField.parse_input].
         id: A unique identifier for the field instance.
         filters: An explicit override for the list page filters available for this
             field. If `None` (the default), the view's filter registry automatically
@@ -133,6 +148,12 @@ class BaseField:
     disabled: bool | None = False
     read_only: bool | None = False
     default: Any | None = None
+    # Excluded from equality: closures never compare equal.
+    getter: Getter | None = dc_field(default=None, compare=False)
+    formatter: dict[RequestAction, Formatter] | None = dc_field(
+        default=None, compare=False
+    )
+    parser: dict[RequestAction, Parser] | None = dc_field(default=None, compare=False)
     id: str = ""
     filters: list[builtins.type["BaseFilter"]] | None = None
     required: bool | None = False
@@ -183,6 +204,37 @@ class BaseField:
         )
         return raw
 
+    async def parse_input(self, request: Request, raw: Any) -> Any:
+        """Single entry point for turning raw input into this field's value.
+
+        Routes to [parse_import_value][starlette_admin.fields.BaseField.parse_import_value]
+        when `request.state.action` is IMPORT, otherwise to
+        [parse_form_data][starlette_admin.fields.BaseField.parse_form_data]
+        (CREATE, EDIT, INLINE_EDIT).
+
+        Checks `self.parser` first, keyed by `request.state.action`: when the
+        current action has an entry, its callable replaces the field's
+        default parsing entirely, and `raw` is passed to it unchanged.
+
+        Args:
+            raw: A `FormData` for CREATE, EDIT, and INLINE_EDIT; the raw
+                import cell value for IMPORT.
+        """
+        action = request.state.action
+        parser = (self.parser or {}).get(action)
+        if action == RequestAction.IMPORT:
+            if parser is not None:
+                return await maybe_async(parser(request, raw))
+            return await self.parse_import_value(request, raw)
+        if parser is not None:
+            source = (
+                raw.getlist(self.id)
+                if getattr(self, "multiple", False)
+                else raw.get(self.id)
+            )
+            return await maybe_async(parser(request, source))
+        return await self.parse_form_data(request, raw)
+
     async def validate(self, request: Request, value: Any) -> None:
         """Validates this field's parsed form value, raising `ValueError` on
         the first failure.
@@ -213,8 +265,9 @@ class BaseField:
     async def parse_obj(self, request: Request, obj: Any) -> Any:
         """Extracts the value of this field from a model instance.
 
-        By default, this function returns the value of the attribute with the name `self.name` from `obj`.
-        However, this function can be overridden to provide custom logic for computing the value of a field.
+        By default, this function returns the value of the attribute with the name `self.name` from `obj`,
+        or the result of `self.getter(request, obj)` when `getter` is set.
+        This function can also be overridden to provide custom logic for computing the value of a field.
 
         ??? Example
 
@@ -233,7 +286,11 @@ class BaseField:
                 fields = ["id", MyCustomField("full_name")]
             ```
         """
-        value = getattr(obj, self.name, None)
+        value = (
+            await maybe_async(self.getter(request, obj))
+            if self.getter is not None
+            else getattr(obj, self.name, None)
+        )
         _log.debug(
             "parse_obj: field=%r obj_type=%s value=%r",
             self.name,
@@ -280,7 +337,7 @@ class BaseField:
         )
         return value
 
-    async def parse_import_value(self, value: Any, ctx: "ImportContext") -> Any:
+    async def parse_import_value(self, request: Request, value: Any) -> Any:
         """Parse a raw cell value from an import row into the value that
         ``view.create()`` expects for this field.
 
@@ -290,40 +347,25 @@ class BaseField:
         *value* is a list (e.g. a multi-value column from JSON), each item is
         added as a separate form entry under ``self.id`` so that
         :meth:`~starlette.datastructures.FormData.getlist` returns the full
-        sequence.
+        sequence. Values are stringified through :func:`to_form_entry` so
+        non-string primitives round-trip: a `date` is already an ISO string, a
+        `bool` becomes `"true"`/`"false"`, and a `dict`/`list` becomes
+        `json.dumps(...)` rather than Python `repr`, matching what
+        `JSONField.parse_form_data` feeds to `json.loads`.
 
         Override this method for fields whose import logic cannot be expressed
         as a simple :class:`FormData` round-trip.
 
         Args:
+            request: The request being processed.
             value: Raw value (string, number, bool, list, …) read from the
                 import file for this field's column.
-            ctx: The active :class:`~starlette_admin.importers.base.ImportContext`,
-                giving access to the originating ``ctx.request``.
 
         Returns:
             The value to store in the ``data`` dict passed to ``view.create()``.
         """
-        return await self.parse_value(ctx.request, value)
-
-    async def parse_value(self, request: Request, value: Any) -> Any:
-        """Re-parse a serialized value through `parse_form_data`.
-
-        Turns a value produced by `serialize_value` (or an import cell value)
-        back into the value `parse_form_data` would have produced from a real
-        form submission. A list is added as multiple form entries, one per
-        item, so `getlist`-based fields (HasMany, TagsField, multiple
-        FileField) keep their sequence. `None` yields an empty `FormData`,
-        which every field's `parse_form_data` reads as the empty/missing case.
-
-        Values are stringified through `to_form_entry` so non-string
-        primitives round-trip: a `date` is already an ISO string, a `bool`
-        becomes `"true"`/`"false"`, and a `dict`/`list` becomes
-        `json.dumps(...)` rather than Python `repr`, matching what
-        `JSONField.parse_form_data` feeds to `json.loads`.
-        """
         _log.debug(
-            "parse_value: field=%r raw_type=%s raw=%r",
+            "parse_import_value: field=%r raw_type=%s raw=%r",
             self.name,
             type(value).__name__,
             value,
@@ -336,7 +378,7 @@ class BaseField:
             form_data = FormData([(self.id, to_form_entry(value))])
         result = await self.parse_form_data(request, form_data)
         _log.debug(
-            "parse_value: field=%r result=%r",
+            "parse_import_value: field=%r result=%r",
             self.name,
             result,
         )
@@ -621,7 +663,7 @@ class IntegerField(NumberField):
             )
             return None
 
-    async def parse_import_value(self, value: Any, ctx: "ImportContext") -> int | None:
+    async def parse_import_value(self, request: Request, value: Any) -> int | None:
         if value is None or value == "":
             _log.debug(
                 "IntegerField.parse_import_value: field=%r empty value; returning None",
@@ -691,7 +733,7 @@ class DecimalField(NumberField):
             return None
 
     async def parse_import_value(
-        self, value: Any, ctx: "ImportContext"
+        self, request: Request, value: Any
     ) -> decimal.Decimal | None:
         if value is None or value == "":
             _log.debug(
@@ -760,9 +802,7 @@ class FloatField(StringField):
             )
             return None
 
-    async def parse_import_value(
-        self, value: Any, ctx: "ImportContext"
-    ) -> float | None:
+    async def parse_import_value(self, request: Request, value: Any) -> float | None:
         if value is None or value == "":
             _log.debug(
                 "FloatField.parse_import_value: field=%r empty value; returning None",
@@ -847,7 +887,7 @@ class TagsField(BaseField):
             return str(value) if value is not None else ""
         return value
 
-    async def parse_import_value(self, value: Any, ctx: "ImportContext") -> list[str]:
+    async def parse_import_value(self, request: Request, value: Any) -> list[str]:
         _log.debug(
             "TagsField.parse_import_value: field=%r raw_type=%s raw=%r",
             self.name,
@@ -866,7 +906,7 @@ class TagsField(BaseField):
             len(items),
         )
         form_data = FormData([(self.id, item) for item in items])
-        return await self.parse_form_data(ctx.request, form_data)
+        return await self.parse_form_data(request, form_data)
 
     def additional_css_links(self, request: Request) -> list[str]:
         if self._needs_form_assets(request):
@@ -2136,7 +2176,7 @@ class RelationField(BaseField):
         )
         return result
 
-    async def parse_import_value(self, value: Any, ctx: "ImportContext") -> Any:
+    async def parse_import_value(self, request: Request, value: Any) -> Any:
         _log.debug(
             "RelationField.parse_import_value: field=%r multiple=%r raw_type=%s raw=%r",
             self.name,
@@ -2168,7 +2208,7 @@ class RelationField(BaseField):
                 form_data = FormData([])
             else:
                 form_data = FormData([(self.id, str(value))])
-        return await self.parse_form_data(ctx.request, form_data)
+        return await self.parse_form_data(request, form_data)
 
     def additional_css_links(self, request: Request) -> list[str]:
         if self._needs_form_assets(request):
@@ -2422,7 +2462,7 @@ class ListField(BaseField):
             return result
         return serialized_value
 
-    async def parse_import_value(self, value: Any, ctx: "ImportContext") -> list[Any]:
+    async def parse_import_value(self, request: Request, value: Any) -> list[Any]:
         _log.debug(
             "ListField.parse_import_value: field=%r raw_type=%s raw=%r",
             self.name,
@@ -2442,7 +2482,7 @@ class ListField(BaseField):
         )
         result = []
         for item in raw_items:
-            result.append(await self.field.parse_import_value(item, ctx))
+            result.append(await self.field.parse_import_value(request, item))
         return result
 
     def _extra_indices(self, form_data: FormData) -> list[int]:
@@ -2478,22 +2518,22 @@ class ListField(BaseField):
 
 
 @dataclass
-class ComputedField(BaseField):
+class ComputedField(StringField):
     """
     A read-only virtual field whose value is derived from the model object at
     display time.  No database column is required.
 
-    Pass a callable via ``fn`` for inline use:
+    Pass a ``getter`` for inline use:
 
     ```python
-    ComputedField("full_name", fn=lambda obj: f"{obj.first_name} {obj.last_name}")
+    ComputedField("full_name", getter=lambda request, obj: f"{obj.first_name} {obj.last_name}")
     ```
 
-    Or subclass and override :meth:`compute` for reusable fields:
+    Or subclass and override :meth:`parse_obj` for reusable fields:
 
     ```python
     class FullNameField(ComputedField):
-        def compute(self, obj) -> str:
+        async def parse_obj(self, request: Request, obj: Any) -> str:
             return f"{obj.first_name} {obj.last_name}"
     ```
 
@@ -2507,23 +2547,9 @@ class ComputedField(BaseField):
     orderable: bool = False
     exclude_from_create: bool = True
     form_template: str = "fields/form/computed.html"
-    fn: Callable[[Any], Any] | None = None
-
-    def compute(self, obj: Any) -> Any:
-        if self.fn is not None:
-            return self.fn(obj)
-        raise NotImplementedError()  # pragma: no cover
-
-    async def parse_obj(self, request: Request, obj: Any) -> Any:
-        return self.compute(obj)
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         return None
-
-    async def serialize_value(self, request: Request, value: Any) -> Any:
-        if value is None:
-            return None
-        return str(value)
 
 
 @dataclass

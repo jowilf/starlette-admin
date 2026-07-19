@@ -330,6 +330,15 @@ def wrap_endpoint_with_kwargs(
     return wrapper
 
 
+async def maybe_async(value: Any) -> Any:
+    """Await `value` if it is awaitable, otherwise return it unchanged.
+
+    Lets a call site accept a sync-or-async callable's result without an
+    `inspect.isawaitable` check of its own.
+    """
+    return await value if inspect.isawaitable(value) else value
+
+
 def on_commit(request: Request, callback: Callable[[], Any]) -> None:
     """Register a callback to run after the request's transaction is committed.
 
@@ -362,9 +371,7 @@ async def run_on_commit_callbacks(request: Request) -> None:
     logged and skipped rather than raised.
     """
     for callback in getattr(request.state, "on_commit_callbacks", []):
-        result = callback()
-        if inspect.isawaitable(result):
-            await result
+        await maybe_async(callback())
         _log.debug(
             "on_commit callback %r completed for %s %s",
             callback,

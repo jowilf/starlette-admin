@@ -145,11 +145,11 @@ Registration accepts naming overrides: `admin.add_view(PostView(Post, key="blog-
 | Choices | `EnumField(enum= / choices= / choices_loader=, multiple=)`, `TimeZoneField`, `CountryField`, `CurrencyField` (i18n extra) |
 | Collections | `TagsField` (free strings), `ListField(inner_field)`, `CollectionField(fields=[...])` (nested object) |
 | JSON | `JSONField(validation_schema=...)` |
-| Derived read-only | `ComputedField(fn=...)` or subclass with `compute()` |
+| Derived read-only | `ComputedField(getter=...)` or subclass and override `parse_obj()` |
 | Files | `FileField`, `ImageField` (both take `storage=`, `upload_folder=`, `accept=`, `max_size=`, `multiple=`, `validators=`) |
 | Relations | `HasOne`, `HasMany` (auto-detected from ORM relationships) |
 
-Common attributes on every field: `label`, `help_text`, `required`, `disabled`, `read_only`, `default` (static, zero-arg callable, or `(request) -> value`), `validators`, `searchable`, `orderable`, `filters`, `exclude_from_*` flags, and `extra` (free metadata dict the framework never touches).
+Common attributes on every field: `label`, `help_text`, `required`, `disabled`, `read_only`, `default` (static, zero-arg callable, or `(request) -> value`), `getter` (`(request, obj) -> value`, overrides the default `getattr` lookup in `parse_obj`), `formatter` (`dict[RequestAction, (request, value) -> value]`, replaces `serialize_value`/`serialize_none_value` per action; its return value is used as-is), `parser` (`dict[RequestAction, (request, raw) -> value]`, replaces the field's default form/import parsing per action), `validators`, `searchable`, `orderable`, `filters`, `exclude_from_*` flags, and `extra` (free metadata dict the framework never touches).
 
 Server-side validation: pass `validators=[...]` on any field. A validator is a sync or async callable `(request, field, value)` that raises `ValueError` to reject the value. Built-in factories live in `starlette_admin.validators`: `length`, `number_range`, `regexp`, `email`, `url`, `uuid`, `ip_address`, `any_of`, `none_of`, `file_size`, `file_type`, `valid_image`. Empty values are only checked against `required`; cross-field rules go in the view's `validate()` override. Details in [references/fields.md](references/fields.md).
 
