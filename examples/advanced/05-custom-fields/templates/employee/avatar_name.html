@@ -1,0 +1,5 @@
+<span class="avatar avatar-xs me-2"
+      {% if data.avatar_url %}style="background-image: url({{ data.avatar_url }})"{% endif %}>
+    {% if not data.avatar_url %}{{ data.initials }}{% endif %}
+</span>
+{{ data.name }}

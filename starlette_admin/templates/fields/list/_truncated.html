@@ -1,0 +1,8 @@
+{% macro truncated() -%}
+    {# inline-edit-value marks the underline target for inline-editable cells. #}
+    <span class="align-middle d-inline-block text-truncate inline-edit-value"
+          data-bs-toggle="tooltip"
+          data-bs-placement="bottom"
+          title="{{ (caller() | striptags) | trim }}"
+          style="max-width: 30em">{{ caller() }}</span>
+{%- endmacro %}

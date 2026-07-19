@@ -13,84 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
-
-    services:
-      mongodb:
-        image: mongo
-        ports:
-          - 27017:27017
-        options: --health-cmd "mongosh mongodb://localhost:27017" --health-interval 10s --health-timeout 5s --health-retries 10
-
-      minio:
-        image: bitnamilegacy/minio
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-        ports:
-          - 9000:9000
-        options: --health-cmd "curl http://localhost:9000/minio/health/live" --health-interval 10s --health-timeout 5s --health-retries 10
-
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: username
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-      mysql:
-        image: mysql:8
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_USER: username
-          MYSQL_PASSWORD: password
-          MYSQL_DATABASE: test_db
-        ports:
-          - 3306:3306
-        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
-
+        python-version: [ "3.11", "3.12", "3.13", "3.14" ]
 
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.3.2
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"
+          enable-cache: true
       - name: Install Dependencies
-        run: pip install hatch
+        run: uv sync
       - name: Lint
-        run: hatch run test:lint
-      - name: Test sqla(postgresql) with LocalStorage & mongodb
-        env:
-          SQLA_ENGINE: 'postgresql+psycopg2://username:password@localhost:5432/test_db'
-          SQLA_ASYNC_ENGINE: 'postgresql+asyncpg://username:password@localhost:5432/test_db'
-          STORAGE_PROVIDER: 'LOCAL'
-          LOCAL_PATH: '/tmp/storage'
-          MONGO_URI: 'mongodb://localhost:27017/'
-          MONGO_DATABASE: 'test_db'
-        run: hatch run test:all
-      - name: Test LocalStorage & mysql
-        env:
-          SQLA_ENGINE: 'mysql+pymysql://username:password@localhost:3306/test_db'
-          SQLA_ASYNC_ENGINE: 'mysql+aiomysql://username:password@localhost:3306/test_db'
-          STORAGE_PROVIDER: 'LOCAL'
-          LOCAL_PATH: '/tmp/storage'
-        run: hatch run test:sqla
-      - name: Test Minio Storage provider & sqlite memory
-        env:
-          SQLA_ENGINE: 'sqlite:///test.db?check_same_thread=False'
-          SQLA_ASYNC_ENGINE: 'sqlite+aiosqlite:///test.db?check_same_thread=False'
-          STORAGE_PROVIDER: 'MINIO'
-          MINIO_KEY: 'minioadmin'
-          MINIO_SECRET: 'minioadmin'
-          MINIO_HOST: 'localhost'
-          MINIO_PORT: 9000
-          MINIO_SECURE: false
-        run: hatch run test:sqla
+        run: uv run poe lint
+      - name: Test
+        run: uv run poe test
       - name: store coverage files
         uses: actions/upload-artifact@v7
         with:
@@ -104,21 +41,22 @@ jobs:
       - tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.3.2
         with:
-          python-version: "3.10"
-          cache: "pip"
+          python-version: "3.11"
+          enable-cache: true
       - name: get coverage files
         uses: actions/download-artifact@v8
         with:
           pattern: coverage*
           merge-multiple: true
       - name: Install Dependencies
-        run: pip install hatch
+        run: uv sync --only-group cov --only-group dev
       - name: Coverage Report
-        run: hatch run cov:report
+        run: uv run poe cov-report
       - name: Upload coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

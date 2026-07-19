@@ -1,45 +1,201 @@
 <!DOCTYPE html>
-<html lang="{{ get_locale() }}">
+<html lang="{{ get_locale() }}"
+      {% if theme_settings %} {% for attr, val in theme_settings.html_attrs().items() %}{{ attr }}="{{ val }}"{% endfor %}
+      {% endif %}>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        {% block favicon %}
+            {% if favicon_url(request) %}
+                <link rel="icon" type="image/x-icon" href="{{ favicon_url(request) }}" />
+            {% endif %}
+        {% endblock %}
+        {% block head_meta %}{% endblock %}
+        {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
+        <link rel="stylesheet"
+              href="{{ static_url(request, 'css/vendor/tabler.min.css', v='1.4.0') }}">
+        <link rel="stylesheet"
+              href="{{ static_url(request, 'css/vendor/tabler-theme.min.css', v='1.4.0') }}">
+        <link rel="stylesheet"
+              href="{{ static_url(request, 'css/vendor/fontawesome.min.css', v='7.2.0') }}">
+        <style>
+            @import url('https://rsms.me/inter/inter.css');
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-    {% if favicon_url %}
-        <link rel="icon" type="image/x-icon" href="{{ favicon_url }}"/>
-    {% endif %}
-    {% block head_meta %}{% endblock %}
-    {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
-    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/tabler.min-1.1.0.css') }}">
-    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/fontawesome.min.css') }}">
-    <style>
-        @import url('https://rsms.me/inter/inter.css');
+            :root {
+                --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+            }
 
-        :root {
-            --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-        }
+            body {
+                font-feature-settings: "cv03", "cv04", "cv11";
+            }
 
-        body {
-            font-feature-settings: "cv03", "cv04", "cv11";
-        }
+            .navbar-logo {
+                width: auto;
+                height: 2rem;
+            }
 
-        .navbar-logo {
-            width: auto;
-            height: 2rem;
-        }
-    </style>
-    {% block head_css %}{% endblock %}
-</head>
+            .mark,
+            mark {
+                padding: 0em;
+            }
+        </style>
+        {% block head_css %}{% endblock %}
+        <style>
+            .is-invalid .select2-selection {
+                border-color: var(--tblr-danger) !important;
+            }
 
-<body>
-{% block body %}{% endblock %}
-{% block modal %}{% endblock %}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jquery.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/js.cookie.min.js') }}"></script>
-<script type="text/javascript"
-        src="{{ url_for(__name__ ~ ':statics', path='js/vendor/tabler.min-1.1.0.js') }}"></script>
-{% block script %}{% endblock %}
+            .select2-container {
+                width: 100% !important;
+            }
+
+            .select2-container--default .select2-selection--single,
+            .select2-container--default .select2-selection--multiple {
+                background-color: var(--tblr-bg-forms);
+                border: var(--tblr-border-width) solid var(--tblr-border-color);
+                border-radius: var(--tblr-border-radius);
+                box-shadow: var(--tblr-shadow-input);
+                min-height: calc(1.25rem + 1.125rem + calc(var(--tblr-border-width) * 2));
+            }
+
+            .select2-container--default .select2-selection--single {
+                height: calc(1.25rem + 1.125rem + calc(var(--tblr-border-width) * 2));
+            }
+
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+                color: var(--tblr-body-color);
+                line-height: calc(1.25rem + 1.125rem + calc(var(--tblr-border-width) * 2) - .125rem);
+                padding-left: 1rem;
+            }
+
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: calc(1.25rem + 1.125rem + calc(var(--tblr-border-width) * 2) - .125rem);
+            }
+
+            .select2-container--default .select2-selection--multiple {
+                align-items: center;
+                display: flex;
+                flex-wrap: wrap;
+                padding-bottom: 0;
+            }
+
+            .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+                margin-bottom: 0;
+                padding-left: .5rem;
+            }
+
+            .select2-container--default .select2-selection--multiple .select2-search--inline {
+                flex: 1 1 4rem;
+            }
+
+            .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
+                margin-top: 0;
+            }
+
+            select.form-select-sm+.select2-container.select2-container--default .select2-selection--single,
+            select.form-select-sm+.select2-container.select2-container--default .select2-selection--multiple {
+                min-height: calc(1.25rem + .625rem + calc(var(--tblr-border-width) * 2));
+            }
+
+            select.form-select-sm+.select2-container.select2-container--default .select2-selection--single {
+                height: calc(1.25rem + .625rem + calc(var(--tblr-border-width) * 2));
+            }
+
+            select.form-select-sm+.select2-container.select2-container--default .select2-selection--single .select2-selection__rendered {
+                font-size: .75rem;
+                line-height: calc(1.25rem + .625rem + calc(var(--tblr-border-width) * 2) - .125rem);
+                padding-left: .5rem;
+            }
+
+            select.form-select-sm+.select2-container.select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: calc(1.25rem + .625rem + calc(var(--tblr-border-width) * 2) - .125rem);
+            }
+
+            select.form-select-sm+.select2-container.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+                font-size: .75rem;
+                padding-left: .375rem;
+            }
+
+            select.form-select-sm+.select2-container.select2-container--default .select2-selection--multiple .select2-selection__choice {
+                margin-bottom: .125rem;
+                margin-top: .125rem;
+                padding-left: 16px;
+            }
+
+            .select2-container--default.select2-container--focus .select2-selection--multiple,
+            .select2-container--default.select2-container--focus .select2-selection--single {
+                border-color: rgb(130.5, 183, 232);
+                box-shadow: var(--tblr-shadow-input), 0 0 0 .25rem rgba(var(--tblr-primary-rgb), .25);
+                outline: 0;
+            }
+
+            .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+                border-right: 1px solid var(--tblr-border-color);
+            }
+
+            .select2-container--default .select2-selection--multiple .select2-selection__choice {
+                background: var(--tblr-bg-surface-secondary);
+                border: 1px solid var(--tblr-border-color);
+                border-radius: calc(var(--bs-border-radius) - 1px);
+                color: var(--tblr-body-color);
+                margin-bottom: .125rem;
+                margin-top: .125rem;
+                padding-left: 20px;
+            }
+
+            .select2-container--default .select2-selection__clear {
+                color: var(--tblr-secondary);
+                font-weight: var(--tblr-font-weight-normal);
+            }
+
+            .select2-container--default .select2-selection__clear:hover {
+                color: var(--tblr-body-color);
+            }
+
+            .select2-container--default .select2-selection--single .select2-selection__clear {
+                height: 100%;
+                margin-right: 1.25rem;
+                padding: 0 .25rem;
+            }
+
+            .select2-container--default .select2-selection--multiple .select2-selection__clear {
+                height: auto;
+                margin-right: .75rem;
+                margin-top: 0;
+                padding: 0 .25rem;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            .json-document {
+                padding: 0px;
+            }
+        </style>
+        {% block head %}{% endblock %}
+    </head>
+    <body>
+        {% block body %}{% endblock %}
+        {% block modal %}{% endblock %}
+        <script type="text/javascript"
+                src="{{ static_url(request, 'js/vendor/jquery.min.js', v='v4.0.0') }}"></script>
+        <script type="text/javascript"
+                src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
+        <script type="text/javascript"
+                src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.4.0') }}"></script>
+        {% block script %}{% endblock %}
+        {# djlint:off #}
 <script>
     $(function () {
+        // Send CSRF token on every jQuery-initiated mutating request
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    xhr.setRequestHeader("X-CSRFToken", Cookies.get("starlette_admin_csrftoken") || "");
+                }
+            }
+        });
+
         $(".language-switcher-item").each(function () {
             let el = $(this);
             el.on("click", function () {
@@ -64,6 +220,7 @@
         {% endif %}
     });
 </script>
-</body>
-
+        {# djlint:on #}
+        {% block tail %}{% endblock %}
+    </body>
 </html>

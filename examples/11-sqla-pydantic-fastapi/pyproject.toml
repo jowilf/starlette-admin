@@ -1,0 +1,14 @@
+[project]
+name = "11-sqla-pydantic-fastapi"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.139.0",
+    "sqlalchemy>=2",
+    "starlette-admin",
+]
+
+[tool.uv.sources]
+starlette-admin = { workspace = true, editable = true }

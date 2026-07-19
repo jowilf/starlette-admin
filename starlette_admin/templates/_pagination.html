@@ -1,0 +1,75 @@
+{% macro render(list_params, view, total, total_pages, range_start, range_end) -%}
+    <p class="m-0 text-muted">
+        {{ _("Showing %(start)s to %(end)s of %(total)s entries", start=range_start, end=range_end, total=total) }}
+    </p>
+    <div class="d-flex flex-wrap align-items-center justify-content-end gap-3 ms-auto">
+        <div class="d-flex align-items-center text-muted">
+            {{ _("Show") }}
+            <select class="form-select form-select-sm mx-2 w-auto"
+                    aria-label="{{ _('Page size') }}"
+                    onchange="window.location = this.value">
+                {% for size in view.page_size_options %}
+                    <option value="{{ list_url(request, page_size=size, page=None) }}"
+                            {{ "selected" if size == list_params.page_size }}>
+                        {{ size if size > 0 else _("All") }}
+                    </option>
+                {% endfor %}
+            </select>
+            {{ _("entries") }}
+        </div>
+        <ul class="pagination mb-0">
+            <li class="page-item {{ 'disabled' if list_params.page <= 1 }}">
+                <a class="page-link" href="{{ list_url(request, page=None) }}">{{ _("First") }}</a>
+            </li>
+            <li class="page-item {{ 'disabled' if list_params.page <= 1 }}">
+                {% set prev_page = [1, list_params.page - 1] | max %}
+                <a class="page-link"
+                   href="{{ list_url(request, page=(None if prev_page == 1 else prev_page) ) }}">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+            </li>
+            {% set window_start = [1, list_params.page - 2] | max %}
+            {% set window_end = [total_pages, list_params.page + 2] | min %}
+            {% for p in range(window_start, window_end + 1) %}
+                <li class="page-item {{ 'active' if p == list_params.page }}">
+                    <a class="page-link"
+                       href="{{ list_url(request, page=(None if p == 1 else p) ) }}">{{ p }}</a>
+                </li>
+            {% endfor %}
+            <li class="page-item {{ 'disabled' if list_params.page >= total_pages }}">
+                {% set next_page = [total_pages, list_params.page + 1] | min %}
+                <a class="page-link" href="{{ list_url(request, page=next_page) }}">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </li>
+            <li class="page-item {{ 'disabled' if list_params.page >= total_pages }}">
+                <a class="page-link" href="{{ list_url(request, page=total_pages) }}">{{ _("Last") }}</a>
+            </li>
+        </ul>
+        {% if view.show_goto_page %}
+            <form method="GET"
+                  class="d-flex align-items-center gap-2 text-muted text-nowrap">
+                <div class="input-group">
+                    <input type="number"
+                           name="page"
+                           min="1"
+                           max="{{ total_pages }}"
+                           value="{{ list_params.page }}"
+                           class="form-control"
+                           style="width: 4.5rem"
+                           aria-label="{{ _('Go to page') }}" />
+                    <button class="btn" type="submit">{{ _("Go to page") }}</button>
+                </div>
+                {% if list_params.q %}
+                    <input type="hidden" name="q" value="{{ list_params.q }}" />
+                {% endif %}
+                {% for s_name, s_dir in list_params.sorts %}
+                    <input type="hidden" name="sort" value="{{ s_name }}__{{ s_dir }}" />
+                {% endfor %}
+                {% if list_params.page_size != view.page_size %}
+                    <input type="hidden" name="page_size" value="{{ list_params.page_size }}" />
+                {% endif %}
+            </form>
+        {% endif %}
+    </div>
+{%- endmacro %}

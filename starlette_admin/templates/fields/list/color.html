@@ -1,0 +1,10 @@
+{% from "fields/list/_truncated.html" import truncated %}
+{% call truncated() -%}
+    {% for v in (data if (data | is_iter) else [data]) -%}
+        <span class="badge me-1"
+              style="background-color:{{ v }}"
+              data-bs-toggle="tooltip"
+              data-bs-placement="bottom"
+              title="{{ v | string | escape }}">&nbsp;</span>
+    {%- endfor %}
+{%- endcall %}

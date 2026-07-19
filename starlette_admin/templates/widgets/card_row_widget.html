@@ -1,0 +1,5 @@
+<div class="row row-deck row-cards">
+    {% for col_class, child_html in items %}
+        <div class="{{ col_class }}">{{ child_html }}</div>
+    {% endfor %}
+</div>

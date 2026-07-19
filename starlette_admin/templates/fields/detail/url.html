@@ -1,0 +1,9 @@
+{% if data | is_iter %}
+    <ul>
+        {% for value in data %}
+            <li><a href="{{ value }}" target="_blank">{{ value }}</a></li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <a href="{{ data }}" target="_blank">{{ data }}</a>
+{% endif %}

@@ -1,7 +1,8 @@
 # Inspired by wtforms-sqlalchemy
 import enum
 import inspect
-from typing import Any, Callable, Dict, Optional, Sequence, Type
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from sqlalchemy import ARRAY, Boolean, Column, Float, String
 from sqlalchemy.orm import (
@@ -31,6 +32,7 @@ from starlette_admin.fields import (
     HasMany,
     HasOne,
     IntegerField,
+    IPAddressField,
     JSONField,
     ListField,
     PasswordField,
@@ -40,11 +42,63 @@ from starlette_admin.fields import (
     TimeField,
     TimeZoneField,
     URLField,
+    UUIDField,
 )
 from starlette_admin.helpers import slugify_class_name
+from starlette_admin.logging import get_logger
+
+_log = get_logger(__name__)
 
 
 class BaseSQLAModelConverter(BaseModelConverter):
+    @classmethod
+    def _extract_default(cls, column: ColumnElement) -> Any:
+        """Return a Python-usable default value from a SQLAlchemy column.
+
+        Only Python-side defaults (`Column.default`) on non-primary-key
+        columns are extracted. Primary keys are typically auto-generated and
+        are not pre-filled in create forms. Scalar defaults are returned
+        as-is; callable defaults (e.g. ``datetime.now`` or ``uuid.uuid4``)
+        are wrapped so they can be invoked without a SQLAlchemy execution
+        context. SQL-expression defaults (``func.now()``) and server-side
+        defaults are ignored because they cannot be meaningfully pre-filled
+        in an HTML form.
+        """
+        column_name = getattr(column, "name", None)
+        if isinstance(column, Label):
+            _log.debug("_extract_default: skipping label column")
+            return None
+        if getattr(column, "primary_key", False):
+            _log.debug(
+                "_extract_default: skipping primary key column '%s'", column_name
+            )
+            return None
+        if column.default is not None:
+            if getattr(column.default, "is_scalar", False):
+                default_value = column.default.arg
+                _log.debug(
+                    "_extract_default: scalar default for '%s' = %r",
+                    column_name,
+                    default_value,
+                )
+                return default_value
+            if getattr(column.default, "is_callable", False):
+                sa_arg = column.default.arg
+                _log.debug(
+                    "_extract_default: callable default for '%s' (%r)",
+                    column_name,
+                    sa_arg,
+                )
+                return lambda: sa_arg(None)
+            _log.debug(
+                "_extract_default: unsupported default for '%s' (%r)",
+                column_name,
+                column.default,
+            )
+        else:
+            _log.debug("_extract_default: no default for '%s'", column_name)
+        return None
+
     def get_converter(self, col_type: Any) -> Callable[..., BaseField]:
         converter = self.find_converter_for_col_type(type(col_type))
         if converter is not None:
@@ -55,12 +109,20 @@ class BaseSQLAModelConverter(BaseModelConverter):
         )
 
     def convert(self, *args: Any, **kwargs: Any) -> BaseField:
-        return self.get_converter(kwargs.get("type"))(*args, **kwargs)
+        col_type = kwargs.get("type")
+        field = self.get_converter(col_type)(*args, **kwargs)
+        _log.debug(
+            "Converted column %r (%s) → %s",
+            kwargs.get("name"),
+            type(col_type).__name__,
+            type(field).__name__,
+        )
+        return field
 
     def find_converter_for_col_type(
         self,
         col_type: Any,
-    ) -> Optional[Callable[..., BaseField]]:
+    ) -> Callable[..., BaseField] | None:
         types = inspect.getmro(col_type)
 
         # Search by module + name
@@ -74,7 +136,8 @@ class BaseSQLAModelConverter(BaseModelConverter):
             if col_type.__name__ in self.converters:
                 return self.converters[col_type.__name__]
 
-            # Support for custom types which inherit TypeDecorator
+            # Custom types built on TypeDecorator expose the underlying
+            # implementation type via `impl`; fall back to converting that.
             if hasattr(col_type, "impl"):
                 impl = (
                     col_type.impl
@@ -85,9 +148,12 @@ class BaseSQLAModelConverter(BaseModelConverter):
         return None  # pragma: no cover
 
     def convert_fields_list(
-        self, *, fields: Sequence[Any], model: Type[Any], **kwargs: Any
+        self, *, fields: Sequence[Any], model: type[Any], **kwargs: Any
     ) -> Sequence[BaseField]:
         mapper: Mapper = kwargs.get("mapper")  # type: ignore [assignment]
+        _log.debug(
+            "convert_fields_list for %s (%d field(s))", model.__name__, len(fields)
+        )
         converted_fields = []
         for field in fields:
             if isinstance(field, BaseField):
@@ -98,23 +164,35 @@ class BaseSQLAModelConverter(BaseModelConverter):
                 else:
                     attr = mapper.attrs.get(field)
                 if attr is None:
+                    _log.error(
+                        "Cannot find column with key %r in model %s",
+                        field,
+                        model.__name__,
+                    )
                     raise ValueError(f"Can't find column with key {field}")
                 if isinstance(attr, RelationshipProperty):
-                    identity = slugify_class_name(attr.entity.class_.__name__)
+                    key = slugify_class_name(attr.entity.class_.__name__)
+                    _log.debug(
+                        "Converting relationship %r (%s) for %s",
+                        attr.key,
+                        attr.direction.name,
+                        model.__name__,
+                    )
                     if attr.direction.name == "MANYTOONE" or (
                         attr.direction.name == "ONETOMANY" and not attr.uselist
                     ):
-                        converted_fields.append(HasOne(attr.key, identity=identity))
+                        converted_fields.append(HasOne(attr.key, key=key))
                     else:
                         converted_fields.append(
                             HasMany(
                                 attr.key,
-                                identity=identity,
+                                key=key,
                                 collection_class=attr.collection_class or list,
                             )
                         )
                 elif isinstance(attr, ColumnProperty):
-                    # Handle inherited primary keys (i.e.: joined table polymorphic inheritance)
+                    # A primary key column redeclared on a subclass in joined-table
+                    # polymorphic inheritance still needs a field of its own.
                     is_inherited_pk = mapper.inherits is not None and any(
                         col.primary_key for col in attr.columns
                     )
@@ -126,15 +204,20 @@ class BaseSQLAModelConverter(BaseModelConverter):
                             ),
                         )
                     else:
-                        assert (
-                            len(attr.columns) == 1
-                        ), "Multiple-column properties are not supported"
+                        assert len(attr.columns) == 1, (
+                            "Multiple-column properties are not supported"
+                        )
                         column = attr.columns[0]
                         if not column.foreign_keys:
                             converted_field = self.convert(
                                 name=attr.key, type=column.type, column=column
                             )
                             converted_fields.append(converted_field)
+        _log.debug(
+            "convert_fields_list for %s → %d converted field(s)",
+            model.__name__,
+            len(converted_fields),
+        )
         return converted_fields
 
 
@@ -142,7 +225,7 @@ class ModelConverter(BaseSQLAModelConverter):
     @classmethod
     def _field_common(
         cls, *, name: str, column: ColumnElement, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         if isinstance(column, Label):
             return {
                 "name": column.key,
@@ -152,6 +235,7 @@ class ModelConverter(BaseSQLAModelConverter):
         return {
             "name": name,
             "help_text": column.comment,
+            "default": cls._extract_default(column),
             "required": (
                 not column.nullable
                 and not isinstance(column.type, (Boolean,))
@@ -161,7 +245,7 @@ class ModelConverter(BaseSQLAModelConverter):
         }
 
     @classmethod
-    def _string_common(cls, *, type: Any, **kwargs: Any) -> Dict[str, Any]:
+    def _string_common(cls, *, type: Any, **kwargs: Any) -> dict[str, Any]:
         if (
             isinstance(type, String)
             and isinstance(type.length, int)
@@ -171,23 +255,41 @@ class ModelConverter(BaseSQLAModelConverter):
         return {}
 
     @classmethod
-    def _file_common(cls, *, type: Any, **kwargs: Any) -> Dict[str, Any]:
+    def _file_common(cls, *, type: Any, **kwargs: Any) -> dict[str, Any]:
         return {"multiple": getattr(type, "multiple", False)}
 
     @converts(
         "String",
-        "sqlalchemy.sql.sqltypes.Uuid",
-        "sqlalchemy.dialects.postgresql.base.UUID",
         "sqlalchemy.dialects.postgresql.base.MACADDR",
         "sqlalchemy.dialects.postgresql.types.MACADDR",
-        "sqlalchemy.dialects.postgresql.base.INET",
-        "sqlalchemy.dialects.postgresql.types.INET",
         "sqlalchemy_utils.types.locale.LocaleType",
-        "sqlalchemy_utils.types.ip_address.IPAddressType",
-        "sqlalchemy_utils.types.uuid.UUIDType",
     )  # includes Unicode
     def conv_string(self, *args: Any, **kwargs: Any) -> BaseField:
         return StringField(
+            **self._field_common(*args, **kwargs),
+            **self._string_common(*args, **kwargs),
+        )
+
+    @converts(
+        "sqlalchemy.sql.sqltypes.Uuid",
+        "sqlalchemy.dialects.postgresql.base.UUID",
+        "sqlalchemy_utils.types.uuid.UUIDType",
+    )
+    def conv_uuid(self, *args: Any, **kwargs: Any) -> BaseField:
+        return UUIDField(
+            **self._field_common(*args, **kwargs),
+            **self._string_common(*args, **kwargs),
+        )
+
+    @converts(
+        "sqlalchemy.dialects.postgresql.base.INET",
+        "sqlalchemy.dialects.postgresql.types.INET",
+        "sqlalchemy_utils.types.ip_address.IPAddressType",
+    )
+    def conv_ip_address(self, *args: Any, **kwargs: Any) -> BaseField:
+        return IPAddressField(
+            ipv4=True,
+            ipv6=True,
             **self._field_common(*args, **kwargs),
             **self._string_common(*args, **kwargs),
         )
@@ -268,7 +370,11 @@ class ModelConverter(BaseSQLAModelConverter):
             return ListField(self.convert(*args, **kwargs))
         raise NotSupportedColumn("Column ARRAY with dimensions != 1 is not supported")
 
-    @converts("JSON", "sqlalchemy_utils.types.json.JSONType")
+    @converts(
+        "JSON",
+        "sqlalchemy_utils.types.json.JSONType",
+        "sqlalchemy.dialects.postgresql.hstore.HSTORE",
+    )
     def conv_json(self, *args: Any, **kwargs: Any) -> BaseField:
         return JSONField(**self._field_common(*args, **kwargs))
 

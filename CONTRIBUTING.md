@@ -145,33 +145,35 @@ Before you start contributing to *starlette-admin*, ensure you have a proper dev
 yourself with the open-source contribution workflow by following the guidelines
 available [here](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
 
-To manage dependencies and packaging for *starlette-admin*, we use [hatch](https://hatch.pypa.io/). Please make sure to
-install it globally.
+To manage dependencies, environments and packaging for *starlette-admin*, we use [uv](https://docs.astral.sh/uv/).
+Please make sure to install it globally; see
+the [uv installation documentation](https://docs.astral.sh/uv/getting-started/installation/) for instructions.
 
-For example, you can install Hatch using pip:
+Once `uv` is installed, set up your environment with:
 
 ```shell
-pip install hatch
+uv sync
 ```
 
-For more detailed installation instructions, refer to the [Hatch documentation](https://hatch.pypa.io/latest/install/)
+This installs the package in editable mode along with all development, lint, test, coverage and docs dependency
+groups. Project scripts are defined as [poethepoet](https://poethepoet.natn.io/) tasks and run through `uv run poe
+<task>` (or `uvx poe <task>` once the environment is synced).
 
 #### Code Linting & Formatting
 
 To maintain code consistency, ensure proper code formatting, and enforce type safety, *starlette-admin*
-uses [black](https://github.com/psf/black), [mypy](https://mypy-lang.org/)
-and [ruff](https://github.com/charliermarsh/ruff).
+uses [ruff](https://github.com/astral-sh/ruff) (lint + format) and [mypy](https://mypy-lang.org/).
 
 Run the following command to format your code:
 
 ```shell
-hatch run format
+uv run poe format
 ```
 
 To perform linting checks, run:
 
 ```shell
-hatch run test:lint
+uv run poe lint
 ```
 
 #### Testing
@@ -180,7 +182,7 @@ We use [pytest](https://docs.pytest.org) for unit testing. To ensure the stabili
 every new feature must be tested in a separate unit test. Run the test suite to validate your changes:
 
 ```shell
-hatch run test:all
+uv run poe test
 ```
 
 #### Submitting new code
@@ -216,7 +218,7 @@ To add support for a new locale, the first thing to do is to run the initializat
 
 ```shell
 # replace <locale> by the new locale
-hatch run i18n:init --locale <locale>
+uv run poe i18n-init --locale <locale>
 
 # use --help to see all available options
 ```
@@ -234,30 +236,6 @@ msgid "Are you sure you want to delete selected items?"
 msgstr "Êtes-vous sûr de vouloir supprimer ces éléments?"
 ```
 
-* Check and update the generated JSON file for datatables located at `./starlette_admin/statics/i18n/dt/<locale>.json`.
-  Most of
-  the time, you will only need to update the `starlette-admin` key, which is internal to *starlette-admin*
-
-Example (French):
-
-```json5
-{
-    // ...
-    "starlette-admin": {
-        "buttons": {
-            "export": "Export"
-        },
-        "conditions": {
-            "false": "Faux",
-            "true": "Vrai",
-            "empty": "Vide",
-            "notEmpty": "Non vide"
-        }
-    },
-    // ...
-}
-```
-
 ##### Step 3: Update the supported locales
 
 Make sure to update the `SUPPORTED_LOCALES` variable in the [i18n.py](./starlette_admin/i18n.py) module to
@@ -269,7 +247,7 @@ After translating the messages, compile the POT file into a binary MO file using
 
 ```shell
 # replace <locale> by the new locale
-hatch run i18n:compile -l <locale>
+uv run poe i18n-compile -l <locale>
 ```
 
 #### Step 5: Test the New Locale
@@ -283,11 +261,11 @@ unit test in the [test_i18n](./tests/test_i18n.py) module.
 Please write clear documentation for any new functionality you add. Docstrings will be converted to the API
 documentation, but more human friendly documentation might also be needed.
 
-The documentation is generated using [mkdocs](https://www.mkdocs.org/).
+The documentation is generated using [zensical](https://zensical.org/).
 To preview your documentation locally, run:
 
 ```shell
-hatch run docs:serve
+uv run poe docs-serve
 ```
 
 and visit http://localhost:8080 in your browser to see a live preview of your documentation.

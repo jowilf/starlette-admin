@@ -1,0 +1,7 @@
+{% if card %}
+    <div class="card">
+        <div class="card-body{% if markdown %} markdown{% endif %}">{{ content }}</div>
+    </div>
+{% else %}
+    {{ content }}
+{% endif %}

@@ -1,0 +1,8 @@
+/**
+ * Minified by jsDelivr using clean-css v5.3.3.
+ * Original file: /npm/jquery.json-viewer@1.5.0/json-viewer/jquery.json-viewer.css
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+.json-document{padding:1em 2em}ol.json-array,ul.json-dict{list-style-type:none;margin:0 0 0 1px;border-left:1px dotted #ccc;padding-left:2em}.json-string{color:#0b7500}.json-literal{color:#1a01cc;font-weight:700}a.json-toggle{position:relative;color:inherit;text-decoration:none}a.json-toggle:focus{outline:0}a.json-toggle:before{font-size:1.1em;color:silver;content:"\25BC";position:absolute;display:inline-block;width:1em;text-align:center;line-height:1em;left:-1.2em}a.json-toggle:hover:before{color:#aaa}a.json-toggle.collapsed:before{transform:rotate(-90deg)}a.json-placeholder{color:#aaa;padding:0 1em;text-decoration:none}a.json-placeholder:hover{text-decoration:underline}
+/*# sourceMappingURL=/sm/f0dabc51886cc1a4c93835b8de136abfa1435343760848f28d0861c7843c1617.map */

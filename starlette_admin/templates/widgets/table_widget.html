@@ -1,0 +1,33 @@
+{% if title %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{{ title }}</h3>
+        </div>
+    {% endif %}
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        {% for cell in row %}
+                            <td>{{ cell if cell is not none else "" }}</td>
+                        {% endfor %}
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="{{ columns | length }}" class="text-center text-muted py-4">{{ _("No data") }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if title %}
+    </div>
+{% endif %}

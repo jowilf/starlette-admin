@@ -1,0 +1,21 @@
+<div class="{% if error %}{{ field.error_class }}{% endif %}">
+    {% if input_group_prepend or input_group_append %}
+        <div class="input-group {% if input_group_flat %}input-group-flat{% endif %} {% if error %}has-validation{% endif %}">
+            {% if input_group_prepend %}<span class="input-group-text">{{ input_group_prepend }}</span>{% endif %}
+            <input id="{{ field.id }}"
+                   name="{{ field.id }}"
+                   class="{{ field.class_ }} {% if error %}{{ field.error_class }}{% endif %}"
+                   value="{{ '' if data is none else data }}"
+                   {{ field.input_params() | safe }} />
+            {% if input_group_append %}<span class="input-group-text">{{ input_group_append }}</span>{% endif %}
+        </div>
+    {% else %}
+        <input id="{{ field.id }}"
+               name="{{ field.id }}"
+               class="{{ field.class_ }} {% if error %}{{ field.error_class }}{% endif %}"
+               value="{{ '' if data is none else data }}"
+               {{ field.input_params() | safe }} />
+    {% endif %}
+    {% if field.help_text %}<small class="form-hint">{{ field.help_text }}</small>{% endif %}
+</div>
+{% include "fields/form/_error.html" %}

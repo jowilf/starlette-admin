@@ -1,0 +1,15 @@
+[project]
+name = "03-custom-backend"
+version = "0.1.0"
+description = "Custom backend example using TinyDB"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "starlette-admin",
+    "uvicorn[standard]",
+    "tinydb",
+    "filetype>=1.2.0",
+]
+
+[tool.uv.sources]
+starlette-admin = { workspace = true, editable = true }

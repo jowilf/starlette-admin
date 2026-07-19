@@ -1,0 +1,21 @@
+{% from "fields/list/_truncated.html" import truncated %}
+{% if field.copy_to_clipboard %}
+    <span class="d-inline-flex align-items-center gap-2">
+        {% call truncated() -%}
+            {{ data | string | escape }}
+        {%- endcall %}
+        <button type="button"
+                class="btn btn-action btn-sm copy-to-clipboard"
+                data-copy-value="{{ data }}"
+                title="{{ _('Copy to clipboard') }}">
+            <i class="fa-solid fa-copy"></i>
+        </button>
+    </span>
+{% else %}
+    {% call truncated() -%}
+        {% for v in (data if (data | is_iter) else [data]) -%}
+            {{ v | string | escape }}
+            {% if not loop.last %},{% endif %}
+        {%- endfor %}
+    {%- endcall %}
+{% endif %}

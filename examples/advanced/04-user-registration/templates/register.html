@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+{% block header %}{% endblock %}
+{% block sidebar %}{% endblock %}
+{% block content %}
+    <div class="container-tight">
+        <form class="card card-md"
+              action="{{ request.url }}"
+              method="POST"
+              autocomplete="off">
+            {{ csrf_input(request) }}
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Create your account</h2>
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text"
+                           name="username"
+                           value="{{ values.get('username', '') }}"
+                           class="form-control {% if errors.username %}is-invalid{% endif %}"
+                           placeholder="Username"
+                           autocomplete="username" />
+                    {% if errors.username %}<div class="invalid-feedback">{{ errors.username }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        Full name <span class="form-label-description">optional</span>
+                    </label>
+                    <input type="text"
+                           name="full_name"
+                           value="{{ values.get('full_name', '') }}"
+                           class="form-control"
+                           placeholder="Full name"
+                           autocomplete="name" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password"
+                           name="password"
+                           class="form-control {% if errors.password %}is-invalid{% endif %}"
+                           placeholder="At least 8 characters"
+                           autocomplete="new-password" />
+                    {% if errors.password %}<div class="invalid-feedback">{{ errors.password }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Confirm password</label>
+                    <input type="password"
+                           name="password_confirm"
+                           class="form-control {% if errors.password_confirm %}is-invalid{% endif %}"
+                           placeholder="Repeat your password"
+                           autocomplete="new-password" />
+                    {% if errors.password_confirm %}
+                        <div class="invalid-feedback">{{ errors.password_confirm }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-footer">
+                    <button type="submit" class="btn btn-primary w-100">Create account</button>
+                </div>
+            </div>
+        </form>
+        <div class="text-center text-secondary mt-3">
+            Already have an account?
+            <a href="{{ url_for(__name__ ~ ':login') }}">Sign in</a>
+        </div>
+    </div>
+{% endblock %}

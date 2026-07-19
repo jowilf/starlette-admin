@@ -1,4 +1,0 @@
-starlette-admin
-uvicorn
-odmantic
-pydantic[email]

@@ -1,0 +1,47 @@
+{% for inline_ctx in inlines %}
+    {% set inline = inline_ctx.inline %}
+    {% set rows = inline_ctx.rows %}
+    <div class="col-12 mt-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ inline.menu_label or inline.display_name }}</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            {% for field in inline.get_fields_list(request) %}
+                                <th>{{ field.label }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                            <tr>
+                                {% for field in inline.get_fields_list(request) %}
+                                    <td>
+                                        {% with data=row.obj[field.name] %}
+                                            {% if data == None %}
+                                                {% include field.null_template %}
+                                            {% elif (data | is_iter) and (data | length) == 0 %}
+                                                {% include field.empty_template %}
+                                            {% else %}
+                                                {% include field.detail_template %}
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        {% if not rows %}
+                            <tr>
+                                <td colspan="{{ inline.get_fields_list(request) | length }}"
+                                    class="text-center text-muted py-3">{{ _("No items") }}</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endfor %}

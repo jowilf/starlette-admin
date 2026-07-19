@@ -1,0 +1,28 @@
+<div class="card"
+     {% if save_state %}data-tabs-storage-key="{{ storage_key }}"{% endif %}>
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            {% for label, _ in tabs_html %}
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link{% if loop.first %} active{% endif %}"
+                       id="{{ tab_ids[loop.index0] }}-tab"
+                       data-bs-toggle="tab"
+                       href="#{{ tab_ids[loop.index0] }}"
+                       role="tab"
+                       aria-controls="{{ tab_ids[loop.index0] }}"
+                       aria-selected="{{ 'true' if loop.first else 'false' }}">{{ label }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content">
+            {% for label, widget_html in tabs_html %}
+                <div class="tab-pane fade show{% if loop.first %} active{% endif %}"
+                     id="{{ tab_ids[loop.index0] }}"
+                     role="tabpanel"
+                     aria-labelledby="{{ tab_ids[loop.index0] }}-tab">{{ widget_html }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

@@ -1,162 +1,303 @@
 {% extends "layout.html" %}
+{% from "_column_header.html" import render as column_header with context %}
+{% from "_pagination.html" import render as pagination with context %}
+{% from "_filter_bar.html" import render as filter_bar with context %}
+{% from "_filter_builder.html" import render as filter_builder with context %}
+{% set inline_edit_enabled = view.inline_editable_fields and view.can_edit(request) %}
 {% block header %}
     <div class="d-flex justify-content-between align-items-center">
-        <h1>{{ model.label }}</h1>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ url_for(__name__ ~ ':index') }}">{{ _("Admin") }}</a>
-            </li>
-            <li class="breadcrumb-item active">{{ model.label }}</li>
-        </ol>
+        {% block page_title %}<h1>{{ view.menu_label }}</h1>{% endblock %}
+        {% block breadcrumbs %}
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for(__name__ ~ ':index') }}">{{ _("Admin") }}</a>
+                </li>
+                <li class="breadcrumb-item active">{{ view.menu_label }}</li>
+            </ol>
+        {% endblock %}
     </div>
 {% endblock %}
 {% block modal %}
     {% include "modals/loading.html" %}
     {% include "modals/error.html" %}
     {% include "modals/actions.html" %}
+    {% if view.can_import(request) and view.importers %}
+        {% include "modals/import.html" %}
+    {% endif %}
+    {% if inline_edit_enabled %}
+        {% include "inline-edit/popover.html" %}
+    {% endif %}
 {% endblock %}
 {% block content %}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div id="btn_container" class="card-title"></div>
-                        <div class="card-actions">
-                            <div class="btn-list">
-
+    <div class="row row-deck row-cards">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title d-flex align-items-center gap-3">
+                        {% block list_search %}
+                            <form method="GET" class="d-flex">
+                                <div class="input-group">
+                                    <input type="search"
+                                           name="q"
+                                           value="{{ list_params.q or '' }}"
+                                           class="form-control"
+                                           placeholder="{{ _('Search') }}..."
+                                           aria-label="{{ _('Search in list') }}"
+                                           autocomplete="off" />
+                                    <button class="btn" type="submit">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </button>
+                                </div>
+                                {% for s_name, s_dir in list_params.sorts %}
+                                    <input type="hidden" name="sort" value="{{ s_name }}__{{ s_dir }}" />
+                                {% endfor %}
+                                {% if list_params.page_size != view.page_size %}
+                                    <input type="hidden" name="page_size" value="{{ list_params.page_size }}" />
+                                {% endif %}
+                                {% if list_params.visible_cols is not none %}
+                                    <input type="hidden"
+                                           name="cols"
+                                           value="{{ list_params.visible_cols | join(',') }}" />
+                                {% endif %}
+                                {% if raw_filter %}
+                                    <input type="hidden" name="filter" value="{{ raw_filter }}" />
+                                {% endif %}
+                            </form>
+                        {% endblock %}
+                    </div>
+                    <div class="card-actions">
+                        <div class="btn-list">
+                            {% block list_toolbar %}
                                 {% include "actions.html" %}
-
-                                {% if model.can_create(request) %}
-                                    <a href="{{ url_for(__name__ ~ ':create', identity=model.identity) }}"
+                                {{ filter_builder(view,list_params, filter_chips, filter_builder_fields) }}
+                                {% if view.column_visibility %}
+                                    <div class="dropdown" id="column-visibility-dropdown">
+                                        <button type="button"
+                                                class="btn dropdown-toggle"
+                                                data-bs-toggle="dropdown"
+                                                data-bs-auto-close="outside">
+                                            <i class="fa-solid fa-table-columns me-2"></i>{{ _("Columns") }}
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end p-2">
+                                            {% for field in all_fields %}
+                                                <label class="dropdown-item">
+                                                    <input type="checkbox"
+                                                           class="form-check-input me-2 column-visibility-toggle"
+                                                           value="{{ field.name }}"
+                                                           {% if list_params.visible_cols is none or field.name in list_params.visible_cols %}checked{% endif %}>
+                                                    {{ field.label }}
+                                                </label>
+                                            {% endfor %}
+                                            <div class="dropdown-divider"></div>
+                                            <div class="d-flex justify-content-between align-items-center px-2 pt-1">
+                                                <a href="{{ list_url(request, cols=None, page=None) }}"
+                                                   class="btn btn-sm btn-link">{{ _("Reset") }}</a>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-primary"
+                                                        onclick="applyColumnVisibility()">{{ _("Apply") }}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% if view.can_export(request) and view.exporters %}
+                                    <div class="dropdown">
+                                        <button type="button"
+                                                class="btn dropdown-toggle"
+                                                data-bs-toggle="dropdown"
+                                                data-bs-auto-close="outside">
+                                            <i class="fa-solid fa-file-export me-2"></i>{{ _("Export") }}
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            {% for fmt in view.exporters %}
+                                                <div class="dropend">
+                                                    <a class="dropdown-item dropdown-toggle"
+                                                       href="#"
+                                                       data-bs-toggle="dropdown"
+                                                       data-bs-auto-close="outside">
+                                                        {{ (fmt.format_key or fmt.extension) | upper }}
+                                                    </a>
+                                                    <ul class="dropdown-menu">
+                                                        {% for scope, scope_label in [("page", _("This Page")), ("all", _("All Matching Rows"))] %}
+                                                            <li>
+                                                                <a class="dropdown-item"
+                                                                   href="{{ export_url(request, view.key, fmt.format_key or fmt.extension, scope) }}">
+                                                                    {{ scope_label }}
+                                                                </a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% if view.can_import(request) and view.importers %}
+                                    <button type="button"
+                                            class="btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modal-import">
+                                        <i class="fa-solid fa-file-import me-2"></i>{{ _("Import") }}
+                                    </button>
+                                {% endif %}
+                                {% block list_toolbar_extra %}
+                                {% endblock %}
+                                {% if view.can_create(request) %}
+                                    <a href="{{ create_url(request, view.key) }}"
                                        class="btn btn-primary btn-block ms-2">
                                         <i class="fa-solid fa-plus me-2"></i>
-                                        {{ _("New %(name)s", name=model.name ) }}
+                                        {{ _("New %(name)s", name=view.display_name) }}
                                     </a>
                                 {% endif %}
-                            </div>
+                            {% endblock %}
                         </div>
                     </div>
-                    <div class="card-body border-bottom p-0">
-                        <div class="d-flex m-3">
-                            <div id="pageLength_container"></div>
-                            <div class="ms-auto text-muted">
-                                <div class="ms-2 d-inline-block">
-                                    <div class="input-icon">
-                                        <span class="input-icon-addon">
-                                            <!-- Download SVG icon from http://tabler-icons.io/i/search -->
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                 class="icon"
-                                                 width="24"
-                                                 height="24"
-                                                 viewBox="0 0 24 24"
-                                                 stroke-width="2"
-                                                 stroke="currentColor"
-                                                 fill="none"
-                                                 stroke-linecap="round"
-                                                 stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                <circle cx="10" cy="10" r="7"/>
-                                                <line x1="21" y1="21" x2="15" y2="15"/>
-                                            </svg>
-                                        </span>
-                                        <input type="search"
-                                               id="searchInput"
-                                               value=""
-                                               class="form-control"
-                                               placeholder="{{ _('Search') }}..."
-                                               aria-label="Search in list"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="alertContainer"></div>
-                    </div>
-                    <table id="dt" class="table table-vcenter text-nowrap">
-                        <thead>
-                        <tr id="table-header">
-                            <th></th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                    </table>
                 </div>
+                {% if filter_chips %}
+                    <div class="card-body border-bottom py-2">{{ filter_bar(filter_chips, filter_logic, list_params) }}</div>
+                {% endif %}
+                {% block list_before_table %}
+                {% endblock %}
+                {% block list_table %}
+                    {% if total > (rows | length) %}
+                        <div id="select-all-banner"
+                             class="alert alert-info py-2 mb-0 d-none d-flex align-items-center justify-content-between"
+                             role="alert">
+                            <span id="select-all-banner-page">
+                                {{ _("All %(count)s rows on this page are selected.", count=(rows | length) ) }}
+                                <a href="#" id="select-all-matching-link">{{ _("Select all %(total)s rows matching the current filter.", total=total) }}</a>
+                            </span>
+                            <span id="select-all-banner-all" class="d-none">
+                                {{ _("All %(total)s rows matching the current filter are selected.", total=total) }}
+                                <a href="#" id="clear-select-all-link">{{ _("Clear selection") }}</a>
+                            </span>
+                        </div>
+                    {% endif %}
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                {% block list_header %}
+                                    <tr>
+                                        <th class="w-1 checkbox-cell">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   id="select-all-rows"
+                                                   aria-label="{{ _('Select all rows') }}" />
+                                        </th>
+                                        {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}
+                                            <th class="w-1"></th>
+                                        {% endif %}
+                                        {% for field in fields %}<th data-column="{{ field.name }}">{{ column_header(field, list_params) }}</th>{% endfor %}
+                                        {% if view.row_actions_position.value == "AFTER_COLUMNS" %}
+                                            <th class="w-1"></th>
+                                        {% endif %}
+                                    </tr>
+                                {% endblock %}
+                            </thead>
+                            <tbody>
+                                {% for row in rows %}
+                                    {# The row markup lives in _list_row.html so the inline-edit
+                                       row endpoint can render an identical replacement row. #}
+                                    {% block list_row scoped %}
+                                        {% include "_list_row.html" %}
+                                    {% endblock %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="{{ (fields | length) + 2 }}"
+                                            class="text-center text-muted py-4">
+                                            {% block list_empty scoped %}{{ _("No data") }}{% endblock %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endblock %}
+                {% block list_after_table %}
+                {% endblock %}
+                {% block list_footer %}
+                    <div class="card-footer d-flex align-items-center">
+                        {{ pagination(list_params, view, total, total_pages, range_start, range_end) }}
+                    </div>
+                {% endblock %}
             </div>
         </div>
     </div>
 {% endblock %}
 {% block head_css %}
     {{ super() }}
-    <link rel="stylesheet"
-          href="{{ url_for(__name__ ~ ':statics', path='css/dt.min.css') }}"/>
-    <link rel="stylesheet"
-          href="{{ url_for(__name__ ~ ':statics', path='css/dt.checkboxes.css') }}"/>
-    {% for link in model._additional_css_links(request, "LIST" | ra) %}
-        <link rel="stylesheet" href="{{ link }}">
-    {% endfor %}
     <style>
-        div.dataTables_wrapper div.dataTables_info {
-            padding-top: 0;
-        }
-
-        table.dataTable span.highlight {
-            background-color: #ffff88;
-            border-radius: 0.28571429rem;
-        }
-
-        table.dataTable span.column_highlight {
-            background-color: #ffcc99;
-            border-radius: 0.28571429rem;
-        }
-
-        table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before,
-        table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control:before {
-            background-color: #206bc4;
-        }
-
-        table.dataTable {
-            margin-top: 0px !important;
-            margin-bottom: 0px !important;
+        .checkbox-cell {
+            cursor: pointer;
         }
     </style>
+    {% if view.row_click_navigate %}
+        <style>
+            tbody tr.row-clickable {
+                cursor: pointer;
+            }
+
+            tbody tr.row-clickable:hover>* {
+                --tblr-table-color-state: var(--tblr-table-hover-color);
+                --tblr-table-bg-state: var(--tblr-table-hover-bg);
+            }
+        </style>
+    {% endif %}
+    {% for link in view._additional_css_links(request) %}<link rel="stylesheet" href="{{ link }}">{% endfor %}
+    {% if inline_edit_enabled %}
+        <link rel="stylesheet"
+              href="{{ static_url(request, 'css/inline-edit.css', v=3) }}">
+    {% endif %}
 {% endblock %}
 {% block script %}
     {{ super() }}
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/vendor/moment.min.js') }}"></script>
-    {% if get_locale() != 'en' %}
-        <script type="text/javascript"
-                src="{{ url_for(__name__ ~ ':statics', path='i18n/momentjs/' ~ get_locale() ~ '.js') }}"></script>
-    {% endif %}
-    {% if 'pdf' in model.export_types %}
-        <script type="text/javascript"
-                src="{{ url_for(__name__ ~ ':statics', path='js/vendor/pdfmake.min.js') }}"></script>
-        <script type="text/javascript"
-                src="{{ url_for(__name__ ~ ':statics', path='js/vendor/vfs_fonts.js') }}"></script>
-    {% endif %}
+            src="{{ static_url(request, 'js/utils.js', v=1) }}"></script>
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/vendor/dt.min.js') }}"></script>
+            src="{{ static_url(request, 'js/alerts.js', v=1) }}"></script>
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/vendor/dt.checkboxes.js') }}"></script>
-    <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/vendor/dt.searchHighlight.js') }}"></script>
-    <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/vendor/qs.min.js') }}"></script>
-    <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/utils.js').include_query_params(v=1) }}"></script>
-    <script>var model = {{__js_model__ | tojson | safe}};</script>
-    <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/render.js').include_query_params(v=1) }}"></script>
-    {% if custom_render_js(request) %}
-        <script type="text/javascript" src="{{ custom_render_js(request) }}"></script>
-    {% endif %}
-    {% for link in model._additional_js_links(request, "LIST" | ra) %}
+            src="{{ static_url(request, 'js/actions.js', v=2) }}"></script>
+    {% for link in view._additional_js_links(request) %}
         <script type="text/javascript" src="{{ link }}"></script>
     {% endfor %}
+    {% if inline_edit_enabled %}
+        <script type="text/javascript"
+                src="{{ static_url(request, 'js/form.js', v=1) }}"></script>
+    {% endif %}
     <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/alerts.js').include_query_params(v=1) }}"></script>
-    <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/actions.js').include_query_params(v=1) }}"></script>
-    <script type="text/javascript"
-            src="{{ url_for(__name__ ~ ':statics', path='js/list.js').include_query_params(v=3) }}"></script>
+            src="{{ static_url(request, 'js/list.js', v=9) }}"></script>
+    {% if filter_builder_fields %}
+        <script type="text/javascript"
+                src="{{ static_url(request, 'js/filter-builder.js', v=1) }}"></script>
+    {% endif %}
+    {% if view.can_import(request) and view.importers %}
+        <script type="text/javascript"
+                src="{{ static_url(request, 'js/import.js', v=2) }}"></script>
+    {% endif %}
+    {# djlint:off #}
+    <script>
+        initListPage({
+            actionUrl: "{{ url_for(__name__ ~ ':action', key=view.key) | safe }}",
+            rowActionUrl: "{{ url_for(__name__ ~ ':row-action', key=view.key) | safe }}",
+            searchHighlight: {{ view.search_highlight | tojson }},
+            searchAutoSubmit: {{ view.search_auto_submit | tojson }},
+            rowsTotal: {{ total | tojson }}{% if inline_edit_enabled %},
+            inlineEdit: {
+                enabled: true,
+                url: "{{ url_for(__name__ ~ ':inline-edit', key=view.key) | safe }}",
+                rowUrl: "{{ url_for(__name__ ~ ':inline-edit-row', key=view.key) | safe }}"
+            }
+            {% endif %}
+        });
+        {% if filter_builder_fields %}
+            initFilterBuilder({
+                fields: {{ filter_builder_fields | tojson | safe }},
+                initialFilter: {{ raw_filter | tojson | safe }}
+            });
+        {% endif %}
+        {% if view.can_import(request) and view.importers %}
+            initImportModal(
+                "{{ import_url(request, view.key) | safe }}"
+            );
+        {% endif %}
+    </script>{# djlint:on #}
 {% endblock %}

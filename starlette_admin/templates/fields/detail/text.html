@@ -1,0 +1,19 @@
+{% if data | is_iter %}
+    <ul>
+        {% for value in data %}
+            <li>{{ value }}</li>
+        {% endfor %}
+    </ul>
+{% elif field.copy_to_clipboard %}
+    <span class="d-inline-flex align-items-center gap-2">
+        <span>{{ data }}</span>
+        <button type="button"
+                class="btn btn-action btn-sm copy-to-clipboard"
+                data-copy-value="{{ data }}"
+                title="{{ _('Copy to clipboard') }}">
+            <i class="fa-solid fa-copy"></i>
+        </button>
+    </span>
+{% else %}
+    {{ data }}
+{% endif %}

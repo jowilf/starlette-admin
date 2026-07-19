@@ -1,0 +1,12 @@
+{% from "fields/list/_truncated.html" import truncated %}
+<div class="d-flex flex-column gap-1">
+    {% for v in (data if field.multiple else [data]) -%}
+        <a href="{{ v.url | safe_url }}"
+           target="_blank"
+           class="btn-link d-inline-flex align-items-center gap-1">
+            <i class="fa-solid fa-fw {{ v.content_type | file_icon }}"></i>
+            {% call truncated() -%}
+                {{- v.filename | escape -}}{%- endcall %}
+        </a>
+    {%- endfor %}
+</div>

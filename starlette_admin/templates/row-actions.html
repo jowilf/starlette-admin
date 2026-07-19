@@ -1,6 +1,6 @@
 {% macro action_data_attributes(action) -%}
     {% if action.is_link -%}
-        href="{{ model._row_actions_handlers.get(action.name)(request, pk) }}"
+        href="{{ view._row_actions_handlers.get(action.name) (request, pk) }}"
     {% else %}
         href="#"
         {% if action.confirmation is not none -%}
@@ -20,29 +20,26 @@
     data-is-row-action="true"
     data-name="{{ action.name }}"
 {% endmacro %}
-
 {% if display_type == "ICON_LIST" -%}
     <div class="d-flex">
         {% for action in _actions -%}
-            <a title="{{ action.text }}"
-                    {{ action_data_attributes(action) }}>
+            <a title="{{ action.text }}" {{ action_data_attributes(action) }}>
                 <span class="me-1"><i class="{{ action.icon_class }}"></i></span>
             </a>
         {% endfor %}
     </div>
 {% elif display_type == "DROPDOWN" -%}
     <div class="dropdown" id="actions-dropdown">
+        {#  The fixed strategy lets the menu escape the table-responsive overflow clipping  #}
         <button type="button"
                 class="btn dropdown-toggle"
-                data-bs-toggle="dropdown">
-            {{ _("Actions") }}
-        </button>
+                data-bs-toggle="dropdown"
+                data-bs-config='{"popperConfig": {"strategy": "fixed"}}'>{{ _("Actions") }}</button>
         <div class="dropdown-menu">
             {% for action in _actions -%}
                 <a class="dropdown-item row-action-item"
                    type="button"
-                        {{ action_data_attributes(action) }}
-                >
+                   {{ action_data_attributes(action) }}>
                     {% if action.icon_class -%}
                         <i class="{{ action.icon_class }} me-2"></i>
                     {% endif -%}
@@ -51,14 +48,50 @@
             {% endfor %}
         </div>
     </div>
+{% elif display_type == "KEBAB" -%}
+    <div class="dropdown">
+        {#  The fixed strategy lets the menu escape the table-responsive overflow clipping  #}
+        <button type="button"
+                class="btn btn-ghost-primary btn-icon btn-sm"
+                data-bs-toggle="dropdown"
+                data-bs-config='{"popperConfig": {"strategy": "fixed"}}'
+                aria-label="{{ _('Actions') }}">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end">
+            {% for action in _actions -%}
+                <a class="dropdown-item row-action-item"
+                   {{ action_data_attributes(action) }}>
+                    {% if action.icon_class -%}
+                        <i class="{{ action.icon_class }} me-2"></i>
+                    {% endif -%}
+                    {{ action.text }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% elif display_type == "INLINE_LINKS" -%}
+    <div class="d-flex align-items-center flex-nowrap">
+        {% for action in _actions -%}
+            {% if not loop.first -%}
+                <span class="mx-1 text-muted" aria-hidden="true">&middot;</span>
+            {% endif -%}
+            <a class="row-action-item small d-inline-flex flex-column align-items-center"
+               {{ action_data_attributes(action) }}>
+                {% if action.icon_class -%}
+                    <i class="{{ action.icon_class }}"></i>
+                {% endif -%}
+                {{ action.text }}
+            </a>
+        {% endfor %}
+    </div>
 {% else -%}
     {#  For detail page   #}
     <div class="btn-list">
         {% for action in _actions -%}
             <a class="row-action-item btn {{ action.action_btn_class or '' }}"
                role="button"
-                    {{ action_data_attributes(action) }}
-            >
+               {{ action_data_attributes(action) }}>
                 {% if action.icon_class -%}
                     <i class="{{ action.icon_class }} me-2"></i>
                 {% endif -%}

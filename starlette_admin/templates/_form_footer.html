@@ -1,0 +1,39 @@
+<div class="card-footer text-black">
+    <div class="btn-list ms-auto justify-content-end">
+        <a href="{{ back_url(request, view.key) }}"
+           class="btn btn-danger btn-animate-icon btn-animate-icon-rotate">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="24"
+                 height="24"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="icon icon-1">
+                <path d="M18 6l-12 12" />
+                <path d="M6 6l12 12" />
+            </svg>
+        {{ _("Cancel") }}</a>
+        <button type="submit" name="_add_another" class="btn">{{ _("Save and add another") }}</button>
+        <button type="submit" name="_continue_editing" class="btn">{{ _("Save and continue editing") }}</button>
+        <button type="submit" class="btn btn-primary btn-animate-icon">
+            {{ _("Save") }}
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="24"
+                 height="24"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="icon icon-end icon-2">
+                <path d="M5 12l14 0" />
+                <path d="M13 18l6 -6" />
+                <path d="M13 6l6 6" />
+            </svg>
+        </button>
+    </div>
+</div>

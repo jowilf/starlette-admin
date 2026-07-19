@@ -1,0 +1,36 @@
+{% if link %}
+    <a href="{{ link }}"
+       class="card card-link text-reset text-decoration-none">
+    {% else %}
+        <div class="card">
+        {% endif %}
+        <div class="card-body">
+            <div class="subheader">{{ title }}</div>
+            <div class="h1 mb-0 mt-1"
+                 {% if countup %}id="{{ value_id }}" data-countup{% endif %}>{{ value }}</div>
+            {% if description or description_icon %}
+                <div class="d-flex align-items-center mt-2{% if color %} text-{{ color }}{% endif %}">
+                    {% if description_icon and description_icon_position == "before" %}
+                        <i class="{{ description_icon }} me-1"></i>
+                    {% endif %}
+                    {% if description %}<span>{{ description }}</span>{% endif %}
+                    {% if description_icon and description_icon_position == "after" %}
+                        <i class="{{ description_icon }} ms-1"></i>
+                    {% endif %}
+                </div>
+            {% endif %}
+            {% if chart_id %}
+                <div id="{{ chart_id }}"
+                     class="stat-chart position-relative mt-3"
+                     data-series='{{ chart_data | tojson }}'
+                     data-type="{{ chart_type }}"
+                     data-height="{{ chart_height }}"
+                     data-color="{{ color }}"
+                     data-options='{{ chart_options | tojson }}'></div>
+            {% endif %}
+        </div>
+        {% if link %}
+        </a>
+    {% else %}
+    </div>
+{% endif %}

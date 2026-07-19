@@ -1,0 +1,10 @@
+.sa-panel-toggle-icon {
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+.sa-panel-toggle[aria-expanded="true"] .sa-panel-toggle-icon {
+    transform: rotate(180deg);
+}
+.card-header.sa-panel-toggle {
+    cursor: pointer;
+}

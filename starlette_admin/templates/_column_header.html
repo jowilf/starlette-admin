@@ -1,0 +1,48 @@
+{% macro render(field, list_params) -%}
+    {% if field.orderable -%}
+        {# Locate this field's current sort state (direction + position) #}
+        {% set ns = namespace(current_dir=None, sort_index=None) %}
+        {% for i in range(list_params.sorts | length) %}
+            {% if list_params.sorts[i][0] == field.name %}
+                {% set ns.current_dir = list_params.sorts[i][1] %}
+                {% set ns.sort_index = i %}
+            {% endif %}
+        {% endfor %}
+        {# Single-sort href: replace all active sorts with just this column.
+           Direction toggles asc↔desc; defaults to asc when column is new. #}
+        {% set single_dir = 'desc' if ns.current_dir == 'asc' else 'asc' %}
+        {# Multi-sort href (Shift+click): toggle/append this column.
+           - not sorted  → append as asc
+           - sorted asc  → change to desc in place
+           - sorted desc → remove from list                               #}
+        {% set ns2 = namespace(new_sorts=[], found=false) %}
+        {% for s_name, s_dir in list_params.sorts %}
+            {% if s_name == field.name %}
+                {% set ns2.found = true %}
+                {% if s_dir == 'asc' %}
+                    {% set ns2.new_sorts = ns2.new_sorts + [field.name ~ '__desc'] %}
+                {% endif %}
+            {% else %}
+                {% set ns2.new_sorts = ns2.new_sorts + [s_name ~ '__' ~ s_dir] %}
+            {% endif %}
+        {% endfor %}
+        {% if not ns2.found %}
+            {% set ns2.new_sorts = ns2.new_sorts + [field.name ~ '__asc'] %}
+        {% endif %}
+        <a class="text-reset text-decoration-none d-inline-flex align-items-center sort-link"
+           href="{{ list_url(request, sort=field.name ~ '__' ~ single_dir, page=None) }}"
+           data-multi-sort-href="{{ list_url(request, sort=ns2.new_sorts, page=None) }}">
+            {{ field.label }}
+            {% if ns.current_dir is not none -%}
+                {% if list_params.sorts | length > 1 %}
+                    <span class="badge bg-primary text-primary-fg badge-pill ms-1">{{ ns.sort_index + 1 }}</span>
+                {% endif %}
+                <i class="fa-solid fa-sort-{{ 'up' if ns.current_dir == 'asc' else 'down' }} ms-1"></i>
+            {%- else -%}
+                <i class="fa-solid fa-sort ms-1 text-muted opacity-50"></i>
+            {%- endif %}
+        </a>
+    {%- else -%}
+        {{ field.label }}
+    {%- endif %}
+{%- endmacro %}

@@ -1,0 +1,8 @@
+{% from "fields/list/_truncated.html" import truncated %}
+{% set foreign_view = (field.key | to_view) %}
+{% call truncated() -%}
+    {% for v in (data if field.multiple else [data]) -%}
+        <a href="{{ detail_url(request, foreign_view.key, v[foreign_view.pk_attr]) }}">{{ v["_meta"]["repr"] }}</a>
+        {% if not loop.last %},{% endif %}
+    {%- endfor %}
+{%- endcall %}

@@ -1,13 +1,16 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any
 
 from starlette.requests import Request
-from starlette_admin._types import RequestAction
 from starlette_admin.contrib.sqla.exceptions import NotSupportedValue
 from starlette_admin.fields import FileField as BaseFileField
 from starlette_admin.fields import ImageField as BaseImageField
 from starlette_admin.fields import StringField
 from starlette_admin.tools import iterencode
+from starlette_admin.types import (
+    RequestAction,  # used in _serialize_sqlalchemy_file_library
+)
 
 
 @dataclass(init=False)
@@ -30,51 +33,47 @@ class MultiplePKField(StringField):
         )
 
     async def parse_obj(self, request: Request, obj: Any) -> Any:
-        """Encode the primary keys values into a single string"""
+        """Encode the object's primary key values into a single string."""
         return iterencode(str(getattr(obj, n)) for n in self.name.split(","))
 
 
 @dataclass
 class FileField(BaseFileField):
-    """This field will automatically work with sqlalchemy_file.FileField"""
+    """A `FileField` that serializes values stored with `sqlalchemy_file.FileField`."""
 
-    async def serialize_value(
-        self, request: Request, value: Any, action: RequestAction
-    ) -> Any:
+    async def serialize_value(self, request: Request, value: Any) -> Any:
         try:
             return _serialize_sqlalchemy_file_library(
-                request, value, action, self.multiple
+                request, value, request.state.action, self.multiple
             )
         except (
             ImportError,
             ModuleNotFoundError,
             NotSupportedValue,
         ):  # pragma: no cover
-            return super().serialize_value(request, value, action)
+            return await super().serialize_value(request, value)
 
 
 @dataclass
 class ImageField(BaseImageField):
-    """This field will automatically work with sqlalchemy_file.ImageField"""
+    """An `ImageField` that serializes values stored with `sqlalchemy_file.ImageField`."""
 
-    async def serialize_value(
-        self, request: Request, value: Any, action: RequestAction
-    ) -> Any:
+    async def serialize_value(self, request: Request, value: Any) -> Any:
         try:
             return _serialize_sqlalchemy_file_library(
-                request, value, action, self.multiple
+                request, value, request.state.action, self.multiple
             )
         except (
             ImportError,
             ModuleNotFoundError,
             NotSupportedValue,
         ):  # pragma: no cover
-            return super().serialize_value(request, value, action)
+            return await super().serialize_value(request, value)
 
 
 def _serialize_sqlalchemy_file_library(
     request: Request, value: Any, action: RequestAction, is_multiple: bool
-) -> Optional[Union[List[Dict[str, Any]], Dict[str, Any]]]:
+) -> list[dict[str, Any]] | dict[str, Any] | None:
     from sqlalchemy_file import File
 
     if isinstance(value, File) or (
@@ -87,7 +86,7 @@ def _serialize_sqlalchemy_file_library(
                 action == RequestAction.LIST
                 and getattr(item, "thumbnail", None) is not None
             ):
-                """Use thumbnail on list page if available"""
+                # Prefer the thumbnail over the full image on the list page.
                 path = item["thumbnail"]["path"]
             storage, file_id = path.split("/")
             data.append(

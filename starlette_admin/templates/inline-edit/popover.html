@@ -1,0 +1,11 @@
+{# Bootstrap Popover `template` option for the inline-edit popover
+   (static/js/list.js `initInlineEdit`). No header: x-editable's container has
+   no title bar, so only the arrow and `.popover-body` are kept. Scoped to
+   `.inline-edit-popover` so CSS in `static/css/inline-edit.css` never leaks
+   onto unrelated popovers (e.g. the file-field delete help popover). #}
+<template id="inline-edit-popover-template">
+    <div class="popover inline-edit-popover" role="tooltip">
+        <div class="popover-arrow"></div>
+        <div class="popover-body"></div>
+    </div>
+</template>

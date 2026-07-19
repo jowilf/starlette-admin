@@ -1,0 +1,15 @@
+{% set foreign_view = (field.key | to_view) %}
+{% set fpk = foreign_view.pk_attr %}
+<div class="{% if error %}{{ field.error_class }}{% endif %}">
+    <select data-allow-clear="true"
+            data-placeholder="Select {{ field.id }}"
+            id="{{ field.id }}"
+            name="{{ field.id }}"
+            class="form-control {{ 'field-has-one' if not field.many else 'field-has-many' }} {% if error %}is-invalid{% endif %}"
+            data-url="{{ url_for(__name__ ~ ':relation-lookup', key=foreign_view.key) }}"
+            data-pk="{{ fpk }}"
+            {% if data %}data-initial="{{ (data if field.multiple else [data]) |tojson |forceescape }}"{% endif %}
+            {% if field.multiple %}multiple{% endif %}></select>
+    {% if field.help_text %}<small class="form-hint mt-2">{{ field.help_text }}</small>{% endif %}
+</div>
+{% include "fields/form/_error.html" %}

@@ -1,0 +1,7 @@
+{% from "fields/list/_truncated.html" import truncated %}
+{% call truncated() -%}
+    {% for v in (data if field.multiple else [data]) -%}
+        <a href="{{ v | escape }}" target="_blank">{{ v | escape }}</a>
+        {% if not loop.last %},{% endif %}
+    {%- endfor %}
+{%- endcall %}

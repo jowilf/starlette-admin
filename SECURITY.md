@@ -22,7 +22,7 @@ This policy covers the `starlette-admin` package itself. Vulnerabilities in thir
 
 starlette-admin provides an administrative interface with full CRUD access to your data. Please follow these best practices:
 
-- **Always enable authentication** — never expose the admin interface without it.
+- **Always enable authentication**: never expose the admin interface without it.
 - **Restrict access by IP or network** when possible.
 - **Use HTTPS** in production.
 - **Limit admin user permissions** using the built-in authorization features.
