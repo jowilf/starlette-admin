@@ -404,18 +404,18 @@ async def test_parse_input_parser_receives_request():
 async def test_validate_required_raises_on_empty_value():
     field = StringField("title", required=True)
     with pytest.raises(ValueError, match=re.escape("This field is required.")):
-        await field.validate(MagicMock(), "")
+        await field.validate(MagicMock(), "", {})
 
 
 @pytest.mark.asyncio
 async def test_validate_skips_validators_on_empty_optional_value():
     calls = []
 
-    def _record(request, field, value):
+    def _record(request, field, value, form_values):
         calls.append(value)
 
     field = StringField("title", validators=[_record])
-    await field.validate(MagicMock(), "")
+    await field.validate(MagicMock(), "", {})
     assert calls == []
 
 
@@ -423,19 +423,19 @@ async def test_validate_skips_validators_on_empty_optional_value():
 async def test_validate_runs_sync_validators_in_order_and_stops_at_first_error():
     calls = []
 
-    def _first(request, field, value):
+    def _first(request, field, value, form_values):
         calls.append("first")
 
-    def _second(request, field, value):
+    def _second(request, field, value, form_values):
         calls.append("second")
         raise ValueError("rejected")
 
-    def _third(request, field, value):
+    def _third(request, field, value, form_values):
         calls.append("third")
 
     field = StringField("title", validators=[_first, _second, _third])
     with pytest.raises(ValueError, match="rejected"):
-        await field.validate(MagicMock(), "value")
+        await field.validate(MagicMock(), "value", {})
     assert calls == ["first", "second"]
 
 
@@ -443,11 +443,11 @@ async def test_validate_runs_sync_validators_in_order_and_stops_at_first_error()
 async def test_validate_awaits_async_validators():
     calls = []
 
-    async def _async_validator(request, field, value):
+    async def _async_validator(request, field, value, form_values):
         calls.append(value)
 
     field = StringField("title", validators=[_async_validator])
-    await field.validate(MagicMock(), "value")
+    await field.validate(MagicMock(), "value", {})
     assert calls == ["value"]
 
 
@@ -1109,13 +1109,13 @@ async def test_url_field_serialize_value_custom_allowed_schemes():
 async def test_url_field_rejects_invalid_value_by_default():
     field = URLField("website")
     with pytest.raises(ValueError, match="Invalid URL"):
-        await field.validate(MagicMock(), "not-a-url")
+        await field.validate(MagicMock(), "not-a-url", {})
 
 
 @pytest.mark.asyncio
 async def test_url_field_accepts_valid_value_by_default():
     field = URLField("website")
-    await field.validate(MagicMock(), "https://example.com")
+    await field.validate(MagicMock(), "https://example.com", {})
 
 
 @pytest.mark.asyncio
@@ -1123,11 +1123,11 @@ async def test_url_field_custom_validators_override_default():
     """Passing `validators` explicitly opts out of the default `url()` validator."""
     calls = []
 
-    def _record(request, field, value):
+    def _record(request, field, value, form_values):
         calls.append(value)
 
     field = URLField("website", validators=[_record])
-    await field.validate(MagicMock(), "not-a-url")
+    await field.validate(MagicMock(), "not-a-url", {})
     assert calls == ["not-a-url"]
 
 
@@ -1138,24 +1138,24 @@ async def test_url_field_custom_validators_override_default():
 async def test_email_field_rejects_invalid_value_by_default():
     field = EmailField("email")
     with pytest.raises(ValueError, match="Invalid email address"):
-        await field.validate(MagicMock(), "not-an-email")
+        await field.validate(MagicMock(), "not-an-email", {})
 
 
 @pytest.mark.asyncio
 async def test_email_field_accepts_valid_value_by_default():
     field = EmailField("email")
-    await field.validate(MagicMock(), "user@example.com")
+    await field.validate(MagicMock(), "user@example.com", {})
 
 
 @pytest.mark.asyncio
 async def test_email_field_custom_validators_override_default():
     calls = []
 
-    def _record(request, field, value):
+    def _record(request, field, value, form_values):
         calls.append(value)
 
     field = EmailField("email", validators=[_record])
-    await field.validate(MagicMock(), "not-an-email")
+    await field.validate(MagicMock(), "not-an-email", {})
     assert calls == ["not-an-email"]
 
 
@@ -1171,20 +1171,20 @@ def test_uuid_field_defaults_copy_to_clipboard_to_true():
 async def test_uuid_field_rejects_invalid_value_by_default():
     field = UUIDField("uuid")
     with pytest.raises(ValueError, match="Invalid UUID"):
-        await field.validate(MagicMock(), "not-a-uuid")
+        await field.validate(MagicMock(), "not-a-uuid", {})
 
 
 @pytest.mark.asyncio
 async def test_uuid_field_accepts_valid_value_by_default():
     field = UUIDField("uuid")
-    await field.validate(MagicMock(), "6fa459ea-ee8a-4ca4-894e-db77e160355e")
+    await field.validate(MagicMock(), "6fa459ea-ee8a-4ca4-894e-db77e160355e", {})
 
 
 @pytest.mark.asyncio
 async def test_uuid_field_enforces_version():
     field = UUIDField("uuid", version=4)
     with pytest.raises(ValueError, match="expected version 4"):
-        await field.validate(MagicMock(), "6fa459ea-ee8a-3ca4-894e-db77e160355e")
+        await field.validate(MagicMock(), "6fa459ea-ee8a-3ca4-894e-db77e160355e", {})
 
 
 @pytest.mark.asyncio
@@ -1192,11 +1192,11 @@ async def test_uuid_field_custom_validators_override_default():
     """Passing `validators` explicitly opts out of the default `uuid()` validator."""
     calls = []
 
-    def _record(request, field, value):
+    def _record(request, field, value, form_values):
         calls.append(value)
 
     field = UUIDField("uuid", validators=[_record])
-    await field.validate(MagicMock(), "not-a-uuid")
+    await field.validate(MagicMock(), "not-a-uuid", {})
     assert calls == ["not-a-uuid"]
 
 
@@ -1212,26 +1212,26 @@ def test_ip_address_field_defaults_copy_to_clipboard_to_false():
 async def test_ip_address_field_rejects_invalid_value_by_default():
     field = IPAddressField("ip")
     with pytest.raises(ValueError, match="Invalid IP address"):
-        await field.validate(MagicMock(), "not-an-ip")
+        await field.validate(MagicMock(), "not-an-ip", {})
 
 
 @pytest.mark.asyncio
 async def test_ip_address_field_accepts_ipv4_by_default():
     field = IPAddressField("ip")
-    await field.validate(MagicMock(), "192.168.0.1")
+    await field.validate(MagicMock(), "192.168.0.1", {})
 
 
 @pytest.mark.asyncio
 async def test_ip_address_field_rejects_ipv6_by_default():
     field = IPAddressField("ip")
     with pytest.raises(ValueError, match="Invalid IPv6 address"):
-        await field.validate(MagicMock(), "::1")
+        await field.validate(MagicMock(), "::1", {})
 
 
 @pytest.mark.asyncio
 async def test_ip_address_field_accepts_ipv6_when_enabled():
     field = IPAddressField("ip", ipv6=True)
-    await field.validate(MagicMock(), "::1")
+    await field.validate(MagicMock(), "::1", {})
 
 
 @pytest.mark.asyncio
@@ -1239,11 +1239,11 @@ async def test_ip_address_field_custom_validators_override_default():
     """Passing `validators` explicitly opts out of the default `ip_address()` validator."""
     calls = []
 
-    def _record(request, field, value):
+    def _record(request, field, value, form_values):
         calls.append(value)
 
     field = IPAddressField("ip", validators=[_record])
-    await field.validate(MagicMock(), "not-an-ip")
+    await field.validate(MagicMock(), "not-an-ip", {})
     assert calls == ["not-an-ip"]
 
 
@@ -1435,12 +1435,12 @@ async def test_tags_field_parse_import_value_from_non_string():
 async def test_file_field_validate_upload_custom_validator():
     """Custom validators execute after `accept` and `max_size` checks, and can cause the upload to fail."""
 
-    def _reject(request, field, upload):
+    def _reject(request, field, upload, form_values):
         raise ValueError("nope")
 
     field = FileField("doc", validators=[_reject])
     with pytest.raises(ValueError, match="nope"):
-        await field.validate(None, (_make_upload_file(b"data"), False))
+        await field.validate(None, (_make_upload_file(b"data"), False), {})
 
 
 def test_file_field_excluded_from_import_by_default():
@@ -1459,7 +1459,7 @@ async def test_image_field_rejects_invalid_image():
     upload = _make_upload_file(b"not an image")
     field = ImageField("photo")
     with pytest.raises(ValueError, match="Upload a valid image file"):
-        await field.validate(None, (upload, False))
+        await field.validate(None, (upload, False), {})
 
 
 # ── RelationField serialization without a view ─────────────────────────────────

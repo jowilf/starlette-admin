@@ -1550,7 +1550,8 @@ class BaseModelView(BaseView):
         the `required` check plus the field's `validators` chain) against the
         parsed form data, gathering all failures before raising a single
         [FormValidationError][starlette_admin.exceptions.FormValidationError]
-        keyed by field name.
+        keyed by field name. `data` is also passed to each field as
+        `form_values`, so validators can read other fields' parsed values.
 
         The admin calls this on the parsed form values before file storage and
         before `create`/`edit`, so field validators always see backend-agnostic
@@ -1568,7 +1569,7 @@ class BaseModelView(BaseView):
             if field.read_only or field.name in exclude:
                 continue
             try:
-                await field.validate(request, data.get(field.name))
+                await field.validate(request, data.get(field.name), data)
             except ValueError as exc:
                 errors[field.name] = str(exc)
         if errors:

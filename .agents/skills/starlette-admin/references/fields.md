@@ -20,7 +20,9 @@ Fields are plain Python dataclasses; every constructor argument is a dataclass f
 
 ## Validators
 
-Every field accepts `validators=[...]`: sync or async callables `(request, field, value)` that raise `ValueError` to reject the value. They run on form submission after the built-in `required` check, in order, stopping at the first error; that error renders under the input, and errors across fields are aggregated into one response. Empty values (`None`, `""`, empty collections) are checked only against `required`, so validators never see missing input.
+Every field accepts `validators=[...]`: sync or async callables `(request, field, value, form_values)` that raise `ValueError` to reject the value. They run on form submission after the built-in `required` check, in order, stopping at the first error; that error renders under the input, and errors across fields are aggregated into one response. Empty values (`None`, `""`, empty collections) are checked only against `required`, so validators never see missing input.
+
+`form_values` is the full submitted data keyed by field name, parsed before validation started (relation fields hold primary keys, multi-value fields hold lists). Read it when a field's rule depends on another field's value. On EDIT it holds the submitted form; during inline saves it holds only the edited row's fields; on import it holds the parsed row.
 
 Built-in factories in `starlette_admin.validators` (every factory accepts `message=` to override the error text):
 
@@ -46,14 +48,24 @@ Rules and context:
 - Validators receive the request, so they can query the database:
 
 ```python
-async def unique_slug(request, field, value):
+async def unique_slug(request, field, value, form_values):
     if await slug_exists(request.state.session, value):
         raise ValueError("This slug is already taken")
 
 StringField("slug", validators=[unique_slug])
 ```
 
-Cross-field rules do not belong in field validators. Override the view's `validate(request, data)` and raise `FormValidationError({field_name: message})`; it runs only after every field passes its own chain. During inline saves `data` contains only the edited field, see [views.md](views.md).
+A field validator can reach another field through `form_values`, which raises the error under its own field:
+
+```python
+def not_before_start(request, field, value, form_values):
+    if form_values.get("start") and value < form_values["start"]:
+        raise ValueError("End date must be after the start date")
+
+DateField("end", validators=[not_before_start])
+```
+
+To reject across several fields at once, override the view's `validate(request, data)` and raise `FormValidationError({field_name: message})`; it runs only after every field passes its own chain. During inline saves `data` contains only the edited field, see [views.md](views.md).
 
 ## Custom fields
 

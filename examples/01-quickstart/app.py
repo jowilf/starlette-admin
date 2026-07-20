@@ -90,15 +90,18 @@ class Post(Base):
         return self.title
 
 
-async def unique_slug(request: Request, field: Any, value: Any) -> None:
+async def unique_slug(
+    request: Request, field: Any, value: Any, form_values: dict[str, Any]
+) -> None:
     """Rejects a slug already used by another post.
 
     The edit form carries the current pk as a query param, so that row is
-    excluded from the uniqueness check.
+    excluded from the uniqueness check. Falls back to `id` in form_values
+    for flows without a query param, such as import.
     """
     session: Session = request.state.session
     stmt = select(Post.id).where(Post.slug == value)
-    pk = request.query_params.get("pk")
+    pk = request.query_params.get("pk") or form_values.get("id")
     if pk is not None:
         stmt = stmt.where(Post.id != int(pk))
     if session.execute(stmt).first() is not None:
@@ -123,7 +126,8 @@ class PostView(ModelView):
             populate_from="title",
             required=True,
             copy_to_clipboard=True,
-            validators=[unique_slug],
+            # validators.slug() is applied by default when no validators are specified
+            validators=[validators.slug(), unique_slug],
         ),
         ComputedField(
             "word_count",

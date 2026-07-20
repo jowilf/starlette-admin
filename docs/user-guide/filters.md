@@ -27,7 +27,7 @@ Clicking the **Filters** button opens a dropdown form where users can build thei
 * **Add filter**: Adds a new condition row. You select a field, choose an operator (populated based on that field's available filters), and provide the value. The input adapts automatically. For example, it shows a plain text box for `contains`, two boxes for `between`, or no input at all for `is null`.
 * **Add group**: Nests a sub-form with its own `AND`/`OR` selector. This is perfect for building complex conditions like `A AND (B OR C)`.
 * **Match all/any of the following**: This selector at the top sets whether the current level uses `AND` or `OR` logic.
-* **Apply filters**: Submits the form as a `GET` request. The entire filter tree is serialized into a single `filter` query parameter. You can read more about this in the [The filter URL format](%23the-filter-url-format) section below.
+* **Apply filters**: Submits the form as a `GET` request. The entire filter tree is serialized into a single `filter` query parameter. You can read more about this in the [The filter URL format](#the-filter-url-format) section below.
 * **Active filters**: Each active filter appears as a removable pill above the table. Clicking the `×` re-submits the list with just that specific rule dropped. A nested group collapses into a single pill that can be removed as a whole.
 
 !!! tip

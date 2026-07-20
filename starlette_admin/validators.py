@@ -3,16 +3,21 @@
 Design and API are inspired by wtforms.validators:
 https://wtforms.readthedocs.io/en/3.1.x/validators/#built-in-validators
 
-A validator is a callable ``(request, field, value)`` that raises `ValueError`
-to reject the value and returns ``None`` to accept it. Validators may be sync
-or async. They are attached to a field through ``BaseField.validators`` and run
-by [BaseField.validate][starlette_admin.fields.BaseField.validate] after the
+A validator is a callable ``(request, field, value, form_values)`` that raises
+`ValueError` to reject the value and returns ``None`` to accept it. Validators
+may be sync or async. They are attached to a field through
+``BaseField.validators`` and run by
+[BaseField.validate][starlette_admin.fields.BaseField.validate] after the
 built-in ``required`` check, in order, stopping at the first error.
 
 For [FileField][starlette_admin.fields.FileField] and its subclasses, ``value``
 is a single Starlette `UploadFile`; validators run once per uploaded file.
 Every other field receives its parsed form value (relation fields receive
 primary keys, multi-value fields receive the whole list).
+
+``form_values`` is the full submitted data, keyed by field name, parsed from
+the form (or import row) before validation started; use it for validators
+that depend on another field's value.
 
 Each factory below builds a configured validator, e.g.
 ``StringField("title", validators=[length(min=3)])``.
@@ -35,7 +40,9 @@ if TYPE_CHECKING:
 
 _log = get_logger(__name__)
 
-Validator = Callable[[Request, "BaseField", Any], "None | Awaitable[None]"]
+Validator = Callable[
+    [Request, "BaseField", Any, "dict[str, Any]"], "None | Awaitable[None]"
+]
 
 
 def length(
@@ -46,7 +53,9 @@ def length(
     """Requires ``min <= len(value) <= max``. Unset bounds are not checked."""
     assert min != -1 or max != -1, "At least one of `min` or `max` must be set"
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         size = len(value)
         if size < min or (max != -1 and size > max):
             _log.debug(
@@ -85,7 +94,9 @@ def number_range(
         "At least one of `min` or `max` must be set"
     )
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         if (min is not None and value < min) or (max is not None and value > max):
             _log.debug(
                 "number_range: field %r value %r out of range (min=%s, max=%s)",
@@ -116,7 +127,9 @@ def number_gt(min: float, message: str | None = None) -> Validator:
     """Requires ``value > min`` (strict). For an inclusive bound, use
     [number_range][starlette_admin.validators.number_range]."""
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         if value <= min:
             _log.debug(
                 "number_gt: field %r value %r is not greater than %s",
@@ -135,7 +148,9 @@ def number_lt(max: float, message: str | None = None) -> Validator:
     """Requires ``value < max`` (strict). For an inclusive bound, use
     [number_range][starlette_admin.validators.number_range]."""
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         if value >= max:
             _log.debug(
                 "number_lt: field %r value %r is not less than %s",
@@ -166,7 +181,9 @@ def date_range(
         "At least one of `min` or `max` must be set"
     )
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         min_value = min() if callable(min) else min
         max_value = max() if callable(max) else max
         if (min_value is not None and value < min_value) or (
@@ -205,7 +222,9 @@ def regexp(
     """Requires the value to match `pattern` (via `re.match`)."""
     compiled = re.compile(pattern, flags) if isinstance(pattern, str) else pattern
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         if compiled.match(str(value)) is None:
             _log.debug(
                 "regexp: field %r value %r does not match %r",
@@ -228,7 +247,9 @@ def disallow(
     unwanted content, e.g. ``disallow(r"<[^>]+>")`` to reject HTML tags."""
     compiled = re.compile(pattern, flags) if isinstance(pattern, str) else pattern
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         if compiled.search(str(value)) is not None:
             _log.debug(
                 "disallow: field %r value %r matches disallowed pattern %r",
@@ -250,7 +271,9 @@ def mac_address(message: str | None = None) -> Validator:
     """Requires the value to be a valid MAC address, six pairs of hex digits
     separated consistently by ``:`` or ``-``."""
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         if _MAC_ADDRESS_RE.match(str(value)) is None:
             _log.debug("mac_address: field %r cannot parse %r", field.name, value)
             raise ValueError(message or _("Invalid MAC address"))
@@ -267,7 +290,9 @@ def slug(allow_underscores: bool = False, message: str | None = None) -> Validat
     single hyphens between segments. `allow_underscores` also permits ``_``."""
     pattern = _SLUG_UNDERSCORE_RE if allow_underscores else _SLUG_RE
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         if pattern.match(str(value)) is None:
             _log.debug("slug: field %r rejected %r", field.name, value)
             raise ValueError(message or _("Invalid slug"))
@@ -302,7 +327,9 @@ def color(formats: Collection[str] = ("hex",), message: str | None = None) -> Va
     assert formats and not unknown, "`formats` must be a subset of: hex, rgb, hsl"
     patterns = [_COLOR_RES[fmt] for fmt in formats]
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         raw = str(value)
         if not any(pattern.match(raw) for pattern in patterns):
             _log.debug(
@@ -326,7 +353,9 @@ def email(message: str | None = None, **options: Any) -> Validator:
     """
     options.setdefault("check_deliverability", False)
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         try:
             from email_validator import EmailNotValidError, validate_email
         except ImportError as exc:
@@ -397,7 +426,9 @@ def url(
     """
     allowed = {s.lower() for s in schemes} if schemes is not None else None
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         raw = str(value)
         if len(raw) > max_length or any(c in raw for c in _URL_UNSAFE_CHARS):
             _log.debug(
@@ -436,7 +467,9 @@ def uuid(version: int | None = None, message: str | None = None) -> Validator:
     also requires the UUID to be of that version."""
     assert version in (None, 1, 3, 4, 5), "`version` must be 1, 3, 4, 5 or None"
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         try:
             parsed = _uuid.UUID(str(value))
         except (ValueError, AttributeError, TypeError):
@@ -465,7 +498,9 @@ def ip_address(
     which address families are accepted; at least one must be `True`."""
     assert ipv4 or ipv6, "At least one of `ipv4` or `ipv6` must be True"
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         try:
             parsed = ipaddress.ip_address(str(value))
         except ValueError:
@@ -490,7 +525,9 @@ def ip_address(
 def any_of(values: Collection[Any], message: str | None = None) -> Validator:
     """Requires the value to be one of `values`."""
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         if value not in values:
             _log.debug(
                 "any_of: field %r value %r not in allowed values",
@@ -509,7 +546,9 @@ def any_of(values: Collection[Any], message: str | None = None) -> Validator:
 def none_of(values: Collection[Any], message: str | None = None) -> Validator:
     """Requires the value to not be any of `values`."""
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         if value in values:
             _log.debug(
                 "none_of: field %r value %r is a disallowed value",
@@ -531,10 +570,12 @@ def items(*validators: Validator) -> Validator:
     error. Example: ``TagsField("tags", validators=[items(length(min=3))])``."""
     assert validators, "At least one validator must be provided"
 
-    async def validate(request: Request, field: "BaseField", value: Any) -> None:
+    async def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         for item in value:
             for validator in validators:
-                result = validator(request, field, item)
+                result = validator(request, field, item, form_values)
                 if inspect.isawaitable(result):
                     await result
 
@@ -544,7 +585,9 @@ def items(*validators: Validator) -> Validator:
 def file_size(max_size: int, message: str | None = None) -> Validator:
     """Rejects uploads larger than `max_size` bytes."""
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         size = value.size
         assert size is not None, "UploadFile size should be set by Starlette"
         if size > max_size:
@@ -568,7 +611,9 @@ def file_type(accept: str, message: str | None = None) -> Validator:
     specifiers as understood by the HTML file input (e.g., ``".pdf"``,
     ``"image/*"``, ``"image/png,.svg"``)."""
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         filename = (value.filename or "").lower()
         content_type = (value.content_type or "").lower()
         for token in (t.strip().lower() for t in accept.split(",")):
@@ -600,7 +645,9 @@ def file_type(accept: str, message: str | None = None) -> Validator:
 def valid_image(message: str | None = None) -> Validator:
     """Rejects uploads that Pillow cannot verify as images."""
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         from PIL import Image
 
         try:
@@ -634,7 +681,9 @@ def image_size(
         bound is not None for bound in (min_width, min_height, max_width, max_height)
     ), "At least one bound must be set"
 
-    def validate(request: Request, field: "BaseField", value: Any) -> None:
+    def validate(
+        request: Request, field: "BaseField", value: Any, form_values: dict[str, Any]
+    ) -> None:
         from PIL import Image
 
         try:

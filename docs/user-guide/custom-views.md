@@ -30,7 +30,7 @@ admin.add_view(
 * **`menu_label`**, **`icon`**, and **`path`**: Control the sidebar entry and URL.
 * **`widget`**: Determines what the page renders. This can be a single `BaseWidget` instance, or a callable (`(request) -> BaseWidget | None`) that builds the tree per request. Use the callable form when the page relies on live data, the current user, or feature flags.
 
-To display multiple widgets, pass a [Layout widget](%23layout-widgets) containing children.
+To display multiple widgets, pass a [Layout widget](#layout-widgets) containing children.
 
 Subclassing `CustomView` is only necessary when you need to add custom endpoints, enforce access control, or take full control over the HTTP response.
 

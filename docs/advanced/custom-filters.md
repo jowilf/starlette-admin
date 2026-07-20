@@ -84,7 +84,7 @@ There are two ways to register a custom filter with a view. Choose the method th
 
 ### Per field instance (narrow scope)
 
-Pass the custom filter into the target field's `filters=` list. You can provide it alongside or instead of the defaults. See [Overriding filters for a specific field](../user-guide/filters.md%23overriding-filters-for-a-specific-field) for the base pattern using built-in filters. Use this approach when the filter is highly specific and only applies to a single field.
+Pass the custom filter into the target field's `filters=` list. You can provide it alongside or instead of the defaults. See [Overriding filters for a specific field](../user-guide/filters.md#overriding-filters-for-a-specific-field) for the base pattern using built-in filters. Use this approach when the filter is highly specific and only applies to a single field.
 
 ### Registry-wide (every matching field type)
 
@@ -265,7 +265,7 @@ http://127.0.0.1:8000/admin/product/list?filter=lot_size__divisible_by=6&sort=id
 ```
 
 > **Tip**
-> Use a `FilterRegistry` subclass when a filter is generic enough to apply to every field of a given type within a view. Use the per-field `filters=` approach when the logic is highly specific to a single field. See the [Filters guide](../user-guide/filters.md%23overriding-filters-for-a-specific-field) for examples of the per-field pattern.
+> Use a `FilterRegistry` subclass when a filter is generic enough to apply to every field of a given type within a view. Use the per-field `filters=` approach when the logic is highly specific to a single field. See the [Filters guide](../user-guide/filters.md#overriding-filters-for-a-specific-field) for examples of the per-field pattern.
 
 ## Dynamic choices with `get_choices`
 

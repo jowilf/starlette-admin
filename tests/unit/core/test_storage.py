@@ -328,8 +328,8 @@ async def test_s3_read_reraises_other_client_errors():
 async def test_validate_upload_max_size():
     field = FileField("doc", max_size=3)
     with pytest.raises(ValueError, match="too large"):
-        await field.validate(None, (make_upload(b"too big"), False))
-    assert await field.validate(None, (make_upload(b"ok"), False)) is None
+        await field.validate(None, (make_upload(b"too big"), False), {})
+    assert await field.validate(None, (make_upload(b"ok"), False), {}) is None
 
 
 @pytest.mark.asyncio
@@ -355,16 +355,16 @@ async def test_validate_upload_accept(accept, filename, content_type, ok):
     field = FileField("doc", accept=accept)
     upload = make_upload(b"x", filename, content_type)
     if ok:
-        assert await field.validate(None, (upload, False)) is None
+        assert await field.validate(None, (upload, False), {}) is None
     else:
         with pytest.raises(ValueError, match="not allowed"):
-            await field.validate(None, (upload, False))
+            await field.validate(None, (upload, False), {})
 
 
 @pytest.mark.asyncio
 async def test_validate_upload_no_constraints():
     field = FileField("doc")
-    assert await field.validate(None, (make_upload(b"anything"), False)) is None
+    assert await field.validate(None, (make_upload(b"anything"), False), {}) is None
 
 
 # ── FileField.serialize_value ─────────────────────────────────────────────────

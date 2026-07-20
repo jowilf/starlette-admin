@@ -49,7 +49,7 @@ This package targets the modern asynchronous Python stack. If your application u
 | Inline editing in list view | **Yes** `list_editable` | **Yes** `column_editable_list` | **Yes** [`inline_editable_fields`](../user-guide/inline-edit.md) |
 | Related-model inline forms | **Yes** `TabularInline` / `StackedInline` | **Yes** `inline_models` | **Yes** [`InlineModelView`](../user-guide/inline-forms.md) |
 | Batch actions | **Yes** `actions` | **Yes** `@action` | **Yes** [`@action`](../user-guide/actions.md) with confirmation dialogs and custom forms |
-| Per-row actions | **Partial** custom templates | **Partial** custom formatters | **Yes** [`@row_action`, `@link_row_action](../user-guide/actions.md%23row-actions)` |
+| Per-row actions | **Partial** custom templates | **Partial** custom formatters | **Yes** [`@row_action`, `@link_row_action](../user-guide/actions.md#row-actions)` |
 | Data export | **Partial** `django-import-export` | **Yes** CSV and others | **Yes** [CSV, JSON, Excel, PDF](../user-guide/export-import.md) |
 | Data import | **Partial** `django-import-export` | **No** | **Yes** [CSV, JSON, Excel](../user-guide/export-import.md) with preview validation and upsert |
 | File and image uploads | **Yes** `FileField` / `ImageField` | **Partial** requires extra setup | **Yes** [Local and S3 storage](../user-guide/file-storage.md) |
@@ -57,9 +57,9 @@ This package targets the modern asynchronous Python stack. If your application u
 | Custom standalone pages | **Yes** custom `AdminSite` URLs | **Yes** `BaseView` + `@expose` | **Yes** [`CustomView`](../user-guide/custom-views.md) |
 | Form layout control | **Yes** `fieldsets` | **Yes** `form_rules` | **Yes** [`form_layout`](../advanced/form-layout.md) with tabs and grids |
 | Authentication | **Yes** `django.contrib.auth` | **No** bring your own | **Yes** [`AuthProvider`](../user-guide/auth.md) or `OAuthProvider` |
-| Per-model permissions | **Yes** permission framework | **Yes** override `can_*` flags | **Yes** [per-request methods](../user-guide/views.md%23security-authorization) |
-| Per-field permissions | **Partial** `get_readonly_fields` | **No** | **Yes** [`can_access_field`](../user-guide/views.md%23security-authorization) |
-| Lifecycle hooks | **Yes** `save_model`, signals | **Yes** `on_model_change` | **Yes** [Lifecycle hooks](../user-guide/views.md%23lifecycle-hooks) and [events](../advanced/events.md) |
+| Per-model permissions | **Yes** permission framework | **Yes** override `can_*` flags | **Yes** [per-request methods](../user-guide/views.md#security-authorization) |
+| Per-field permissions | **Partial** `get_readonly_fields` | **No** | **Yes** [`can_access_field`](../user-guide/views.md#security-authorization) |
+| Lifecycle hooks | **Yes** `save_model`, signals | **Yes** `on_model_change` | **Yes** [Lifecycle hooks](../user-guide/views.md#lifecycle-hooks) and [events](../advanced/events.md) |
 | CSRF protection | **Yes** Django middleware | **Yes** via Flask-WTF | **Yes** [Built into `Admin](../user-guide/security.md)` |
 | Change history / audit log | **Yes** `LogEntry` | **No** | **Partial** build using [events](../advanced/events.md) |
 | Internationalization | **Yes** | **Yes** via Flask-Babel | **Yes** [`I18nConfig`](../user-guide/i18n.md) |

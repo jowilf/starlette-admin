@@ -56,6 +56,8 @@ from starlette_admin.validators import (
     file_size,
     file_type,
     ip_address,
+    number_range,
+    slug,
     url,
     uuid,
     valid_image,
@@ -235,30 +237,39 @@ class BaseField:
             return await maybe_async(parser(request, source))
         return await self.parse_form_data(request, raw)
 
-    async def validate(self, request: Request, value: Any) -> None:
+    async def validate(
+        self, request: Request, value: Any, form_values: dict[str, Any]
+    ) -> None:
         """Validates this field's parsed form value, raising `ValueError` on
         the first failure.
 
         An empty value (`None`, `""`, or an empty collection) is only checked
         against `required`; the `validators` chain runs solely on non-empty
         values, so validators never have to handle missing input.
+
+        Parameters:
+            request: The request being processed.
+            value: This field's own parsed value.
+            form_values: The full submitted data, keyed by field name, parsed
+                before validation started.
         """
         if is_empty_value(value):
             if self.required:
                 raise ValueError(_("This field is required."))
             return
-        await self._run_validators(request, self.validators, value)
+        await self._run_validators(request, self.validators, value, form_values)
 
     async def _run_validators(
         self,
         request: Request,
         validators: Sequence[Validator],
         value: Any,
+        form_values: dict[str, Any],
     ) -> None:
         """Runs each validator in order, awaiting async ones, stopping at the
         first `ValueError`."""
         for validator in validators:
-            result = validator(request, self, value)
+            result = validator(request, self, value, form_values)
             if inspect.isawaitable(result):
                 await result
 
@@ -618,6 +629,11 @@ class NumberField(StringField):
     max: int | None = None
     min: int | None = None
     step: str | int | None = None
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not self.validators and (self.min is not None or self.max is not None):
+            self.validators = [number_range(min=self.min, max=self.max)]
 
     def input_params(self) -> str:
         return html_params(
@@ -1819,7 +1835,9 @@ class FileField(BaseField):
         )
         return value
 
-    async def validate(self, request: Request, value: Any) -> None:
+    async def validate(
+        self, request: Request, value: Any, form_values: dict[str, Any]
+    ) -> None:
         """Validates each uploaded file in the parsed ``(upload(s), should_be_deleted)``
         tuple against `accept`, `max_size`, and the custom `validators`, raising
         `ValueError` upon the first failure encountered.
@@ -1839,7 +1857,7 @@ class FileField(BaseField):
         chain.extend(self.validators)
         for upload in uploads if self.multiple else [uploads]:
             try:
-                await self._run_validators(request, chain, upload)
+                await self._run_validators(request, chain, upload, form_values)
             except ValueError as error:
                 _log.warning(
                     "FileField %r: upload rejected: %s (filename=%r content_type=%r)",
@@ -2584,3 +2602,5 @@ class SlugField(StringField):
                 "of another field on the same form"
             )
         super().__post_init__()
+        if not self.validators:
+            self.validators = [slug()]

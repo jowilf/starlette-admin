@@ -68,7 +68,7 @@ class PostView(ModelView):
 | `BEFORE_IMPORT` / `AFTER_IMPORT` | Import triggered | `BeforeImportContext` / `AfterImportContext` |
 | `AFTER_LOGIN` | Login succeeds | `AfterLoginContext` |
 
-`AFTER_CREATE_COMMITTED`, `AFTER_EDIT_COMMITTED`, and `AFTER_DELETE_COMMITTED` only fire for backends that defer the commit to the end of the request. Currently, this is limited to the SQLAlchemy backend. See [Views](../user-guide/views.md%23lifecycle-hooks) for the `after_create_committed`, `after_edit_committed`, and `after_delete_committed` hook methods that emit them.
+`AFTER_CREATE_COMMITTED`, `AFTER_EDIT_COMMITTED`, and `AFTER_DELETE_COMMITTED` only fire for backends that defer the commit to the end of the request. Currently, this is limited to the SQLAlchemy backend. See [Views](../user-guide/views.md#lifecycle-hooks) for the `after_create_committed`, `after_edit_committed`, and `after_delete_committed` hook methods that emit them.
 
 For `AFTER_DELETE_COMMITTED`, `ctx.obj` is a detached instance: its already-loaded attributes remain readable, but accessing an attribute that wasn't loaded before the delete will raise, since the row backing it is gone.
 
