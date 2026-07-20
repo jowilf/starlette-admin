@@ -127,33 +127,8 @@ e2e = ["pytest-playwright >=0.5.0, <0.8.0"]
 default-groups = ["dev", "lint", "test", "cov", "docs"]
 
 [tool.uv.workspace]
-members = [
-    ".",
-    "examples/01-quickstart",
-    "examples/02-filters",
-    "examples/03-auth",
-    "examples/04-filestorage",
-    "examples/05-events",
-    "examples/06-inline-forms",
-    "examples/07-dashboard",
-    "examples/08-themes",
-    "examples/09-actions",
-    "examples/10-i18n-timezone",
-    "examples/11-sqla-pydantic-fastapi",
-    "examples/12-sqla-composite-pks",
-    "examples/13-sqlachemy-file",
-    "examples/14-sqlmodel",
-    "examples/15-beanie",
-    "examples/16-mongoengine",
-    "examples/17-tortoise",
-    "examples/advanced/01-soft-delete",
-    "examples/advanced/02-oauth2",
-    "examples/advanced/03-custom-backend",
-    "examples/advanced/04-user-registration",
-    "examples/advanced/05-custom-fields",
-    "examples/advanced/06-ecommerce",
-    "examples/advanced/07-hr",
-]
+members = [".", "examples/*", "examples/advanced/*"]
+exclude = ["examples/advanced", "examples/__pycache__"]
 
 [tool.poe.tasks]
 # Code quality
