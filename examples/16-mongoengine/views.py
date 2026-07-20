@@ -21,7 +21,6 @@ from starlette_admin import (
 from starlette_admin.contrib.mongoengine import InlineModelView, ModelView
 from starlette_admin.contrib.mongoengine.filters import DateTimeBetweenFilter
 from starlette_admin.exceptions import ActionFailed
-from starlette_admin.export import CsvExporter, ExcelExporter
 
 # ── Inline ────────────────────────────────────────────────────────────────────
 
@@ -78,7 +77,7 @@ class PodcastView(ModelView):
 
     inlines = [EpisodeInline]
 
-    exporters = [CsvExporter(), ExcelExporter()]
+    exporters = ["csv", "xlsx"]
     searchable_fields = ["title", "slug"]
     sortable_fields = ["title", "featured", "status", "created_at"]
     fields_default_sort = [("created_at", True)]
@@ -104,7 +103,7 @@ class HostView(ModelView):
     exclude_fields_from_create = ["joined_at"]
     exclude_fields_from_edit = ["joined_at"]
 
-    exporters = [CsvExporter(), ExcelExporter()]
+    exporters = ["csv", "xlsx"]
     searchable_fields = ["full_name", "email"]
     sortable_fields = ["full_name", "role", "joined_at"]
     fields_default_sort = [("joined_at", True)]
@@ -133,7 +132,7 @@ class EpisodeView(ModelView):
     ]
     exclude_fields_from_list = ["notes"]
 
-    exporters = [CsvExporter(), ExcelExporter()]
+    exporters = ["csv", "xlsx"]
     sortable_fields = ["episode_number", "published_at", "status", "duration_minutes"]
     fields_default_sort = [("published_at", True)]
 

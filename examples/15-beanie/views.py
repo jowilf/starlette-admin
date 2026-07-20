@@ -24,7 +24,6 @@ from starlette_admin import (
 from starlette_admin.contrib.beanie import InlineModelView, ModelView
 from starlette_admin.contrib.beanie.filters import DateTimeBetweenFilter
 from starlette_admin.exceptions import ActionFailed
-from starlette_admin.export import CsvExporter, ExcelExporter
 from starlette_admin.fields import BaseField
 from starlette_admin.storage import LocalStorage
 
@@ -104,7 +103,7 @@ class BookView(ModelView):
     exclude_fields_from_create = ["created_at"]
     exclude_fields_from_edit = ["created_at"]
 
-    exporters = [CsvExporter(), ExcelExporter()]
+    exporters = ["csv", "xlsx"]
     searchable_fields = ["title", "isbn", "tags"]
     sortable_fields = [
         "title",
@@ -139,7 +138,7 @@ class MemberView(ModelView):
 
     inlines = [LoanInline]
 
-    exporters = [CsvExporter(), ExcelExporter()]
+    exporters = ["csv", "xlsx"]
     searchable_fields = ["full_name", "email"]
     sortable_fields = ["full_name", "membership_type", "joined_at"]
     fields_default_sort = [("joined_at", True)]
@@ -166,7 +165,7 @@ class LoanView(ModelView):
     ]
     exclude_fields_from_list = ["notes"]
 
-    exporters = [CsvExporter(), ExcelExporter()]
+    exporters = ["csv", "xlsx"]
     sortable_fields = ["loan_date", "due_date", "status"]
     fields_default_sort = [("loan_date", True)]
 

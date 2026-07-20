@@ -51,7 +51,7 @@ This package targets the modern asynchronous Python stack. If your application u
 | Batch actions | **Yes** `actions` | **Yes** `@action` | **Yes** [`@action`](../user-guide/actions.md) with confirmation dialogs and custom forms |
 | Per-row actions | **Partial** custom templates | **Partial** custom formatters | **Yes** [`@row_action`, `@link_row_action](../user-guide/actions.md%23row-actions)` |
 | Data export | **Partial** `django-import-export` | **Yes** CSV and others | **Yes** [CSV, JSON, Excel, PDF](../user-guide/export-import.md) |
-| Data import | **Partial** `django-import-export` | **No** | **Yes** [CSV, JSON, Excel](../user-guide/export-import.md) with dry-run validation |
+| Data import | **Partial** `django-import-export` | **No** | **Yes** [CSV, JSON, Excel](../user-guide/export-import.md) with preview validation and upsert |
 | File and image uploads | **Yes** `FileField` / `ImageField` | **Partial** requires extra setup | **Yes** [Local and S3 storage](../user-guide/file-storage.md) |
 | Dashboard widgets | **Partial** third-party themes | **Partial** custom index view | **Yes** [Built-in widget system](../user-guide/custom-views.md) |
 | Custom standalone pages | **Yes** custom `AdminSite` URLs | **Yes** `BaseView` + `@expose` | **Yes** [`CustomView`](../user-guide/custom-views.md) |

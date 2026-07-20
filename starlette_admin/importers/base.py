@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from dataclasses import field as dc_field
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from starlette.requests import Request
@@ -88,6 +88,8 @@ class ImportContext:
         view: The model view performing the import.
         request: The originating HTTP request.
         dry_run: When ``True``, the operation will parse and validate without committing any records. In this mode, :attr:`ImportResult.rows_created` and :attr:`ImportResult.rows_updated` will be 0.
+        selected_fields: Field names to read from the uploaded file, or ``None`` for all of ``fields``. Columns for any other field are dropped before validation.
+        update_existing: When ``True``, a row whose primary key matches an existing record updates it instead of creating a new one.
     """
 
     fields: list[BaseField]
@@ -95,6 +97,8 @@ class ImportContext:
     view: BaseModelView
     request: Request
     dry_run: bool = False
+    selected_fields: list[str] | None = None
+    update_existing: bool = False
 
 
 class BaseImporter(ABC):
@@ -120,10 +124,9 @@ class BaseImporter(ABC):
     import; see ``exclude_from_import`` on :class:`~starlette_admin.fields.BaseField`.
     """
 
-    extension: ClassVar[str] = "bin"
-    format_key: ClassVar[str] = (
-        ""  # URL/form param value; defaults to extension when empty
-    )
+    extension: str = "bin"
+    format_key: str = ""  # URL/form param value; defaults to extension when empty
+    requires: str | None = None  # pip extra needed, or None if always available
 
     @abstractmethod
     def parse(

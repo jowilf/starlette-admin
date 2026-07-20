@@ -21,7 +21,6 @@ from starlette_admin import (
 from starlette_admin.contrib.sqla.filters import DateTimeBetweenFilter
 from starlette_admin.contrib.sqlmodel import InlineModelView, ModelView
 from starlette_admin.exceptions import ActionFailed
-from starlette_admin.export import CsvExporter, ExcelExporter
 
 # ── Inline ────────────────────────────────────────────────────────────────────
 
@@ -62,7 +61,7 @@ class AuthorView(ModelView):
     exclude_fields_from_create = ["created_at"]
     exclude_fields_from_edit = ["created_at"]
 
-    exporters = [CsvExporter(), ExcelExporter()]
+    exporters = ["csv", "xlsx"]
     searchable_fields = ["full_name", "email"]
     sortable_fields = ["id", "full_name", "role", "created_at"]
 
@@ -104,7 +103,7 @@ class ArticleView(ModelView):
 
     inlines = [CommentInline]
 
-    exporters = [CsvExporter(), ExcelExporter()]
+    exporters = ["csv", "xlsx"]
     searchable_fields = ["title"]
     sortable_fields = ["id", "title", "status", "views", "created_at"]
     fields_default_sort = [("created_at", True)]

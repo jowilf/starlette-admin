@@ -3,6 +3,7 @@
 {% from "_pagination.html" import render as pagination with context %}
 {% from "_filter_bar.html" import render as filter_bar with context %}
 {% from "_filter_builder.html" import render as filter_builder with context %}
+{% from "actions.html" import action_item with context %}
 {% set inline_edit_enabled = view.inline_editable_fields and view.can_edit(request) %}
 {% block header %}
     <div class="d-flex justify-content-between align-items-center">
@@ -99,38 +100,9 @@
                                         </div>
                                     </div>
                                 {% endif %}
-                                {% if view.can_export(request) and view.exporters %}
-                                    <div class="dropdown">
-                                        <button type="button"
-                                                class="btn dropdown-toggle"
-                                                data-bs-toggle="dropdown"
-                                                data-bs-auto-close="outside">
-                                            <i class="fa-solid fa-file-export me-2"></i>{{ _("Export") }}
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-end">
-                                            {% for fmt in view.exporters %}
-                                                <div class="dropend">
-                                                    <a class="dropdown-item dropdown-toggle"
-                                                       href="#"
-                                                       data-bs-toggle="dropdown"
-                                                       data-bs-auto-close="outside">
-                                                        {{ (fmt.format_key or fmt.extension) | upper }}
-                                                    </a>
-                                                    <ul class="dropdown-menu">
-                                                        {% for scope, scope_label in [("page", _("This Page")), ("all", _("All Matching Rows"))] %}
-                                                            <li>
-                                                                <a class="dropdown-item"
-                                                                   href="{{ export_url(request, view.key, fmt.format_key or fmt.extension, scope) }}">
-                                                                    {{ scope_label }}
-                                                                </a>
-                                                            </li>
-                                                        {% endfor %}
-                                                    </ul>
-                                                </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                {% endif %}
+                                {% for action in _actions | selectattr("dedicated_button") | list %}
+                                    {{ action_item(action, dedicated=True) }}
+                                {% endfor %}
                                 {% if view.can_import(request) and view.importers %}
                                     <button type="button"
                                             class="btn"
@@ -139,8 +111,7 @@
                                         <i class="fa-solid fa-file-import me-2"></i>{{ _("Import") }}
                                     </button>
                                 {% endif %}
-                                {% block list_toolbar_extra %}
-                                {% endblock %}
+                                {% block list_toolbar_extra %}{% endblock %}
                                 {% if view.can_create(request) %}
                                     <a href="{{ create_url(request, view.key) }}"
                                        class="btn btn-primary btn-block ms-2">
@@ -183,13 +154,9 @@
                                                    id="select-all-rows"
                                                    aria-label="{{ _('Select all rows') }}" />
                                         </th>
-                                        {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}
-                                            <th class="w-1"></th>
-                                        {% endif %}
+                                        {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}<th class="w-1"></th>{% endif %}
                                         {% for field in fields %}<th data-column="{{ field.name }}">{{ column_header(field, list_params) }}</th>{% endfor %}
-                                        {% if view.row_actions_position.value == "AFTER_COLUMNS" %}
-                                            <th class="w-1"></th>
-                                        {% endif %}
+                                        {% if view.row_actions_position.value == "AFTER_COLUMNS" %}<th class="w-1"></th>{% endif %}
                                     </tr>
                                 {% endblock %}
                             </thead>
@@ -212,8 +179,7 @@
                         </table>
                     </div>
                 {% endblock %}
-                {% block list_after_table %}
-                {% endblock %}
+                {% block list_after_table %}{% endblock %}
                 {% block list_footer %}
                     <div class="card-footer d-flex align-items-center">
                         {{ pagination(list_params, view, total, total_pages, range_start, range_end) }}
@@ -296,7 +262,32 @@
         {% endif %}
         {% if view.can_import(request) and view.importers %}
             initImportModal(
-                "{{ import_url(request, view.key) | safe }}"
+                "{{ import_url(request, view.key) | safe }}",
+                {
+                    btnPreview: {{ _("Preview") | tojson }},
+                    btnDone: {{ _("Done") | tojson }},
+                    loadingPreview: {{ _("Loading preview...") | tojson }},
+                    loadingImport: {{ _("Importing...") | tojson }},
+                    btnImport: {{ _("Import {count} row(s)") | tojson }},
+                    networkError: {{ _("Network error: {status}") | tojson }},
+                    columns: {{ _("Columns") | tojson }},
+                    ignored: {{ _("Ignored: {headers}") | tojson }},
+                    previewHeading: {{ _("Preview (first {count} row(s))") | tojson }},
+                    colStatus: {{ _("Status") | tojson }},
+                    colErrors: {{ _("Errors") | tojson }},
+                    allErrors: {{ _("All errors") | tojson }},
+                    colRow: {{ _("Row") | tojson }},
+                    colField: {{ _("Field") | tojson }},
+                    colError: {{ _("Error") | tojson }},
+                    statusNew: {{ _("new") | tojson }},
+                    statusUpdate: {{ _("update") | tojson }},
+                    statusError: {{ _("error") | tojson }},
+                    previewSummary: {{ _("{total} row(s): {new} new") | tojson }},
+                    resultSummary: {{ _("{total} row(s) scanned, {created} created") | tojson }},
+                    clauseUpdated: {{ _(", {count} updated") | tojson }},
+                    clauseErrors: {{ _(", {count} error(s)") | tojson }},
+                    clauseSkipped: {{ _(", {count} skipped") | tojson }}
+                }
             );
         {% endif %}
     </script>{# djlint:on #}

@@ -179,6 +179,9 @@ function initRowSelection(config) {
   );
   actionManager.initNoConfirmationActions();
   actionManager.initActionModal();
+  initExportFormDefaults(function () {
+    return { selectAllMatching: selectAllMatching, count: selectAllMatching ? config.rowsTotal : selectedPks.length };
+  });
 
   return {
     refresh: onSelectionChange,
@@ -186,6 +189,41 @@ function initRowSelection(config) {
       actionManager.initNoConfirmationActions(row);
     },
   };
+}
+
+/**
+ * Fill in the built-in export action's scope radio (selected-rows count,
+ * default choice, disabled when nothing is selected) each time the shared
+ * action modal opens for a form marked `[data-export-scope]`. The form is
+ * rendered once, server side, when the list page loads, so the selection
+ * state living in `initRowSelection`'s closure has to be patched onto it
+ * client side right before the modal is shown.
+ *
+ * @param {function(): {selectAllMatching: boolean, count: number}} getSelection
+ */
+function initExportFormDefaults(getSelection) {
+  $("#modal-action").on("show.bs.modal", function () {
+    const scopeForm = document.querySelector("#modal-form [data-export-scope]");
+    if (!scopeForm) return;
+    const selection = getSelection();
+    const countEl = scopeForm.querySelector("[data-export-selected-count]");
+    if (countEl) countEl.textContent = selection.count;
+    const labelEl = scopeForm.querySelector("[data-export-selected-label]");
+    if (labelEl) {
+      labelEl.textContent = selection.selectAllMatching
+        ? scopeForm.dataset.labelAll
+        : scopeForm.dataset.labelSelected;
+    }
+    const selectedRadio = scopeForm.querySelector("[data-export-scope-selected]");
+    const pageRadio = scopeForm.querySelector("[data-export-scope-page]");
+    if (selectedRadio) {
+      selectedRadio.disabled = selection.count === 0;
+      if (selection.count > 0) {
+        selectedRadio.checked = true;
+        if (pageRadio) pageRadio.checked = false;
+      }
+    }
+  });
 }
 
 /**

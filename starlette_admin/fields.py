@@ -2273,7 +2273,9 @@ class CollectionField(BaseField):
             [f.name for f in self.fields],
         )
 
-    def get_fields_list(self, request: Request) -> Sequence[BaseField]:
+    def get_fields_list(
+        self, request: Request, *, action: RequestAction | None = None
+    ) -> Sequence[BaseField]:
         try:
             view = self._view  # type: ignore[attr-defined]
         except AttributeError:  # pragma: no cover
@@ -2281,7 +2283,9 @@ class CollectionField(BaseField):
                 f"CollectionField {self.name!r} has no _view; it must be used "
                 "inside a BaseModelView (set during BaseModelView.__init__)"
             ) from None
-        return [f for f in self.fields if view.can_access_field(request, f)]
+        return [
+            f for f in self.fields if view.can_access_field(request, f, action=action)
+        ]
 
     def _propagate_id(self) -> None:
         """Updates field IDs by adding their own ID as a prefix (e.g., `category.name`)."""

@@ -24,7 +24,7 @@ Even without passing any security-specific arguments, this admin instance automa
 * **Filename sanitization:** Applied to every file upload passing through a storage backend.
 * **Image content verification:** Applied to `ImageField` uploads when Pillow is installed.
 * **Export limits:** Capped at 100,000 rows per request.
-* **Formula escaping:** Applied to CSV and Excel exports to neutralize spreadsheet formula injection.
+* **Formula escaping:** Applied to CSV and spreadsheet (XLSX/XLS/ODS) exports to neutralize spreadsheet formula injection.
 * **Import limits:** Capped at 10 MB per request.
 
 The rest of this page explains each of these protections and how to adjust the configurable ones.
@@ -130,7 +130,7 @@ See [Export & Import](export-import.md) for details on how the ZIP bundle is bui
 
 Spreadsheet applications treat cell values starting with `=`, `+`, `-`, or `@` as formulas. A record containing a value like `=HYPERLINK(...)`, entered by any user who can write to an exported field, executes when someone opens the exported file in Excel or LibreOffice. This is known as CSV (or formula) injection.
 
-Both spreadsheet exporters neutralize it by default: `CsvExporter` and `ExcelExporter` prefix any string cell starting with a trigger character with a single quote, so the value displays as text instead of executing. Disable it per exporter only if you trust everyone who can write to the exported data:
+Both spreadsheet exporters neutralize it by default: the `csv` format and the tablib spreadsheet formats (`xlsx`, `xls`, `ods`) prefix any string cell starting with a trigger character with a single quote, so the value displays as text instead of executing. To disable the escaping, replace the format string with a configured exporter instance, and only if you trust everyone who can write to the exported data:
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
@@ -138,7 +138,7 @@ from starlette_admin.export import CsvExporter
 
 
 class ProductView(ModelView):
-    exporters = [CsvExporter(escape_formulas=False)]
+    exporters = [CsvExporter(escape_formulas=False), "json"]
 ```
 
 ## Import limits
@@ -179,6 +179,6 @@ Treat this page as best practices for the admin itself, not as a complete checkl
 
 ## What's next
 
-* **[Export & Import](export-import.md):** The export/import UI, dry-run mode, and the ZIP bundle format.
+* **[Export & Import](export-import.md):** The export dialog, the import preview step, and the ZIP bundle format.
 * **[File Storage](file-storage.md):** Configuring storage backends for `FileField` and `ImageField`.
 * **[Authentication](auth.md):** How `secret_key` gates login and CSRF when an auth provider is set.

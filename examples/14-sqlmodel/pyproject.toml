@@ -7,7 +7,8 @@ requires-python = ">=3.11"
 dependencies = [
     "pydantic[email]>=2.0",
     "sqlmodel>=0.0.18",
-    "starlette-admin[excel]",
+    "starlette-admin",
+    "tablib[xlsx]",
     "uvicorn[standard]>=0.29.0",
 ]
 

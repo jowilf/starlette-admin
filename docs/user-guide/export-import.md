@@ -1,30 +1,27 @@
-# Export & Import
+## Export and Import
 
-Every list page allows users to export data to a file and import data from a file without requiring you to write custom routes.
+Every list page lets users export data to a file and import data from a file directly, eliminating the need to write custom routes.
 
-## Overview
+### Overview
 
-* Export data from any list view via the **Export** dropdown.
-* Import data via the **Import** button.
-* Support for CSV, JSON, Excel, PDF and custom formats.
-* Full integration with filtering, sorting, and storage-backed fields.
-* Zero custom endpoints required.
+* **Export:** Use the toolbar button to configure the scope, fields, format, and filename.
+* **Import:** Use the toolbar button to launch a three-step wizard handling upload, preview, and results.
+* **Formats:** Leverage built-in support for CSV, JSON, XLSX, ODS, YAML, PDF, and custom formats.
+* **Upsert:** Update existing records matched by primary key optionally during import.
+* **Integration:** Works seamlessly with filtering, sorting, row selection, and storage-backed fields.
+* **Zero Overhead:** Deploy with no custom endpoints required.
 
-## Minimal Example
+### Minimal Example
 
-```python hl_lines="4 5 25 26"
+```python hl_lines="23 24"
 from sqlalchemy import Integer, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
-from starlette_admin.export import CsvExporter, ExcelExporter, JsonExporter
-from starlette_admin.importers import CsvImporter, ExcelImporter
 
 engine = create_engine("sqlite:///store.sqlite")
 
-
 class Base(DeclarativeBase):
     pass
-
 
 class Product(Base):
     __tablename__ = "products"
@@ -34,50 +31,78 @@ class Product(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     price: Mapped[float] = mapped_column()
 
-
 class ProductView(ModelView):
     fields = ["id", "name", "description", "price"]
-    exporters = [CsvExporter(), ExcelExporter(), JsonExporter()]
-    importers = [CsvImporter(), ExcelImporter()]
-
+    exporters = ["csv", "xlsx", "json"]
+    importers = ["csv", "xlsx"]
 
 Base.metadata.create_all(engine)
 admin = Admin(engine, title="Store Admin", secret_key="change-me")
 admin.add_view(ProductView(Product, icon="fa fa-box"))
+
 ```
 
-`ProductView` now displays an **Export** dropdown and an **Import** button in the list toolbar. These menus provide the exact formats listed in the `exporters` and `importers` lists.
+`ProductView` now displays an **Export** button and an **Import** button in the list toolbar. Both dialogs offer exactly the formats listed in the `exporters` and `importers` arrays.
+
+---
 
 ## Enabling Export
 
-The `exporters` attribute accepts a list of exporter *instances*. This design allows you to configure each format at the point of enablement:
+The `exporters` attribute lists the formats to expose as plain extension strings:
 
-```python hl_lines="1 5"
-from starlette_admin.export import CsvExporter, ExcelExporter, JsonExporter
-
-
+```python hl_lines="2"
 class ProductView(ModelView):
-    exporters = [CsvExporter(), ExcelExporter(), JsonExporter()]
+    exporters = ["csv", "xlsx", "json"]
+
 ```
 
-The default is `[CsvExporter(), JsonExporter()]`. CSV and JSON support ship with no extra dependencies. `ExcelExporter` requires `openpyxl` (`pip install starlette-admin[excel]`) and `PdfExporter` requires `reportlab` (`pip install starlette-admin[pdf]`). `ProductView` raises an error at startup if you include one of these exporters without installing the matching package.
+The default is `["csv", "json"]`. The table below lists every built-in format and the package it requires. The `csv`, `tsv`, and `json` formats ship with no extra dependencies. Every other tabular format uses `tablib`, and `pdf` uses `reportlab`. Declaring an unknown format string or a format whose package is not installed raises an error at startup.
 
-Export functionality is active by default. The **Export** dropdown appears in the UI as long as the `exporters` list is non-empty. To restrict export access, override the `can_export(request)` method:
+| Format | Install Requirement |
+| --- | --- |
+| `csv`, `tsv`, `json` | Included in core |
+| `xlsx` | `pip install tablib[xlsx]` |
+| `xls` | `pip install tablib[xls]` |
+| `ods` | `pip install tablib[ods]` |
+| `yaml` | `pip install tablib[yaml]` |
+| `dbf`, `html`, `latex`, `jira`, `rst` | `pip install tablib` |
+| `pdf` | `pip install starlette-admin[pdf]` |
+
+### Overriding Format Options
+
+Each format string resolves to a pre-configured exporter instance with sensible defaults. When a format needs non-default settings, pass an exporter instance instead of the string. Strings and instances mix freely in the same list:
+
+```python hl_lines="5"
+from starlette_admin.export import CsvExporter
+
+class ProductView(ModelView):
+    exporters = [CsvExporter(delimiter=";"), "xlsx", "json"]
+
+```
+
+`CsvExporter` forwards keyword arguments to `csv.writer` and accepts an `escape_formulas` parameter. `TablibExporter(format, **kwargs)` covers every tablib format and forwards keyword arguments to `tablib.Dataset.export()`.
+
+Export is active by default. The **Export** button appears in the toolbar as long as the `exporters` list is non-empty. To restrict export access, override the `can_export(request)` method:
 
 ```python hl_lines="5 6"
 from starlette.requests import Request
 
-
 class ProductView(ModelView):
     def can_export(self, request: Request) -> bool:
         return request.state.admin_user.username == "admin"
+
 ```
 
-### Filter State is Preserved
+### The Export Dialog
 
-The export link carries the list page's current `q`, `filter`, and `sort` query parameters. If you apply a search, filter, or column sort, the export action targets that exact view. The resulting file contains the filtered rows in the active sort order. Clear the filters first to export the entire dataset.
+Export is a built-in global action. Clicking **Export** opens a dialog where the user configures the export before downloading.
 
-Every field listed in the `fields` attribute is included in the exported file, except those explicitly marked with `exclude_from_export=True` (see [Fields](fields.md)).
+* **Scope:** Configures what to export. Options include "Selected rows" (default when rows are checked), "All matching rows" (when using the select-all banner), and "Current page" (default when nothing is selected).
+* **Fields:** Displays one checkbox per exportable field. Uncheck a field to drop its column. Fields marked `exclude_from_export=True` never appear here.
+* **Format:** Shows one entry per format configured in `exporters`.
+* **Filename:** Defaults to the view key. The server appends the file extension automatically.
+
+Every scope honors the list page's current search, filters, and sort order. What you see in the interface is what you export.
 
 ### The Row Cap
 
@@ -91,43 +116,45 @@ admin = Admin(
     secret_key="change-me",
     export_config=ExportConfig(max_rows=50_000),
 )
+
 ```
 
-The `ExportConfig.max_rows` setting defaults to `100_000`. The cap applies to the number of rows the export would actually produce: the full filtered result set for a full export, or the rows on the requested page for a page-scoped export. When that count exceeds the limit, the export endpoint flashes an error message and redirects back to the list page instead of generating the file. This prevents broad, unfiltered exports on large tables from hanging the request. Set `max_rows=None` to remove the limit entirely.
+The `ExportConfig.max_rows` setting defaults to 100,000. This cap applies to the number of rows the export would actually produce for the chosen scope. The count is checked before any row is fetched. When it exceeds the limit, the system flashes an error message and redirects back to the list page instead of generating the file. This prevents broad, unfiltered exports on large tables from hanging the request. Set `max_rows=None` to remove the limit entirely.
 
-You configure `ExportConfig` once on the `Admin` instance. See [Security](security.md%23export-limits) for details on the remaining options (`restrict_url_download`, `max_download_size`, `safe_download_url`).
+---
 
 ## Enabling Import
 
-Import functionality is enabled by registering importer instances:
+The `importers` attribute works exactly like `exporters` by accepting format strings:
 
-```python hl_lines="1 5"
-from starlette_admin.importers import CsvImporter, ExcelImporter
-
-
+```python hl_lines="2"
 class ProductView(ModelView):
-    importers = [CsvImporter(), ExcelImporter()]
+    importers = ["csv", "xlsx"]
+
 ```
 
-Import functionality is active by default. The **Import** button appears in the UI as long as the `importers` list is non-empty. Out of the box, this defaults to `[CsvImporter(), JsonImporter()]`. To restrict import access, override the `can_import(request)` method:
+The built-in import formats are `csv`, `tsv`, `json`, `yaml`, `xlsx`, `xls`, `ods`, `dbf`, and `html`, with the same dependency requirements as their export counterparts. Pass an importer instance to override a format's defaults, such as `CsvImporter(delimiter=";")` from `starlette_admin.importers`.
+
+Import is active by default and defaults to `["csv", "json"]`. The **Import** button appears in the toolbar as long as the `importers` list is non-empty. To restrict import access, override the `can_import(request)` method:
 
 ```python hl_lines="5 6"
 from starlette.requests import Request
 
-
 class ProductView(ModelView):
     def can_import(self, request: Request) -> bool:
         return request.state.admin_user.username == "admin"
+
 ```
 
-Clicking the import button opens a modal that prompts the user to select a format, upload a file, and configure two settings:
+### The Import Wizard
 
-* **Dry run (validate without saving):** Parses and validates every row without calling `create()`. The response reports the expected outcome, including parsed rows, skipped rows, and validation errors. No data is written to the database.
-* **Skip primary key column:** Removes the primary key column from every row before validation. This prevents a backend that auto-generates primary keys from failing due to stale IDs contained in an export file. This feature is disabled by default. If your file includes an `id` column and your model requires it, leave this unchecked.
+Clicking **Import** opens a three-step wizard. Nothing is written to the database before the final confirmation, and no file is stored server-side between steps. The browser holds the file and re-posts it for each step.
 
-!!! note
-The import endpoint strictly calls `create()` for each row and does not support upsert operations. Re-importing a file containing primary keys from a prior export will either create duplicate rows or fail validation if your backend rejects duplicate keys.
-
+1. **Upload:** Pick a format, choose a file, and optionally check **Update existing records by primary key**. When checked, a row whose primary key matches an existing record updates that record instead of creating a new one. When unchecked, every row is created.
+2. **Preview:** Submitting the upload runs a full validation pass without writing anything. It displays a summary, column mappings, sample rows, and a detailed error table.
+3. **Result:** Commits the import and reports the final row counts for created, updated, and skipped records. Rows that failed validation in the preview are skipped.
+!!! tip
+    To let a backend auto-generate primary keys, uncheck the primary key column in the preview mapping. The imported rows then carry no key value, ensuring that re-importing a file produced by export creates fresh records instead of failing on stale IDs.
 
 ### Upload and Row Caps
 
@@ -143,11 +170,11 @@ admin = Admin(
 )
 ```
 
-The import endpoint mirrors the export row cap. `ImportConfig.max_rows` defaults to `100_000` and is enforced before any record is created: the uploaded file is counted in a pre-pass, and a file holding more rows is rejected with an HTTP 400 error so no partial import happens. Set `max_rows=None` to remove the limit entirely. Uploads are also capped at 10 MB by default via `ImportConfig.max_upload_size`; see [Security](security.md%23import-limits) for details.
+The import endpoint mirrors the export row cap. `ImportConfig.max_rows` defaults to 100,000 and is enforced before any record is created. The uploaded file is counted in a pre-pass, and a file holding more rows is rejected with an HTTP 400 error. Set `max_rows=None` to remove the limit entirely. Uploads are also capped at 10 MB by default via `ImportConfig.max_upload_size`.
 
-### CSV and Excel Formatting
+### Header Matching
 
-The system expects the header row to match your field's `label` or its `name`. The import process checks incoming columns against both attributes. For example, a file containing the column `Name` and another containing `name` will both correctly map to a field named `name`. The importer ignores columns that do not match any field and assigns `None` to any fields missing a corresponding column in the file.
+The wizard matches each file header against your field's `label` and then its `name`. A file containing the column `Name` and another containing `name` will both map correctly to a field named `name`. Unmatched columns are ignored, and fields missing a corresponding column receive `None`.
 
 ## File Fields
 
@@ -163,10 +190,8 @@ from starlette_admin.storage import LocalStorage
 engine = create_engine("sqlite:///catalog.sqlite")
 covers_storage = LocalStorage(base_dir="uploads/covers", name="covers")
 
-
 class Base(DeclarativeBase):
     pass
-
 
 class Product(Base):
     __tablename__ = "products"
@@ -175,14 +200,12 @@ class Product(Base):
     name: Mapped[str] = mapped_column(String(200))
     photo: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
-
 class ProductView(ModelView):
     fields = [
         "id",
         "name",
         ImageField("photo", storage=covers_storage, upload_folder="products"),
     ]
-
 
 Base.metadata.create_all(engine)
 admin = Admin(engine, title="Catalog Admin", secret_key="change-me")
@@ -199,11 +222,13 @@ export.zip
         └── products/
             └── a1b2_photo.jpg
 
+
 ```
 
-The `photo` column in `export.csv` contains the file's ZIP-relative path (`assets/<storage-name>/<key>`), keeping the CSV readable in standard spreadsheet software. The system fetches every referenced file from its storage backend (`LocalStorage`, `S3Storage`, or a [custom backend](../advanced/extension-points.md)) and packages them within the `assets/` directory.
+The `photo` column in `export.csv` contains the file's ZIP-relative path (`assets/<storage-name>/<key>`), keeping the CSV readable in standard spreadsheet software. The system fetches every referenced file from its storage backend and packages them within the `assets/` directory.
 
-Import does not accept ZIP archives. `FileField` and `ImageField` are always excluded from import (`exclude_from_import=True` by default), so the `photo` column in the example above is ignored on upload. Re-import a plain `.csv`/`.xlsx`/`.json` file and attach files through the create/edit forms instead.
+Import does not accept ZIP archives. `FileField` and `ImageField` are always excluded from import (`exclude_from_import=True` by default), so the `photo` column is ignored on upload. Re-import a plain data file and attach files through the create or edit forms instead.
+
 
 ## Writing a Custom Exporter
 
@@ -214,44 +239,42 @@ from typing import Any
 from starlette_admin.export import BaseExporter
 from starlette_admin.fields import BaseField
 
-
-class TsvExporter(BaseExporter):
-    content_type = "text/tab-separated-values"
-    extension = "tsv"
+class MarkdownExporter(BaseExporter):
+    content_type = "text/markdown"
+    extension = "md"
 
     async def generate(
         self, fields: list[BaseField], rows: list[dict[str, Any]]
     ) -> bytes:
-        header = "\t".join(f.label or f.name for f in fields)
-        lines = [header]
+        lines = [
+            " | ".join(f.label or f.name for f in fields),
+            " | ".join("---" for _ in fields),
+        ]
         for row in rows:
-            lines.append("\t".join(str(row.get(f.name, "")) for f in fields))
+            lines.append(" | ".join(str(row.get(f.name, "")) for f in fields))
         return "\n".join(lines).encode("utf-8")
 ```
 
-The `rows` data arrives pre-cleaned. The system replaces any `FileField` or `ImageField` value with its ZIP-relative path string beforehand, meaning your `generate` method never needs to handle file dictionaries separately. Register `TsvExporter()` in your `exporters` list to display it in the dropdown alongside the built-in options.
+The `rows` data arrives pre-cleaned. The system replaces any `FileField` or `ImageField` value with its ZIP-relative path string beforehand, meaning your `generate` method never needs to handle file dictionaries separately. Register `MarkdownExporter()` in your `exporters` list to display it in the format dropdown.
 
 ## Writing a Custom Importer
 
 To create a custom importer, subclass `BaseImporter` and implement the `parse` method as an asynchronous generator that yields one dictionary per row:
 
 ```python
+import json
 from collections.abc import AsyncGenerator
 from typing import Any
 from starlette_admin.importers import BaseImporter, ImportContext
 
-
-class TsvImporter(BaseImporter):
-    extension = "tsv"
+class NdjsonImporter(BaseImporter):
+    extension = "ndjson"
 
     async def parse(self, ctx: ImportContext) -> AsyncGenerator[dict[str, Any], None]:
-        lines = ctx.content.decode("utf-8").splitlines()
-        header = lines[0].split("\t")
-        for line in lines[1:]:
-            values = line.split("\t")
-            yield dict(zip(header, values))
+        for line in ctx.content.decode("utf-8").splitlines():
+            if line.strip():
+                yield json.loads(line)
 ```
-
 
 ---
 

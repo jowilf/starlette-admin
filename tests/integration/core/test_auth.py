@@ -17,6 +17,7 @@ from starlette_admin import (
     TinyMCEEditorField,
 )
 from starlette_admin.auth import AdminUser, AuthProvider, OAuthProvider
+from starlette_admin.types import RequestAction
 from starlette_admin.views import CustomView
 
 from tests.auth_provider import MyAuthProvider
@@ -81,8 +82,11 @@ class PostView(TinydbModelView):
         request: Request,
         *,
         include_nested: bool = False,
+        action: RequestAction | None = None,
     ) -> Sequence[BaseField]:
-        fields = super().get_fields_list(request, include_nested=include_nested)
+        fields = super().get_fields_list(
+            request, include_nested=include_nested, action=action
+        )
         if "super-admin" not in request.state.user_roles:
             fields = [f for f in fields if f.name != "super_admin_only_field"]
         return fields

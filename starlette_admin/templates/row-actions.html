@@ -7,6 +7,8 @@
             data-bs-toggle="modal"
             data-bs-target="#modal-action"
             data-confirmation="{{ action.confirmation }}"
+            data-header="{{ action.header or '' }}"
+            data-modal-size="{{ action.modal_size or 'sm' }}"
         {% else %}
             data-no-confirmation-action="true"
         {% endif %}

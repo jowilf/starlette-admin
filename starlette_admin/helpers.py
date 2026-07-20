@@ -222,34 +222,6 @@ def index_url(request: Request) -> str:
     return str(request.url_for(route_name + ":index"))
 
 
-def export_url(request: Request, key: str, fmt: str, scope: str = "all") -> str:
-    """Build an export URL carrying the current list-page filter/sort/search state.
-
-    Args:
-        scope: ``"all"`` (default) exports every row matching the current
-            filter/search/sort. ``"page"`` restricts the export to the page
-            currently on screen, carrying over the ``page``/``page_size``
-            query params so the backend can reproduce the same slice.
-    """
-    route_name = request.app.state.ROUTE_NAME
-    base = str(request.url_for(route_name + ":export", key=key))
-    params: list[tuple[str, str]] = [("format", fmt)]
-    if scope == "page":
-        params.append(("scope", "page"))
-        for param_name in ("page", "page_size"):
-            val = request.query_params.get(param_name)
-            if val:
-                params.append((param_name, val))
-    for param_name in ("q", "filter"):
-        val = request.query_params.get(param_name)
-        if val:
-            params.append((param_name, val))
-    for sort_val in request.query_params.getlist("sort"):
-        params.append(("sort", sort_val))
-    qs = urlencode(params)
-    return base + ("?" + qs if qs else "")
-
-
 def import_url(request: Request, key: str) -> str:
     """Build the import POST URL for the given view key."""
     route_name = request.app.state.ROUTE_NAME

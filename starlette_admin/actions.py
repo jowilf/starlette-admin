@@ -1,5 +1,5 @@
 from collections.abc import Awaitable, Callable, Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from starlette.requests import Request
 from starlette_admin.exceptions import ActionFailed
@@ -8,6 +8,9 @@ from starlette_admin.i18n import lazy_gettext as _
 
 if TYPE_CHECKING:
     from starlette_admin.views import BaseModelView
+
+ModalSize = Literal["sm", "md", "lg", "xl"]
+_MODAL_SIZES: frozenset[str] = frozenset(("sm", "md", "lg", "xl"))
 
 
 class ActionSelection:
@@ -100,12 +103,15 @@ def action(
     name: str,
     text: str,
     confirmation: str | None = None,
+    header: str | None = None,
     submit_btn_class: str | None = "btn-primary",
     submit_btn_text: str | None = _("Yes, Proceed"),
     icon_class: str | None = None,
-    form: str | Callable[[Request], str | Awaitable[str]] | None = None,
+    form: str | Callable[..., str | Awaitable[str]] | None = None,
     custom_response: bool | None = False,
     allow_empty_selection: bool = False,
+    dedicated_button: bool = False,
+    modal_size: ModalSize = "sm",
 ) -> Callable[[Callable[..., Awaitable[Any]]], Any]:
     """Decorator to add a custom batch action to a
     [ModelView][starlette_admin.views.BaseModelView].
@@ -115,13 +121,16 @@ def action(
         text: Action text displayed to users.
         confirmation: Confirmation text. If not provided, the action executes
             unconditionally.
+        header: Title shown in the confirmation modal header. If not provided,
+            the modal renders without a header.
         submit_btn_text: Submit button text.
         submit_btn_class: Submit button variant (e.g. `btn-primary`, `btn-ghost-info`,
             `btn-outline-danger`).
         icon_class: Icon class (e.g. `fa-lite fa-folder`, `fa-duotone fa-circle-right`).
         form: Custom form to collect data from the user. Either a static HTML
-            string, or a callable `(request) -> str` (sync or async) that
-            builds the form HTML per request.
+            string, or a callable that builds the form HTML per request —
+            `(request) -> str`, or `(request, view) -> str` to also receive the
+            `BaseModelView` instance. Sync or async either way.
         custom_response: Set to True when you want to return a custom Starlette response
             instead of `None`.
         allow_empty_selection: Set to True for actions that operate on the whole
@@ -130,6 +139,12 @@ def action(
             "Actions" dropdown on the list page and can be triggered without
             selecting any row, so `selection` may resolve to zero rows.
             Defaults to False, which requires at least one selected row.
+        dedicated_button: Set to True to render this action as its own toolbar
+            button instead of an entry in the grouped "Actions" dropdown.
+            Requires `allow_empty_selection=True`; combining it with a
+            selection-only action raises `ValueError` at startup.
+        modal_size: Size of the confirmation modal: `sm`, `md`, `lg`, or `xl`.
+            Defaults to `sm`. Only relevant when `confirmation` is set.
 
     !!! usage
 
@@ -215,17 +230,26 @@ def action(
         ```
     """
 
+    if modal_size not in _MODAL_SIZES:
+        raise ValueError(
+            f"Action `{name}`: modal_size must be one of {sorted(_MODAL_SIZES)}, "
+            f"got {modal_size!r}"
+        )
+
     def wrap(f: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
         f._action = {  # type: ignore
             "name": name,
             "text": text,
             "confirmation": confirmation,
+            "header": header,
             "submit_btn_text": submit_btn_text,
             "submit_btn_class": submit_btn_class,
             "icon_class": icon_class,
             "form": form if form is not None else "",
             "custom_response": custom_response,
             "allow_empty_selection": allow_empty_selection,
+            "dedicated_button": dedicated_button,
+            "modal_size": modal_size,
         }
         return f
 
@@ -236,6 +260,7 @@ def row_action(
     name: str,
     text: str,
     confirmation: str | None = None,
+    header: str | None = None,
     action_btn_class: str | None = None,
     submit_btn_class: str | None = "btn-primary",
     submit_btn_text: str | None = _("Yes, Proceed"),
@@ -244,6 +269,7 @@ def row_action(
     custom_response: bool | None = False,
     exclude_from_list: bool = False,
     exclude_from_detail: bool = False,
+    modal_size: ModalSize = "sm",
 ) -> Callable[[Callable[..., Awaitable[Any]]], Any]:
     """Decorator to add a custom row action to a
     [ModelView][starlette_admin.views.BaseModelView].
@@ -252,6 +278,8 @@ def row_action(
         name: Unique row action name for the ModelView.
         text: Action text displayed to users.
         confirmation: Confirmation text. If provided, the action requires confirmation.
+        header: Title shown in the confirmation modal header. If not provided,
+            the modal renders without a header.
         action_btn_class: Action button variant for the detail page (e.g. `btn-success`,
             `btn-outline`).
         submit_btn_class: Submit button variant (e.g. `btn-primary`, `btn-ghost-info`,
@@ -265,6 +293,8 @@ def row_action(
             instead of `None`.
         exclude_from_list: Set to True to exclude the action from the list view.
         exclude_from_detail: Set to True to exclude the action from the detail view.
+        modal_size: Size of the confirmation modal: `sm`, `md`, `lg`, or `xl`.
+            Defaults to `sm`. Only relevant when `confirmation` is set.
 
     !!! usage
 
@@ -310,11 +340,18 @@ def row_action(
         ```
     """
 
+    if modal_size not in _MODAL_SIZES:
+        raise ValueError(
+            f"Row action `{name}`: modal_size must be one of {sorted(_MODAL_SIZES)}, "
+            f"got {modal_size!r}"
+        )
+
     def wrap(f: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
         f._row_action = {  # type: ignore
             "name": name,
             "text": text,
             "confirmation": confirmation,
+            "header": header,
             "action_btn_class": action_btn_class,
             "submit_btn_text": submit_btn_text,
             "submit_btn_class": submit_btn_class,
@@ -323,6 +360,7 @@ def row_action(
             "custom_response": custom_response,
             "exclude_from_list": exclude_from_list,
             "exclude_from_detail": exclude_from_detail,
+            "modal_size": modal_size,
         }
         return f
 

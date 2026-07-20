@@ -2,8 +2,15 @@
      id="modal-action"
      tabindex="-1"
      role="dialog">
-    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
+            <div class="modal-header d-none" id="modal-action-header">
+                <h5 class="modal-title" id="modal-action-title"></h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="{{ _('Close') }}"></button>
+            </div>
             <div class="modal-body">
                 <div id="actionConfirmation"></div>
                 <div id="modal-form"></div>

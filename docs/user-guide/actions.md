@@ -116,6 +116,8 @@ Set `allow_empty_selection=True` in your `@action` decorator. Global actions ren
 
 All other parameters (`confirmation`, `form`, `custom_response`, `is_action_allowed`) function exactly as they do for standard batch actions.
 
+**Dedicated Toolbar Buttons:** Add `dedicated_button=True` to render a global action as its own toolbar button instead of an entry in the **Actions** dropdown. The built-in export action uses this option. Combining `dedicated_button=True` with a selection-only action raises an error at startup.
+
 ### Global Action Example
 
 ```python

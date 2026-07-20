@@ -94,7 +94,7 @@ These are the mistakes that break real apps. Follow them without exception.
 12. **Always call `super()` for unhandled names** when overriding `is_action_allowed`, `is_row_action_allowed`, or `is_row_action_allowed_for_obj`. Skipping it silently disables the permission checks behind the built-in view/edit/delete actions.
 13. **`after_*_committed` hooks fire only on the SQLAlchemy backend** and run after the session is committed and closed. Never write through `request.state.session` inside them.
 14. **Multiple `Admin` instances on one app need distinct `base_url` and `route_name`,** otherwise generated links resolve to the wrong admin.
-15. **Import calls `create()` per row, never upsert.** Re-importing an export with primary keys duplicates rows or fails. The UI offers dry-run validation and a skip-PK option.
+15. **Import creates per row unless upsert is on.** The wizard's "Update existing records by primary key" option calls `edit()` on PK matches; without it, re-importing an export with primary keys duplicates rows or fails. The preview step validates everything before writing; unchecking the PK column lets backends auto-generate keys.
 16. **`form_layout` must reference each field at most once and only names present in `fields`;** violations raise `ValueError` at view construction. Fields omitted from the layout are appended at the bottom, never lost.
 17. **Inline saves submit only the edited field.** With `inline_editable_fields`, the view's `validate()` hook and the edit lifecycle hooks receive `data` containing just that field. Guard cross-field rules with `"name" in data` checks; direct indexing raises `KeyError`.
 
@@ -120,8 +120,8 @@ class PostView(ModelView):
     row_actions = ["view", "edit", "delete"]        # built-in row actions
     inline_editable_fields = ["title", "published"] # single-field edit popovers on the list page
     inlines = [CommentInline]                       # nested child forms
-    exporters = [CsvExporter(), ExcelExporter()]    # default: Csv + Json
-    importers = [CsvImporter()]                     # default: Csv + Json
+    exporters = ["csv", "xlsx"]                     # default: ["csv", "json"]
+    importers = ["csv"]                             # default: ["csv", "json"]
     form_layout = [("title", "author"), "content"]  # tuple = shared row
 
     # Permission hooks (all default to True): is_accessible, can_create, can_edit,

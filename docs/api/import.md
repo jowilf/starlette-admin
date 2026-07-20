@@ -15,6 +15,8 @@ task-oriented walkthrough, see [Export & Import](../user-guide/export-import.md)
 
 ::: starlette_admin.importers.CsvImporter
 
-::: starlette_admin.importers.ExcelImporter
+::: starlette_admin.importers.TsvImporter
+
+::: starlette_admin.importers.TablibImporter
 
 ::: starlette_admin.importers.JsonImporter

@@ -284,6 +284,7 @@ from starlette_admin.auth import AdminUser, AuthProvider, LoginFailed
 from starlette_admin.contrib.sqla import ModelView
 from starlette_admin.exceptions import ActionFailed
 from starlette_admin.fields import BaseField
+from starlette_admin.types import RequestAction
 
 # Demo user store: replace with a real lookup against your database
 USERS = {
@@ -346,10 +347,12 @@ class ArticleView(ModelView):
     def can_delete(self, request: Request) -> bool:
         return "delete" in request.state.admin_user.roles
 
-    def can_access_field(self, request: Request, field: BaseField) -> bool:
+    def can_access_field(
+        self, request: Request, field: BaseField, action: RequestAction | None = None
+    ) -> bool:
         if field.name == "body":
             return "read_body" in request.state.admin_user.roles
-        return super().can_access_field(request, field)
+        return super().can_access_field(request, field, action)
 
     async def is_action_allowed(self, request: Request, name: str) -> bool:
         if name == "publish":

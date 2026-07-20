@@ -71,14 +71,28 @@ class ActionManager {
     $("#modal-action").on("show.bs.modal", function (event) {
       let button = $(event.relatedTarget); // Button that triggered the modal
       let confirmation = button.data("confirmation");
+      let header = button.data("header");
       let form = button.data("form");
       let name = button.data("name");
       let submit_btn_text = button.data("submit-btn-text");
       let submit_btn_class = button.data("submit-btn-class");
+      let modalSize = button.data("modal-size") || "sm";
       let customResponse = button.data("custom-response") === true;
       let isRowAction = button.data("is-row-action") === true;
 
       let modal = $(this);
+      let modalDialog = modal.find(".modal-dialog");
+      modalDialog.removeClass("modal-sm modal-lg modal-xl");
+      if (modalSize !== "md") {
+        modalDialog.addClass(`modal-${modalSize}`);
+      }
+      let modalHeader = modal.find("#modal-action-header");
+      if (header) {
+        modal.find("#modal-action-title").text(header);
+        modalHeader.removeClass("d-none");
+      } else {
+        modalHeader.addClass("d-none");
+      }
       modal.find("#actionConfirmation").text(confirmation);
       let modalForm = modal.find("#modal-form");
       modalForm.html(form);

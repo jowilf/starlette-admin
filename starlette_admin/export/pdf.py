@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 class PdfExporter(BaseExporter):
     content_type = "application/pdf"
     extension = "pdf"
+    requires = "reportlab"
 
     async def generate(
         self,

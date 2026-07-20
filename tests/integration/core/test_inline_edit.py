@@ -539,10 +539,10 @@ class TestInlineEditListPageAssets:
 class TestInlineEditFieldAccessibility:
     def test_field_inaccessible_during_inline_edit_is_403(self):
         class RestrictedPostView(PostView):
-            def can_access_field(self, request, field):
+            def can_access_field(self, request, field, action=None):
+                action = action if action is not None else request.state.action
                 return not (
-                    field.name == "title"
-                    and request.state.action == RequestAction.INLINE_EDIT
+                    field.name == "title" and action == RequestAction.INLINE_EDIT
                 )
 
         admin = BaseAdmin()

@@ -9,6 +9,7 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette_admin import BaseField
 from starlette_admin.contrib.sqla import Admin, ModelView
+from starlette_admin.types import RequestAction
 
 from tests.auth_provider import MyAuthProvider
 from tests.integration.sqla.utils import get_test_engine
@@ -33,8 +34,11 @@ class PostView(ModelView):
         request: Request,
         *,
         include_nested: bool = False,
+        action: RequestAction | None = None,
     ) -> Sequence[BaseField]:
-        fields = super().get_fields_list(request, include_nested=include_nested)
+        fields = super().get_fields_list(
+            request, include_nested=include_nested, action=action
+        )
         if "super-admin" not in request.state.user_roles:
             fields = [f for f in fields if f.name != "super_admin_only_field"]
         return fields

@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from dataclasses import field as dc_field
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 from starlette.requests import Request
@@ -147,9 +147,10 @@ class BaseExporter(ABC):
             products/img.png
     """
 
-    content_type: ClassVar[str] = "application/octet-stream"
-    extension: ClassVar[str] = "bin"
-    format_key: ClassVar[str] = ""  # URL param value; defaults to extension when empty
+    content_type: str = "application/octet-stream"
+    extension: str = "bin"
+    format_key: str = ""  # URL param value; defaults to extension when empty
+    requires: str | None = None  # pip extra needed, or None if always available
 
     @abstractmethod
     async def generate(

@@ -16,11 +16,29 @@ from starlette.requests import Request
 from starlette_admin.contrib.sqla import Admin
 from starlette_admin.contrib.sqla.view import ModelView
 from starlette_admin.exceptions import FormValidationError
+from starlette_admin.export import EXPORT_FORMATS, is_extra_available
+from starlette_admin.importers import IMPORT_FORMATS
 
 from tests.integration.sqla.utils import get_test_engine
 from tests.utils import csrf_async_client
 
 pytestmark = pytest.mark.asyncio
+
+
+_AVAILABLE_EXPORT_FORMATS = sorted(
+    fmt
+    for fmt, exporter in EXPORT_FORMATS.items()
+    if not exporter.requires or is_extra_available(exporter.requires)
+)
+_AVAILABLE_IMPORT_FORMATS = {
+    fmt
+    for fmt, importer in IMPORT_FORMATS.items()
+    if not importer.requires or is_extra_available(importer.requires)
+} - {
+    # dbf uppercases headers to fit its 10-char field-name limit, so parsed
+    # rows never match the view's mixed-case field labels/names.
+    "dbf"
+}
 
 
 class Base(DeclarativeBase):
@@ -44,6 +62,12 @@ class Category(Base):
     __tablename__ = "category"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     label: Mapped[str] = mapped_column(String(100), nullable=False)
+
+
+class Item(Base):
+    __tablename__ = "item"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
 
 
 class DocumentView(ModelView):
@@ -78,6 +102,15 @@ class CategoryView(ModelView):
         await super().validate(request, data)
 
 
+class ItemView(ModelView):
+    key = "item"
+    exporters = _AVAILABLE_EXPORT_FORMATS
+    importers = [f for f in _AVAILABLE_EXPORT_FORMATS if f in _AVAILABLE_IMPORT_FORMATS]
+
+    def can_import(self, request: Any) -> bool:
+        return True
+
+
 @pytest.fixture
 def engine(sqla_backend, sqla_storage_factory) -> Engine:
     engine = get_test_engine()
@@ -103,6 +136,7 @@ def admin(engine: Engine) -> Admin:
     admin.add_view(DocumentView(Document))
     admin.add_view(TagView(Tag))
     admin.add_view(CategoryView(Category))
+    admin.add_view(ItemView(Item))
     return admin
 
 
@@ -135,7 +169,11 @@ async def test_export_csv_with_sqlalchemy_file_field(
     session.add(doc)
     session.commit()
 
-    response = await client.get("/admin/_api/document/export", params={"format": "csv"})
+    response = await client.post(
+        "/admin/_api/document/action",
+        params={"name": "export"},
+        data={"scope": "page", "format": "csv"},
+    )
 
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/zip"
@@ -154,7 +192,11 @@ async def test_export_csv_without_file_field(
     session.add(Tag(name="urgent"))
     session.commit()
 
-    response = await client.get("/admin/_api/tag/export", params={"format": "csv"})
+    response = await client.post(
+        "/admin/_api/tag/action",
+        params={"name": "export"},
+        data={"scope": "page", "format": "csv"},
+    )
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/csv")
@@ -285,3 +327,46 @@ async def test_import_csv_recovers_from_integrity_error(
 
     tag = session.query(Tag).filter_by(name="new-tag").one()
     assert tag.id == 2
+
+
+@pytest.mark.parametrize("format", _AVAILABLE_EXPORT_FORMATS)
+async def test_export_import_roundtrip_all_formats(
+    client: AsyncClient, session: Session, format: str
+) -> None:
+    session.add(Item(name="roundtrip"))
+    session.commit()
+
+    response = await client.post(
+        "/admin/_api/item/action",
+        params={"name": "export"},
+        data={"scope": "page", "format": format},
+    )
+    assert response.status_code == 200
+    content = response.content
+
+    if format not in _AVAILABLE_IMPORT_FORMATS:
+        pytest.skip(f"{format!r} has no importer; export-only format")
+
+    session.query(Item).delete()
+    session.commit()
+
+    response = await client.post(
+        "/admin/_api/item/import",
+        data={"format": format},
+        files={
+            "file": (
+                f"import.{format}",
+                io.BytesIO(content),
+                "application/octet-stream",
+            )
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["rows_total"] == 1
+    assert data["rows_created"] == 1
+    assert not data["has_errors"]
+
+    item = session.query(Item).filter_by(name="roundtrip").one()
+    assert item.name == "roundtrip"

@@ -179,18 +179,19 @@ class ArticleView(ModelView):
 
 ## Export and Import Are Built In
 
-Every list page features a native export tool that preserves active filters and search terms: what you see in the interface matches what you export. While CSV and JSON formats are supported by default, you can add `ExcelExporter` or `PdfExporter` to expand your options. Access control can be managed on a granular level using the `can_export` hook.
+Every list page features a native export dialog that lets users pick the scope (selected rows or the current page), fields, format, and filename. Active filters and search terms are preserved: what you see in the interface matches what you export.
 
-The import pipeline accepts the same formats as your configured importers. It evaluates uploads in a safe dry-run validation layer first, highlighting errors row by row before committing any changes to the database. Restrict access to this feature using `can_import`.
+The framework provides built-in support for CSV, JSON, and PDF out of the box. For additional formats like Excel (`xlsx`), the framework integrates with `tablib` to support any compatible format. Formats are declared as plain extension strings: CSV and JSON are enabled by default, and adding `"xlsx"` or `"pdf"` expands your options. Access control is managed on a granular level using the `can_export` hook.
+
+The import wizard safely ingests bulk data across these built-in and `tablib` formats. It validates the upload in a preview step first, highlighting errors row by row before committing any database writes, and it supports optional primary key upserts. Restrict access to this feature using the `can_import` hook.
 
 ```python
 from starlette.requests import Request
 from starlette_admin.contrib.sqla import ModelView
-from starlette_admin.export import CsvExporter, ExcelExporter
 
 
 class OrderView(ModelView):
-    exporters = [CsvExporter(), ExcelExporter()]
+    exporters = ["csv", "xlsx"]
 
     def can_export(self, request: Request) -> bool:
         return request.state.user.is_staff

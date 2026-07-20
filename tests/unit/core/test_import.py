@@ -13,12 +13,12 @@ import pytest
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette_admin.export.csv import CsvExporter
-from starlette_admin.export.excel import ExcelExporter
 from starlette_admin.export.json import JsonExporter
+from starlette_admin.export.tablib import TablibExporter
 from starlette_admin.importers.base import ImportContext
 from starlette_admin.importers.csv import CsvImporter
-from starlette_admin.importers.excel import ExcelImporter
 from starlette_admin.importers.json import JsonImporter
+from starlette_admin.importers.tablib import TablibImporter
 from starlette_admin.types import RequestAction
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -105,23 +105,23 @@ async def test_csv_importer_strips_bom():
     assert next(iter(rows[0].keys())) == "Name"  # BOM stripped, not "﻿Name"
 
 
-# ── ExcelImporter ─────────────────────────────────────────────────────────────
+# ── TablibImporter ────────────────────────────────────────────────────────────
 
 
 @pytest.mark.asyncio
-async def test_excel_importer_basic():
-    importer = ExcelImporter()
+async def test_tablib_importer_basic():
+    importer = TablibImporter("xlsx")
     raw = _excel_bytes(["Name", "Score"], ["Alice", 95], ["Bob", 82])
     ctx = _make_ctx(raw)
 
     rows = await _collect(importer.parse(ctx))
 
-    assert rows == [{"Name": "Alice", "Score": "95"}, {"Name": "Bob", "Score": "82"}]
+    assert rows == [{"Name": "Alice", "Score": 95}, {"Name": "Bob", "Score": 82}]
 
 
 @pytest.mark.asyncio
-async def test_excel_importer_empty_workbook():
-    importer = ExcelImporter()
+async def test_tablib_importer_empty_workbook():
+    importer = TablibImporter("xlsx")
     raw = _excel_bytes(["Name"])  # header only
     ctx = _make_ctx(raw)
     rows = await _collect(importer.parse(ctx))
@@ -129,12 +129,12 @@ async def test_excel_importer_empty_workbook():
 
 
 @pytest.mark.asyncio
-async def test_excel_importer_none_cells_become_empty_string():
-    importer = ExcelImporter()
+async def test_tablib_importer_none_cells_stay_none():
+    importer = TablibImporter("xlsx")
     raw = _excel_bytes(["Name", "Note"], ["Alice", None])
     ctx = _make_ctx(raw)
     rows = await _collect(importer.parse(ctx))
-    assert rows[0]["Note"] == ""
+    assert rows[0]["Note"] is None
 
 
 # ── JsonImporter ──────────────────────────────────────────────────────────────
@@ -197,11 +197,11 @@ async def test_csv_roundtrip():
 
 
 @pytest.mark.asyncio
-async def test_excel_roundtrip():
+async def test_tablib_roundtrip():
     from starlette_admin.fields import BaseField
 
-    exporter = ExcelExporter()
-    importer = ExcelImporter()
+    exporter = TablibExporter("xlsx")
+    importer = TablibImporter("xlsx")
 
     f1 = BaseField(name="item")
     f1.label = "Item"
@@ -215,9 +215,9 @@ async def test_excel_roundtrip():
     ctx = _make_ctx(export_bytes)
     imported = await _collect(importer.parse(ctx))
 
-    # values are coerced to strings by ExcelImporter
+    # tablib preserves the native cell type on read
     assert imported[0]["Item"] == "Widget"
-    assert imported[0]["Qty"] == "10"
+    assert imported[0]["Qty"] == 10
 
 
 @pytest.mark.asyncio
@@ -258,29 +258,12 @@ def test_import_result_rows_ok():
     assert result.rows_ok == 4
 
 
-# ── ExcelImporter empty workbook ──────────────────────────────────────────────
-
-
-@pytest.mark.asyncio
-async def test_excel_importer_truly_empty_workbook():
-    """A workbook whose active sheet is None (e.g. all sheets hidden) yields no rows."""
-    from unittest.mock import MagicMock, patch
-
-    importer = ExcelImporter()
-    mock_wb = MagicMock()
-    mock_wb.active = None
-    with patch("openpyxl.load_workbook", return_value=mock_wb):
-        ctx = _make_ctx(b"fake-xlsx-bytes")
-        rows = await _collect(importer.parse(ctx))
-    assert rows == []
-
-
 # ── BaseAdmin._parse_import_row edge-cases ────────────────────────────────────
 
 
 @pytest.mark.asyncio
 async def test_parse_import_row_fills_none_for_missing_field():
-    """A field present in the view but absent from the import row gets None (base.py 825)."""
+    """A field present in the view but absent from the import row gets None."""
     from starlette_admin import BaseAdmin, StringField
 
     admin = BaseAdmin(secret_key="test-secret")
@@ -292,32 +275,30 @@ async def test_parse_import_row_fills_none_for_missing_field():
     ctx = MagicMock()
     ctx.request.state.action = RequestAction.IMPORT
     row = {"Name": "Alice"}
-    data = await admin._parse_import_row(row, fields, field_by_header, False, None, ctx)
+    data = await admin._parse_import_row(row, fields, field_by_header, ctx)
 
     assert data["name"] == "Alice"
     assert data["extra"] is None
 
 
 @pytest.mark.asyncio
-async def test_parse_import_row_skip_pk_nulls_pk_in_data():
-    """skip_pk=True clears the pk value when it was parsed from the import row (base.py 827-828)."""
+async def test_parse_import_row_excluded_field_not_in_field_by_header_becomes_none():
+    """A field left out of `field_by_header` (deselected in the import wizard)
+    gets None even though `fields` (the full list) still includes it -- this
+    is what lets the pk auto-generate when its column is unchecked."""
     from starlette_admin import BaseAdmin, IntegerField, StringField
 
     admin = BaseAdmin(secret_key="test-secret")
     id_field = IntegerField("id")
     name_field = StringField("name")
     fields = [id_field, name_field]
-    field_by_header = {
-        "Id": id_field,
-        "id": id_field,
-        "Name": name_field,
-        "name": name_field,
-    }
+    # "id"/"Id" intentionally omitted: as if the pk field were deselected.
+    field_by_header = {"Name": name_field, "name": name_field}
 
     ctx = MagicMock()
     ctx.request.state.action = RequestAction.IMPORT
     row = {"Id": "999", "Name": "Alice"}
-    data = await admin._parse_import_row(row, fields, field_by_header, True, "id", ctx)
+    data = await admin._parse_import_row(row, fields, field_by_header, ctx)
 
     assert data["name"] == "Alice"
     assert data["id"] is None

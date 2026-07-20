@@ -460,10 +460,15 @@ def test_filter_inaccessible_field_returns_400():
     """A filter referencing a field blocked by can_access_field raises HTTP 400."""
 
     class RestrictedArticleView(ArticleView):
-        def can_access_field(self, request: Request, field: BaseField) -> bool:
+        def can_access_field(
+            self,
+            request: Request,
+            field: BaseField,
+            action: RequestAction | None = None,
+        ) -> bool:
             if field.name == "body":
                 return False
-            return super().can_access_field(request, field)
+            return super().can_access_field(request, field, action)
 
     admin = BaseAdmin()
     app = Starlette()
@@ -480,10 +485,15 @@ def test_filter_accessible_field_still_works():
     """Filtering an accessible field returns 200 even when another field is blocked."""
 
     class RestrictedArticleView(ArticleView):
-        def can_access_field(self, request: Request, field: BaseField) -> bool:
+        def can_access_field(
+            self,
+            request: Request,
+            field: BaseField,
+            action: RequestAction | None = None,
+        ) -> bool:
             if field.name == "body":
                 return False
-            return super().can_access_field(request, field)
+            return super().can_access_field(request, field, action)
 
     admin = BaseAdmin()
     app = Starlette()
@@ -500,10 +510,15 @@ def test_sort_by_inaccessible_field_returns_400():
     """sort_by a field blocked by can_access_field returns HTTP 400."""
 
     class RestrictedArticleView(ArticleView):
-        def can_access_field(self, request: Request, field: BaseField) -> bool:
+        def can_access_field(
+            self,
+            request: Request,
+            field: BaseField,
+            action: RequestAction | None = None,
+        ) -> bool:
             if field.name == "title":
                 return False
-            return super().can_access_field(request, field)
+            return super().can_access_field(request, field, action)
 
     admin = BaseAdmin()
     app = Starlette()

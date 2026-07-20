@@ -43,21 +43,20 @@ Runnable example: `examples/04-filestorage`.
 ## Export
 
 ```python
-from starlette_admin.export import CsvExporter, ExcelExporter, JsonExporter, PdfExporter
-
-
 class ProductView(ModelView):
-    exporters = [CsvExporter(), ExcelExporter(), JsonExporter()]
+    exporters = ["csv", "xlsx", "json"]
 
     def can_export(self, request) -> bool:
         return request.state.admin_user.is_staff
 ```
 
-- Default: `[CsvExporter(), JsonExporter()]`. Excel needs `starlette-admin[excel]` (openpyxl), PDF needs `starlette-admin[pdf]` (reportlab); missing packages fail at startup.
-- Exports preserve the active `q`, `filter`, and `sort`: what the user sees is what exports.
-- Fields with `exclude_from_export=True` are skipped.
-- Row cap: `Admin(..., export_config=ExportConfig(max_rows=50_000))`; default 100,000, over the cap returns HTTP 400, `None` disables.
-- Formula injection: CSV/Excel exporters prefix `=`, `+`, `-`, `@` cells with a quote by default; `CsvExporter(escape_formulas=False)` disables.
+- Formats are extension strings; default `["csv", "json"]`. Built-in: csv/tsv/json (core, no extra), yaml/xlsx/xls/ods/dbf/html/latex/jira/rst via tablib (`tablib[xlsx]`, `tablib[xls]`, `tablib[ods]`, `tablib[yaml]`; the rest need plain `tablib`), pdf via `starlette-admin[pdf]` (reportlab). Unknown formats or missing packages fail at startup.
+- To override a format's defaults, pass an instance instead of the string, mixing freely: `exporters = [CsvExporter(delimiter=";"), "xlsx"]` (`CsvExporter` forwards kwargs to `csv.writer`; `TablibExporter(format, **kwargs)` forwards to `tablib.Dataset.export()`).
+- Export is a built-in global action with its own toolbar button. The dialog offers: scope (selected rows, or current page when nothing is selected; "select all matching" exports every matching row), field checkboxes (all checked by default), format, and filename (defaults to the view key).
+- Every scope honors the active `q`, `filter`, and `sort`: what the user sees is what exports.
+- Fields with `exclude_from_export=True` are skipped and never appear in the dialog.
+- Row cap: `Admin(..., export_config=ExportConfig(max_rows=50_000))`; default 100,000, checked per scope before fetching; over the cap flashes an error and redirects to the list page, `None` disables.
+- Formula injection: CSV and spreadsheet (xlsx/xls/ods) exporters prefix `=`, `+`, `-`, `@` cells with a quote by default; `CsvExporter(escape_formulas=False)` disables.
 - Views with storage-backed file fields export a ZIP: the data file plus an `assets/<storage-name>/<key>` tree; the file column holds the ZIP-relative path.
 
 Custom exporter: subclass `BaseExporter`, set `content_type` and `extension`, implement `async def generate(self, fields, rows) -> bytes`. File values arrive pre-replaced by ZIP-relative path strings.
@@ -65,19 +64,18 @@ Custom exporter: subclass `BaseExporter`, set `content_type` and `extension`, im
 ## Import
 
 ```python
-from starlette_admin.importers import CsvImporter, ExcelImporter, JsonImporter
-
-
 class ProductView(ModelView):
-    importers = [CsvImporter(), ExcelImporter()]
+    importers = ["csv", "xlsx"]
 
     def can_import(self, request) -> bool:
         return request.state.admin_user.is_admin
 ```
 
-- Default: `[CsvImporter(), JsonImporter()]`.
-- The upload modal offers dry-run (validate everything, write nothing, report per-row errors) and skip-primary-key (drop the PK column so auto-generating backends do not choke on stale ids).
-- Import strictly calls `create()` per row; there is no upsert. Header row matches on the field `label` or `name`; unknown columns are ignored, missing ones become `None`.
+- Formats are extension strings; default `["csv", "json"]`. Built-in: csv/tsv/json/yaml/xlsx/xls/ods/dbf/html, same dependencies as export. Instances override defaults: `CsvImporter(delimiter=";")`, `TablibImporter(format, **kwargs)`.
+- Import is a three-step wizard: upload (format, file, optional "Update existing records by primary key"), preview (full validation without writing: header mapping with per-column checkboxes, New/Update/Error counts, first 10 rows, error table), result. Nothing is written before the final confirmation; the browser re-posts the file each step.
+- Upsert: with "update existing" checked, a row whose PK matches an existing record calls `edit()`, otherwise `create()`. Unchecked, every row is created.
+- Unchecking the PK column in the preview mapping drops it, so auto-generating backends do not choke on stale ids (replaces the old skip-primary-key option).
+- Header row matches on the field `label`, then `name`; unmatched columns are listed as ignored, missing ones become `None`.
 - ZIP archives are not accepted; `FileField`/`ImageField` are always `exclude_from_import=True`.
 - Upload cap: `Admin(..., import_config=ImportConfig(max_upload_size=5 * 1024 * 1024))`; default 10 MB.
 

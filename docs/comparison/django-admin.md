@@ -238,7 +238,7 @@ Because every `can_*` method receives the request object, authorization decision
 
 * **End-to-end async architecture:** Handlers, lifecycle hooks, and widget callbacks can all be asynchronous coroutines running on your existing event loop, side-by-side with your FastAPI endpoints.
 * **Database flexibility:** The exact same admin skills and configurations apply whether you use SQLAlchemy, SQLModel, MongoDB (via MongoEngine or Beanie), or Tortoise ORM.
-* **Native import and export capabilities:** Out-of-the-box support for CSV, JSON, and Excel imports with dry-run validation. You also get export support for CSV, JSON, Excel, and PDF formats without requiring third-party plugins. See [Export and Import](../user-guide/export-import.md).
+* **Native export and import capabilities:** Built-in support for CSV, JSON, and PDF, plus extended support for Excel and other formats via `tablib`. Export records instantly or safely import bulk data using a preview-first wizard that enforces strict row-level validation and supports optional primary key upserts. See [Export and Import](../user-guide/export-import.md).
 * **Integrated dashboard widgets:** Stat cards, ApexCharts, and layout grids compose easily into index pages and custom views. You do not need to hunt for an external theme package to build complex dashboards. See [Custom Views and Widgets](../user-guide/custom-views.md).
 * **Modern user interface:** Uses Tabler (Bootstrap 5) to provide a polished UI that includes dark mode, column visibility toggles, and search highlighting by default.
 

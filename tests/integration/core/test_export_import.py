@@ -1,5 +1,6 @@
-"""Route-level integration tests for export (GET /_api/{key}/export)
-and import (POST /_api/{key}/import) endpoints.
+"""Route-level integration tests for export (the built-in `export` batch
+action, `POST /_api/{key}/action?name=export`) and import
+(`POST /_api/{key}/import`, with `?preview=1` for the wizard's preview step).
 
 Uses the TinyDB-backed test infrastructure so the tests are backend-agnostic.
 """
@@ -10,13 +11,19 @@ import csv
 import io
 import json
 import zipfile
+from urllib.parse import urlencode
 
 import openpyxl
 import pytest
 from starlette.applications import Starlette
 from starlette_admin import BaseAdmin, FileField, FloatField, IntegerField, StringField
-from starlette_admin.export import CsvExporter, ExcelExporter, JsonExporter, PdfExporter
-from starlette_admin.importers import CsvImporter, ExcelImporter, JsonImporter
+from starlette_admin.export import (
+    CsvExporter,
+    JsonExporter,
+    PdfExporter,
+    TablibExporter,
+)
+from starlette_admin.importers import CsvImporter, JsonImporter, TablibImporter
 
 from tests.integration.core.tinydb_model_view import TinydbBaseModel, TinydbModelView
 from tests.utils import CsrfTestClient
@@ -38,8 +45,8 @@ class ProductView(TinydbModelView):
         FloatField("price"),
         StringField("sku"),
     ]
-    exporters = [CsvExporter(), ExcelExporter(), JsonExporter(), PdfExporter()]
-    importers = [CsvImporter(), ExcelImporter(), JsonImporter()]
+    exporters = [CsvExporter(), TablibExporter("xlsx"), JsonExporter(), PdfExporter()]
+    importers = [CsvImporter(), TablibImporter("xlsx"), JsonImporter()]
     searchable_fields = ("name", "sku")
 
     def can_import(self, request):
@@ -284,36 +291,87 @@ def _json_upload(data: list[dict]) -> tuple:
     return _file_tuple("data.json", json.dumps(data).encode(), "application/json")
 
 
+def _export_url(
+    key: str,
+    *,
+    pks: list | None = None,
+    select_all: bool = False,
+    list_query: str = "",
+    origin: str | None = None,
+) -> str:
+    """Build the `POST .../action?name=export` URL, with the row-selection
+    state carried as query params exactly like `list.js`'s `ActionManager`
+    does client side."""
+    params = [("name", "export")]
+    if list_query:
+        params.append(("_list_query", list_query))
+    if origin:
+        params.append(("_origin", origin))
+    if select_all:
+        params.append(("all", "1"))
+    elif pks:
+        params.extend(("pks", str(pk)) for pk in pks)
+    return f"/admin/_api/{key}/action?{urlencode(params)}"
+
+
+def _export(
+    client,
+    key: str,
+    *,
+    scope: str = "page",
+    fmt: str = "csv",
+    filename: str | None = None,
+    fields: list[str] | None = None,
+    pks: list | None = None,
+    select_all: bool = False,
+    list_query: str = "",
+    origin: str | None = None,
+    follow_redirects: bool = True,
+):
+    data: dict = {"scope": scope, "format": fmt}
+    if filename is not None:
+        data["filename"] = filename
+    if fields is not None:
+        data["fields"] = fields
+    return client.post(
+        _export_url(
+            key, pks=pks, select_all=select_all, list_query=list_query, origin=origin
+        ),
+        data=data,
+        follow_redirects=follow_redirects,
+    )
+
+
 # ── Export: happy paths ───────────────────────────────────────────────────────
 
 
 class TestExportHappyPath:
     def test_csv_export_status_and_content_type(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=csv")
+        r = _export(client_with_data, "product", fmt="csv")
         assert r.status_code == 200
         assert "text/csv" in r.headers["content-type"]
 
     def test_csv_export_contains_all_rows(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=csv")
+        r = _export(client_with_data, "product", fmt="csv")
         text = r.text
         assert "Widget" in text
         assert "Gadget" in text
         assert "Doohickey" in text
 
     def test_csv_export_has_header_row(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=csv")
+        r = _export(client_with_data, "product", fmt="csv")
         reader = csv.reader(io.StringIO(r.text))
         header = next(reader)
         assert "Name" in header
         assert "Price" in header
 
     def test_excel_export_status_and_content_type(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=excel")
+        r = _export(client_with_data, "product", fmt="xlsx")
         assert r.status_code == 200
         assert "spreadsheetml" in r.headers["content-type"]
 
     def test_excel_export_contains_all_rows(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=excel")
+        r = _export(client_with_data, "product", fmt="xlsx")
         wb = openpyxl.load_workbook(io.BytesIO(r.content))
         ws = wb.active
         data = list(ws.iter_rows(values_only=True))
@@ -322,44 +380,44 @@ class TestExportHappyPath:
         assert "Gadget" in all_values
 
     def test_json_export_status_and_content_type(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=json")
+        r = _export(client_with_data, "product", fmt="json")
         assert r.status_code == 200
         assert "application/json" in r.headers["content-type"]
 
     def test_json_export_contains_all_rows(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=json")
+        r = _export(client_with_data, "product", fmt="json")
         data = r.json()
         names = [row.get("Name") or row.get("name") for row in data]
         assert "Widget" in names
         assert "Gadget" in names
 
     def test_pdf_export_returns_pdf_bytes(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=pdf")
+        r = _export(client_with_data, "product", fmt="pdf")
         assert r.status_code == 200
         assert r.content[:4] == b"%PDF"
 
     def test_export_content_disposition_filename(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=csv")
+        r = _export(client_with_data, "product", fmt="csv")
         assert "product" in r.headers.get("content-disposition", "")
 
+    def test_export_custom_filename(self, client_with_data):
+        r = _export(client_with_data, "product", fmt="csv", filename="my-export")
+        assert "my-export" in r.headers.get("content-disposition", "")
+
     def test_export_respects_search_param(self, client_with_data):
-        r = client_with_data.get("/admin/_api/product/export?format=csv&q=widget")
+        r = _export(client_with_data, "product", fmt="csv", list_query="q=widget")
         reader = csv.reader(io.StringIO(r.text))
         rows = list(reader)[1:]  # skip header
         names = [row[1] for row in rows if row]  # id, name, price, sku
         assert all("widget" in n.lower() for n in names)
 
-    def test_export_default_scope_ignores_pagination(self, client_with_paginated_data):
-        r = client_with_paginated_data.get(
-            "/admin/_api/paginated-product/export?format=csv&page=1&page_size=1"
-        )
-        reader = csv.reader(io.StringIO(r.text))
-        rows = list(reader)[1:]  # skip header
-        assert len(rows) == 3
-
     def test_export_scope_page_limits_to_current_page(self, client_with_paginated_data):
-        r = client_with_paginated_data.get(
-            "/admin/_api/paginated-product/export?format=csv&scope=page&page=1&page_size=1"
+        r = _export(
+            client_with_paginated_data,
+            "paginated-product",
+            fmt="csv",
+            scope="page",
+            list_query="page=1&page_size=1",
         )
         reader = csv.reader(io.StringIO(r.text))
         rows = list(reader)[1:]  # skip header
@@ -368,15 +426,57 @@ class TestExportHappyPath:
     def test_export_scope_page_second_page_returns_different_row(
         self, client_with_paginated_data
     ):
-        page1 = client_with_paginated_data.get(
-            "/admin/_api/paginated-product/export?format=csv&scope=page&page=1&page_size=1"
+        page1 = _export(
+            client_with_paginated_data,
+            "paginated-product",
+            fmt="csv",
+            scope="page",
+            list_query="page=1&page_size=1",
         )
-        page2 = client_with_paginated_data.get(
-            "/admin/_api/paginated-product/export?format=csv&scope=page&page=2&page_size=1"
+        page2 = _export(
+            client_with_paginated_data,
+            "paginated-product",
+            fmt="csv",
+            scope="page",
+            list_query="page=2&page_size=1",
         )
         row1 = list(csv.reader(io.StringIO(page1.text)))[1]
         row2 = list(csv.reader(io.StringIO(page2.text)))[1]
         assert row1 != row2
+
+    def test_export_scope_selected_explicit_pks(self, client_with_data):
+        pk = ProductView._all_pks()[0]
+        r = _export(client_with_data, "product", fmt="csv", scope="selected", pks=[pk])
+        reader = csv.reader(io.StringIO(r.text))
+        rows = list(reader)[1:]
+        assert len(rows) == 1
+
+    def test_export_scope_selected_select_all_matching(self, client_with_data):
+        r = _export(
+            client_with_data,
+            "product",
+            fmt="csv",
+            scope="selected",
+            select_all=True,
+            list_query="q=Widget",
+        )
+        reader = csv.reader(io.StringIO(r.text))
+        rows = list(reader)[1:]
+        assert len(rows) == 1
+        assert "Widget" in rows[0][1]
+
+    def test_export_field_subset(self, client_with_data):
+        r = _export(client_with_data, "product", fmt="csv", fields=["name"])
+        reader = csv.reader(io.StringIO(r.text))
+        header = next(reader)
+        assert header == ["Name"]
+
+    def test_export_empty_fields_selection_falls_back_to_all(self, client_with_data):
+        r = _export(client_with_data, "product", fmt="csv", fields=[])
+        reader = csv.reader(io.StringIO(r.text))
+        header = next(reader)
+        assert "Name" in header
+        assert "Price" in header
 
 
 # ── Export: error paths ───────────────────────────────────────────────────────
@@ -384,9 +484,7 @@ class TestExportHappyPath:
 
 class TestExportErrors:
     def test_unknown_format_flashes_error(self, client_with_data):
-        r = client_with_data.get(
-            "/admin/_api/product/export?format=docx", follow_redirects=False
-        )
+        r = _export(client_with_data, "product", fmt="docx", follow_redirects=False)
         assert r.status_code == 303
 
         r = client_with_data.get(r.headers["location"], follow_redirects=True)
@@ -395,8 +493,8 @@ class TestExportErrors:
 
     def test_disabled_format_flashes_error(self, export_only_client):
         # PDF is not in ExportOnlyView.exporters
-        r = export_only_client.get(
-            "/admin/_api/export-only/export?format=pdf", follow_redirects=False
+        r = _export(
+            export_only_client, "export-only", fmt="pdf", follow_redirects=False
         )
         assert r.status_code == 303
 
@@ -404,22 +502,28 @@ class TestExportErrors:
         assert r.status_code == 200
         assert "Unknown export format" in r.text
 
-    def test_error_redirect_preserves_query_state(self, client_with_data):
-        r = client_with_data.get(
-            "/admin/_api/product/export?format=docx&q=widget&sort=name__asc",
+    def test_error_redirect_honors_origin(self, client_with_data):
+        origin = "/admin/product/list?q=widget&sort=name__asc"
+        r = _export(
+            client_with_data,
+            "product",
+            fmt="docx",
+            origin=origin,
             follow_redirects=False,
         )
         assert r.status_code == 303
-        location = r.headers["location"]
-        assert "q=widget" in location
-        assert "sort=name__asc" in location
+        assert r.headers["location"] == origin
 
-    def test_no_permission_returns_403(self, no_export_client):
-        r = no_export_client.get("/admin/_api/no-export/export?format=csv")
-        assert r.status_code == 403
+    def test_no_permission_returns_400(self, no_export_client):
+        # is_action_allowed() -> can_export() is False, so handle_action
+        # raises ActionFailed, which the action route reports as 400 JSON
+        # (not the export action's own redirect-with-flash path, since the
+        # action is rejected before export_action ever runs).
+        r = _export(no_export_client, "no-export", fmt="csv", follow_redirects=False)
+        assert r.status_code == 400
 
     def test_unknown_key_returns_404(self, client_with_data):
-        r = client_with_data.get("/admin/_api/nonexistent/export?format=csv")
+        r = _export(client_with_data, "nonexistent", fmt="csv")
         assert r.status_code == 404
 
 
@@ -442,13 +546,12 @@ class TestImportHappyPath:
         assert data["rows_total"] == 1
         assert data["rows_created"] == 1
         assert not data["has_errors"]
-        assert not data["dry_run"]
 
     def test_excel_import_creates_records(self, client_with_data):
         upload = _excel_upload(["Name", "Price", "Sku"], ["ExcelItem", 3.5, "E-001"])
         r = client_with_data.post(
             "/admin/_api/product/import",
-            data={"format": "excel"},
+            data={"format": "xlsx"},
             files={"file": upload},
         )
         assert r.status_code == 200
@@ -469,20 +572,54 @@ class TestImportHappyPath:
         assert data["rows_total"] == 1
         assert data["rows_created"] == 1
 
-    def test_dry_run_does_not_persist(self, client_with_data):
+    def test_preview_does_not_persist(self, client_with_data):
         upload = _csv_upload([["Name", "Price", "Sku"], ["DryItem", "1.0", "D-001"]])
         r = client_with_data.post(
-            "/admin/_api/product/import?dry_run=1",
+            "/admin/_api/product/import?preview=1",
             data={"format": "csv"},
             files={"file": upload},
         )
         assert r.status_code == 200
         data = r.json()
-        assert data["dry_run"] is True
         assert data["rows_total"] == 1
-        assert data["rows_created"] == 0
+        assert data["rows_new"] == 1
         # Verify no new record was written (fixture pre-seeds 3 records)
         assert len(ProductView._db.all()) == 3
+
+    def test_preview_returns_header_mapping(self, client_with_data):
+        upload = _csv_upload([["Name", "Price", "Sku"], ["Item", "1.0", "S-001"]])
+        r = client_with_data.post(
+            "/admin/_api/product/import?preview=1",
+            data={"format": "csv"},
+            files={"file": upload},
+        )
+        data = r.json()
+        assert data["headers"] == ["Name", "Price", "Sku"]
+        mapped = {m["header"]: m["field"] for m in data["mapping"]}
+        assert mapped["Name"] == "name"
+        assert mapped["Price"] == "price"
+        assert data["unmatched_headers"] == []
+
+    def test_preview_reports_unmatched_headers(self, client_with_data):
+        upload = _csv_upload([["Name", "Extra"], ["Item", "Should be ignored"]])
+        r = client_with_data.post(
+            "/admin/_api/product/import?preview=1",
+            data={"format": "csv"},
+            files={"file": upload},
+        )
+        data = r.json()
+        assert data["unmatched_headers"] == ["Extra"]
+
+    def test_preview_sample_has_first_rows_with_status(self, client_with_data):
+        upload = _csv_upload([["Name", "Price", "Sku"], ["Item", "1.0", "S-001"]])
+        r = client_with_data.post(
+            "/admin/_api/product/import?preview=1",
+            data={"format": "csv"},
+            files={"file": upload},
+        )
+        data = r.json()
+        assert len(data["sample"]) == 1
+        assert data["sample"][0]["status"] == "new"
 
     def test_import_multiple_rows(self, client_with_data):
         upload = _csv_upload(
@@ -533,8 +670,10 @@ class TestImportHappyPath:
         assert len(data["errors"]) == 1
         assert data["errors"][0]["row"] == 1
 
-    def test_csv_import_with_unknown_header_and_skip_pk(self, client_with_data):
-        """Unknown columns are ignored, and ``skip_pk=1`` drops the PK value."""
+    def test_deselecting_pk_field_lets_backend_auto_generate(self, client_with_data):
+        """Omitting "id" from `fields` is the field-selection equivalent of
+        the old `skip_pk=1`: the column is ignored, and TinyDB assigns a
+        fresh id instead of reusing the uploaded one."""
         upload = _csv_upload(
             [
                 ["Id", "Name", "Price", "Sku", "Description"],
@@ -542,8 +681,8 @@ class TestImportHappyPath:
             ]
         )
         r = client_with_data.post(
-            "/admin/_api/product/import?skip_pk=1",
-            data={"format": "csv"},
+            "/admin/_api/product/import",
+            data={"format": "csv", "fields": ["name", "price", "sku"]},
             files={"file": upload},
         )
         assert r.status_code == 200
@@ -552,7 +691,6 @@ class TestImportHappyPath:
         assert data["rows_created"] == 1
         assert not data["has_errors"]
 
-        # Description was unknown and skipped; id was dropped so TinyDB auto-generates it
         record = next(
             (
                 ProductView._get(pk)
@@ -563,6 +701,79 @@ class TestImportHappyPath:
         )
         assert record is not None
         assert record.id != 999
+
+    def test_upsert_updates_existing_record(self, client_with_data):
+        pk = ProductView._all_pks()[0]
+        original = ProductView._get(pk)
+        upload = _csv_upload(
+            [["Id", "Name", "Price", "Sku"], [str(pk), "Renamed", "1.23", "R-001"]]
+        )
+        r = client_with_data.post(
+            "/admin/_api/product/import",
+            data={"format": "csv", "update_existing": "1"},
+            files={"file": upload},
+        )
+        assert r.status_code == 200
+        data = r.json()
+        assert data["rows_total"] == 1
+        assert data["rows_created"] == 0
+        assert data["rows_updated"] == 1
+
+        updated = ProductView._get(pk)
+        assert updated.name == "Renamed"
+        assert updated.name != original.name
+
+    def test_upsert_creates_when_pk_does_not_match(self, client_with_data):
+        upload = _csv_upload(
+            [["Id", "Name", "Price", "Sku"], ["999999", "NewOne", "1.0", "N-001"]]
+        )
+        r = client_with_data.post(
+            "/admin/_api/product/import",
+            data={"format": "csv", "update_existing": "1"},
+            files={"file": upload},
+        )
+        assert r.status_code == 200
+        data = r.json()
+        assert data["rows_created"] == 1
+        assert data["rows_updated"] == 0
+
+    def test_without_upsert_pk_match_still_creates(self, client_with_data):
+        """update_existing defaults to off: a pk collision is not upserted."""
+        pk = ProductView._all_pks()[0]
+        before = len(ProductView._db.all())
+        upload = _csv_upload(
+            [["Id", "Name", "Price", "Sku"], [str(pk), "ShouldCreate", "1.0", "C-001"]]
+        )
+        r = client_with_data.post(
+            "/admin/_api/product/import",
+            data={"format": "csv"},
+            files={"file": upload},
+        )
+        assert r.status_code == 200
+        assert r.json()["rows_created"] == 1
+        assert len(ProductView._db.all()) == before + 1
+
+    def test_preview_classifies_new_and_update_rows(self, client_with_data):
+        pk = ProductView._all_pks()[0]
+        upload = _csv_upload(
+            [
+                ["Id", "Name", "Price", "Sku"],
+                [str(pk), "WillUpdate", "1.0", "U-001"],
+                ["", "WillCreate", "2.0", "C-002"],
+            ]
+        )
+        r = client_with_data.post(
+            "/admin/_api/product/import?preview=1",
+            data={"format": "csv", "update_existing": "1"},
+            files={"file": upload},
+        )
+        data = r.json()
+        assert data["rows_new"] == 1
+        assert data["rows_updated"] == 1
+        statuses = {row["status"] for row in data["sample"]}
+        assert statuses == {"new", "update"}
+        # Preview must not have actually written the update.
+        assert ProductView._get(pk).name != "WillUpdate"
 
 
 # ── Import: error paths ───────────────────────────────────────────────────────
@@ -650,7 +861,7 @@ class TestFileFieldExportImport:
         assert obj.document is not None
         key = obj.document["key"]
 
-        r = client.get("/admin/_api/attachment/export?format=csv")
+        r = _export(client, "attachment", fmt="csv")
         assert r.status_code == 200
         assert r.headers["content-type"] == "application/zip"
 
@@ -693,13 +904,11 @@ class TestListPageUI:
     def setup_method(self, method):
         ProductView._db.truncate()
 
-    def test_export_dropdown_present_when_can_export(self, client_with_data):
+    def test_export_button_present_when_can_export(self, client_with_data):
         r = client_with_data.get("/admin/product/list")
         assert r.status_code == 200
         assert "Export" in r.text
-        # Each enabled format should appear as a dropdown item
-        assert "CSV" in r.text
-        assert "EXCEL" in r.text
+        assert 'data-name="export"' in r.text
 
     def test_import_button_present_when_can_import(self, client_with_data):
         r = client_with_data.get("/admin/product/list")
@@ -716,7 +925,8 @@ class TestListPageUI:
     def test_no_export_button_when_can_export_false(self, no_export_client):
         r = no_export_client.get("/admin/no-export/list")
         assert r.status_code == 200
-        # Neither the export dropdown nor the import button should appear
+        # Neither the export button nor the import modal should appear
+        assert 'data-name="export"' not in r.text
         assert "modal-import" not in r.text
 
 
@@ -786,10 +996,10 @@ class TestImportSecurityCaps:
         # The cap fires before any record is created
         assert len(ProductView._db.all()) == 0
 
-    def test_import_row_cap_applies_to_dry_run(self):
+    def test_import_row_cap_applies_to_preview(self):
         client = self._make_client(max_rows=3)
         r = client.post(
-            "/admin/_api/product/import?dry_run=1",
+            "/admin/_api/product/import?preview=1",
             data={"format": "csv"},
             files={"file": _csv_upload(self._rows(4))},
         )
@@ -843,16 +1053,16 @@ class TestExportRowCap:
         admin = BaseAdmin(export_config=ExportConfig(max_rows=max_rows))
         admin.add_view(view_cls(Product))
         admin.mount_to(app)
-        return CsrfTestClient(app, raise_server_exceptions=False)
+        return CsrfTestClient(app, raise_server_exceptions=True)
 
     def test_export_within_row_cap_returns_200(self):
         client = self._make_client(max_rows=10)
-        r = client.get("/admin/_api/product/export?format=csv")
+        r = _export(client, "product", fmt="csv")
         assert r.status_code == 200
 
     def test_export_exceeding_row_cap_flashes_error(self):
         client = self._make_client(max_rows=3)  # table has 5 rows
-        r = client.get("/admin/_api/product/export?format=csv", follow_redirects=False)
+        r = _export(client, "product", fmt="csv", follow_redirects=False)
         assert r.status_code == 303
 
         r = client.get(r.headers["location"], follow_redirects=True)
@@ -861,15 +1071,43 @@ class TestExportRowCap:
 
     def test_export_row_cap_disabled_returns_200(self):
         client = self._make_client(max_rows=None)
-        r = client.get("/admin/_api/product/export?format=csv")
+        r = _export(client, "product", fmt="csv")
         assert r.status_code == 200
+
+    def test_select_all_matching_exceeding_cap_flashes_error(self):
+        client = self._make_client(max_rows=3)  # table has 5 rows
+        r = _export(
+            client,
+            "product",
+            fmt="csv",
+            scope="selected",
+            select_all=True,
+            follow_redirects=False,
+        )
+        assert r.status_code == 303
+
+    def test_explicit_selection_exceeding_cap_flashes_error(self):
+        client = self._make_client(max_rows=2)
+        pks = ProductView._all_pks()  # 5 pks
+        r = _export(
+            client,
+            "product",
+            fmt="csv",
+            scope="selected",
+            pks=pks,
+            follow_redirects=False,
+        )
+        assert r.status_code == 303
 
     def test_page_scope_within_cap_returns_200(self):
         # Table holds 5 rows, above the cap, but a single page of 2 is fine.
         client = self._make_client(max_rows=3, view_cls=PaginatedProductView)
-        r = client.get(
-            "/admin/_api/paginated-product/export"
-            "?format=csv&scope=page&page=1&page_size=2"
+        r = _export(
+            client,
+            "paginated-product",
+            fmt="csv",
+            scope="page",
+            list_query="page=1&page_size=2",
         )
         assert r.status_code == 200
 
@@ -877,17 +1115,23 @@ class TestExportRowCap:
         # Page 3 with page_size=2 holds only the fifth row, so the effective
         # export size is 1 even though page_size exceeds the cap of 1.
         client = self._make_client(max_rows=1, view_cls=PaginatedProductView)
-        r = client.get(
-            "/admin/_api/paginated-product/export"
-            "?format=csv&scope=page&page=3&page_size=2"
+        r = _export(
+            client,
+            "paginated-product",
+            fmt="csv",
+            scope="page",
+            list_query="page=3&page_size=2",
         )
         assert r.status_code == 200
 
     def test_page_scope_exceeding_cap_flashes_error(self):
         client = self._make_client(max_rows=2, view_cls=PaginatedProductView)
-        r = client.get(
-            "/admin/_api/paginated-product/export"
-            "?format=csv&scope=page&page=1&page_size=3",
+        r = _export(
+            client,
+            "paginated-product",
+            fmt="csv",
+            scope="page",
+            list_query="page=1&page_size=3",
             follow_redirects=False,
         )
         assert r.status_code == 303
@@ -900,24 +1144,30 @@ class TestExportRowCap:
         # page_size=-1 renders every row, so scope=page must not sidestep
         # the cap when the full table exceeds it.
         client = self._make_client(max_rows=3, view_cls=PaginatedProductView)
-        r = client.get(
-            "/admin/_api/paginated-product/export"
-            "?format=csv&scope=page&page=1&page_size=-1",
+        r = _export(
+            client,
+            "paginated-product",
+            fmt="csv",
+            scope="page",
+            list_query="page=1&page_size=-1",
             follow_redirects=False,
         )
         assert r.status_code == 303
 
-    def test_row_cap_redirect_preserves_query_state(self):
+    def test_row_cap_redirect_honors_origin(self):
         client = self._make_client(max_rows=3)  # table has 5 rows
+        origin = "/admin/product/list?q=Item&sort=name__asc"
         # "Item" matches all 5 rows, so the cap is still exceeded post-filter.
-        r = client.get(
-            "/admin/_api/product/export?format=csv&q=Item&sort=name__asc",
+        r = _export(
+            client,
+            "product",
+            fmt="csv",
+            list_query="q=Item&sort=name__asc",
+            origin=origin,
             follow_redirects=False,
         )
         assert r.status_code == 303
-        location = r.headers["location"]
-        assert "q=Item" in location
-        assert "sort=name__asc" in location
+        assert r.headers["location"] == origin
 
 
 # ── exclude_fields_from_export / exclude_fields_from_import ───────────────────
@@ -925,7 +1175,7 @@ class TestExportRowCap:
 
 class TestExcludeFieldsFromExport:
     def test_excluded_field_absent_from_csv_header(self, exclude_export_client):
-        r = exclude_export_client.get("/admin/_api/exclude-export/export?format=csv")
+        r = _export(exclude_export_client, "exclude-export", fmt="csv")
         assert r.status_code == 200
         reader = csv.reader(io.StringIO(r.text))
         header = next(reader)
@@ -933,7 +1183,7 @@ class TestExcludeFieldsFromExport:
         assert "sku" not in header
 
     def test_non_excluded_fields_present_in_csv_header(self, exclude_export_client):
-        r = exclude_export_client.get("/admin/_api/exclude-export/export?format=csv")
+        r = _export(exclude_export_client, "exclude-export", fmt="csv")
         assert r.status_code == 200
         reader = csv.reader(io.StringIO(r.text))
         header = next(reader)
@@ -941,7 +1191,7 @@ class TestExcludeFieldsFromExport:
         assert "Price" in header
 
     def test_excluded_field_absent_from_json_export(self, exclude_export_client):
-        r = exclude_export_client.get("/admin/_api/exclude-export/export?format=json")
+        r = _export(exclude_export_client, "exclude-export", fmt="json")
         assert r.status_code == 200
         rows = r.json()
         assert len(rows) == 1
@@ -949,7 +1199,7 @@ class TestExcludeFieldsFromExport:
         assert not any(k.lower() == "sku" for k in keys)
 
     def test_non_excluded_fields_present_in_json_export(self, exclude_export_client):
-        r = exclude_export_client.get("/admin/_api/exclude-export/export?format=json")
+        r = _export(exclude_export_client, "exclude-export", fmt="json")
         assert r.status_code == 200
         row = r.json()[0]
         assert row.get("Name") == "Widget" or row.get("name") == "Widget"

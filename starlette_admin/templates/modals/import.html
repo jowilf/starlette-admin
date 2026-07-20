@@ -2,7 +2,7 @@
      id="modal-import"
      tabindex="-1"
      role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ _("Import") }}</h5>
@@ -12,7 +12,12 @@
                         aria-label="{{ _('Close') }}"></button>
             </div>
             <div class="modal-body">
-                <div id="import-form-section">
+                <ul class="steps steps-counter mb-4" id="import-steps">
+                    <li class="step-item" id="import-step-indicator-upload">{{ _("Upload") }}</li>
+                    <li class="step-item" id="import-step-indicator-preview">{{ _("Preview") }}</li>
+                    <li class="step-item" id="import-step-indicator-result">{{ _("Result") }}</li>
+                </ul>
+                <div id="import-step-upload">
                     <form id="import-form" enctype="multipart/form-data" novalidate>
                         <div class="mb-3">
                             <label class="form-label" for="import-format">{{ _("Format") }}</label>
@@ -32,33 +37,37 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-check">
-                                <input type="checkbox" class="form-check-input" id="import-dry-run">
-                                <span class="form-check-label">{{ _("Dry run (validate without saving)") }}</span>
+                                <input type="checkbox" class="form-check-input" id="import-update-existing">
+                                <span class="form-check-label">{{ _("Update existing records by primary key") }}</span>
                             </label>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-check">
-                                <input type="checkbox" class="form-check-input" id="import-skip-pk">
-                                <span class="form-check-label">{{ _("Skip primary key column") }}</span>
-                            </label>
-                            <div class="form-text text-muted">
-                                {{ _("Use this when your file contains a primary key column but your backend auto-generates keys. The column will be ignored and a new key will be assigned.") }}
-                            </div>
                         </div>
                     </form>
-                    <div id="import-error" class="alert alert-danger d-none" role="alert"></div>
                 </div>
-                <div id="import-results" class="d-none">
-                    <div id="import-summary" class="mb-3"></div>
-                    <div id="import-errors-table"></div>
+                <div id="import-step-preview" class="d-none">
+                    <div id="import-preview-loading" class="d-none text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <div class="text-muted mt-2">{{ _("Loading preview...") }}</div>
+                    </div>
+                    <div id="import-preview-content">
+                        <div id="import-preview-summary" class="mb-3"></div>
+                        <div id="import-preview-mapping" class="mb-3"></div>
+                        <div id="import-preview-sample" class="mb-3"></div>
+                        <div id="import-preview-errors"></div>
+                    </div>
                 </div>
+                <div id="import-step-result" class="d-none">
+                    <div id="import-result-summary" class="mb-3"></div>
+                    <div id="import-result-errors"></div>
+                </div>
+                <div id="import-error" class="alert alert-danger d-none" role="alert"></div>
             </div>
             <div class="modal-footer">
                 <button type="button"
                         class="btn btn-link link-secondary me-auto"
                         data-bs-dismiss="modal">{{ _("Cancel") }}</button>
+                <button type="button" class="btn btn-link d-none" id="import-back">{{ _("Back") }}</button>
                 <button type="button" class="btn btn-primary" id="import-submit">
-                    <i class="fa-solid fa-upload me-2"></i>{{ _("Import") }}
+                    <i class="fa-solid fa-eye me-2"></i>{{ _("Preview") }}
                 </button>
             </div>
         </div>

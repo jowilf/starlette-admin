@@ -20,15 +20,16 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-    from starlette_admin.export import ExportContext
+    from starlette_admin.base import BaseAdmin
     from starlette_admin.importers import ImportContext, ImportResult
 
 from jinja2 import Environment, Template
 from markupsafe import escape
+from starlette.datastructures import QueryParams
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
-from starlette.responses import Response
-from starlette.status import HTTP_400_BAD_REQUEST
+from starlette.responses import RedirectResponse, Response
+from starlette.status import HTTP_303_SEE_OTHER, HTTP_400_BAD_REQUEST
 from starlette.templating import Jinja2Templates
 from starlette_admin.actions import ActionSelection, action, link_row_action, row_action
 from starlette_admin.events import (
@@ -47,7 +48,12 @@ from starlette_admin.events import (
     EventContext,
 )
 from starlette_admin.exceptions import ActionFailed, FormValidationError
-from starlette_admin.export import BaseExporter, CsvExporter, JsonExporter
+from starlette_admin.export import (
+    BaseExporter,
+    ExportConfig,
+    ExportContext,
+    resolve_exporter,
+)
 from starlette_admin.fields import (
     BaseField,
     CollectionField,
@@ -79,6 +85,7 @@ from starlette_admin.helpers import (
     list_url,
     maybe_async,
     not_none,
+    safe_redirect_url,
 )
 from starlette_admin.helpers import (
     static_url as _static_url,
@@ -88,7 +95,7 @@ from starlette_admin.helpers import (
 )
 from starlette_admin.i18n import gettext, ngettext
 from starlette_admin.i18n import lazy_gettext as _
-from starlette_admin.importers import BaseImporter, CsvImporter, JsonImporter
+from starlette_admin.importers import BaseImporter, resolve_importer
 from starlette_admin.logging import get_logger
 from starlette_admin.routing import route
 from starlette_admin.types import (
@@ -262,6 +269,9 @@ class BaseView:
 
     menu_label: str = ""
     icon: str | None = None
+
+    # Set by BaseAdmin.add_view;
+    _admin: "BaseAdmin | None" = None
 
     def title(self, request: Request) -> str:
         """Return the title of the view to be displayed in the browser tab"""
@@ -464,6 +474,24 @@ class CustomView(BaseView):
         return request.scope["path"] == request.scope["root_path"] + self.path
 
 
+async def build_export_form(request: Request, view: "BaseModelView") -> str:
+    """Form builder for the built-in `export` batch action.
+
+    Renders `templates/actions/export_form.html` through the admin's Jinja
+    environment (a `@action` form builder has no `Environment` of its own).
+    """
+    assert view._admin is not None, "view must be registered with add_view()"
+    env: Environment = view._admin.templates.env
+    fields = view.get_fields_list(request, action=RequestAction.EXPORT)
+    template = env.get_template("actions/export_form.html")
+    return template.render(
+        request=request,
+        fields=fields,
+        exporters=view.exporters,
+        filename=view.key or "export",
+    )
+
+
 class BaseModelView(BaseView):
     """
     Base administrative view.
@@ -516,10 +544,13 @@ class BaseModelView(BaseView):
             For example:
             `["title",  ("created_at", False), ("price", True)]` will sort
              by `title` ascending, `created_at` ascending and `price` descending.
-        exporters: A list of exporter instances to enable on this view.
-            Defaults to ``[CsvExporter(), JsonExporter()]``.
-        importers: A list of importer instances to enable on this view.
-            Defaults to ``[CsvImporter(), JsonImporter()]``.
+        exporters: Formats to enable on this view, as extension strings
+            (resolved via the `EXPORT_FORMATS` registry), exporter instances
+            (for per-instance options), or a mix of both. Defaults to
+            ``["csv", "json"]``, which need no extra dependency.
+        importers: Formats to enable on this view, as extension strings
+            (resolved via the `IMPORT_FORMATS` registry), importer instances,
+            or a mix of both. Defaults to ``["csv", "json"]``.
         exclude_fields_from_export: List of fields to exclude from exported data.
         exclude_fields_from_import: List of fields to exclude from import processing.
         column_visibility: Enable/Disable the "Show/Hide columns" dropdown on the
@@ -587,8 +618,8 @@ class BaseModelView(BaseView):
     searchable_fields: Sequence[str] | None = None
     sortable_fields: Sequence[str] | None = None
     fields_default_sort: Sequence[tuple[str, bool] | str] | None = None
-    exporters: Sequence[BaseExporter] = [CsvExporter(), JsonExporter()]
-    importers: Sequence[BaseImporter] = [CsvImporter(), JsonImporter()]
+    exporters: Sequence[BaseExporter | str] = ["csv", "json"]
+    importers: Sequence[BaseImporter | str] = ["csv", "json"]
     exclude_fields_from_export: Sequence[str] = []
     exclude_fields_from_import: Sequence[str] = []
     column_visibility: bool = True
@@ -621,7 +652,7 @@ class BaseModelView(BaseView):
             self.key,
             type(self).__name__,
         )
-        self._validate_export_import_types()
+        self._resolve_export_import_types()
         self._init_fields()
         self._validate_inline_editable_fields()
         self._init_form_layout()
@@ -645,27 +676,12 @@ class BaseModelView(BaseView):
             len(self._inline_instances),
         )
 
-    def _validate_export_import_types(self) -> None:
-        import importlib.util
-
-        needs_excel = any(e.extension == "xlsx" for e in self.exporters) or any(
-            i.extension == "xlsx" for i in self.importers
-        )
-        needs_pdf = any(e.extension == "pdf" for e in self.exporters)
-        if (
-            needs_excel and importlib.util.find_spec("openpyxl") is None
-        ):  # pragma: no cover
-            raise ImportError(
-                f"{type(self).__name__}: 'openpyxl' is required for Excel export/import. "
-                "Install it with: pip install starlette-admin[excel]"
-            )
-        if (
-            needs_pdf and importlib.util.find_spec("reportlab") is None
-        ):  # pragma: no cover
-            raise ImportError(
-                f"{type(self).__name__}: 'reportlab' is required for PDF export. "
-                "Install it with: pip install starlette-admin[pdf]"
-            )
+    def _resolve_export_import_types(self) -> None:
+        """Resolve `exporters`/`importers` entries (format strings or direct
+        instances, e.g. a bare `TablibExporter("xlsx")`) into availability-checked
+        instances via the format registries."""
+        self.exporters = [resolve_exporter(e) for e in self.exporters]
+        self.importers = [resolve_importer(i) for i in self.importers]
 
     def _init_fields(self) -> None:  # noqa: C901
         """Walk ``self.fields`` depth-first, set ``_name`` / ``_view`` on every
@@ -856,6 +872,13 @@ class BaseModelView(BaseView):
 
         if self.actions is None:
             self.actions = list(self._actions_handlers.keys())
+        elif "export" in self._actions_handlers and "export" not in self.actions:
+            # "export" is new: existing code with a hand-picked `actions`
+            # list was written before it existed and has no way to know to
+            # list it. Visibility is controlled by `can_export()`, not by
+            # `actions` membership, so it's appended rather than silently
+            # dropped.
+            self.actions = [*self.actions, "export"]
 
         _log.debug(
             "_init_batch_actions: key=%r active actions=%s",
@@ -896,6 +919,14 @@ class BaseModelView(BaseView):
                     list(self._actions.keys()),
                 )
                 raise ValueError(f"Unknown action with name `{action_name}`")
+            action_def = self._actions[action_name]
+            if action_def.get("dedicated_button") and not action_def.get(
+                "allow_empty_selection"
+            ):
+                raise ValueError(
+                    f"Action `{action_name}`: dedicated_button=True requires "
+                    "allow_empty_selection=True"
+                )
         for action_name in not_none(self.row_actions):
             if action_name not in self._row_actions:
                 _log.error(
@@ -945,6 +976,8 @@ class BaseModelView(BaseView):
         """
         if name == "delete":
             return self.can_delete(request)
+        if name == "export":
+            return self.can_export(request) and bool(self.exporters)
         return True
 
     async def is_row_action_allowed(self, request: Request, name: str) -> bool:
@@ -998,15 +1031,23 @@ class BaseModelView(BaseView):
         return result
 
     async def get_all_actions(self, request: Request) -> list[dict[str, Any]]:
-        """Return a list of allowed batch actions"""
+        """Return a list of allowed batch actions.
+
+        A `form` callable is invoked as `(request)`, or `(request, view)` when
+        it declares a second parameter — how the built-in export action's form
+        builder receives the view to list its fields and formats.
+        """
         actions = []
         for action_name in not_none(self.actions):
             if await self.is_action_allowed(request, action_name):
                 _action = self._actions.get(action_name, {})
-                if callable(_action.get("form")):
+                form = _action.get("form")
+                if callable(form):
+                    params = inspect.signature(form).parameters
+                    args = (request, self) if len(params) >= 2 else (request,)
                     _action = {
                         **_action,
-                        "form": await self._resolve_form(_action["form"], request),
+                        "form": await self._resolve_form(form, *args),
                     }
                 actions.append(_action)
         return actions
@@ -1176,6 +1217,139 @@ class BaseModelView(BaseView):
                 affected_rows or 0,
             ) % {"count": affected_rows}
         flash(request, message, "success")
+
+    @staticmethod
+    def _export_check_max_rows(count: int, max_rows: int | None) -> None:
+        if max_rows is not None and count > max_rows:
+            raise ActionFailed(
+                gettext(
+                    "Export would return %(count)d rows, which exceeds the "
+                    "configured maximum of %(max)d. Apply a filter to narrow "
+                    "the result set."
+                )
+                % {"count": count, "max": max_rows}
+            )
+
+    async def _export_resolve_items(
+        self,
+        request: Request,
+        selection: ActionSelection,
+        scope: str,
+        list_params: ListParams,
+        export_config: ExportConfig,
+    ) -> Sequence[Any]:
+        """Resolve the rows to export for one scope, enforcing
+        `export_config.max_rows` with a `count()` pre-check before fetching."""
+        if scope == "page":
+            skip = (
+                (list_params.page - 1) * list_params.page_size
+                if list_params.page_size > 0
+                else 0
+            )
+            limit = list_params.page_size
+            total = await self.count(
+                request, q=list_params.q, filters=list_params.filters
+            )
+            export_total = max(0, total - skip)
+            if limit > 0:
+                export_total = min(export_total, limit)
+            self._export_check_max_rows(export_total, export_config.max_rows)
+            return await self.find_all(
+                request=request,
+                skip=skip,
+                limit=limit,
+                q=list_params.q,
+                sorts=list_params.sorts,
+                filters=list_params.filters,
+            )
+        if selection.is_select_all:
+            total = await self.count(
+                request, q=list_params.q, filters=list_params.filters
+            )
+            self._export_check_max_rows(total, export_config.max_rows)
+            return await self.find_all(
+                request=request,
+                skip=0,
+                limit=-1,
+                q=list_params.q,
+                sorts=list_params.sorts,
+                filters=list_params.filters,
+            )
+        pks = await selection.pks()
+        self._export_check_max_rows(len(pks), export_config.max_rows)
+        return await self.find_by_pks(request, pks)
+
+    @action(
+        name="export",
+        text=_("Export"),
+        confirmation="",
+        header=_("Configure your export"),
+        icon_class="fa-solid fa-file-export",
+        submit_btn_text=_("Export"),
+        form=build_export_form,
+        custom_response=True,
+        allow_empty_selection=True,
+        dedicated_button=True,
+        modal_size="lg",
+    )
+    async def export_action(
+        self, request: Request, selection: ActionSelection
+    ) -> Response:
+        request.state.action = RequestAction.EXPORT
+        form = await request.form()
+        scope = str(form.get("scope") or "page")
+        fmt = str(form.get("format") or "")
+        filename = (str(form.get("filename") or "").strip()) or (self.key or "export")
+        submitted_fields = form.getlist("fields")
+        export_config = getattr(request.state, "export_config", None) or ExportConfig()
+        exporters = cast("list[BaseExporter]", self.exporters)
+
+        try:
+            exporter = next(
+                (e for e in exporters if (e.format_key or e.extension) == fmt),
+                None,
+            )
+            if exporter is None:
+                raise ActionFailed(
+                    gettext("Unknown export format %(format)s") % {"format": fmt}
+                )
+
+            all_fields = list(self.get_fields_list(request))
+            if submitted_fields:
+                allowed = {f.name for f in all_fields if f.name in submitted_fields}
+                fields = [f for f in all_fields if f.name in allowed] or all_fields
+            else:
+                fields = all_fields
+
+            list_query = QueryParams(
+                (request.query_params.get("_list_query") or "").lstrip("?")
+            )
+            list_params = self._parse_list_params(request, list_query)
+            items = await self._export_resolve_items(
+                request, selection, scope, list_params, export_config
+            )
+
+            rows = [await self.serialize(item, request) for item in items]
+            export_ctx = ExportContext(
+                fields=fields,
+                rows=rows,
+                view=self,
+                request=request,
+                filename=filename,
+                export_config=export_config,
+            )
+            await self._emit_before_export(request, exporter, items, export_ctx)
+            response = await exporter.build_response(export_ctx)
+            await self._emit_after_export(request, exporter, items, export_ctx)
+            return response
+        except (ActionFailed, ImportError) as exc:
+            message = exc.msg if isinstance(exc, ActionFailed) else str(exc)
+            flash(request, message, "error")
+            fallback = _view_list_url(request, not_none(self.key))
+            redirect_url = safe_redirect_url(
+                request.query_params.get("_origin") or fallback, request, fallback
+            )
+            return RedirectResponse(redirect_url, status_code=HTTP_303_SEE_OTHER)
 
     @link_row_action(
         name="view",
@@ -1783,20 +1957,25 @@ class BaseModelView(BaseView):
         """Determines permission for importing data. Returns `True` by default."""
         return True
 
-    def can_access_field(self, request: Request, field: BaseField) -> bool:
+    def can_access_field(
+        self,
+        request: Request,
+        field: BaseField,
+        action: RequestAction | None = None,
+    ) -> bool:
         """
-        Returns `True` if the requesting user has access to the specified `field` for the current action.
+        Returns `True` if the requesting user has access to the specified `field` for `action`.
 
-        The default implementation returns ``False`` for fields excluded from the
-        current action (e.g., ``exclude_from_list``, ``exclude_from_detail``,
+        The default implementation returns ``False`` for fields excluded from
+        `action` (e.g., ``exclude_from_list``, ``exclude_from_detail``,
         ``exclude_from_create``, ``exclude_from_edit``) and ``True`` in all other cases.
         Override this method to implement role-based, field-level access control.
         Call ``super()`` to preserve the default exclusion logic:
 
-            def can_access_field(self, request: Request, field: BaseField) -> bool:
+            def can_access_field(self, request, field, action=None) -> bool:
                 if field.name == "salary":
                     return "hr" in request.state.user_roles
-                return super().can_access_field(request, field)
+                return super().can_access_field(request, field, action)
 
         This method serves as the single source of truth for field visibility.
         It is invoked by ``get_fields_list`` (which governs every page, including
@@ -1804,8 +1983,14 @@ class BaseModelView(BaseView):
         (where an inaccessible field results in an HTTP 400 error), and by
         ``_parse_list_params`` (where an inaccessible ``sort_by`` parameter also
         results in an HTTP 400 error).
+
+        Parameters:
+            request: The request being processed.
+            field: The field to check access for.
+            action: The action to check access for. Defaults to
+                ``request.state.action`` when omitted.
         """
-        action = request.state.action
+        action = action if action is not None else request.state.action
         return not (
             (
                 action in (RequestAction.LIST, RequestAction.RELATION_LOOKUP)
@@ -2026,9 +2211,10 @@ class BaseModelView(BaseView):
         request: Request,
         *,
         include_nested: bool = False,
+        action: RequestAction | None = None,
     ) -> Sequence[BaseField]:
         """
-        Returns the fields accessible for the current action based on the request.
+        Returns the fields accessible for `action` based on the request.
 
         Each field is passed through
         [can_access_field][starlette_admin.views.BaseModelView.can_access_field],
@@ -2044,6 +2230,10 @@ class BaseModelView(BaseView):
                  over ``self.fields`` (the top-level fields only). Use
                  ``include_nested=True`` when you need to access dotted paths,
                  such as ``"config.key"``, for sort or filter validation.
+            action: The action to resolve fields for. Defaults to
+                ``request.state.action`` when omitted. Pass this to compute the
+                field list for an action other than the one currently being
+                served, without touching ``request.state.action``.
 
         During an inline-edit request the inline-edit endpoint sets
         ``request.state.inline_edit_field``, and the list narrows to that
@@ -2052,12 +2242,13 @@ class BaseModelView(BaseView):
         reads and writes only the edited field, which is what makes
         ``edit()`` safe to call with a single-field data dict.
         """
+        action = action if action is not None else request.state.action
         source = self._all_fields if include_nested else self.fields
         # Set only by the inline-edit endpoint, always as a field-name string.
         inline_edit_field = getattr(request.state, "inline_edit_field", None)
         if isinstance(inline_edit_field, str):
             source = [f for f in source if f.name == inline_edit_field]
-        return [f for f in source if self.can_access_field(request, f)]
+        return [f for f in source if self.can_access_field(request, f, action=action)]
 
     def _field_by_name(self, request: Request, name: str) -> BaseField | None:
         """Returns the accessible field named `name`, or `None` if it does
@@ -2197,7 +2388,9 @@ class BaseModelView(BaseView):
                 )
         return sorts
 
-    def _parse_list_params(self, request: Request) -> ListParams:
+    def _parse_list_params(
+        self, request: Request, query_params: "QueryParams | None" = None
+    ) -> ListParams:
         """
         Reads, validates, and sanitizes list-page query parameters (`page`, `page_size`,
         `sort`, `q`) into a [ListParams][starlette_admin.types.ListParams] object.
@@ -2206,8 +2399,20 @@ class BaseModelView(BaseView):
         (e.g., ``?sort=name__asc&sort=date__desc``). Invalid or missing values
         default to the view's configured settings, ensuring the list page never
         errors out due to a malformed URL. Instead, it renders with a sane default state.
+
+        Args:
+            request: The request being processed, used for field accessibility
+                checks. Its own query params are used unless `query_params` is
+                given.
+            query_params: Parse params from this mapping instead of
+                `request.query_params`. Used by `export_action` to read
+                page/page_size/sort out of the list page's query string
+                (carried via `_list_query`) rather than the action request's
+                own query params.
         """
-        query_params = request.query_params
+        query_params = (
+            query_params if query_params is not None else request.query_params
+        )
 
         try:
             page = max(int(query_params["page"]), 1)
@@ -2239,7 +2444,7 @@ class BaseModelView(BaseView):
 
         q = query_params.get("q") or None
 
-        filters = self._parse_filter_param(request)
+        filters = self._parse_filter_param(request, query_params)
 
         visible_cols: list[str] | None = None
         cols_raw = query_params.get("cols")

@@ -9,7 +9,8 @@ dependencies = [
     "filetype>=1.2.0",
     "pillow>=12.2.0",
     "pydantic[email]>=2.0",
-    "starlette-admin[excel]",
+    "starlette-admin",
+    "tablib[xlsx]",
     "uvicorn[standard]>=0.39.0",
 ]
 

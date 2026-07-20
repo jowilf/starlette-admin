@@ -453,13 +453,9 @@ admin.add_view(
 The `exporters` and `importers` attributes specify the exact formats available for data transfer. Refer to the [Export & Import](export-import.md) guide for details on built-in options and custom implementations.
 
 ```python
-from starlette_admin.export import CsvExporter, ExcelExporter
-from starlette_admin.importers import JsonImporter
-
-
 class PostView(ModelView):
-    exporters = [CsvExporter(), ExcelExporter()]
-    importers = [JsonImporter()]
+    exporters = ["csv", "xlsx"]
+    importers = ["json"]
 ```
 
 ### Actions, Inline Forms, and Templates

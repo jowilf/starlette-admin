@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Awaitable, Callable, Mapping, Sequence
-from typing import Any
-from urllib.parse import parse_qs, urlencode, urlparse
+from typing import Any, cast
+from urllib.parse import parse_qs, urlparse
 
 from jinja2 import (
     BaseLoader,
@@ -36,10 +36,7 @@ from starlette_admin.exceptions import (
     FormValidationError,
     InvalidRelationFieldError,
 )
-from starlette_admin.export import (
-    ExportConfig,
-    ExportContext,
-)
+from starlette_admin.export import ExportConfig
 from starlette_admin.fields import BaseField, CollectionField, FileField, RelationField
 from starlette_admin.flash import FlashMiddleware, flash, get_flashed_messages
 from starlette_admin.helpers import (
@@ -50,7 +47,6 @@ from starlette_admin.helpers import (
     create_url,
     detail_url,
     edit_url,
-    export_url,
     get_file_icon,
     html_safe_json,
     import_url,
@@ -273,6 +269,7 @@ class BaseAdmin:
             getattr(view_instance, "menu_label", None),
         )
         self._views.append(view_instance)
+        self._set_admin(view_instance)
         self._setup_view(view_instance)
         if isinstance(view_instance, BaseModelView) and view_instance.key is not None:
             self.events._register_view(view_instance.key, view_instance.events)
@@ -489,7 +486,6 @@ class BaseAdmin:
         templates.env.globals["edit_url"] = edit_url
         templates.env.globals["create_url"] = create_url
         templates.env.globals["back_url"] = back_url
-        templates.env.globals["export_url"] = export_url
         templates.env.globals["import_url"] = import_url
         templates.env.globals["get_locale"] = get_locale
         templates.env.globals["get_locale_display_name"] = get_locale_display_name
@@ -518,6 +514,13 @@ class BaseAdmin:
         # Install gettext/ngettext so `{% trans %}` works in templates.
         templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
         self.templates = templates
+
+    def _set_admin(self, view: BaseView) -> None:
+        """Stamp `view._admin` (and any DropDown sub-views) with this admin."""
+        view._admin = self
+        if isinstance(view, DropDown):
+            for sub_view in view.views:
+                self._set_admin(sub_view)
 
     def _setup_view(self, view: BaseView) -> None:
         if isinstance(view, DropDown):
@@ -877,145 +880,89 @@ class BaseAdmin:
         except (UnknownStorageError, NotImplementedError) as err:
             raise HTTPException(HTTP_404_NOT_FOUND) from err
 
-    def _export_failure_redirect_url(
-        self, request: Request, view: BaseModelView
-    ) -> str:
-        """Build the list-page URL to bounce back to on export failure.
+    async def _import_row_status(
+        self,
+        row_num: int,
+        row: dict[str, Any],
+        fields: list[BaseField],
+        field_by_header: dict[str, BaseField],
+        ctx: "ImportContext",
+        request: Request,
+        view: "BaseModelView",
+        preview: bool,
+        result: "ImportResult",
+    ) -> tuple[str, dict[str, Any], list[dict[str, Any]]]:
+        """Parse, validate, and (unless `preview`) write one row, updating
+        `result`'s counters/errors in place.
 
-        Carries over every query param the export request was made with
-        (``q``, ``filter``, ``sort``, ...) except ``format``, so the user
-        lands back on the exact filtered/sorted view they tried to export
-        rather than a blank list.
+        A row whose primary key matches an existing record is an update when
+        `ctx.update_existing` is set, a create otherwise -- in preview mode
+        this only classifies the row (via a read-only `find_by_pk`) without
+        writing, so `result.rows_created`/`rows_updated` describe what
+        *would* happen.
+
+        Returns the row's status (``"new"``/``"update"``/``"error"``), its
+        parsed data, and any per-field error dicts, for the preview sample.
         """
-        base = str(request.url_for(self.route_name + ":list", key=view.key))
-        params = [
-            (k, v) for k, v in request.query_params.multi_items() if k != "format"
-        ]
-        qs = urlencode(params)
-        return base + ("?" + qs if qs else "")
+        status = "new"
+        row_errors: list[dict[str, Any]] = []
+        data: dict[str, Any] = {}
+        try:
+            data = await self._parse_import_row(row, fields, field_by_header, ctx)
+            pk_value = data.get(view.pk_attr) if view.pk_attr else None
+            # A None pk (unmatched or deselected column) means the backend
+            # auto-generates it, so it must not trip the required check.
+            skip_validation = (
+                (view.pk_attr,) if view.pk_attr and pk_value is None else ()
+            )
+            await view.validate_fields(request, data, exclude=skip_validation)
 
-    @route("/_api/{key}/export", methods=["GET"], name="export")
-    async def _render_export(self, request: Request) -> Response:
-        """Export the currently filtered/sorted list of records.
-
-        Accepts the same list-state query parameters as the list page
-        (``q``, ``filter``, ``sort``) and streams back the chosen format.
-        When visible file fields are present, the response is a ZIP archive
-        containing the data file plus all referenced files under ``assets/``.
-
-        The ``scope`` query param controls how many rows are exported:
-        ``"all"`` (default) exports every row matching the current
-        filter/search, ignoring pagination. ``"page"`` restricts the export
-        to the single page identified by the ``page``/``page_size`` params,
-        mirroring what's currently on screen.
-        """
-        request.state.action = RequestAction.EXPORT
-        key = request.path_params.get("key")
-        scope = request.query_params.get("scope", "all")
-        _log.debug("export request: key=%s scope=%s", key, scope)
-        view = self._find_view_by_key(key)
-        if not view.is_accessible(request) or not view.can_export(request):
-            _log.warning("export denied: key=%s (permission check failed)", key)
-            raise HTTPException(HTTP_403_FORBIDDEN)
-        fmt = request.query_params.get("format")
-        _log.debug("export format requested: %s", fmt)
-        exporter = next(
-            (e for e in view.exporters if (e.format_key or e.extension) == fmt), None
-        )
-        list_url_for_view = self._export_failure_redirect_url(request, view)
-        if exporter is None:
-            _log.warning(
-                "export rejected: unknown/disabled format %r for key=%s",
-                fmt,
-                key,
-            )
-            flash(
-                request,
-                gettext("Unknown export format %(format)s") % {"format": fmt},
-                "error",
-            )
-            return RedirectResponse(list_url_for_view, status_code=HTTP_303_SEE_OTHER)
-        list_params = view._parse_list_params(request)
-        _log.info(
-            "export starting: view=%s format=%s q=%r sorts=%r",
-            key,
-            fmt,
-            list_params.q,
-            list_params.sorts,
-        )
-        if scope == "page":
-            skip = (
-                (list_params.page - 1) * list_params.page_size
-                if list_params.page_size > 0
-                else 0
-            )
-            limit = list_params.page_size
-        else:
-            skip = 0
-            limit = -1
-        if self.export_config.max_rows is not None:
-            total = await view.count(
-                request=request, q=list_params.q, filters=list_params.filters
-            )
-            # The number of rows this export will actually produce: the full
-            # match count for scope "all", the remainder of the current page
-            # otherwise. A non-positive limit means "no page size cap" (e.g.
-            # a page_size of -1 for "show all"), so only a positive limit
-            # shrinks the count.
-            export_total = max(0, total - skip)
-            if limit > 0:
-                export_total = min(export_total, limit)
-            if export_total > self.export_config.max_rows:
+            existing = None
+            if ctx.update_existing and pk_value is not None:
+                existing = await view.find_by_pk(request, pk_value)
+            if existing is not None:
+                status = "update"
+                if not preview:
+                    await view.edit(request, pk_value, data)
+                    _log.debug("import row %d: updated", row_num)
+                result.rows_updated += 1
+            else:
+                status = "new"
+                if not preview:
+                    await view.create(request, data)
+                    _log.debug("import row %d: created", row_num)
+                result.rows_created += 1
+        except FormValidationError as exc:
+            status = "error"
+            for raw_field_name, msg in exc.errors.items():
+                field_name: str | None = (
+                    None if isinstance(raw_field_name, int) else raw_field_name
+                )
+                result.errors.append(
+                    ImportRowError(row=row_num, field=field_name, message=str(msg))
+                )
+                row_errors.append({"field": field_name, "message": str(msg)})
                 _log.warning(
-                    "export rejected: %d rows > max_rows=%d for key=%s",
-                    export_total,
-                    self.export_config.max_rows,
-                    key,
+                    "import row %d validation error, field=%r: %s",
+                    row_num,
+                    field_name,
+                    msg,
                 )
-                flash(
-                    request,
-                    gettext(
-                        "Export would return %(count)d rows, which exceeds the "
-                        "configured maximum of %(max)d. Apply a filter to narrow "
-                        "the result set."
-                    )
-                    % {"count": export_total, "max": self.export_config.max_rows},
-                    "error",
-                )
-                return RedirectResponse(
-                    list_url_for_view, status_code=HTTP_303_SEE_OTHER
-                )
-        request.state.export_type = exporter
-        items = await view.find_all(
-            request=request,
-            skip=skip,
-            limit=limit,
-            q=list_params.q,
-            sorts=list_params.sorts,
-            filters=list_params.filters,
-        )
-        _log.debug("export query returned %d item(s)", len(items))
-        rows = [await view.serialize(item, request) for item in items]
-        export_fields = list(view.get_fields_list(request))
-        _log.debug(
-            "export fields resolved: %d field(s) (%s)",
-            len(export_fields),
-            [f.name for f in export_fields],
-        )
-        export_ctx = ExportContext(
-            fields=export_fields,
-            rows=rows,
-            view=view,
-            request=request,
-            filename=view.key or "export",
-            export_config=self.export_config,
-        )
-        await view._emit_before_export(request, exporter, items, export_ctx)
-        _log.debug("export building response: format=%s rows=%d", fmt, len(rows))
-        response = await exporter.build_response(export_ctx)
-        await view._emit_after_export(request, exporter, items, export_ctx)
-        _log.info("export complete: view=%s format=%s rows=%d", key, fmt, len(rows))
-        return response
+        except Exception as exc:
+            status = "error"
+            message = gettext("An unexpected error occurred while processing this row.")
+            _log.error(
+                "import row %d unexpected error (%s): %s",
+                row_num,
+                type(exc).__name__,
+                exc,
+                exc_info=True,
+            )
+            result.errors.append(
+                ImportRowError(row=row_num, field=None, message=message)
+            )
+            row_errors.append({"field": None, "message": message})
+        return status, data, row_errors
 
     async def _execute_import(
         self,
@@ -1023,67 +970,64 @@ class BaseAdmin:
         ctx: "ImportContext",
         fields: list[BaseField],
         field_by_header: dict[str, BaseField],
-        skip_pk: bool,
         request: Request,
         view: "BaseModelView",
-        dry_run: bool,
+        preview: bool,
+        preview_extras: dict[str, Any] | None = None,
+        full_field_by_header: dict[str, BaseField] | None = None,
     ) -> "ImportResult":
-        result = ImportResult(dry_run=dry_run)
+        """Parse and validate every row, writing unless `preview` is set.
+
+        When `preview_extras` is given, it is filled in place with the
+        header mapping (from the first row) and up to 10 sample rows with a
+        per-row status, for the preview response. `full_field_by_header`
+        (headers matched against every importable field, not just the ones
+        `field_by_header` was narrowed to by a `fields` selection) drives the
+        mapping so a deselected field still gets listed with
+        ``"selected": false`` instead of dropping out of the response.
+        """
+        result = ImportResult(dry_run=preview)
         row_num = 0
         async for row in importer.parse(ctx):
             row_num += 1
             result.rows_total += 1
             _log.debug("import row %d: parsing", row_num)
-            try:
-                data = await self._parse_import_row(
-                    row, fields, field_by_header, skip_pk, view.pk_attr, ctx
-                )
-                # A None pk (skipped or absent column) means the backend
-                # auto-generates it, so it must not trip the required check.
-                skip_validation = (
-                    (view.pk_attr,)
-                    if view.pk_attr and (skip_pk or data.get(view.pk_attr) is None)
-                    else ()
-                )
-                await view.validate_fields(request, data, exclude=skip_validation)
-                if dry_run:
-                    result.rows_skipped += 1
-                    _log.debug("import row %d: skipped (dry_run)", row_num)
-                else:
-                    await view.create(request, data)
-                    result.rows_created += 1
-                    _log.debug("import row %d: created", row_num)
-            except FormValidationError as exc:
-                for raw_field_name, msg in exc.errors.items():
-                    field_name: str | None = (
-                        None if isinstance(raw_field_name, int) else raw_field_name
+            if preview_extras is not None and row_num == 1:
+                headers = list(row.keys())
+                mapping_source = full_field_by_header or field_by_header
+                selected_names = {f.name for f in field_by_header.values()}
+                preview_extras["headers"] = headers
+                preview_extras["mapping"] = [
+                    {
+                        "header": h,
+                        "field": mapping_source[h].name,
+                        "selected": mapping_source[h].name in selected_names,
+                    }
+                    for h in headers
+                    if h in mapping_source
+                ]
+                preview_extras["unmatched_headers"] = [
+                    h for h in headers if h not in mapping_source
+                ]
+
+            status, data, row_errors = await self._import_row_status(
+                row_num,
+                row,
+                fields,
+                field_by_header,
+                ctx,
+                request,
+                view,
+                preview,
+                result,
+            )
+
+            if preview_extras is not None:
+                sample = preview_extras.setdefault("sample", [])
+                if len(sample) < 10:
+                    sample.append(
+                        {"status": status, "cells": data, "errors": row_errors}
                     )
-                    result.errors.append(
-                        ImportRowError(row=row_num, field=field_name, message=str(msg))
-                    )
-                    _log.warning(
-                        "import row %d validation error, field=%r: %s",
-                        row_num,
-                        field_name,
-                        msg,
-                    )
-            except Exception as exc:
-                _log.error(
-                    "import row %d unexpected error (%s): %s",
-                    row_num,
-                    type(exc).__name__,
-                    exc,
-                    exc_info=True,
-                )
-                result.errors.append(
-                    ImportRowError(
-                        row=row_num,
-                        field=None,
-                        message=gettext(
-                            "An unexpected error occurred while processing this row."
-                        ),
-                    )
-                )
         return result
 
     async def _parse_import_row(
@@ -1091,8 +1035,6 @@ class BaseAdmin:
         row: dict[str, Any],
         fields: list[BaseField],
         field_by_header: dict[str, BaseField],
-        skip_pk: bool,
-        pk_attr: str | None,
         ctx: "ImportContext",
     ) -> dict[str, Any]:
         data: dict[str, Any] = {}
@@ -1110,9 +1052,6 @@ class BaseAdmin:
         for field in fields:
             if field.name not in data:
                 data[field.name] = None
-        if skip_pk and pk_attr and pk_attr in data:
-            data[pk_attr] = None  # Allow backend to auto-generate PK
-            _log.debug("import row: dropped pk column '%s'", pk_attr)
         return data
 
     async def _check_import_row_cap(
@@ -1171,17 +1110,49 @@ class BaseAdmin:
             )
         return None
 
+    @staticmethod
+    def _build_import_field_maps(
+        all_fields: list[BaseField], selected_fields: list[str] | None
+    ) -> tuple[dict[str, BaseField], dict[str, BaseField]]:
+        """Build header->field lookups for import.
+
+        `field_by_header` is scoped to `selected_fields` (or every field when
+        `None`) and drives what actually gets parsed; `full_field_by_header`
+        covers every importable field and drives the preview's mapping
+        report, so a deselected field is still listed (with
+        ``"selected": false``) instead of disappearing into
+        `unmatched_headers`.
+        """
+        matchable_fields = (
+            [f for f in all_fields if f.name in selected_fields]
+            if selected_fields
+            else all_fields
+        )
+        field_by_header: dict[str, BaseField] = {}
+        for field in matchable_fields:
+            field_by_header[field.label or field.name] = field
+            field_by_header[field.name] = field
+        full_field_by_header: dict[str, BaseField] = {}
+        for field in all_fields:
+            full_field_by_header[field.label or field.name] = field
+            full_field_by_header[field.name] = field
+        return field_by_header, full_field_by_header
+
     @route("/_api/{key}/import", methods=["POST"], name="import")
     async def _render_import(self, request: Request) -> Response:
         """Import records from an uploaded CSV/Excel/JSON file.
 
-        Returns a JSON summary with row counts and per-row validation errors.
-        Pass ``?dry_run=1`` to validate without persisting anything.
-        Pass ``?skip_pk=1`` to drop the primary key column so the backend auto-generates it.
+        Two-step wizard: pass ``?preview=1`` to parse, map headers, and
+        validate every row without writing anything, returning the preview
+        payload (header mapping, validation summary, sample rows). Omit it
+        to commit. Both requests are independent and stateless -- the
+        browser re-uploads the same file for each step, and both re-check
+        ``ImportConfig.max_upload_size``/``max_rows``.
         """
         request.state.action = RequestAction.IMPORT
         key = request.path_params.get("key")
-        _log.debug("import request: key=%s", key)
+        preview = request.query_params.get("preview") in ("1", "true", "yes")
+        _log.debug("import request: key=%s preview=%s", key, preview)
         view = self._find_view_by_key(key)
         if not view.is_accessible(request) or not view.can_import(request):
             _log.warning("import denied: key=%s (permission check failed)", key)
@@ -1190,7 +1161,12 @@ class BaseAdmin:
         fmt = form.get("format")
         _log.debug("import format requested: %s", fmt)
         importer = next(
-            (i for i in view.importers if (i.format_key or i.extension) == fmt), None
+            (
+                i
+                for i in cast("list[BaseImporter]", view.importers)
+                if (i.format_key or i.extension) == fmt
+            ),
+            None,
         )
         if importer is None:
             _log.warning(
@@ -1237,42 +1213,45 @@ class BaseAdmin:
             upload.filename,
             len(content),
         )
-        fields = list(view.get_fields_list(request))
-        field_by_header: dict[str, BaseField] = {}
-        for field in fields:
-            field_by_header[field.label or field.name] = field
-            field_by_header[field.name] = field
-        dry_run = request.query_params.get("dry_run") in ("1", "true", "yes")
-        skip_pk = request.query_params.get("skip_pk") in ("1", "true", "yes")
+        all_fields = list(view.get_fields_list(request))
+        selected_fields = [str(v) for v in form.getlist("fields")] or None
+        field_by_header, full_field_by_header = self._build_import_field_maps(
+            all_fields, selected_fields
+        )
+        update_existing = form.get("update_existing") in ("1", "true", "yes", "on")
         _log.info(
-            "import starting: view=%s format=%s fields=%d dry_run=%s skip_pk=%s",
+            "import starting: view=%s format=%s fields=%d preview=%s update_existing=%s",
             key,
             fmt,
-            len(fields),
-            dry_run,
-            skip_pk,
+            len(selected_fields) if selected_fields else len(all_fields),
+            preview,
+            update_existing,
         )
         import_ctx = ImportContext(
-            fields=fields,
+            fields=all_fields,
             content=content,
             view=view,
             request=request,
-            dry_run=dry_run,
+            dry_run=preview,
+            selected_fields=selected_fields,
+            update_existing=update_existing,
         )
         row_cap_error = await self._check_import_row_cap(importer, import_ctx, key)
         if row_cap_error is not None:
             return row_cap_error
         await view._emit_before_import(request, importer, import_ctx)
+        preview_extras: dict[str, Any] | None = {} if preview else None
         try:
             result = await self._execute_import(
                 importer,
                 import_ctx,
-                fields,
+                all_fields,
                 field_by_header,
-                skip_pk,
                 request,
                 view,
-                dry_run,
+                preview,
+                preview_extras,
+                full_field_by_header,
             )
         except Exception as exc:
             _log.warning(
@@ -1292,20 +1271,39 @@ class BaseAdmin:
         await view._emit_after_import(request, importer, result, import_ctx)
         if result.has_errors:
             _log.warning(
-                "import finished with errors: view=%s total=%d created=%d skipped=%d errors=%d",
+                "import finished with errors: view=%s total=%d created=%d updated=%d errors=%d",
                 key,
                 result.rows_total,
                 result.rows_created,
-                result.rows_skipped,
+                result.rows_updated,
                 len(result.errors),
             )
         else:
             _log.info(
-                "import complete: view=%s total=%d created=%d skipped=%d",
+                "import complete: view=%s total=%d created=%d updated=%d",
                 key,
                 result.rows_total,
                 result.rows_created,
-                result.rows_skipped,
+                result.rows_updated,
+            )
+        errors_payload = [
+            {"row": e.row, "field": e.field, "message": e.message}
+            for e in result.errors
+        ]
+        if preview:
+            extras = preview_extras or {}
+            return JSONResponse(
+                {
+                    "headers": extras.get("headers", []),
+                    "mapping": extras.get("mapping", []),
+                    "unmatched_headers": extras.get("unmatched_headers", []),
+                    "rows_total": result.rows_total,
+                    "rows_new": result.rows_created,
+                    "rows_updated": result.rows_updated,
+                    "sample": extras.get("sample", []),
+                    "errors": errors_payload,
+                    "has_errors": result.has_errors,
+                }
             )
         return JSONResponse(
             {
@@ -1314,17 +1312,16 @@ class BaseAdmin:
                 "rows_updated": result.rows_updated,
                 "rows_skipped": result.rows_skipped,
                 "has_errors": result.has_errors,
-                "errors": [
-                    {"row": e.row, "field": e.field, "message": e.message}
-                    for e in result.errors
-                ],
-                "dry_run": result.dry_run,
+                "errors": errors_payload,
             }
         )
 
     @route("/_api/{key}/action", methods=["POST"], name="action")
     async def handle_action(self, request: Request) -> Response:
         request.state.action = RequestAction.ACTION
+        # The built-in export action needs export_config.max_rows and has no
+        # other way to reach the admin instance from a BaseModelView method.
+        request.state.export_config = self.export_config
         try:
             key = request.path_params.get("key")
             pks = request.query_params.getlist("pks")

@@ -29,6 +29,7 @@ from starlette_admin.auth import (
 from starlette_admin.contrib.sqla import Admin, ModelView
 from starlette_admin.exceptions import ActionFailed
 from starlette_admin.fields import BaseField
+from starlette_admin.types import RequestAction
 
 DATABASE_FILE = "03_auth.sqlite"
 SECRET = "change-me-in-production"
@@ -178,10 +179,12 @@ class ArticleView(ModelView):
     def can_import(self, request: Request) -> bool:
         return "import" in request.state.admin_user.roles
 
-    def can_access_field(self, request: Request, field: BaseField) -> bool:
+    def can_access_field(
+        self, request: Request, field: BaseField, action: RequestAction | None = None
+    ) -> bool:
         if field.name == "body":
             return "read_body" in request.state.admin_user.roles
-        return super().can_access_field(request, field)
+        return super().can_access_field(request, field, action)
 
     async def is_action_allowed(self, request: Request, name: str) -> bool:
         if name == "make_published":

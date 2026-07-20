@@ -196,6 +196,7 @@ def test_all_actions_are_available_by_default():
         [
             "make_published",
             "delete",
+            "export",
             "always_failed",
             "forbidden",
             "invalid_redirect",
@@ -264,6 +265,60 @@ def test_row_actions_are_available_in_ui(
     row_html = re.search(r'<tr data-pk="1"[^>]*>(.*?)</tr>', response.text, re.DOTALL)
     assert row_html is not None
     assert row_html.group(1).count(f'data-name="{row_action}"') == expected_count
+
+
+def test_action_modal_size_defaults_to_sm(client: TestClient):
+    response = client.get("/admin/article/list")
+    assert response.status_code == 200
+    assert re.search(
+        r'data-modal-size="sm"[^>]*data-name="make_published"', response.text
+    )
+
+
+def test_action_modal_size_is_configurable():
+    class SizedArticleView(ArticleView):
+        actions = ["sized"]
+        row_actions = []
+
+        @action(
+            name="sized",
+            text="Sized action",
+            confirmation="Proceed?",
+            modal_size="lg",
+        )
+        async def sized_action(
+            self, request: Request, selection: ActionSelection
+        ) -> None:
+            pass
+
+    app = Starlette()
+    admin = BaseAdmin()
+    admin.add_view(SizedArticleView(Article))
+    admin.mount_to(app)
+    sized_client = CsrfTestClient(app, base_url="http://testserver")
+
+    response = sized_client.get("/admin/article/list")
+    assert response.status_code == 200
+    assert 'data-modal-size="lg"' in response.text
+    assert re.search(r'data-modal-size="lg"[^>]*data-name="sized"', response.text)
+
+
+def test_invalid_action_modal_size_raises_at_decoration_time():
+    with pytest.raises(ValueError, match="modal_size"):
+
+        @action(name="bad_size", text="Bad size", modal_size="huge")
+        async def bad_size_action(
+            self, request: Request, selection: ActionSelection
+        ) -> None:
+            pass
+
+
+def test_invalid_row_action_modal_size_raises_at_decoration_time():
+    with pytest.raises(ValueError, match="modal_size"):
+
+        @row_action(name="bad_size", text="Bad size", modal_size="huge")
+        async def bad_size_row_action(self, request: Request, pk: Any) -> None:
+            pass
 
 
 def test_is_row_action_allowed_for_obj(client: TestClient):
@@ -511,6 +566,30 @@ def test_invalid_row_action_list():
 
     with pytest.raises(ValueError, match="Unknown row action with name `invalid`"):
         InvalidArticleView(Article)
+
+
+def test_dedicated_button_action_requires_allow_empty_selection():
+    class DedicatedButtonArticleView(ArticleView):
+        actions = [*ArticleView.actions, "dedicated_no_empty_selection"]
+
+        @action(
+            name="dedicated_no_empty_selection",
+            text="Dedicated",
+            dedicated_button=True,
+        )
+        async def dedicated_no_empty_selection_action(
+            self, request: Request, selection: ActionSelection
+        ) -> str:
+            return "ok"
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Action `dedicated_no_empty_selection`: dedicated_button=True "
+            "requires allow_empty_selection=True"
+        ),
+    ):
+        DedicatedButtonArticleView(Article)
 
 
 @pytest.mark.parametrize(

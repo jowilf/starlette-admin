@@ -49,7 +49,7 @@ hide:
   <a class="home-card" href="user-guide/export-import/">
     <span class="home-card-icon hc-emerald"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M7 11l5 5 5-5"/><path d="M12 4v12"/></svg></span>
     <h3>Export &amp; import</h3>
-    <p>Export records instantly to CSV, Excel, JSON, and PDF. Import data with dry-run validation to guarantee database integrity.</p>
+    <p>Export records instantly to CSV, Excel, JSON, PDF, or any tablib-supported format. Safely import bulk data through a preview-first wizard that enforces strict row-level validation before executing any database writes.</p>
   </a>
   <a class="home-card" href="user-guide/auth/">
     <span class="home-card-icon hc-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3"/><circle cx="12" cy="11" r="1"/><path d="M12 12v2.5"/></svg></span>

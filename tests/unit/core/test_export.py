@@ -19,7 +19,6 @@ from starlette.testclient import TestClient
 from starlette_admin.exceptions import ExportError
 from starlette_admin.export.base import BaseExporter, ExportConfig, ExportContext
 from starlette_admin.export.csv import CsvExporter
-from starlette_admin.export.excel import ExcelExporter
 from starlette_admin.export.helpers import (
     escape_formula,
     is_allowed_url,
@@ -30,6 +29,7 @@ from starlette_admin.export.helpers import (
 )
 from starlette_admin.export.json import JsonExporter
 from starlette_admin.export.pdf import PdfExporter
+from starlette_admin.export.tablib import TablibExporter
 from starlette_admin.fields import BaseField, FileField
 from starlette_admin.storage.base import BaseStorage
 
@@ -312,13 +312,13 @@ def test_escape_formula_empty_string():
     assert escape_formula("") == ""
 
 
-# ── ExcelExporter ─────────────────────────────────────────────────────────────
+# ── TablibExporter (xlsx) ────────────────────────────────────────────────────
 
 
 @pytest.mark.asyncio
 async def test_excel_generate_headers_and_rows():
 
-    exporter = ExcelExporter()
+    exporter = TablibExporter("xlsx")
     fields = [_plain_field("name", "Full Name"), _plain_field("score", "Score")]
     rows = [{"name": "Alice", "score": 95}, {"name": "Bob", "score": 82}]
 
@@ -335,7 +335,7 @@ async def test_excel_generate_headers_and_rows():
 @pytest.mark.asyncio
 async def test_excel_generate_empty_rows():
 
-    exporter = ExcelExporter()
+    exporter = TablibExporter("xlsx")
     fields = [_plain_field("x", "X")]
     result = await exporter.generate(fields, [])
     wb = openpyxl.load_workbook(io.BytesIO(result))
@@ -346,7 +346,7 @@ async def test_excel_generate_empty_rows():
 
 @pytest.mark.asyncio
 async def test_excel_content_type():
-    exporter = ExcelExporter()
+    exporter = TablibExporter("xlsx")
     assert "spreadsheetml" in exporter.content_type
 
 
@@ -715,31 +715,31 @@ async def test_fetch_url_files_no_size_limit(exporter):
     assert fetched == {"assets/url/abc_unlimited.bin": b"unlimited content"}
 
 
-# ── ExcelExporter _to_cell ────────────────────────────────────────────────────
+# ── TablibExporter non-native cell values (tablib stringifies via str()) ───────
 
 
 @pytest.mark.asyncio
-async def test_excel_generate_list_value_becomes_comma_string():
-    exporter = ExcelExporter()
+async def test_excel_generate_list_value_becomes_str():
+    exporter = TablibExporter("xlsx")
     fields = [_plain_field("tags", "Tags")]
     rows = [{"tags": ["a", "b", "c"]}]
     result = await exporter.generate(fields, rows)
     wb = openpyxl.load_workbook(io.BytesIO(result))
     ws = wb.active
     data = list(ws.iter_rows(values_only=True))
-    assert data[1][0] == "a, b, c"
+    assert data[1][0] == str(["a", "b", "c"])
 
 
 @pytest.mark.asyncio
-async def test_excel_generate_tuple_value_becomes_comma_string():
-    exporter = ExcelExporter()
+async def test_excel_generate_tuple_value_becomes_str():
+    exporter = TablibExporter("xlsx")
     fields = [_plain_field("coords", "Coords")]
     rows = [{"coords": (1, 2, 3)}]
     result = await exporter.generate(fields, rows)
     wb = openpyxl.load_workbook(io.BytesIO(result))
     ws = wb.active
     data = list(ws.iter_rows(values_only=True))
-    assert data[1][0] == "1, 2, 3"
+    assert data[1][0] == str((1, 2, 3))
 
 
 # ── ZIP path sanitization ─────────────────────────────────────────────────────
@@ -796,7 +796,7 @@ def test_zip_path_for_url_file_rejects_dotdot_filename(exporter):
 
 @pytest.mark.asyncio
 async def test_excel_generate_custom_object_becomes_str():
-    exporter = ExcelExporter()
+    exporter = TablibExporter("xlsx")
     fields = [_plain_field("meta", "Meta")]
     rows = [{"meta": {"key": "value"}}]  # dict is not an Excel-native type
     result = await exporter.generate(fields, rows)
