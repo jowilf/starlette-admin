@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: starlette-admin VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-16 22:42-0700\n"
+"POT-Creation-Date: 2026-07-20 01:43-0700\n"
 "PO-Revision-Date: 2024-01-18 22:30-0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt\n"
@@ -19,117 +19,105 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: starlette_admin/actions.py:90
+#: starlette_admin/actions.py:93
 #, python-format
 msgid ""
 "Too many rows match the current filter (%(count)s); refine your filter "
 "(limit: %(limit)s)"
 msgstr ""
 
-#: starlette_admin/actions.py:104 starlette_admin/actions.py:241
-#: starlette_admin/templates/modals/actions.html:18
+#: starlette_admin/actions.py:108 starlette_admin/actions.py:266
+#: starlette_admin/templates/modals/actions.html:25
 msgid "Yes, Proceed"
 msgstr "Sim, Prosseguir"
 
-#: starlette_admin/base.py:120 starlette_admin/contrib/sqla/admin.py:39
+#: starlette_admin/base.py:116 starlette_admin/contrib/sqla/admin.py:39
 #: starlette_admin/templates/create.html:8
 #: starlette_admin/templates/detail.html:9
-#: starlette_admin/templates/edit.html:8 starlette_admin/templates/list.html:13
+#: starlette_admin/templates/edit.html:8 starlette_admin/templates/list.html:14
 msgid "Admin"
 msgstr "Admin"
 
-#: starlette_admin/base.py:589
+#: starlette_admin/base.py:592
 #, python-format
 msgid "Model with key %(key)s not found"
 msgstr "Modelo com chave %(key)s não encontrado"
 
-#: starlette_admin/base.py:758
+#: starlette_admin/base.py:761
 msgid "Something went wrong!"
 msgstr ""
 
-#: starlette_admin/base.py:768
+#: starlette_admin/base.py:771
 #, python-format
 msgid "The field \"%(label)s\" of \"%(repr)s\" was updated successfully."
 msgstr "O campo \"%(label)s\" de \"%(repr)s\" foi atualizado com sucesso."
 
-#: starlette_admin/base.py:933
-#, python-format
-msgid "Unknown export format %(format)s"
-msgstr ""
-
-#: starlette_admin/base.py:977
-#, python-format
-msgid ""
-"Export would return %(count)d rows, which exceeds the configured maximum "
-"of %(max)d. Apply a filter to narrow the result set."
-msgstr ""
-
-#: starlette_admin/base.py:1082
+#: starlette_admin/base.py:953
 msgid "An unexpected error occurred while processing this row."
 msgstr ""
 
-#: starlette_admin/base.py:1149 starlette_admin/base.py:1286
+#: starlette_admin/base.py:1089 starlette_admin/base.py:1266
 msgid ""
 "An error occurred while importing the file. Please check the file format "
 "and try again."
 msgstr ""
 
-#: starlette_admin/base.py:1163
+#: starlette_admin/base.py:1103
 #, python-format
 msgid ""
 "Import file exceeds the configured maximum of %(max)d rows. Split the "
 "file into smaller batches and try again."
 msgstr ""
 
-#: starlette_admin/base.py:1201
+#: starlette_admin/base.py:1178
 #, python-format
 msgid "Unknown import format %(fmt)s"
 msgstr ""
 
-#: starlette_admin/base.py:1209
+#: starlette_admin/base.py:1186
 msgid "No file uploaded"
 msgstr ""
 
-#: starlette_admin/base.py:1222
+#: starlette_admin/base.py:1199
 #, python-format
 msgid "Upload too large (%(size)s bytes; maximum %(max)s bytes)."
 msgstr ""
 
-#: starlette_admin/base.py:1346 starlette_admin/base.py:1405
-#: starlette_admin/views.py:1064 starlette_admin/views.py:1116
-#: starlette_admin/views.py:1127
+#: starlette_admin/base.py:1344 starlette_admin/base.py:1403
+#: starlette_admin/views.py:1106 starlette_admin/views.py:1158
+#: starlette_admin/views.py:1169
 msgid "Forbidden"
 msgstr ""
 
-#: starlette_admin/base.py:1390
+#: starlette_admin/base.py:1388
 msgid "Missing 'name' parameter"
 msgstr ""
 
-#: starlette_admin/base.py:1657 starlette_admin/base.py:2052
+#: starlette_admin/base.py:1655 starlette_admin/base.py:2050
 #, python-format
 msgid "The item \"%(repr)s\" was added successfully."
 msgstr ""
 
-#: starlette_admin/base.py:1764 starlette_admin/base.py:2059
+#: starlette_admin/base.py:1762 starlette_admin/base.py:2057
 #, python-format
 msgid "The item \"%(repr)s\" was changed successfully."
 msgstr ""
 
-#: starlette_admin/fields.py:196
+#: starlette_admin/fields.py:248
 msgid "This field is required."
 msgstr ""
 
-#: starlette_admin/fields.py:648
+#: starlette_admin/fields.py:690
 #, python-format
 msgid "Invalid integer value for %(field)s"
 msgstr ""
 
-#: starlette_admin/fields.py:719
+#: starlette_admin/fields.py:761
 #, python-format
 msgid "Invalid decimal value for %(field)s"
 msgstr ""
 
-#: starlette_admin/fields.py:789
+#: starlette_admin/fields.py:829
 #, python-format
 msgid "Invalid float value for %(field)s"
 msgstr ""
@@ -271,99 +259,119 @@ msgstr ""
 msgid "Image height must be at most %(max)d pixels"
 msgstr ""
 
-#: starlette_admin/views.py:1057
+#: starlette_admin/views.py:1099
 msgid "Invalid action"
 msgstr ""
 
-#: starlette_admin/views.py:1074
+#: starlette_admin/views.py:1116
 msgid "Please select at least one item"
 msgstr ""
 
-#: starlette_admin/views.py:1089 starlette_admin/views.py:1144
+#: starlette_admin/views.py:1131 starlette_admin/views.py:1186
 msgid "Set custom_response=True on this action to return a custom response"
 msgstr ""
 
-#: starlette_admin/views.py:1108
+#: starlette_admin/views.py:1150
 msgid "Invalid row action"
 msgstr ""
 
 #: starlette_admin/templates/fields/form/_delete.html:8
 #: starlette_admin/templates/inline_row.html:18
 #: starlette_admin/templates/modals/delete.html:36
-#: starlette_admin/views.py:1150 starlette_admin/views.py:1199
+#: starlette_admin/views.py:1192 starlette_admin/views.py:1374
 msgid "Delete"
 msgstr "Excluir"
 
-#: starlette_admin/views.py:1151
+#: starlette_admin/views.py:1193
 msgid "Are you sure you want to delete selected items?"
 msgstr "Tem certeza de que deseja excluir os itens selecionados?"
 
-#: starlette_admin/views.py:1152
+#: starlette_admin/views.py:1194
 msgid "Yes, delete all"
 msgstr "Sim, exclua tudo"
 
-#: starlette_admin/views.py:1168 starlette_admin/views.py:1212
+#: starlette_admin/views.py:1210 starlette_admin/views.py:1387
 #, python-format
 msgid "The item \"%(repr)s\" was successfully deleted."
 msgstr "O item foi excluído com sucesso"
 
-#: starlette_admin/views.py:1173
+#: starlette_admin/views.py:1215
 #, python-format
 msgid "1 item was successfully deleted."
 msgid_plural "%(count)d items were successfully deleted."
 msgstr[0] "O item foi excluído com sucesso"
 msgstr[1] "%(count)d itens foram excluídos com sucesso"
 
-#: starlette_admin/views.py:1181
+#: starlette_admin/views.py:1226
+#, python-format
+msgid ""
+"Export would return %(count)d rows, which exceeds the configured maximum "
+"of %(max)d. Apply a filter to narrow the result set."
+msgstr ""
+
+#: starlette_admin/views.py:1284 starlette_admin/views.py:1288
+msgid "Export"
+msgstr ""
+
+#: starlette_admin/views.py:1286
+msgid "Configure your export"
+msgstr ""
+
+#: starlette_admin/views.py:1314
+#, python-format
+msgid "Unknown export format %(format)s"
+msgstr ""
+
+#: starlette_admin/views.py:1356
 msgid "View"
 msgstr "Visualizar"
 
-#: starlette_admin/templates/edit.html:13 starlette_admin/views.py:1190
+#: starlette_admin/templates/edit.html:13 starlette_admin/views.py:1365
 msgid "Edit"
 msgstr "Editar"
 
 #: starlette_admin/templates/modals/delete.html:27
-#: starlette_admin/views.py:1200
+#: starlette_admin/views.py:1375
 msgid "Are you sure you want to delete this item?"
 msgstr "Tem certeza de que deseja excluir este item?"
 
-#: starlette_admin/views.py:1202
+#: starlette_admin/views.py:1377
 msgid "Yes, delete"
 msgstr "Sim, exclua tudo"
 
-#: starlette_admin/views.py:2704
+#: starlette_admin/views.py:2913
 msgid " AND "
 msgstr ""
 
-#: starlette_admin/views.py:2704
+#: starlette_admin/views.py:2913
 msgid " OR "
 msgstr ""
 
-#: starlette_admin/views.py:2864
+#: starlette_admin/views.py:3073
 msgid "No data views are available."
 msgstr ""
 
-#: starlette_admin/views.py:2868
+#: starlette_admin/views.py:3077
 msgid "Welcome to"
 msgstr ""
 
-#: starlette_admin/views.py:2898
+#: starlette_admin/views.py:3107
 msgid "total records"
 msgstr ""
 
-#: starlette_admin/views.py:2899
+#: starlette_admin/views.py:3108
 msgid "Browse"
 msgstr ""
 
-#: starlette_admin/views.py:2899
+#: starlette_admin/views.py:3108
 msgid "all records"
 msgstr ""
 
-#: starlette_admin/views.py:2900
+#: starlette_admin/views.py:3109
 msgid "or add a"
 msgstr ""
 
-#: starlette_admin/views.py:2900
+#: starlette_admin/views.py:3109
 msgid "new one"
 msgstr "Novo(a) %(name)s"
 
@@ -539,7 +547,7 @@ msgid "Add group"
 msgstr ""
 
 #: starlette_admin/templates/_filter_builder.html:55
-#: starlette_admin/templates/list.html:93
+#: starlette_admin/templates/list.html:95
 msgid "Reset"
 msgstr ""
 
@@ -548,6 +556,7 @@ msgid "Apply filters"
 msgstr ""
 
 #: starlette_admin/templates/_filter_builder.html:65
+#: starlette_admin/templates/list.html:280
 msgid "Field"
 msgstr ""
 
@@ -591,9 +600,9 @@ msgid "Remove group"
 msgstr ""
 
 #: starlette_admin/templates/_form_footer.html:18
-#: starlette_admin/templates/modals/actions.html:14
+#: starlette_admin/templates/modals/actions.html:21
 #: starlette_admin/templates/modals/delete.html:33
-#: starlette_admin/templates/modals/import.html:59
+#: starlette_admin/templates/modals/import.html:67
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -647,13 +656,13 @@ msgstr ""
 msgid "Go to page"
 msgstr ""
 
-#: starlette_admin/templates/actions.html:21
-#: starlette_admin/templates/row-actions.html:37
-#: starlette_admin/templates/row-actions.html:58
+#: starlette_admin/templates/actions.html:23
+#: starlette_admin/templates/row-actions.html:39
+#: starlette_admin/templates/row-actions.html:60
 msgid "Actions"
 msgstr "Ações"
 
-#: starlette_admin/templates/actions.html:27
+#: starlette_admin/templates/actions.html:29
 msgid "With selected"
 msgstr "Com selecionado(s)"
 
@@ -662,7 +671,7 @@ msgid "Create"
 msgstr "Criar"
 
 #: starlette_admin/templates/create.html:32
-#: starlette_admin/templates/list.html:147
+#: starlette_admin/templates/list.html:119
 #, python-format
 msgid "New %(name)s"
 msgstr "Novo(a) %(name)s"
@@ -672,7 +681,7 @@ msgid "Detail"
 msgstr "Detalhe"
 
 #: starlette_admin/templates/detail.html:72
-#: starlette_admin/templates/list.html:44
+#: starlette_admin/templates/list.html:45
 msgid "Search"
 msgstr "Procurar"
 
@@ -707,62 +716,148 @@ msgstr "Adicionar Item"
 msgid "Logout"
 msgstr "Sair"
 
-#: starlette_admin/templates/list.html:45
+#: starlette_admin/templates/list.html:46
 msgid "Search in list"
 msgstr "Procurar"
 
-#: starlette_admin/templates/list.html:78
+#: starlette_admin/templates/list.html:80
+#: starlette_admin/templates/list.html:273
 msgid "Columns"
 msgstr ""
 
-#: starlette_admin/templates/list.html:96
+#: starlette_admin/templates/list.html:98
 msgid "Apply"
 msgstr ""
 
-#: starlette_admin/templates/list.html:107
-msgid "Export"
-msgstr ""
-
-#: starlette_admin/templates/list.html:119
-msgid "This Page"
-msgstr ""
-
-#: starlette_admin/templates/list.html:119
-msgid "All Matching Rows"
-msgstr ""
-
-#: starlette_admin/templates/list.html:138
+#: starlette_admin/templates/list.html:111
 #: starlette_admin/templates/modals/import.html:8
-#: starlette_admin/templates/modals/import.html:61
 msgid "Import"
 msgstr ""
 
-#: starlette_admin/templates/list.html:165
+#: starlette_admin/templates/list.html:137
 #, python-format
 msgid "All %(count)s rows on this page are selected."
 msgstr ""
 
-#: starlette_admin/templates/list.html:166
+#: starlette_admin/templates/list.html:138
 #, python-format
 msgid "Select all %(total)s rows matching the current filter."
 msgstr ""
 
-#: starlette_admin/templates/list.html:169
+#: starlette_admin/templates/list.html:141
 #, python-format
 msgid "All %(total)s rows matching the current filter are selected."
 msgstr ""
 
-#: starlette_admin/templates/list.html:170
+#: starlette_admin/templates/list.html:142
 msgid "Clear selection"
 msgstr ""
 
-#: starlette_admin/templates/list.html:183
+#: starlette_admin/templates/list.html:155
 msgid "Select all rows"
 msgstr "Selecionar todas as linhas"
 
-#: starlette_admin/templates/list.html:206
+#: starlette_admin/templates/list.html:174
 #: starlette_admin/templates/widgets/table_widget.html:25
 msgid "No data"
+msgstr ""
+
+#: starlette_admin/templates/list.html:267
+#: starlette_admin/templates/modals/import.html:17
+#: starlette_admin/templates/modals/import.html:70
+#, fuzzy
+msgid "Preview"
+msgstr "Visualizar"
+
+#: starlette_admin/templates/list.html:268
+msgid "Done"
+msgstr ""
+
+#: starlette_admin/templates/list.html:269
+#: starlette_admin/templates/modals/import.html:49
+msgid "Loading preview..."
+msgstr ""
+
+#: starlette_admin/templates/list.html:270
+msgid "Importing..."
+msgstr ""
+
+#: starlette_admin/templates/list.html:271
+#, python-brace-format
+msgid "Import {count} row(s)"
+msgstr ""
+
+#: starlette_admin/templates/list.html:272
+#, python-brace-format
+msgid "Network error: {status}"
+msgstr ""
+
+#: starlette_admin/templates/list.html:274
+#, python-brace-format
+msgid "Ignored: {headers}"
+msgstr ""
+
+#: starlette_admin/templates/list.html:275
+#, python-brace-format
+msgid "Preview (first {count} row(s))"
+msgstr ""
+
+#: starlette_admin/templates/list.html:276
+msgid "Status"
+msgstr ""
+
+#: starlette_admin/templates/list.html:277
+msgid "Errors"
+msgstr ""
+
+#: starlette_admin/templates/list.html:278
+msgid "All errors"
+msgstr ""
+
+#: starlette_admin/templates/list.html:279
+msgid "Row"
+msgstr ""
+
+#: starlette_admin/templates/list.html:281
+msgid "Error"
+msgstr ""
+
+#: starlette_admin/templates/list.html:282
+#, fuzzy
+msgid "new"
+msgstr "Novo(a) %(name)s"
+
+#: starlette_admin/templates/list.html:283
+msgid "update"
+msgstr ""
+
+#: starlette_admin/templates/list.html:284
+msgid "error"
+msgstr ""
+
+#: starlette_admin/templates/list.html:285
+#, python-brace-format
+msgid "{total} row(s): {new} new"
+msgstr ""
+
+#: starlette_admin/templates/list.html:286
+#, python-brace-format
+msgid "{total} row(s) scanned, {created} created"
+msgstr ""
+
+#: starlette_admin/templates/list.html:287
+#, python-brace-format
+msgid ", {count} updated"
+msgstr ""
+
+#: starlette_admin/templates/list.html:288
+#, python-brace-format
+msgid ", {count} error(s)"
+msgstr ""
+
+#: starlette_admin/templates/list.html:289
+#, python-brace-format
+msgid ", {count} skipped"
 msgstr ""
 
 #: starlette_admin/templates/login.html:25
@@ -791,6 +886,43 @@ msgstr "Lembre de mim"
 msgid "Sign in"
 msgstr "Entrar"
 
+#: starlette_admin/templates/actions/export_form.html:2
+#: starlette_admin/templates/actions/export_form.html:15
+#, fuzzy
+msgid "Selected rows"
+msgstr "Selecionar todas as linhas"
+
+#: starlette_admin/templates/actions/export_form.html:3
+msgid "All matching rows"
+msgstr ""
+
+#: starlette_admin/templates/actions/export_form.html:5
+msgid "Scope"
+msgstr ""
+
+#: starlette_admin/templates/actions/export_form.html:26
+msgid "Current page"
+msgstr ""
+
+#: starlette_admin/templates/actions/export_form.html:31
+msgid "Fields"
+msgstr ""
+
+#: starlette_admin/templates/actions/export_form.html:46
+#: starlette_admin/templates/modals/import.html:23
+msgid "Format"
+msgstr ""
+
+#: starlette_admin/templates/actions/export_form.html:54
+#, fuzzy
+msgid "Filename"
+msgstr "Usuário"
+
+#: starlette_admin/templates/actions/export_form.html:61
+#, python-format
+msgid "Defaults to \"%(filename)s\" if left empty."
+msgstr ""
+
 #: starlette_admin/templates/fields/detail/text.html:13
 #: starlette_admin/templates/fields/list/text.html:10
 msgid "Copy to clipboard"
@@ -809,31 +941,30 @@ msgstr "Selecione um %(label)s"
 msgid "Add item"
 msgstr "Adicionar Item"
 
+#: starlette_admin/templates/modals/actions.html:12
 #: starlette_admin/templates/modals/import.html:12
 msgid "Close"
 msgstr ""
 
+#: starlette_admin/templates/modals/import.html:16
+#, fuzzy
+msgid "Upload"
+msgstr "Carregando"
+
 #: starlette_admin/templates/modals/import.html:18
-msgid "Format"
+msgid "Result"
 msgstr ""
 
-#: starlette_admin/templates/modals/import.html:26
+#: starlette_admin/templates/modals/import.html:31
 msgid "File"
 msgstr ""
 
-#: starlette_admin/templates/modals/import.html:36
-msgid "Dry run (validate without saving)"
+#: starlette_admin/templates/modals/import.html:41
+msgid "Update existing records by primary key"
 msgstr ""
 
-#: starlette_admin/templates/modals/import.html:42
-msgid "Skip primary key column"
-msgstr ""
-
-#: starlette_admin/templates/modals/import.html:45
-msgid ""
-"Use this when your file contains a primary key column but your backend "
-"auto-generates keys. The column will be ignored and a new key will be "
-"assigned."
+#: starlette_admin/templates/modals/import.html:68
+msgid "Back"
 msgstr ""
 
 #: starlette_admin/templates/modals/loading.html:10
@@ -855,5 +986,25 @@ msgstr "Carregando"
 #~ msgstr ""
 
 #~ msgid "Is not empty"
+#~ msgstr ""
+
+#~ msgid "This Page"
+#~ msgstr ""
+
+#~ msgid "All Matching Rows"
+#~ msgstr ""
+
+#~ msgid "Dry run (validate without saving)"
+#~ msgstr ""
+
+#~ msgid "Skip primary key column"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Use this when your file contains a"
+#~ " primary key column but your backend"
+#~ " auto-generates keys. The column will"
+#~ " be ignored and a new key will"
+#~ " be assigned."
 #~ msgstr ""
 
