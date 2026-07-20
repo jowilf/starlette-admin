@@ -80,10 +80,13 @@ class ModelView(BaseModelView):
         )
         self.icon = icon or self.icon
         self.pk_attr = self._meta.pk_attr
-        if self.fields is None or len(self.fields) == 0:
-            self.fields = default_field_names(model)
+        declared_fields: Sequence[Any] = (
+            self.fields
+            if self.fields is not None and len(self.fields) > 0
+            else default_field_names(model)
+        )
         self.fields = (converter or ModelConverter()).convert_fields_list(
-            fields=self.fields, model=model
+            fields=declared_fields, model=model
         )
         try:
             # Reuse the already-converted field if the PK is declared.
@@ -122,7 +125,7 @@ class ModelView(BaseModelView):
         """
         meta = self._meta
         for name in meta.fk_fields | meta.o2o_fields | meta.m2m_fields:
-            if meta.fields_map[name].related_model is None:  # type: ignore[union-attr]
+            if meta.fields_map[name].related_model is None:  # type: ignore[attr-defined]
                 raise InvalidModelError(
                     f"Relations of {self.model.__name__} are not initialized."
                     ' Call Tortoise.init_models(["path.to.models"], "models")'
@@ -475,7 +478,7 @@ class InlineModelView(BaseInlineModelView, ModelView):
         candidates = [
             name
             for name in meta.fk_fields | meta.o2o_fields
-            if meta.fields_map[name].related_model is parent_model  # type: ignore[union-attr]
+            if meta.fields_map[name].related_model is parent_model  # type: ignore[attr-defined]
         ]
         if len(candidates) == 1:
             source = relation_source_field(self.model, candidates[0])

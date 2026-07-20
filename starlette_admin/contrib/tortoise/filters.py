@@ -95,12 +95,14 @@ def _coerce_enum(ctx: FilterApplyContext, raw: Any) -> Any:
 
 class IsNullFilter(BaseIsNullFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        return Q(**{f"{ctx.field_name}__isnull": True})
+        filters: dict[str, Any] = {f"{ctx.field_name}__isnull": True}
+        return Q(**filters)
 
 
 class IsNotNullFilter(BaseIsNotNullFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        return Q(**{f"{ctx.field_name}__isnull": False})
+        filters: dict[str, Any] = {f"{ctx.field_name}__isnull": False}
+        return Q(**filters)
 
 
 # To-one relations. Null checks target the raw key column: Tortoise resolves
@@ -110,13 +112,15 @@ class IsNotNullFilter(BaseIsNotNullFilter):
 class RelationIsNullFilter(BaseIsNullFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
         source = relation_source_field(ctx.view.model, ctx.field_name)  # type: ignore[union-attr]
-        return Q(**{f"{source}__isnull": True})
+        filters: dict[str, Any] = {f"{source}__isnull": True}
+        return Q(**filters)
 
 
 class RelationIsNotNullFilter(BaseIsNotNullFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
         source = relation_source_field(ctx.view.model, ctx.field_name)  # type: ignore[union-attr]
-        return Q(**{f"{source}__isnull": False})
+        filters: dict[str, Any] = {f"{source}__isnull": False}
+        return Q(**filters)
 
 
 # String
@@ -244,12 +248,14 @@ def _now_for_field(ctx: FilterApplyContext) -> datetime.date | datetime.datetime
 
 class DateInPastFilter(BaseDateInPastFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        return Q(**{f"{ctx.field_name}__lt": _now_for_field(ctx)})
+        filters: dict[str, Any] = {f"{ctx.field_name}__lt": _now_for_field(ctx)}
+        return Q(**filters)
 
 
 class DateInFutureFilter(BaseDateInFutureFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        return Q(**{f"{ctx.field_name}__gt": _now_for_field(ctx)})
+        filters: dict[str, Any] = {f"{ctx.field_name}__gt": _now_for_field(ctx)}
+        return Q(**filters)
 
 
 # Boolean
@@ -257,12 +263,14 @@ class DateInFutureFilter(BaseDateInFutureFilter):
 
 class IsTrueFilter(BaseIsTrueFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        return Q(**{ctx.field_name: True})
+        filters: dict[str, Any] = {ctx.field_name: True}
+        return Q(**filters)
 
 
 class IsFalseFilter(BaseIsFalseFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        return Q(**{ctx.field_name: False})
+        filters: dict[str, Any] = {ctx.field_name: False}
+        return Q(**filters)
 
 
 # Enum
@@ -280,14 +288,18 @@ class EnumNotEqualFilter(BaseNotEqualFilter):
 
 class EnumInFilter(BaseInFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        return Q(**{f"{ctx.field_name}__in": [_coerce_enum(ctx, v) for v in ctx.value]})
+        filters: dict[str, Any] = {
+            f"{ctx.field_name}__in": [_coerce_enum(ctx, v) for v in ctx.value]
+        }
+        return Q(**filters)
 
 
 class EnumNotInFilter(BaseNotInFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        return Q(
-            **{f"{ctx.field_name}__not_in": [_coerce_enum(ctx, v) for v in ctx.value]}
-        )
+        filters: dict[str, Any] = {
+            f"{ctx.field_name}__not_in": [_coerce_enum(ctx, v) for v in ctx.value]
+        }
+        return Q(**filters)
 
 
 # FilterGroup-to-Q conversion
