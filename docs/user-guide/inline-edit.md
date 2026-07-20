@@ -140,7 +140,7 @@ from starlette_admin.events import AfterEditContext
 @admin.events.on(AdminEvent.AFTER_EDIT)
 async def audit(ctx: AfterEditContext) -> None:
     source = "list page" if ctx.extra.get("inline") else "edit page"
-    logger.info("updated %s pk=%s from the %s", ctx.resource, ctx.pk, source)
+    logger.info("updated %s pk=%s from the %s", ctx.view_key, ctx.pk, source)
 ```
 
 ---

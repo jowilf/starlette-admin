@@ -7,7 +7,7 @@ from starlette_admin.events import AdminEvent, AfterCreateContext
 
 
 async def notify_slack(ctx: AfterCreateContext) -> None:
-    print(f"New {ctx.resource} created: pk={ctx.pk}")
+    print(f"New {ctx.view_key} created: pk={ctx.pk}")
 
 
 admin.events.on(AdminEvent.AFTER_CREATE, notify_slack)
@@ -76,7 +76,7 @@ Every context is a dataclass that inherits from `EventContext`, which carries fi
 | --- | --- | --- |
 | `event` | `AdminEvent` or `str` | The event that fired |
 | `request` | `Request` | The request in flight |
-| `resource` | `str` | The view's `key` |
+| `view_key` | `str` | The view's `key` |
 | `extra` | `dict` | Empty by default, free for you to stash data in a custom handler chain |
 
 Each subclass adds the fields relevant to that event.
@@ -135,15 +135,15 @@ class AuditSubscriber(AdminEventSubscriber):
 
     @on(AdminEvent.AFTER_CREATE)
     async def record_create(self, ctx: AfterCreateContext) -> None:
-        logger.info("created %s pk=%s", ctx.resource, ctx.pk)
+        logger.info("created %s pk=%s", ctx.view_key, ctx.pk)
 
     @on(AdminEvent.AFTER_EDIT)
     async def record_update(self, ctx: AfterEditContext) -> None:
-        logger.info("updated %s pk=%s", ctx.resource, ctx.pk)
+        logger.info("updated %s pk=%s", ctx.view_key, ctx.pk)
 
     @on(AdminEvent.AFTER_DELETE)
     async def record_delete(self, ctx: AfterDeleteContext) -> None:
-        logger.info("deleted %s pk=%s", ctx.resource, ctx.pk)
+        logger.info("deleted %s pk=%s", ctx.view_key, ctx.pk)
 
 
 admin.events.subscribe(AuditSubscriber())

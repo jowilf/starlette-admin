@@ -123,7 +123,7 @@ class AuditLog(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     event: Mapped[str] = mapped_column(String(50))
-    resource: Mapped[str] = mapped_column(String(100))
+    view_key: Mapped[str] = mapped_column(String(100))
     record_pk: Mapped[str | None] = mapped_column(String(100), nullable=True)
     detail: Mapped[str | None] = mapped_column(Text, nullable=True)
     actor: Mapped[str | None] = mapped_column(String(200), nullable=True)
@@ -193,49 +193,49 @@ class AuditSubscriber(AdminEventSubscriber):
     async def record_create(self, ctx: AfterCreateContext) -> None:
         title = getattr(ctx.obj, "title", None)
         detail = (
-            f"Created {ctx.resource!r}"
+            f"Created {ctx.view_key!r}"
             + (f": {title!r}" if title else "")
             + f" (pk={ctx.pk})"
         )
-        _write_audit(ctx.event, ctx.resource, str(ctx.pk), detail, ctx.request)
+        _write_audit(ctx.event, ctx.view_key, str(ctx.pk), detail, ctx.request)
 
     @on(AdminEvent.AFTER_EDIT_COMMITTED)
     async def record_update(self, ctx: AfterEditContext) -> None:
         title = getattr(ctx.obj, "title", None)
         detail = (
-            f"Updated {ctx.resource!r}"
+            f"Updated {ctx.view_key!r}"
             + (f": {title!r}" if title else "")
             + f" (pk={ctx.pk})"
         )
-        _write_audit(ctx.event, ctx.resource, str(ctx.pk), detail, ctx.request)
+        _write_audit(ctx.event, ctx.view_key, str(ctx.pk), detail, ctx.request)
 
     @on(AdminEvent.AFTER_DELETE_COMMITTED)
     async def record_delete(self, ctx: AfterDeleteContext) -> None:
         title = getattr(ctx.obj, "title", None)
         detail = (
-            f"Deleted {ctx.resource!r}"
+            f"Deleted {ctx.view_key!r}"
             + (f": {title!r}" if title else "")
             + f" (pk={ctx.pk})"
         )
-        _write_audit(ctx.event, ctx.resource, str(ctx.pk), detail, ctx.request)
+        _write_audit(ctx.event, ctx.view_key, str(ctx.pk), detail, ctx.request)
 
     @on(AdminEvent.AFTER_EXPORT)
     async def record_export(self, ctx: AfterExportContext) -> None:
-        detail = f"Exported {ctx.row_count} row(s) from {ctx.resource!r} as {ctx.export_type.extension}"
-        _write_audit(ctx.event, ctx.resource, "", detail, ctx.request)
+        detail = f"Exported {ctx.row_count} row(s) from {ctx.view_key!r} as {ctx.export_type.extension}"
+        _write_audit(ctx.event, ctx.view_key, "", detail, ctx.request)
 
     @on(AdminEvent.AFTER_IMPORT)
     async def record_import(self, ctx: AfterImportContext) -> None:
         detail = (
-            f"Imported {ctx.row_count} row(s) into {ctx.resource!r} as {ctx.import_type.extension}"
+            f"Imported {ctx.row_count} row(s) into {ctx.view_key!r} as {ctx.import_type.extension}"
             + (f" ({ctx.error_count} error(s))" if ctx.error_count else "")
         )
-        _write_audit(ctx.event, ctx.resource, "", detail, ctx.request)
+        _write_audit(ctx.event, ctx.view_key, "", detail, ctx.request)
 
 
 def _write_audit(
     event: AdminEvent | str,
-    resource: str,
+    view_key: str,
     pk: str,
     detail: str,
     request: Request,
@@ -249,7 +249,7 @@ def _write_audit(
         session.add(
             AuditLog(
                 event=event_str,
-                resource=resource,
+                view_key=view_key,
                 record_pk=pk,
                 detail=detail,
                 actor=actor,
@@ -264,17 +264,17 @@ def _write_audit(
 
 async def warn_before_delete(ctx: BeforeDeleteContext) -> None:
     """Admin-wide handler: warns before a row is deleted, in any view."""
-    logger.warning("before_delete", resource=ctx.resource, pk=ctx.pk)
+    logger.warning("before_delete", view_key=ctx.view_key, pk=ctx.pk)
 
 
 async def warn_before_export(ctx: BeforeExportContext) -> None:
     """Same handler style, registered for exports instead of deletes."""
-    logger.warning("before_export", resource=ctx.resource, export_type=ctx.export_type)
+    logger.warning("before_export", view_key=ctx.view_key, export_type=ctx.export_type)
 
 
 async def warn_before_import(ctx: BeforeImportContext) -> None:
     """Same handler style, registered for imports instead of deletes."""
-    logger.warning("before_import", resource=ctx.resource, import_type=ctx.import_type)
+    logger.warning("before_import", view_key=ctx.view_key, import_type=ctx.import_type)
 
 
 # ── Pattern 4: View-scoped handler via view.events.on() ───────────────────────

@@ -57,15 +57,15 @@ class AuditSubscriber(AdminEventSubscriber):
 
     @on(AdminEvent.AFTER_CREATE)
     async def on_create(self, ctx: AfterCreateContext) -> None:
-        logger.info("[audit] created  resource=%s pk=%s", ctx.resource, ctx.pk)
+        logger.info("[audit] created  view_key=%s pk=%s", ctx.view_key, ctx.pk)
 
     @on(AdminEvent.AFTER_EDIT)
     async def on_update(self, ctx: AfterEditContext) -> None:
-        logger.info("[audit] updated  resource=%s pk=%s", ctx.resource, ctx.pk)
+        logger.info("[audit] updated  view_key=%s pk=%s", ctx.view_key, ctx.pk)
 
     @on(AdminEvent.AFTER_DELETE)
     async def on_delete(self, ctx: AfterDeleteContext) -> None:
-        logger.info("[audit] deleted  resource=%s pk=%s", ctx.resource, ctx.pk)
+        logger.info("[audit] deleted  view_key=%s pk=%s", ctx.view_key, ctx.pk)
 
 
 # ── App ───────────────────────────────────────────────────────────────────────

@@ -45,7 +45,7 @@ def _make_request() -> Request:
 
 
 def _ctx(event: AdminEvent = AdminEvent.BEFORE_CREATE) -> EventContext:
-    return EventContext(event=event, request=_make_request(), resource="test")
+    return EventContext(event=event, request=_make_request(), view_key="test")
 
 
 # ── EventBus.on ───────────────────────────────────────────────────────────────
@@ -340,7 +340,7 @@ async def test_emit_before_create_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, BeforeCreateContext)
     assert ctx.event == AdminEvent.BEFORE_CREATE
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.data == {"title": "x"}
 
 
@@ -363,7 +363,7 @@ async def test_emit_after_create_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, AfterCreateContext)
     assert ctx.event == AdminEvent.AFTER_CREATE
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.obj is obj
 
 
@@ -388,7 +388,7 @@ async def test_emit_before_edit_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, BeforeEditContext)
     assert ctx.event == AdminEvent.BEFORE_EDIT
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.pk == 42
     assert ctx.data == {"name": "y"}
     assert ctx.old_data == {"name": "x"}
@@ -416,7 +416,7 @@ async def test_emit_after_edit_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, AfterEditContext)
     assert ctx.event == AdminEvent.AFTER_EDIT
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.pk == 42
     assert ctx.old_data == {"name": "x"}
     assert ctx.obj is obj
@@ -441,7 +441,7 @@ async def test_emit_before_delete_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, BeforeDeleteContext)
     assert ctx.event == AdminEvent.BEFORE_DELETE
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.pk == 99
     assert ctx.obj is obj
 
@@ -465,7 +465,7 @@ async def test_emit_after_delete_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, AfterDeleteContext)
     assert ctx.event == AdminEvent.AFTER_DELETE
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.pk == 99
     assert ctx.obj is obj
 
@@ -492,7 +492,7 @@ async def test_emit_before_export_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, BeforeExportContext)
     assert ctx.event == AdminEvent.BEFORE_EXPORT
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.export_type is CSV_EXPORTER
     assert ctx.items is items
     assert ctx.export_ctx is export_ctx
@@ -520,7 +520,7 @@ async def test_emit_after_export_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, AfterExportContext)
     assert ctx.event == AdminEvent.AFTER_EXPORT
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.export_type is CSV_EXPORTER
     assert ctx.items is items
     assert ctx.row_count == 3
@@ -548,7 +548,7 @@ async def test_emit_before_import_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, BeforeImportContext)
     assert ctx.event == AdminEvent.BEFORE_IMPORT
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.import_type is CSV_IMPORTER
     assert ctx.import_ctx is import_ctx
 
@@ -577,7 +577,7 @@ async def test_emit_after_import_calls_hook_and_emits():
     ctx = emitted[0]
     assert isinstance(ctx, AfterImportContext)
     assert ctx.event == AdminEvent.AFTER_IMPORT
-    assert ctx.resource == "article"
+    assert ctx.view_key == "article"
     assert ctx.import_type is CSV_IMPORTER
     assert ctx.row_count == 5
     assert ctx.error_count == 2

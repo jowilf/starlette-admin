@@ -103,11 +103,11 @@ from starlette_admin.events import AdminEvent, AfterCreateContext
 
 @admin.events.on(AdminEvent.AFTER_CREATE, keys=["order"])   # keys=None reaches every view
 async def notify_new_order(ctx: AfterCreateContext) -> None:
-    print(f"created {ctx.resource} pk={ctx.pk}")
+    print(f"created {ctx.view_key} pk={ctx.pk}")
 ```
 
 - `view.events.on(...)` scopes to one view; `admin.events.on(...)` reaches every current and future view (registration order relative to `add_view` does not matter). Both work as decorator or direct call.
-- Events: `BEFORE_/AFTER_CREATE`, `BEFORE_/AFTER_EDIT`, `BEFORE_/AFTER_DELETE`, `AFTER_*_COMMITTED` (SQLAlchemy only), `BEFORE_/AFTER_EXPORT`, `BEFORE_/AFTER_IMPORT`. Context dataclasses carry `event`, `request`, `resource` (view key), `extra`, plus event-specific fields like `pk` and `obj`.
+- Events: `BEFORE_/AFTER_CREATE`, `BEFORE_/AFTER_EDIT`, `BEFORE_/AFTER_DELETE`, `AFTER_*_COMMITTED` (SQLAlchemy only), `BEFORE_/AFTER_EXPORT`, `BEFORE_/AFTER_IMPORT`. Context dataclasses carry `event`, `request`, `view_key`, `extra`, plus event-specific fields like `pk` and `obj`.
 - `priority=` (int, default 0): higher fires first; ties run in registration order.
 - A raising `BEFORE_*` handler aborts the operation and skips later handlers. A raising `AFTER_*` handler turns a committed change into a failed request, so wrap risky I/O in try/except.
 

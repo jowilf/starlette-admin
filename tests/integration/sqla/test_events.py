@@ -155,12 +155,12 @@ async def test_create_fires_before_and_after_events(admin: Admin, client: AsyncC
     before, after = collected
     assert isinstance(before, BeforeCreateContext)
     assert before.event == AdminEvent.BEFORE_CREATE
-    assert before.resource == "post"
+    assert before.view_key == "post"
     assert before.data["title"] == "New Post"
 
     assert isinstance(after, AfterCreateContext)
     assert after.event == AdminEvent.AFTER_CREATE
-    assert after.resource == "post"
+    assert after.view_key == "post"
     assert after.obj.title == "New Post"
 
 
@@ -220,14 +220,14 @@ async def test_edit_fires_before_and_after_events(
     before, after = collected
     assert isinstance(before, BeforeEditContext)
     assert before.event == AdminEvent.BEFORE_EDIT
-    assert before.resource == "post"
+    assert before.view_key == "post"
     assert int(before.pk) == pk  # raw pk arrives as string from URL
     assert before.data["title"] == "Updated"
     assert before.old_data["title"] == "Original"
 
     assert isinstance(after, AfterEditContext)
     assert after.event == AdminEvent.AFTER_EDIT
-    assert after.resource == "post"
+    assert after.view_key == "post"
     assert int(after.pk) == pk
     assert after.obj.title == "Updated"
     assert after.old_data["title"] == "Original"
@@ -297,12 +297,12 @@ async def test_delete_fires_before_and_after_events(
     before, after = collected
     assert isinstance(before, BeforeDeleteContext)
     assert before.event == AdminEvent.BEFORE_DELETE
-    assert before.resource == "post"
+    assert before.view_key == "post"
     assert before.obj.id == pk
 
     assert isinstance(after, AfterDeleteContext)
     assert after.event == AdminEvent.AFTER_DELETE
-    assert after.resource == "post"
+    assert after.view_key == "post"
     assert after.obj.id == pk
 
 
@@ -375,7 +375,7 @@ async def test_delete_fires_committed_event(
     (ctx,) = collected
     assert isinstance(ctx, AfterDeleteContext)
     assert ctx.event == AdminEvent.AFTER_DELETE_COMMITTED
-    assert ctx.resource == "post"
+    assert ctx.view_key == "post"
     assert int(ctx.pk) == pk
     # The object was expunged before commit, so reading an already-loaded
     # attribute here must not trigger a re-SELECT of the now-deleted row.
@@ -454,7 +454,7 @@ async def test_create_fires_committed_event_after_flush_event(
     (ctx,) = collected
     assert isinstance(ctx, AfterCreateContext)
     assert ctx.event == AdminEvent.AFTER_CREATE_COMMITTED
-    assert ctx.resource == "post"
+    assert ctx.view_key == "post"
     assert ctx.obj.title == "Committed Post"
     assert ctx.pk is not None
 
@@ -477,7 +477,7 @@ async def test_edit_fires_committed_event(
     (ctx,) = collected
     assert isinstance(ctx, AfterEditContext)
     assert ctx.event == AdminEvent.AFTER_EDIT_COMMITTED
-    assert ctx.resource == "post"
+    assert ctx.view_key == "post"
     assert int(ctx.pk) == pk
     assert ctx.obj.title == "Committed Edit"
     assert ctx.old_data["title"] == "Original"

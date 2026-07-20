@@ -1673,7 +1673,7 @@ class BaseModelView(BaseView):
 
         Args:
             request: The request being processed.
-            ctx: The export context, including `export_type`, `items`, `resource`, and other relevant details.
+            ctx: The export context, including `export_type`, `items`, `view_key`, and other relevant details.
         """
 
     async def after_export(self, request: Request, ctx: "ExportContext") -> None:
@@ -1682,7 +1682,7 @@ class BaseModelView(BaseView):
 
         Args:
             request: The request being processed.
-            ctx: The export context, including `export_type`, `items`, `row_count`, `resource`, and other relevant details.
+            ctx: The export context, including `export_type`, `items`, `row_count`, `view_key`, and other relevant details.
         """
 
     async def before_import(self, request: Request, ctx: "ImportContext") -> None:
@@ -1691,7 +1691,7 @@ class BaseModelView(BaseView):
 
         Args:
             request: The request being processed.
-            ctx: The import context, including `import_type`, `resource`, and other relevant details.
+            ctx: The import context, including `import_type`, `view_key`, and other relevant details.
         """
 
     async def after_import(
@@ -1706,7 +1706,7 @@ class BaseModelView(BaseView):
 
         Args:
             request: The request being processed.
-            ctx: The import context, including `import_type`, `row_count`, `error_count`, `resource`, and other relevant details.
+            ctx: The import context, including `import_type`, `row_count`, `error_count`, `view_key`, and other relevant details.
             result: The complete import result, including per-row error details and the `dry_run` flag.
         """
 
@@ -1720,7 +1720,7 @@ class BaseModelView(BaseView):
         ctx = BeforeCreateContext(
             event=AdminEvent.BEFORE_CREATE,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             data=data,
             obj=obj,
         )
@@ -1732,7 +1732,7 @@ class BaseModelView(BaseView):
         ctx = AfterCreateContext(
             event=AdminEvent.AFTER_CREATE,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             obj=obj,
             pk=await self.get_pk_value(request, obj),
         )
@@ -1744,7 +1744,7 @@ class BaseModelView(BaseView):
         ctx = AfterCreateContext(
             event=AdminEvent.AFTER_CREATE_COMMITTED,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             obj=obj,
             pk=await self.get_pk_value(request, obj),
         )
@@ -1763,7 +1763,7 @@ class BaseModelView(BaseView):
         ctx = BeforeEditContext(
             event=AdminEvent.BEFORE_EDIT,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             pk=pk,
             data=data,
             obj=obj,
@@ -1784,7 +1784,7 @@ class BaseModelView(BaseView):
         ctx = AfterEditContext(
             event=AdminEvent.AFTER_EDIT,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             pk=pk,
             obj=obj,
             old_data=old_data or {},
@@ -1803,7 +1803,7 @@ class BaseModelView(BaseView):
         ctx = AfterEditContext(
             event=AdminEvent.AFTER_EDIT_COMMITTED,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             pk=await self.get_pk_value(request, obj),
             obj=obj,
             old_data=old_data or {},
@@ -1825,7 +1825,7 @@ class BaseModelView(BaseView):
         ctx = BeforeDeleteContext(
             event=AdminEvent.BEFORE_DELETE,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             pk=pk,
             obj=obj,
         )
@@ -1837,7 +1837,7 @@ class BaseModelView(BaseView):
         ctx = AfterDeleteContext(
             event=AdminEvent.AFTER_DELETE,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             pk=pk,
             obj=obj,
         )
@@ -1851,7 +1851,7 @@ class BaseModelView(BaseView):
         ctx = AfterDeleteContext(
             event=AdminEvent.AFTER_DELETE_COMMITTED,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             pk=pk,
             obj=obj,
         )
@@ -1868,7 +1868,7 @@ class BaseModelView(BaseView):
         ctx = BeforeExportContext(
             event=AdminEvent.BEFORE_EXPORT,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             export_type=export_type,
             items=items,
             export_ctx=export_ctx,
@@ -1887,7 +1887,7 @@ class BaseModelView(BaseView):
         ctx = AfterExportContext(
             event=AdminEvent.AFTER_EXPORT,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             export_type=export_type,
             items=items,
             row_count=len(items),
@@ -1906,7 +1906,7 @@ class BaseModelView(BaseView):
         ctx = BeforeImportContext(
             event=AdminEvent.BEFORE_IMPORT,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             import_type=import_type,
             import_ctx=import_ctx,
         )
@@ -1924,7 +1924,7 @@ class BaseModelView(BaseView):
         ctx = AfterImportContext(
             event=AdminEvent.AFTER_IMPORT,
             request=request,
-            resource=not_none(self.key),
+            view_key=not_none(self.key),
             import_type=import_type,
             row_count=result.rows_total,
             error_count=len(result.errors),

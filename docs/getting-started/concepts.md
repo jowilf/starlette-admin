@@ -279,7 +279,7 @@ class PostView(ModelView):
 
 # Global system listener spanning every view class
 async def log_create(ctx: AfterCreateContext) -> None:
-    print(f"created {ctx.resource} #{ctx.pk}")
+    print(f"created {ctx.view_key} #{ctx.pk}")
 
 
 admin.events.on(AdminEvent.AFTER_CREATE, log_create)

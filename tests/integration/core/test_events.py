@@ -76,12 +76,12 @@ def test_create_fires_before_and_after_events():
     before, after = collected
     assert isinstance(before, BeforeCreateContext)
     assert before.event == AdminEvent.BEFORE_CREATE
-    assert before.resource == "article"
+    assert before.view_key == "article"
     assert before.data["title"] == "New Post"
 
     assert isinstance(after, AfterCreateContext)
     assert after.event == AdminEvent.AFTER_CREATE
-    assert after.resource == "article"
+    assert after.view_key == "article"
     assert after.obj.title == "New Post"
 
 
@@ -143,14 +143,14 @@ def test_edit_fires_before_and_after_events():
     before, after = collected
     assert isinstance(before, BeforeEditContext)
     assert before.event == AdminEvent.BEFORE_EDIT
-    assert before.resource == "article"
+    assert before.view_key == "article"
     assert before.pk == 1
     assert before.data["title"] == "Updated Title"
     assert before.old_data["title"] == "Existing"
 
     assert isinstance(after, AfterEditContext)
     assert after.event == AdminEvent.AFTER_EDIT
-    assert after.resource == "article"
+    assert after.view_key == "article"
     assert after.pk == 1
     assert after.obj.title == "Updated Title"
     assert after.old_data["title"] == "Existing"
@@ -211,12 +211,12 @@ def test_delete_fires_before_and_after_events():
     before, after = collected
     assert isinstance(before, BeforeDeleteContext)
     assert before.event == AdminEvent.BEFORE_DELETE
-    assert before.resource == "article"
+    assert before.view_key == "article"
     assert before.obj.id == 1
 
     assert isinstance(after, AfterDeleteContext)
     assert after.event == AdminEvent.AFTER_DELETE
-    assert after.resource == "article"
+    assert after.view_key == "article"
     assert after.obj.id == 1
 
 
@@ -290,12 +290,12 @@ def test_admin_bus_keys_filter():
 
     admin.events.on(
         AdminEvent.AFTER_CREATE,
-        lambda ctx: article_events.append(ctx.resource),
+        lambda ctx: article_events.append(ctx.view_key),
         keys=["article"],
     )
     admin.events.on(
         AdminEvent.AFTER_CREATE,
-        lambda ctx: post_events.append(ctx.resource),
+        lambda ctx: post_events.append(ctx.view_key),
         keys=["post"],
     )
 

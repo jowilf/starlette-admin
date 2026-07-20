@@ -42,7 +42,7 @@ class EventContext:
 
     event: AdminEvent | str
     request: Request
-    resource: str
+    view_key: str
     extra: dict = field(default_factory=dict)
 
 
