@@ -34,11 +34,13 @@ from starlette.templating import Jinja2Templates
 from starlette_admin.actions import ActionSelection, action, link_row_action, row_action
 from starlette_admin.events import (
     AdminEvent,
+    AfterActionContext,
     AfterCreateContext,
     AfterDeleteContext,
     AfterEditContext,
     AfterExportContext,
     AfterImportContext,
+    BeforeActionContext,
     BeforeCreateContext,
     BeforeDeleteContext,
     BeforeEditContext,
@@ -1081,6 +1083,75 @@ class BaseModelView(BaseView):
                     row_actions.append(_row_action)
         return row_actions
 
+    async def before_action(
+        self, request: Request, name: str, selection: ActionSelection
+    ) -> None:
+        """
+        This hook is called before a batch or row action runs.
+
+        Args:
+            request: The request being processed.
+            name: The action's name.
+            selection: The targeted rows (a single pk for a row action). Resolving
+                `selection.pks()`/`.rows()`/`.count()` runs a query, so only call
+                them if the hook actually needs the target rows.
+        """
+
+    async def after_action(
+        self,
+        request: Request,
+        name: str,
+        selection: ActionSelection,
+        success: bool,
+        error: str | None = None,
+    ) -> None:
+        """
+        This hook is called after a batch or row action completes, whether it
+        succeeded or raised `ActionFailed`.
+
+        Args:
+            request: The request being processed.
+            name: The action's name.
+            selection: The targeted rows (a single pk for a row action).
+            success: Whether the action completed without raising `ActionFailed`.
+            error: The `ActionFailed` message when `success` is `False`, else `None`.
+        """
+
+    async def _emit_before_action(
+        self, request: Request, name: str, selection: ActionSelection
+    ) -> None:
+        """Calls the `before_action` hook, then emits the `BEFORE_ACTION` event on `view.events`."""
+        await self.before_action(request, name, selection)
+        ctx = BeforeActionContext(
+            event=AdminEvent.BEFORE_ACTION,
+            request=request,
+            view_key=not_none(self.key),
+            action_name=name,
+            selection=selection,
+        )
+        await self.events.emit(ctx)
+
+    async def _emit_after_action(
+        self,
+        request: Request,
+        name: str,
+        selection: ActionSelection,
+        success: bool,
+        error: str | None = None,
+    ) -> None:
+        """Calls the `after_action` hook, then emits the `AFTER_ACTION` event on `view.events`."""
+        await self.after_action(request, name, selection, success, error)
+        ctx = AfterActionContext(
+            event=AdminEvent.AFTER_ACTION,
+            request=request,
+            view_key=not_none(self.key),
+            action_name=name,
+            selection=selection,
+            success=success,
+            error=error,
+        )
+        await self.events.emit(ctx)
+
     async def handle_action(
         self, request: Request, selection: ActionSelection, name: str
     ) -> None | Response:
@@ -1114,17 +1185,23 @@ class BaseModelView(BaseView):
                 name,
             )
             raise ActionFailed(_("Please select at least one item"))
+        await self._emit_before_action(request, name, selection)
         _log.debug(
             "handle_action: key=%r name=%r dispatching handler",
             self.key,
             name,
         )
-        handler_return = await handler(request, selection)
+        try:
+            handler_return = await handler(request, selection)
+        except ActionFailed as exc:
+            await self._emit_after_action(request, name, selection, False, exc.msg)
+            raise
         _log.debug(
             "handle_action: key=%r name=%r handler returned",
             self.key,
             name,
         )
+        await self._emit_after_action(request, name, selection, True)
         custom_response = self._actions[name]["custom_response"]
         if isinstance(handler_return, Response) and not custom_response:
             raise ActionFailed(
@@ -1167,19 +1244,26 @@ class BaseModelView(BaseView):
                 pk,
             )
             raise ActionFailed(_("Forbidden"))
+        selection = ActionSelection(self, request, [pk], None, None)
+        await self._emit_before_action(request, name, selection)
         _log.debug(
             "handle_row_action: key=%r name=%r dispatching handler pk=%s",
             self.key,
             name,
             pk,
         )
-        handler_return = await handler(request, pk)
+        try:
+            handler_return = await handler(request, pk)
+        except ActionFailed as exc:
+            await self._emit_after_action(request, name, selection, False, exc.msg)
+            raise
         _log.debug(
             "handle_row_action: key=%r name=%r handler returned pk=%s",
             self.key,
             name,
             pk,
         )
+        await self._emit_after_action(request, name, selection, True)
         custom_response = self._row_actions[name]["custom_response"]
         if isinstance(handler_return, Response) and not custom_response:
             raise ActionFailed(

@@ -255,6 +255,35 @@ async def test_admin_bus_key_filter():
 
 
 @pytest.mark.asyncio
+async def test_admin_bus_on_admin_level_event():
+    """Admin-level events (e.g. AFTER_LOGIN) are handled directly by the admin bus."""
+    admin_bus = AdminEventBus()
+    calls: list = []
+
+    async def h(ctx):
+        calls.append(True)
+
+    admin_bus.on(AdminEvent.AFTER_LOGIN, h)
+    await admin_bus.emit(_ctx(AdminEvent.AFTER_LOGIN))
+    assert calls == [True]
+
+
+@pytest.mark.asyncio
+async def test_admin_bus_off_admin_level_event():
+    """off() on an admin-level event removes it from the admin bus directly."""
+    admin_bus = AdminEventBus()
+    calls: list = []
+
+    async def h(ctx):
+        calls.append(True)
+
+    admin_bus.on(AdminEvent.AFTER_LOGIN, h)
+    admin_bus.off(AdminEvent.AFTER_LOGIN, h)
+    await admin_bus.emit(_ctx(AdminEvent.AFTER_LOGIN))
+    assert calls == []
+
+
+@pytest.mark.asyncio
 async def test_admin_bus_subscribe_delegates():
     admin_bus = AdminEventBus()
     view_bus = EventBus()

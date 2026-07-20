@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING, Any
 from starlette.requests import Request
 
 if TYPE_CHECKING:
+    from starlette_admin.actions import ActionSelection
+    from starlette_admin.auth.base import AdminUser
     from starlette_admin.export import BaseExporter, ExportContext
     from starlette_admin.importers import BaseImporter, ImportContext
 
@@ -29,11 +31,18 @@ class AdminEvent(StrEnum):
     AFTER_DELETE = "after_delete"
     AFTER_DELETE_COMMITTED = "after_delete_committed"
 
+    # Actions
+    BEFORE_ACTION = "before_action"
+    AFTER_ACTION = "after_action"
+
     # Export / Import
     BEFORE_EXPORT = "before_export"
     AFTER_EXPORT = "after_export"
     BEFORE_IMPORT = "before_import"
     AFTER_IMPORT = "after_import"
+
+    # Auth
+    AFTER_LOGIN = "after_login"
 
 
 @dataclass
@@ -107,15 +116,22 @@ class AfterBulkDeleteContext(EventContext):
 
 @dataclass
 class BeforeActionContext(EventContext):
+    """`selection.pks()` (and `.rows()`, `.count()`) are async and resolved lazily:
+    call them from a handler only if you need the target rows, since a select-all
+    action can otherwise skip materializing them entirely."""
+
     action_name: str = ""
-    pks: list[Any] = field(default_factory=list)
+    selection: ActionSelection | None = None
 
 
 @dataclass
 class AfterActionContext(EventContext):
+    """See `BeforeActionContext` for `selection`'s lazy-resolution contract."""
+
     action_name: str = ""
-    pks: list[Any] = field(default_factory=list)
-    result: Any = None
+    selection: ActionSelection | None = None
+    success: bool = True
+    error: str | None = None
 
 
 # Export / Import
@@ -148,6 +164,16 @@ class AfterImportContext(EventContext):
     row_count: int = 0
     error_count: int = 0
     import_ctx: ImportContext | None = None
+
+
+# Auth
+
+
+@dataclass
+class AfterLoginContext(EventContext):
+    """`view_key` is always empty: login is not tied to any view."""
+
+    user: AdminUser | None = None
 
 
 HandlerSpec = (
@@ -299,6 +325,8 @@ _VIEW_LIFECYCLE_EVENTS: frozenset[str] = frozenset(
         AdminEvent.BEFORE_DELETE,
         AdminEvent.AFTER_DELETE,
         AdminEvent.AFTER_DELETE_COMMITTED,
+        AdminEvent.BEFORE_ACTION,
+        AdminEvent.AFTER_ACTION,
         AdminEvent.BEFORE_EXPORT,
         AdminEvent.AFTER_EXPORT,
         AdminEvent.BEFORE_IMPORT,
@@ -321,12 +349,16 @@ class _PendingOn:
 
 
 class AdminEventBus:
-    """Admin-level event bus. Delegates view lifecycle events to view buses."""
+    """Admin-level event bus. Delegates view lifecycle events to view buses;
+    handles admin-level events (e.g. `AFTER_LOGIN`) itself, since they are not
+    tied to any view."""
 
     def __init__(self) -> None:
         self._pending_on: list[_PendingOn] = []
         # Maps view key to its EventBus, populated as views are registered.
         self._view_buses: dict[str, EventBus] = {}
+        # Handles events that are not tied to any view.
+        self._bus = EventBus()
 
     def _register_view(self, key: str, bus: EventBus) -> None:
         """Called when a view is added to the admin; propagates pending subscriptions."""
@@ -345,12 +377,14 @@ class AdminEventBus:
         priority: int = 0,
     ) -> Callable:
         """Register a handler. For view lifecycle events, delegates to matching view buses.
+        Admin-level events (e.g. `AFTER_LOGIN`) are handled directly and ignore `keys`.
 
         Args:
             event: The event to handle.
             handler: The callback to invoke. If omitted, returns a decorator.
             keys: Restricts the handler to views whose key is in this
                 list. `None` (the default) registers it for all views.
+                Has no effect for admin-level events.
             priority: Handlers with a higher priority run first.
         """
 
@@ -361,11 +395,21 @@ class AdminEventBus:
                 for key, bus in self._view_buses.items():
                     if keys is None or key in keys:
                         bus.on(event, fn, priority=priority)
+            else:
+                self._bus.on(event, fn, priority=priority)
             return fn
 
         if handler is not None:
             return _register(handler)
         return _register
+
+    async def emit(self, ctx: EventContext) -> None:
+        """Fire handlers registered for an admin-level event (e.g. `AFTER_LOGIN`).
+
+        View lifecycle events are emitted by the matching view's `EventBus`
+        instead; this is only for events not tied to any view.
+        """
+        await self._bus.emit(ctx)
 
     def subscribe(
         self,
@@ -384,7 +428,7 @@ class AdminEventBus:
                     self.on(sub_event, item, keys=keys)
 
     def off(self, event: AdminEvent | str, handler: Callable) -> None:
-        """Remove a handler from all view buses."""
+        """Remove a handler from all view buses, or from the admin-level bus."""
         if _is_view_lifecycle(event):
             self._pending_on = [
                 p
@@ -393,6 +437,8 @@ class AdminEventBus:
             ]
             for bus in self._view_buses.values():
                 bus.off(event, handler)
+        else:
+            self._bus.off(event, handler)
 
     def unsubscribe(self, subscriber: AdminEventSubscriber) -> None:
         """Remove all handlers from a subscriber across all buses."""

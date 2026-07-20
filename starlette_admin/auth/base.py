@@ -13,6 +13,7 @@ from starlette.routing import Match, Mount, Route, WebSocketRoute
 from starlette.status import HTTP_303_SEE_OTHER
 from starlette.templating import Jinja2Templates
 from starlette.types import ASGIApp
+from starlette_admin.events import AdminEvent, AdminEventBus, AfterLoginContext
 from starlette_admin.i18n import lazy_gettext as _
 from starlette_admin.logging import get_logger
 
@@ -57,6 +58,8 @@ class BaseAuthProvider(ABC):
         self.allow_routes: list[str] = (
             list(allow_routes) if allow_routes is not None else []
         )
+        # Set by `BaseAdmin._init_auth`, used to emit `AFTER_LOGIN`.
+        self.events: AdminEventBus | None = None
         _log.debug(
             "auth provider init: %s login_path=%r logout_path=%r allow_routes=%r",
             type(self).__name__,
@@ -81,6 +84,18 @@ class BaseAuthProvider(ABC):
 
     def get_middleware(self) -> Middleware:
         return Middleware(AuthMiddleware, provider=self)
+
+    async def _emit_after_login(self, request: Request, user: AdminUser | None) -> None:
+        """Emits `AFTER_LOGIN` on the admin's event bus, once login succeeds."""
+        if self.events is None:
+            return
+        ctx = AfterLoginContext(
+            event=AdminEvent.AFTER_LOGIN,
+            request=request,
+            view_key="",
+            user=user,
+        )
+        await self.events.emit(ctx)
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

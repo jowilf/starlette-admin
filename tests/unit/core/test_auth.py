@@ -22,6 +22,14 @@ def test_base_auth_provider_get_routes_returns_empty():
     assert provider.get_routes(templates=None) == []  # type: ignore[arg-type]
 
 
+@pytest.mark.asyncio
+async def test_emit_after_login_noop_without_events():
+    """No admin has wired `events` onto the provider; the call must be a safe no-op."""
+    provider = _MinimalAuthProvider()
+    assert provider.events is None
+    await provider._emit_after_login(MagicMock(spec=Request), AdminUser())
+
+
 def test_safe_redirect_url_relative_url():
     request = MagicMock(spec=Request)
     request.base_url = "http://testserver/admin/"

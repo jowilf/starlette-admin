@@ -63,8 +63,10 @@ class PostView(ModelView):
 | `AFTER_EDIT_COMMITTED` | Edit transaction committed | `AfterEditContext` |
 | `BEFORE_DELETE` / `AFTER_DELETE` | Record deleted | `BeforeDeleteContext` / `AfterDeleteContext` |
 | `AFTER_DELETE_COMMITTED` | Delete transaction committed | `AfterDeleteContext` |
+| `BEFORE_ACTION` / `AFTER_ACTION` | Batch or row action run | `BeforeActionContext` / `AfterActionContext` |
 | `BEFORE_EXPORT` / `AFTER_EXPORT` | Export triggered | `BeforeExportContext` / `AfterExportContext` |
 | `BEFORE_IMPORT` / `AFTER_IMPORT` | Import triggered | `BeforeImportContext` / `AfterImportContext` |
+| `AFTER_LOGIN` | Login succeeds | `AfterLoginContext` |
 
 `AFTER_CREATE_COMMITTED`, `AFTER_EDIT_COMMITTED`, and `AFTER_DELETE_COMMITTED` only fire for backends that defer the commit to the end of the request. Currently, this is limited to the SQLAlchemy backend. See [Views](../user-guide/views.md%23lifecycle-hooks) for the `after_create_committed`, `after_edit_committed`, and `after_delete_committed` hook methods that emit them.
 
@@ -176,7 +178,7 @@ Only the view registered with `key="order"` (or whose default key resolves to `"
 admin.events.subscribe(AuditSubscriber(), keys=["order", "invoice"])
 ```
 
-The `keys=` parameter only has an effect for the view-lifecycle events listed in the table above (create, edit, delete, export, import). This is how `admin.events` filters which views a handler applies to.
+The `keys=` parameter only has an effect for the view-lifecycle events listed in the table above (create, edit, delete, action, export, import). This is how `admin.events` filters which views a handler applies to. `AFTER_LOGIN` is admin-level, not tied to any view, so `keys=` has no effect on it.
 
 ## Priority
 
@@ -214,5 +216,5 @@ Handlers registered with the same priority run in their order of registration. `
 ## What's Next
 
 * **[Views](../user-guide/views.md)**: The `before_*` and `after_*` method hooks this page builds on.
-* **[Actions](../user-guide/actions.md)**: Batch and row actions (not yet wired into the event bus).
+* **[Actions](../user-guide/actions.md)**: Batch and row actions, which emit `BEFORE_ACTION` / `AFTER_ACTION`.
 * **[Inline Forms](../user-guide/inline-forms.md)**: Nested records created alongside a parent.

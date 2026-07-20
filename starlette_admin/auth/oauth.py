@@ -100,6 +100,7 @@ class OAuthProvider(BaseAuthProvider):
     async def render_callback(self, request: Request) -> Response:
         """Handle the OAuth callback, then redirect to next or the admin index."""
         await self.handle_callback(request)
+        await self._emit_after_login(request, await self.authenticate(request))
         fallback = index_url(request)
         next_url = safe_redirect_url(
             request.query_params.get("next") or fallback,

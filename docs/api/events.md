@@ -46,3 +46,5 @@ task-oriented walkthrough, see [Events](../advanced/events.md).
 ::: starlette_admin.events.BeforeImportContext
 
 ::: starlette_admin.events.AfterImportContext
+
+::: starlette_admin.events.AfterLoginContext

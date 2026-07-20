@@ -131,6 +131,7 @@ class AuthProvider(BaseAuthProvider):
                 next_url,
                 request.client.host if request.client else "unknown",
             )
+            await self._emit_after_login(request, await self.authenticate(request))
             return result or RedirectResponse(next_url, status_code=HTTP_303_SEE_OTHER)
         except FormValidationError as errors:
             _log.warning(

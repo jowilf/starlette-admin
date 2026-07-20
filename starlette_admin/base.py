@@ -330,6 +330,7 @@ class BaseAdmin:
                 "_init_auth: configuring auth provider %s",
                 type(self.auth_provider).__name__,
             )
+            self.auth_provider.events = self.events
             self.middlewares.append(self.auth_provider.get_middleware())
             self.routes.extend(self.auth_provider.get_routes(self.templates))
             _log.debug("_init_auth: auth provider setup complete")
