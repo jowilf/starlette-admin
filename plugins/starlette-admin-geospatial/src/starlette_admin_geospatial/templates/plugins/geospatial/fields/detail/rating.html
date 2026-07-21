@@ -1,7 +1,0 @@
-{% if data %}
-    <div class="sa-rating-static" aria-label="{{ data }} out of {{ field.max_stars }}">
-        {% for i in range(1, field.max_stars + 1) %}
-            <span class="sa-rating-star {% if i <= data %}sa-rating-star-filled{% endif %}">&#9733;</span>
-        {% endfor %}
-    </div>
-{% endif %}
