@@ -54,6 +54,7 @@ nav = [
     { "Templates" = "advanced/templates.md" },
     { "Multiple Admin Instances" = "advanced/multiple-admin.md" },
     { "Extension Points" = "advanced/extension-points.md" },
+    { "Plugins" = "advanced/plugins.md" },
     { "Deployment" = "advanced/deployment.md" },
   ] },
   { "Blog" = [

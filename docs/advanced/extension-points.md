@@ -12,6 +12,7 @@ This page provides a centralized reference for all pluggable surfaces in `starle
 | **Custom file storage** | Subclass `BaseStorage` (automatically registered via its `name` attribute). | [File Storage](../user-guide/file-storage.md) |
 | **Custom widget** | Subclass `BaseWidget`. | [Custom Views](../user-guide/custom-views.md) |
 | **Extra routes on a custom view** | Apply the `@route("/path", methods=["GET"])` decorator to a `CustomView` method. | [Custom Views](../user-guide/custom-views.md) |
+| **Plugin** | Subclass `BasePlugin` to bundle fields, views, assets, and more. | [Plugins](plugins.md) |
 
 !!! note
     Unlike other extension points, themes do not rely on subclassing. `ThemeSettings` is a plain configuration object rather than a base class to extend. To customize a theme, construct an instance with your desired attribute values.
