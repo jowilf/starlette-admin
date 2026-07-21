@@ -1,0 +1,32 @@
+.sa-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sa-rating input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sa-rating-star {
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--bs-secondary-color, #adb5bd);
+  transition: color 0.1s ease-in-out;
+}
+
+.sa-rating-star-filled {
+  color: #f5a623;
+}
+
+.sa-rating-static {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.sa-rating-static .sa-rating-star {
+  cursor: default;
+}

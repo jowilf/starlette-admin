@@ -62,10 +62,23 @@ class FilterRegistry:
                 for field_type in method._filters_for:
                     self._registry[field_type] = method
 
+        # Plugin-registered filters (see `register_filters` in a backend's
+        # filters module) sit between the class's own @filters methods and
+        # the caller-supplied dict, so precedence is user > plugin > core.
+        for field_type, filter_classes in self._external_filters().items():
+            self.register(field_type, *filter_classes)
+
         # Imperative registrations passed to __init__ take priority over the
         # methods above, since they run after and register() replaces entries.
         for field_type, filter_classes in (filters or {}).items():
             self.register(field_type, *filter_classes)
+
+    def _external_filters(
+        self,
+    ) -> dict[type["BaseField"], Sequence[type["BaseFilter"]]]:
+        """Override in a backend's registry to merge in filters registered
+        by plugins for that backend. Empty by default."""
+        return {}
 
     def register(
         self, field_type: type["BaseField"], *filter_classes: type["BaseFilter"]

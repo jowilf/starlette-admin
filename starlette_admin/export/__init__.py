@@ -55,6 +55,15 @@ EXPORT_FORMATS: dict[str, BaseExporter] = {
 }
 
 
+def register_export_format(name: str, exporter: BaseExporter) -> None:
+    """Register `exporter` under `name` in `EXPORT_FORMATS`. Plugin API.
+
+    Registration only makes the format available; a view still opts in via
+    its own `exporters` list.
+    """
+    EXPORT_FORMATS[name] = exporter
+
+
 def resolve_exporter(exporter: str | BaseExporter) -> BaseExporter:
     """Resolve `exporter` to a ready-to-use, availability-checked instance.
 
@@ -94,5 +103,6 @@ __all__ = [
     "TablibExporter",
     "TsvExporter",
     "is_extra_available",
+    "register_export_format",
     "resolve_exporter",
 ]

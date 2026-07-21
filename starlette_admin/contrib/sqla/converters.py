@@ -49,8 +49,42 @@ from starlette_admin.logging import get_logger
 
 _log = get_logger(__name__)
 
+# Converters registered by plugins for SQLAlchemy column types, merged into
+# every BaseSQLAModelConverter instance (see BaseModelConverter._external_converters).
+_EXTERNAL_CONVERTERS: dict[Any, Callable[..., BaseField]] = {}
+
+
+def register_converter(
+    *types: Any,
+) -> Callable[[Callable[..., BaseField]], Callable[..., BaseField]]:
+    """Register an external converter for SQLAlchemy column types.
+
+    Decorator form mirrors `@converts`. Used by plugins from `setup()`:
+
+    ```python
+    @register_converter(Geometry)
+    def convert_geometry(*args, **kwargs) -> BaseField:
+        return PointField(**kwargs)
+    ```
+
+    Each type is keyed by its fully-qualified `module.ClassName`, the same
+    format `find_converter_for_col_type` checks first, so a plugin's column
+    type can never collide with an unrelated core/plugin type of the same
+    short name.
+    """
+
+    def wrap(func: Callable[..., BaseField]) -> Callable[..., BaseField]:
+        for col_type in types:
+            _EXTERNAL_CONVERTERS[f"{col_type.__module__}.{col_type.__name__}"] = func
+        return func
+
+    return wrap
+
 
 class BaseSQLAModelConverter(BaseModelConverter):
+    def _external_converters(self) -> dict[Any, Callable[..., BaseField]]:
+        return _EXTERNAL_CONVERTERS
+
     @classmethod
     def _extract_default(cls, column: ColumnElement) -> Any:
         """Return a Python-usable default value from a SQLAlchemy column.

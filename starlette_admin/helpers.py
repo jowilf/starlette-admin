@@ -145,7 +145,15 @@ def _carry_origin(request: Request) -> str | None:
     the current request is itself a page a user could sensibly return to
     (a list or detail page) -- not an internal API call such as a relation
     lookup, which has no meaningful "back" destination.
+
+    `request.state.origin_override`, when set, wins over both: it lets an
+    endpoint that borrows the `LIST`/`DETAIL` action for rendering purposes
+    (e.g. the inline-edit-row fragment) supply the real page URL instead of
+    its own API URL.
     """
+    override = getattr(request.state, "origin_override", None)
+    if override:
+        return override
     action = getattr(request.state, "action", None)
     if action in (RequestAction.LIST, RequestAction.DETAIL):
         return str(request.url)
@@ -214,6 +222,20 @@ def view_list_url(request: Request, key: str) -> str:
     """Build a plain list-page URL for the given key with no query params."""
     route_name = request.app.state.ROUTE_NAME
     return str(request.url_for(route_name + ":list", key=key))
+
+
+def list_page_origin(request: Request, key: str) -> str:
+    """Build the real list-page URL for `key`, carrying the current request's
+    query params (sort, filters, page, ...) but dropping `pk`.
+
+    Used by endpoints that render list-page fragments -- like the
+    inline-edit-row swap -- under their own URL, so `request.url` doesn't leak
+    that internal API URL as the row's `_origin` (see `_carry_origin`).
+    """
+    items = [(k, v) for k, v in request.query_params.multi_items() if k != "pk"]
+    qs = urlencode(items)
+    path = view_list_url(request, key)
+    return f"{path}?{qs}" if qs else path
 
 
 def index_url(request: Request) -> str:

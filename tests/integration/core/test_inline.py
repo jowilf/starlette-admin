@@ -362,7 +362,7 @@ class ConfigInline(TinydbInlineModelView):
     key = "config"
     fields = [
         IntegerField("id"),
-        StringField("title"),
+        StringField("title", required=True),
         StringField("locked", read_only=True),
         CollectionField(
             "config",
@@ -488,6 +488,26 @@ class TestInlineFormParsing:
         )
         assert response.status_code == 422
         assert "bad field" in response.text
+
+    def test_create_renders_inline_field_validation_errors(
+        self, edge_client: TestClient
+    ) -> None:
+        """A required inline field left blank fails `field.validate()`, not
+        `parse_form_data()`, exercising the validation-error branch of inline
+        row parsing.
+        """
+        response = edge_client.post(
+            "/admin/edge-article/create",
+            data={
+                "title": "Hello",
+                "inlines.config.0.id": "1",
+                "inlines.config.0.config.key": "k",
+                "inlines.config.0.config.value": "42",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 422
+        assert "This field is required." in response.text
 
     def test_edit_renders_inline_parse_errors(self, edge_client: TestClient) -> None:
         EdgeArticleView._db.insert(EdgeArticle(title="Draft").to_tinydb_doc())

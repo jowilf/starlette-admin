@@ -22,6 +22,12 @@ function initializeFields(element) {
   });
 }
 
+// Public API for plugin field JS. Bare globals above stay for backward
+// compatibility; this namespace is what plugins and docs target.
+window.StarletteAdmin = window.StarletteAdmin || {};
+window.StarletteAdmin.registerFieldInitializer = registerFieldInitializer;
+window.StarletteAdmin.initializeFields = initializeFields;
+
 /**
  * Flatpickr's altInput does not inherit the `readonly` attribute from the
  * source input, so it stays editable even when readOnly is set. Returns an

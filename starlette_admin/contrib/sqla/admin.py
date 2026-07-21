@@ -26,6 +26,7 @@ from starlette_admin.i18n import I18nConfig, TimezoneConfig
 from starlette_admin.i18n import lazy_gettext as _
 from starlette_admin.importers import ImportConfig
 from starlette_admin.logging import get_logger
+from starlette_admin.plugins import BasePlugin
 from starlette_admin.theme import ThemeSettings
 from starlette_admin.views import CustomView
 
@@ -54,6 +55,7 @@ class Admin(BaseAdmin):
         timezone_config: TimezoneConfig | None = TimezoneConfig(),
         import_config: ImportConfig | None = None,
         export_config: ExportConfig | None = None,
+        plugins: Sequence[BasePlugin] | None = None,
         debug: bool = False,
     ) -> None:
         super().__init__(
@@ -75,6 +77,7 @@ class Admin(BaseAdmin):
             timezone_config=timezone_config,
             import_config=import_config,
             export_config=export_config,
+            plugins=plugins,
             debug=debug,
         )
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)

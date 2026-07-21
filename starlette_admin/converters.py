@@ -51,17 +51,28 @@ class BaseModelConverter:
         self,
         converters: dict[Any, Callable[..., BaseField]] | None = None,
     ):
-        if converters is None:
-            converters = {}
+        merged: dict[Any, Callable[..., BaseField]] = {}
 
         for _method_name, method in inspect.getmembers(
             self, predicate=inspect.ismethod
         ):
             if hasattr(method, "_converter_for"):
                 for arg in method._converter_for:
-                    converters[arg] = method
+                    merged[arg] = method
 
-        self.converters = converters
+        # Plugin-registered converters (see `register_converter` in a
+        # backend's converters module) sit between the class's own
+        # @converts methods and the caller-supplied dict, so precedence is
+        # user > plugin > core.
+        merged.update(self._external_converters())
+        merged.update(converters or {})
+
+        self.converters = merged
+
+    def _external_converters(self) -> dict[Any, Callable[..., BaseField]]:
+        """Override in a backend's base converter to merge in converters
+        registered by plugins for that backend. Empty by default."""
+        return {}
 
     @abstractmethod
     def convert(self, *args: Any, **kwargs: Any) -> BaseField:

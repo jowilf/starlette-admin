@@ -40,6 +40,9 @@
                 padding: 0em;
             }
         </style>
+        {% for link in plugin_css_links(request) %}
+            <link rel="stylesheet" href="{{ link }}">
+        {% endfor %}
         {% block head_css %}{% endblock %}
         <style>
             .is-invalid .select2-selection {
@@ -183,6 +186,9 @@
                 src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
         <script type="text/javascript"
                 src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.4.0') }}"></script>
+        {% for link in plugin_js_links(request) %}
+            <script type="text/javascript" src="{{ link }}"></script>
+        {% endfor %}
         {% block script %}{% endblock %}
         {# djlint:off #}
 <script>

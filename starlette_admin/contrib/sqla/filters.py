@@ -10,6 +10,7 @@ per the `FilterGroup` tree, and `ModelView.find_all`/`count` apply the result
 once.
 """
 
+from collections.abc import Sequence
 from typing import Any
 
 from sqlalchemy import String, and_, cast, false, func, not_, or_, true
@@ -317,6 +318,17 @@ def _build_rule_clause(
 
 # Registry
 
+# Filters registered by plugins, merged into every SqlaFilterRegistry
+# instance (see FilterRegistry._external_filters).
+_EXTERNAL_FILTERS: dict[type["BaseField"], Sequence[type[BaseFilter]]] = {}
+
+
+def register_filters(
+    field_type: type["BaseField"], *filter_classes: type[BaseFilter]
+) -> None:
+    """Extend the default sqla `FilterRegistry`. Plugin API."""
+    _EXTERNAL_FILTERS[field_type] = filter_classes
+
 
 class SqlaFilterRegistry(FilterRegistry):
     """Default filter registry for SQLAlchemy-backed views, returned by
@@ -338,6 +350,9 @@ class SqlaFilterRegistry(FilterRegistry):
             def string_filters(self, field):
                 return [ContainsFilter, IsNullFilter]
     """
+
+    def _external_filters(self) -> dict[type["BaseField"], Sequence[type[BaseFilter]]]:
+        return _EXTERNAL_FILTERS
 
     @filters(BaseField)
     def fallback_filters(self, field: BaseField) -> list[type[BaseFilter]]:

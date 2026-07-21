@@ -348,3 +348,22 @@ def test_registry_date_field():
 def test_registry_boolean_field():
     names = {f.name for f in filter_registry.filters_for(BooleanField("x"))}
     assert names == {"is_true", "is_false", "is_null", "is_not_null"}
+
+
+def test_register_filters_plugin_api():
+    """`register_filters` (the plugin API) extends every new
+    `BeanieFilterRegistry` instance, since it feeds `_external_filters`."""
+    from starlette_admin.contrib.beanie import filters as beanie_filters
+
+    class _PluginField(BaseField):
+        pass
+
+    class _PluginFilter(ContainsFilter):
+        name = "plugin-filter"
+
+    beanie_filters.register_filters(_PluginField, _PluginFilter)
+    try:
+        registry = BeanieFilterRegistry()
+        assert registry.filters_for(_PluginField("x")) == [_PluginFilter]
+    finally:
+        del beanie_filters._EXTERNAL_FILTERS[_PluginField]

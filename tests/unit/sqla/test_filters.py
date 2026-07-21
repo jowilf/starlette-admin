@@ -1,6 +1,7 @@
 """Pure unit tests for `starlette_admin.contrib.sqla.filters`.
 
-No database session is required. This module covers `parse_value` helpers, filter registry registrations, and `build_filter_clause` / `_build_rule_clause` behavior with mock or empty registries."""
+No database session is required. This module covers `parse_value` helpers, filter registry registrations, and `build_filter_clause` / `_build_rule_clause` behavior with mock or empty registries.
+"""
 
 import datetime
 from unittest.mock import MagicMock
@@ -275,3 +276,22 @@ def test_registry_base_field_fallback():
     """A field type without a dedicated registration still receives null filters."""
     names = {f.name for f in filter_registry.filters_for(BaseField("x"))}
     assert names == {"is_null", "is_not_null"}
+
+
+def test_register_filters_plugin_api():
+    """`register_filters` (the plugin API) extends every new
+    `SqlaFilterRegistry` instance, since it feeds `_external_filters`."""
+    from starlette_admin.contrib.sqla import filters as sqla_filters
+
+    class _PluginField(BaseField):
+        pass
+
+    class _PluginFilter(ContainsFilter):
+        name = "plugin-filter"
+
+    sqla_filters.register_filters(_PluginField, _PluginFilter)
+    try:
+        registry = sqla_filters.SqlaFilterRegistry()
+        assert registry.filters_for(_PluginField("x")) == [_PluginFilter]
+    finally:
+        del sqla_filters._EXTERNAL_FILTERS[_PluginField]

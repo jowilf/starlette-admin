@@ -44,6 +44,8 @@ from .flash import flash as flash
 from .flash import get_flashed_messages as get_flashed_messages
 from .i18n import I18nConfig as I18nConfig
 from .i18n import TimezoneConfig as TimezoneConfig
+from .plugins import BasePlugin as BasePlugin
+from .plugins import PluginError as PluginError
 from .routing import route as route
 from .theme import ThemeSettings as ThemeSettings
 from .types import RequestAction as RequestAction

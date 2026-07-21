@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any
 
 from starlette_admin.contrib.tortoise.exceptions import NotSupportedField
@@ -33,6 +33,25 @@ from tortoise.fields.relational import (
 )
 from tortoise.models import Model
 
+# Converters registered by plugins for Tortoise field types, merged into
+# every BaseTortoiseModelConverter instance (see
+# BaseModelConverter._external_converters).
+_EXTERNAL_CONVERTERS: dict[Any, Callable[..., BaseField]] = {}
+
+
+def register_converter(
+    *types: Any,
+) -> Callable[[Callable[..., BaseField]], Callable[..., BaseField]]:
+    """Register an external converter for Tortoise field types.
+    Decorator form mirrors `@converts`. Used by plugins."""
+
+    def wrap(func: Callable[..., BaseField]) -> Callable[..., BaseField]:
+        for field_type in types:
+            _EXTERNAL_CONVERTERS[field_type] = func
+        return func
+
+    return wrap
+
 
 class BaseTortoiseModelConverter(BaseModelConverter):
     """Converts Tortoise ORM model fields to `starlette_admin` `BaseField` instances.
@@ -41,6 +60,9 @@ class BaseTortoiseModelConverter(BaseModelConverter):
     closest class in the field's MRO wins, so `CharEnumFieldInstance` maps to
     an `EnumField` even though it subclasses `CharField`.
     """
+
+    def _external_converters(self) -> dict[Any, Callable[..., BaseField]]:
+        return _EXTERNAL_CONVERTERS
 
     def get_converter(self, field: tfields.Field) -> Any:
         for klass in type(field).__mro__:

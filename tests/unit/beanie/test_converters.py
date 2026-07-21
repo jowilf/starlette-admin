@@ -31,3 +31,27 @@ def test_conv_ip_address():
     assert isinstance(ip_field, IPAddressField)
     assert ip_field.ipv4 is True
     assert ip_field.ipv6 is True
+
+
+def test_register_converter_plugin_api():
+    """`register_converter` (the plugin API) extends every new
+    `BeanieModelConverter` instance, since it feeds `_external_converters`."""
+    from starlette_admin.contrib.beanie.converters import (
+        _EXTERNAL_CONVERTERS,
+        BeanieModelConverter,
+        register_converter,
+    )
+    from starlette_admin.fields import StringField
+
+    class _PluginType:
+        pass
+
+    @register_converter(_PluginType)
+    def _conv_plugin_type(*args, **kwargs):
+        return StringField(**kwargs)
+
+    try:
+        converter = BeanieModelConverter()
+        assert converter.get_converter(_PluginType) is _conv_plugin_type
+    finally:
+        del _EXTERNAL_CONVERTERS[_PluginType]

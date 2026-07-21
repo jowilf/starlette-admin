@@ -170,3 +170,28 @@ def test_decimal_default_is_detected():
         ),
         DecimalField("amount", default=Decimal("9.99")),
     ]
+
+
+def test_register_converter_plugin_api():
+    """`register_converter` (the plugin API) extends every new `ModelConverter`
+    instance, since it feeds `BaseSQLAModelConverter._external_converters`."""
+    from starlette_admin.contrib.sqla.converters import (
+        _EXTERNAL_CONVERTERS,
+        ModelConverter,
+        register_converter,
+    )
+
+    class _PluginColumnType:
+        pass
+
+    @register_converter(_PluginColumnType)
+    def _conv_plugin_type(*args, **kwargs):
+        return StringField(**kwargs)
+
+    try:
+        converter = ModelConverter()
+        found = converter.find_converter_for_col_type(_PluginColumnType)
+        assert found is _conv_plugin_type
+    finally:
+        key = f"{_PluginColumnType.__module__}.{_PluginColumnType.__name__}"
+        del _EXTERNAL_CONVERTERS[key]

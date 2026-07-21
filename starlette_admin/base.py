@@ -1,3 +1,4 @@
+import importlib.resources
 import logging
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, cast
@@ -50,6 +51,7 @@ from starlette_admin.helpers import (
     get_file_icon,
     html_safe_json,
     import_url,
+    list_page_origin,
     list_url,
     not_none,
     safe_redirect_url,
@@ -78,6 +80,12 @@ from starlette_admin.importers import (
     ImportRowError,
 )
 from starlette_admin.logging import configure_logging, get_logger
+from starlette_admin.plugins import (
+    RESERVED_PLUGIN_NAMES,
+    BasePlugin,
+    PluginError,
+    validate_plugin_namespace,
+)
 from starlette_admin.routing import route
 from starlette_admin.security.csrf import CSRFMiddleware, csrf_input
 from starlette_admin.storage.base import (
@@ -131,6 +139,7 @@ class BaseAdmin:
         timezone_config: TimezoneConfig | None = TimezoneConfig(),
         import_config: ImportConfig | None = None,
         export_config: ExportConfig | None = None,
+        plugins: Sequence[BasePlugin] | None = None,
         debug: bool = False,
     ):
         """
@@ -177,6 +186,9 @@ class BaseAdmin:
             export_config: Capacity limits for the export endpoint (max rows per
                 request). Defaults to :class:`~starlette_admin.export.ExportConfig`
                 with ``max_rows=100_000`` when not provided.
+            plugins: Plugins extending the admin with fields, templates, static
+                assets, routes, views, and more. See
+                :class:`~starlette_admin.plugins.BasePlugin`.
             debug: Enable debug mode. When ``True``, automatically configures
                 colored DEBUG-level console logging for the ``starlette_admin``
                 package (equivalent to calling
@@ -219,6 +231,7 @@ class BaseAdmin:
             base_url,
             title,
         )
+        self._register_plugins(plugins or [])
         _log.debug(
             "Admin: setting up Jinja2 templates (templates_dir=%r)", templates_dir
         )
@@ -238,13 +251,14 @@ class BaseAdmin:
         self._init_auth()
         self._init_routes()
         _log.info(
-            "Admin ready: route_name=%r base_url=%r routes=%d auth=%s i18n=%s tz=%s",
+            "Admin ready: route_name=%r base_url=%r routes=%d auth=%s i18n=%s tz=%s plugins=%d",
             self.route_name,
             self.base_url,
             len(self.routes),
             "yes" if self.auth_provider else "no",
             "yes" if self.i18n_config else "no",
             "yes" if self.timezone_config else "no",
+            len(self.plugins),
         )
 
     def add_view(self, view: type[BaseView] | BaseView) -> None:
@@ -419,7 +433,8 @@ class BaseAdmin:
     def _init_routes(self) -> None:
         _log.debug("_init_routes: registering core routes")
         static = StaticFiles(
-            directory=self.static_dir, packages=[("starlette_admin", "static")]
+            directory=self.static_dir,
+            packages=[("starlette_admin", "static"), *self._plugin_static_packages],
         )
         self.routes.append(Mount("/static", app=static, name="static"))
         self.routes.extend(self._collect_core_routes())
@@ -452,18 +467,83 @@ class BaseAdmin:
             )
         return routes
 
+    def _register_plugins(self, plugins: Sequence[BasePlugin]) -> None:
+        """Wire `plugins` into this admin: validate each plugin's name and
+        asset namespace, then collect the template loaders, static
+        packages, middlewares, routes, views, and template globals/filters
+        they contribute.
+
+        Runs before `_setup_templates`/`_init_routes` so plugin
+        contributions are just entries in the lists those methods already
+        build, with no live `ChoiceLoader`/`StaticFiles` mutation needed.
+        See `ai/PLUGIN_DESIGN.md` section 1.2.
+        """
+        self.plugins: dict[str, BasePlugin] = {}
+        self._plugin_template_loaders: list[PackageLoader] = []
+        self._plugin_prefix_loaders: dict[str, PackageLoader] = {}
+        self._plugin_static_packages: list[tuple[str, str]] = []
+        self._plugin_template_globals: dict[str, Any] = {}
+        self._plugin_template_filters: dict[str, Callable] = {}
+        for plugin in plugins:
+            self._register_plugin(plugin)
+
+    def _register_plugin(self, plugin: BasePlugin) -> None:
+        """Validate and wire a single plugin. Split out of
+        `_register_plugins` to keep each step easy to follow."""
+        name = getattr(plugin, "name", None)
+        if not name:
+            raise PluginError(
+                f"{type(plugin).__name__} must define a 'name' class attribute."
+            )
+        if name in RESERVED_PLUGIN_NAMES:
+            raise PluginError(
+                f"Plugin name {name!r} is reserved for starlette-admin's own "
+                "templates and cannot be used by a plugin."
+            )
+        if name in self.plugins:
+            raise PluginError(f"Duplicate plugin name {name!r}.")
+        package = plugin.resolved_package()
+        root = importlib.resources.files(package)
+        if (root / "templates").is_dir():
+            validate_plugin_namespace(root / "templates", name, "templates")
+            self._plugin_template_loaders.append(PackageLoader(package, "templates"))
+            self._plugin_prefix_loaders[f"@{name}"] = PackageLoader(
+                package, f"templates/plugins/{name}"
+            )
+        if (root / "static").is_dir():
+            validate_plugin_namespace(root / "static", name, "static")
+            self._plugin_static_packages.append((package, "static"))
+        self.middlewares.extend(plugin.middlewares())
+        plugin_routes = list(plugin.routes())
+        if plugin_routes:
+            self.routes.append(
+                Mount(f"/plugins/{name}", routes=plugin_routes, name=f"plugin:{name}")
+            )
+        for view in plugin.views():
+            self.add_view(view)
+        for key, value in plugin.template_globals().items():
+            self._plugin_template_globals[f"{name}_{key}"] = value
+        for key, value in plugin.template_filters().items():
+            self._plugin_template_filters[f"{name}_{key}"] = value
+        plugin.setup(self)
+        self.plugins[name] = plugin
+        _log.info("_register_plugins: %r registered (package=%r)", name, package)
+
     def _setup_templates(self) -> None:
         env = Environment(
             loader=ChoiceLoader(
                 [
                     FileSystemLoader(self.templates_dir),
                     *self.additional_loaders,
+                    *self._plugin_template_loaders,
                     PackageLoader("starlette_admin", "templates"),
                     PrefixLoader(
                         {
+                            "@core": PackageLoader("starlette_admin", "templates"),
                             "@starlette-admin": PackageLoader(
                                 "starlette_admin", "templates"
                             ),
+                            **self._plugin_prefix_loaders,
                         }
                     ),
                 ]
@@ -496,6 +576,19 @@ class BaseAdmin:
         templates.env.globals["timezone_config"] = self.timezone_config
         templates.env.globals["theme_settings"] = self.theme
         templates.env.globals["csrf_input"] = csrf_input
+        # Plugin-contributed page-wide assets (2.3), rendered by layout.html
+        # after core CSS/JS. Per-field assets stay on the field mechanism.
+        templates.env.globals["plugin_css_links"] = lambda request: [
+            link
+            for plugin in self.plugins.values()
+            for link in plugin.css_links(request)
+        ]
+        templates.env.globals["plugin_js_links"] = lambda request: [
+            link
+            for plugin in self.plugins.values()
+            for link in plugin.js_links(request)
+        ]
+        templates.env.globals.update(self._plugin_template_globals)
         # Template filters, registered for use with the Jinja2 `|` syntax.
         templates.env.filters["is_custom_view"] = lambda r: isinstance(r, CustomView)
         templates.env.filters["is_link"] = lambda res: isinstance(res, Link)
@@ -512,6 +605,7 @@ class BaseAdmin:
         templates.env.filters["ra"] = RequestAction
         templates.env.filters["safe_url"] = safe_url
         templates.env.filters["sanitize_html"] = sanitize_html
+        templates.env.filters.update(self._plugin_template_filters)
         # Install gettext/ngettext so `{% trans %}` works in templates.
         templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
         self.templates = templates
@@ -833,6 +927,9 @@ class BaseAdmin:
         view = self._find_view_by_key(key)
         if not view.is_accessible(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
+        # This endpoint's own URL isn't a page a user can return to -- point
+        # detail/edit links rendered for this row back at the real list page.
+        request.state.origin_override = list_page_origin(request, key)  # type: ignore[arg-type]
         pk = request.query_params.get("pk")
         obj = await view.find_by_pk(request, pk)
         if obj is None:
@@ -1204,9 +1301,9 @@ class BaseAdmin:
                         "Upload too large (%(size)s bytes; maximum %(max)s bytes)."
                     )
                     % {
-                        "size": f"{upload.size:,}"
-                        if upload.size is not None
-                        else "unknown",
+                        "size": (
+                            f"{upload.size:,}" if upload.size is not None else "unknown"
+                        ),
                         "max": f"{self.import_config.max_upload_size:,}",
                     }
                 },
@@ -2141,9 +2238,11 @@ class BaseAdmin:
                     request,
                     inline,
                     parent=parent,
-                    submitted_rows=inline_data.get(not_none(inline.key))
-                    if inline_data is not None
-                    else None,
+                    submitted_rows=(
+                        inline_data.get(not_none(inline.key))
+                        if inline_data is not None
+                        else None
+                    ),
                 ),
             }
             for inline in view._inline_instances
@@ -2245,6 +2344,9 @@ class BaseAdmin:
         calls (and further calls to `mount_to` itself) raise `RuntimeError`,
         since routes/middleware have already been baked into `admin_app`.
 
+        Each registered plugin's `on_mount` hook runs right before the admin
+        app is mounted onto *app*, with `admin.app` already reachable.
+
         Parameters:
             app: The Starlette (or FastAPI) application to mount the admin onto.
 
@@ -2261,10 +2363,12 @@ class BaseAdmin:
             debug=self.debug,
         )
         admin_app.state.ROUTE_NAME = self.route_name
+        self._app = admin_app
+        for plugin in self.plugins.values():
+            plugin.on_mount(self)
         app.mount(
             self.base_url,
             app=admin_app,
             name=self.route_name,
         )
         admin_app.router.redirect_slashes = True
-        self._app = admin_app

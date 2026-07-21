@@ -6,6 +6,7 @@ Each `apply()` returns a MongoEngine `Q` fragment for its own condition.
 """
 
 import datetime
+from collections.abc import Sequence
 from typing import Any
 
 from bson import ObjectId
@@ -407,6 +408,17 @@ def _build_rule_query(
 
 # Default registry
 
+# Filters registered by plugins, merged into every MongoEngineFilterRegistry
+# instance (see FilterRegistry._external_filters).
+_EXTERNAL_FILTERS: dict[type["BaseField"], Sequence[type[BaseFilter]]] = {}
+
+
+def register_filters(
+    field_type: type["BaseField"], *filter_classes: type[BaseFilter]
+) -> None:
+    """Extend the default mongoengine `FilterRegistry`. Plugin API."""
+    _EXTERNAL_FILTERS[field_type] = filter_classes
+
 
 class MongoEngineFilterRegistry(FilterRegistry):
     """Default filter registry for MongoEngine-backed views, returned by
@@ -418,6 +430,9 @@ class MongoEngineFilterRegistry(FilterRegistry):
     `FilterRegistry.filters_for` for how a field type without its own entry
     falls back to its nearest registered ancestor).
     """
+
+    def _external_filters(self) -> dict[type["BaseField"], Sequence[type[BaseFilter]]]:
+        return _EXTERNAL_FILTERS
 
     @filters(BaseField)
     def fallback_filters(self, field: BaseField) -> list[type[BaseFilter]]:

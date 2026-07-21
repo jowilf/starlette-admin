@@ -35,6 +35,15 @@ IMPORT_FORMATS: dict[str, BaseImporter] = {
 }
 
 
+def register_import_format(name: str, importer: BaseImporter) -> None:
+    """Register `importer` under `name` in `IMPORT_FORMATS`. Plugin API.
+
+    Registration only makes the format available; a view still opts in via
+    its own `importers` list.
+    """
+    IMPORT_FORMATS[name] = importer
+
+
 def resolve_importer(importer: str | BaseImporter) -> BaseImporter:
     """Resolve `importer` to a ready-to-use, availability-checked instance.
 
@@ -74,5 +83,6 @@ __all__ = [
     "JsonImporter",
     "TablibImporter",
     "TsvImporter",
+    "register_import_format",
     "resolve_importer",
 ]

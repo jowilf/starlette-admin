@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any, Union, get_args, get_origin
 
 from beanie import BackLink, Link, PydanticObjectId
@@ -41,6 +41,25 @@ from starlette_admin.fields import (
 )
 from starlette_admin.helpers import slugify_class_name
 
+# Converters registered by plugins for Beanie/pydantic field types, merged
+# into every BeanieModelConverter instance (see
+# BaseModelConverter._external_converters).
+_EXTERNAL_CONVERTERS: dict[Any, Callable[..., BaseField]] = {}
+
+
+def register_converter(
+    *types: Any,
+) -> Callable[[Callable[..., BaseField]], Callable[..., BaseField]]:
+    """Register an external converter for Beanie/pydantic field types.
+    Decorator form mirrors `@converts`. Used by plugins."""
+
+    def wrap(func: Callable[..., BaseField]) -> Callable[..., BaseField]:
+        for field_type in types:
+            _EXTERNAL_CONVERTERS[field_type] = func
+        return func
+
+    return wrap
+
 
 class BeanieModelConverter(StandardModelConverter):
     """Converts Beanie `Document` fields to `starlette_admin` `BaseField` instances.
@@ -50,6 +69,9 @@ class BeanieModelConverter(StandardModelConverter):
     `EmailStr`, `AnyUrl`, the pydantic date/datetime constrained types, and
     nested `BaseModel`s.
     """
+
+    def _external_converters(self) -> dict[Any, Callable[..., BaseField]]:
+        return _EXTERNAL_CONVERTERS
 
     @staticmethod
     def _extract_default(field_info: FieldInfo) -> Any:

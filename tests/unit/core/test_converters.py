@@ -196,9 +196,35 @@ def test_conv_ip_address(converter):
 def test_conv_type_instance_via_isinstance(converter):
     """`get_converter` handles `_type` when it is an *instance* of a registered class.
 
-    The `isinstance(cls)` branch in `get_converter` is activated when `_type` is not a class but an instance of a registered class. For example, a string literal is an instance of `str`, which is registered."""
+    The `isinstance(cls)` branch in `get_converter` is activated when `_type` is not a class but an instance of a registered class. For example, a string literal is an instance of `str`, which is registered.
+    """
     # A string literal is an instance of `str`, which is registered.
     # `inspect.isclass("hello")` is `False`, so the subclass branch is skipped.
     # `isinstance("hello", str)` is triggered, which returns the `str` converter.
     conv_fn = converter.get_converter("hello")
     assert conv_fn is not None
+
+
+def test_external_converters_precedence():
+    """`_external_converters` (the hook a backend's converter overrides for
+    `register_converter`) sits between the class's own `@converts` methods
+    and the constructor dict: user > plugin > core."""
+
+    class _Marker:
+        pass
+
+    class PluginConverter(BaseStandardModelConverter):
+        def conv_str(self, *args, **kwargs):
+            return StringField(**kwargs)
+
+        def _external_converters(self):
+            return {_Marker: self.conv_str}
+
+    plugin_field = PluginConverter().get_converter(_Marker)
+    assert plugin_field.__func__ is PluginConverter.conv_str
+
+    def user_conv(*args, **kwargs):
+        return StringField(**kwargs)
+
+    overridden = PluginConverter(converters={_Marker: user_conv})
+    assert overridden.get_converter(_Marker) is user_conv

@@ -512,6 +512,28 @@ def test_registry_constructor_dict_overrides_decorated_method():
     assert registry.filters_for(field) == [StartsWithFilter]
 
 
+def test_registry_external_filters_precedence():
+    """Plugin-registered filters (`_external_filters`, the hook a backend's
+    registry overrides for `register_filters`) sit between the class's own
+    `@filters` methods and the constructor dict: user > plugin > core."""
+    from starlette_admin import StringField
+    from starlette_admin.filters.registry import filters
+
+    class PluginRegistry(FilterRegistry):
+        @filters(StringField)
+        def string_filters(self, field):
+            return [ContainsFilter]
+
+        def _external_filters(self):
+            return {StringField: [EqualFilter]}
+
+    field = StringField("title")
+    assert PluginRegistry().filters_for(field) == [EqualFilter]
+    # user-supplied dict still wins over the plugin registration
+    overridden = PluginRegistry(filters={StringField: [StartsWithFilter]})
+    assert overridden.filters_for(field) == [StartsWithFilter]
+
+
 def test_registry_two_field_types_one_method():
     from starlette_admin import IntegerField, StringField
     from starlette_admin.filters.registry import filters

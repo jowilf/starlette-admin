@@ -79,3 +79,25 @@ def test_unknown_field_name_raises():
 def test_unsupported_field_type_raises():
     with pytest.raises(NotSupportedField, match="BinaryField is not supported"):
         ModelConverter().convert_fields_list(fields=["payload"], model=Item)
+
+
+def test_register_converter_plugin_api():
+    """`register_converter` (the plugin API) extends every new
+    `ModelConverter` instance, since it feeds `_external_converters`."""
+    from starlette_admin.contrib.tortoise.converters import (
+        _EXTERNAL_CONVERTERS,
+        register_converter,
+    )
+
+    class _PluginFieldType(fields.Field):
+        pass
+
+    @register_converter(_PluginFieldType)
+    def _conv_plugin_type(name, field):
+        return StringField(name)
+
+    try:
+        converter = ModelConverter()
+        assert converter.get_converter(_PluginFieldType()) is _conv_plugin_type
+    finally:
+        del _EXTERNAL_CONVERTERS[_PluginFieldType]

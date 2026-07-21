@@ -8,6 +8,7 @@ tree into a single MongoDB filter dict via ``$and`` / ``$or``, which
 
 import datetime
 import re
+from collections.abc import Sequence
 from typing import Any
 
 import bson.errors
@@ -424,6 +425,17 @@ def _build_rule_query(
 
 # Default registry
 
+# Filters registered by plugins, merged into every BeanieFilterRegistry
+# instance (see FilterRegistry._external_filters).
+_EXTERNAL_FILTERS: dict[type["BaseField"], Sequence[type[BaseFilter]]] = {}
+
+
+def register_filters(
+    field_type: type["BaseField"], *filter_classes: type[BaseFilter]
+) -> None:
+    """Extend the default beanie `FilterRegistry`. Plugin API."""
+    _EXTERNAL_FILTERS[field_type] = filter_classes
+
 
 class BeanieFilterRegistry(FilterRegistry):
     """Default filter registry for Beanie-backed views, returned by
@@ -435,6 +447,9 @@ class BeanieFilterRegistry(FilterRegistry):
     `FilterRegistry.filters_for` for how a field type without its own entry
     falls back to its nearest registered ancestor).
     """
+
+    def _external_filters(self) -> dict[type["BaseField"], Sequence[type[BaseFilter]]]:
+        return _EXTERNAL_FILTERS
 
     @filters(BaseField)
     def fallback_filters(self, field: BaseField) -> list[type[BaseFilter]]:

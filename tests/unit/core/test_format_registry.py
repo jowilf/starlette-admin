@@ -11,12 +11,14 @@ from starlette_admin.export import (
     EXPORT_FORMATS,
     BaseExporter,
     is_extra_available,
+    register_export_format,
     resolve_exporter,
 )
 from starlette_admin.export.csv import CsvExporter
 from starlette_admin.export.tablib import TablibExporter
 from starlette_admin.importers import (
     IMPORT_FORMATS,
+    register_import_format,
     resolve_importer,
 )
 from starlette_admin.importers.base import ImportContext
@@ -60,6 +62,29 @@ def test_resolve_exporter_unknown_format_raises_value_error():
 def test_resolve_importer_unknown_format_raises_value_error():
     with pytest.raises(ValueError, match="Unknown import format"):
         resolve_importer("bogus")
+
+
+# ── plugin registration (register_import_format / register_export_format) ──
+
+
+def test_register_export_format_plugin_api():
+    exporter = CsvExporter()
+    register_export_format("plugin-demo-export", exporter)
+    try:
+        assert EXPORT_FORMATS["plugin-demo-export"] is exporter
+        assert resolve_exporter("plugin-demo-export") is exporter
+    finally:
+        del EXPORT_FORMATS["plugin-demo-export"]
+
+
+def test_register_import_format_plugin_api():
+    importer = CsvImporter()
+    register_import_format("plugin-demo-import", importer)
+    try:
+        assert IMPORT_FORMATS["plugin-demo-import"] is importer
+        assert resolve_importer("plugin-demo-import") is importer
+    finally:
+        del IMPORT_FORMATS["plugin-demo-import"]
 
 
 def test_resolve_exporter_missing_extra_raises_import_error():

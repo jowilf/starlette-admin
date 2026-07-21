@@ -474,3 +474,22 @@ def test_object_id_field_is_string_field_subclass():
 def test_object_id_field_instantiation():
     f = ObjectIdField("my_id")
     assert f.name == "my_id"
+
+
+def test_register_filters_plugin_api():
+    """`register_filters` (the plugin API) extends every new
+    `MongoEngineFilterRegistry` instance, since it feeds `_external_filters`."""
+    from starlette_admin.contrib.mongoengine import filters as me_filters
+
+    class _PluginField(BaseField):
+        pass
+
+    class _PluginFilter(ContainsFilter):
+        name = "plugin-filter"
+
+    me_filters.register_filters(_PluginField, _PluginFilter)
+    try:
+        registry = MongoEngineFilterRegistry()
+        assert registry.filters_for(_PluginField("x")) == [_PluginFilter]
+    finally:
+        del me_filters._EXTERNAL_FILTERS[_PluginField]

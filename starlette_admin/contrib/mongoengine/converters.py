@@ -8,6 +8,25 @@ from starlette_admin.contrib.mongoengine.exceptions import NotSupportedField
 from starlette_admin.converters import BaseModelConverter, converts
 from starlette_admin.helpers import slugify_class_name
 
+# Converters registered by plugins for mongoengine field types, merged into
+# every BaseMongoEngineModelConverter instance (see
+# BaseModelConverter._external_converters).
+_EXTERNAL_CONVERTERS: dict[Any, Callable[..., sa.BaseField]] = {}
+
+
+def register_converter(
+    *types: Any,
+) -> Callable[[Callable[..., sa.BaseField]], Callable[..., sa.BaseField]]:
+    """Register an external converter for mongoengine field types.
+    Decorator form mirrors `@converts`. Used by plugins."""
+
+    def wrap(func: Callable[..., sa.BaseField]) -> Callable[..., sa.BaseField]:
+        for field_type in types:
+            _EXTERNAL_CONVERTERS[field_type] = func
+        return func
+
+    return wrap
+
 
 class BaseMongoEngineModelConverter(BaseModelConverter):
     """Base class for converting mongoengine document fields to admin fields.
@@ -15,6 +34,9 @@ class BaseMongoEngineModelConverter(BaseModelConverter):
     Subclasses register one converter method per mongoengine field type using
     the [converts][starlette_admin.converters.converts] decorator.
     """
+
+    def _external_converters(self) -> dict[Any, Callable[..., sa.BaseField]]:
+        return _EXTERNAL_CONVERTERS
 
     def get_converter(self, field: me.BaseField) -> Callable[..., sa.BaseField]:
         """Look up the converter function registered for `field`'s type.

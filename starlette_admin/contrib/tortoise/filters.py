@@ -7,6 +7,7 @@ queryset in one ``filter()`` call, preserving nested AND/OR semantics.
 """
 
 import datetime
+from collections.abc import Sequence
 from typing import Any
 
 from starlette.requests import Request
@@ -359,6 +360,17 @@ def _build_rule_query(
 
 # Registry
 
+# Filters registered by plugins, merged into every TortoiseFilterRegistry
+# instance (see FilterRegistry._external_filters).
+_EXTERNAL_FILTERS: dict[type["BaseField"], Sequence[type[BaseFilter]]] = {}
+
+
+def register_filters(
+    field_type: type["BaseField"], *filter_classes: type[BaseFilter]
+) -> None:
+    """Extend the default tortoise `FilterRegistry`. Plugin API."""
+    _EXTERNAL_FILTERS[field_type] = filter_classes
+
 
 class TortoiseFilterRegistry(FilterRegistry):
     """Default filter registry for Tortoise-backed views, returned by
@@ -370,6 +382,9 @@ class TortoiseFilterRegistry(FilterRegistry):
     `FilterRegistry.filters_for` for how a field type without its own entry
     falls back to its nearest registered ancestor).
     """
+
+    def _external_filters(self) -> dict[type["BaseField"], Sequence[type[BaseFilter]]]:
+        return _EXTERNAL_FILTERS
 
     @filters(BaseField)
     def fallback_filters(self, field: BaseField) -> list[type[BaseFilter]]:
