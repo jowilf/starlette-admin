@@ -18,7 +18,7 @@ from {{ cookiecutter.package_slug }} import {{ cookiecutter.class_prefix }}Plugi
 admin = Admin(engine, plugins=[{{ cookiecutter.class_prefix }}Plugin()])
 ```
 
-See [docs/index.md](docs/index.md) for options{% if cookiecutter.include_example_field == "yes" %} and the `{{ cookiecutter.class_prefix }}RatingField` field{% endif %}.
+See [docs/index.md](docs/index.md) for options{% if cookiecutter.include_example_field == "yes" %} and the `{{ cookiecutter.class_prefix }}SliderField` field{% endif %}.
 
 ## Development
 

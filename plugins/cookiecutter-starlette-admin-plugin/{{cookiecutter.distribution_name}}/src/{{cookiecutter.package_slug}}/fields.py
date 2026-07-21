@@ -1,13 +1,8 @@
-"""Example field: `{{ cookiecutter.class_prefix }}RatingField`.
+"""Example field: `{{ cookiecutter.class_prefix }}SliderField`.
 
-Renders an integer 1-5 as a row of clickable stars. Kept dependency-free
-(plain CSS/JS, no vendored library) so it doubles as the minimal template
-for a real field: dataclass attributes, namespaced templates, the
-`additional_css_links`/`additional_js_links` + `_needs_form_assets` pattern,
-and a JS initializer registered through `StarletteAdmin.registerFieldInitializer`.
+Renders an integer as a range slider with a live value label. This field is kept dependency-free (plain CSS/JS, no vendored library) so it can serve as a minimal template for a real field. It demonstrates dataclass attributes, namespaced templates, the `additional_css_links`/`additional_js_links` + `_needs_form_assets` pattern, and a JS initializer registered through `StarletteAdmin.registerFieldInitializer`.
 
-Delete this module (and its templates/static counterparts) if this plugin
-does not ship a field.
+Delete this module, along with its templates and static counterparts, if this plugin does not ship a field.
 """
 
 from __future__ import annotations
@@ -23,23 +18,26 @@ _VERSION = "1"
 
 
 @dataclass
-class {{ cookiecutter.class_prefix }}RatingField(BaseField):
-    """An integer rating (1-`max_stars`) rendered as clickable stars."""
+class {{ cookiecutter.class_prefix }}SliderField(BaseField):
+    """An integer rendered as a range slider with a live value label."""
 
-    max_stars: int = 5
-    list_template: str = "plugins/{{ cookiecutter.plugin_slug }}/fields/list/rating.html"
-    detail_template: str = "plugins/{{ cookiecutter.plugin_slug }}/fields/detail/rating.html"
-    form_template: str = "plugins/{{ cookiecutter.plugin_slug }}/fields/form/rating.html"
+    min_value: int = 0
+    max_value: int = 100
+    step: int = 1
+    suffix: str = "%"
+    list_template: str = "plugins/{{ cookiecutter.plugin_slug }}/fields/list/slider.html"
+    detail_template: str = "plugins/{{ cookiecutter.plugin_slug }}/fields/detail/slider.html"
+    form_template: str = "plugins/{{ cookiecutter.plugin_slug }}/fields/form/slider.html"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> int:
         raw = form_data.get(self.id)
-        return int(raw) if raw else 0
+        return int(raw) if raw else self.min_value
 
     def additional_css_links(self, request: Request) -> list[str]:
         return [
             static_url(
                 request,
-                "plugins/{{ cookiecutter.plugin_slug }}/css/rating.css",
+                "plugins/{{ cookiecutter.plugin_slug }}/css/slider.css",
                 v=_VERSION,
             )
         ]
@@ -49,7 +47,7 @@ class {{ cookiecutter.class_prefix }}RatingField(BaseField):
             return [
                 static_url(
                     request,
-                    "plugins/{{ cookiecutter.plugin_slug }}/js/rating.js",
+                    "plugins/{{ cookiecutter.plugin_slug }}/js/slider.js",
                     v=_VERSION,
                 )
             ]

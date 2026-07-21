@@ -1,10 +1,6 @@
 # cookiecutter-starlette-admin-plugin
 
-A [cookiecutter](https://github.com/cookiecutter/cookiecutter) template that
-scaffolds a publishable [starlette-admin](https://github.com/jowilf/starlette-admin)
-plugin: a Python package that end users install and pass into
-`Admin(plugins=[...])`. See [ai/PLUGIN_DESIGN.md](../../ai/PLUGIN_DESIGN.md)
-for the full plugin API this template builds on.
+A [cookiecutter](https://github.com/cookiecutter/cookiecutter) template to scaffold a publishable [starlette-admin](https://github.com/jowilf/starlette-admin) plugin. This generates a Python package that end users install and pass into `Admin(plugins=[...])`. See [ai/PLUGIN_DESIGN.md](../../ai/PLUGIN_DESIGN.md) for the complete plugin API reference.
 
 ## Prerequisites
 
@@ -14,7 +10,7 @@ pip install cookiecutter
 # uvx cookiecutter ...
 ```
 
-## Generate a plugin
+## Generate a Plugin
 
 From the root of this repository:
 
@@ -22,8 +18,7 @@ From the root of this repository:
 cookiecutter plugins/cookiecutter-starlette-admin-plugin/
 ```
 
-From anywhere else (a third-party plugin author does not need this repo
-checked out):
+From anywhere else (a third-party plugin author does not need this repository checked out):
 
 ```bash
 cookiecutter gh:jowilf/starlette-admin --directory plugins/cookiecutter-starlette-admin-plugin
@@ -37,7 +32,7 @@ Cookiecutter prompts for each variable in `cookiecutter.json`:
 | `plugin_slug` | `geospatial` | Kebab-case. Doubles as `BasePlugin.name` and the `plugins/<slug>/` template/static namespace. |
 | `package_slug` | `starlette_admin_geospatial` | The importable Python package, under `src/`. |
 | `distribution_name` | `starlette-admin-geospatial` | The PyPI name. |
-| `class_prefix` | `Geospatial` | Produces `GeospatialPlugin`, `GeospatialConfig`, and (if included) `GeospatialRatingField`. |
+| `class_prefix` | `Geospatial` | Produces `GeospatialPlugin`, `GeospatialConfig`, and (if included) `GeospatialSliderField`. |
 | `description` | free text | One-line package description. |
 | `author_name` / `author_email` | free text | Used in `pyproject.toml` and `LICENSE`. |
 | `github_username` | free text | Used to build the repo URL. |
@@ -47,8 +42,7 @@ Cookiecutter prompts for each variable in `cookiecutter.json`:
 | `license` | `MIT` / `Apache-2.0` / `BSD-3-Clause` / `Proprietary` | Picks the `LICENSE` text and the `pyproject.toml` classifier. |
 | `include_example_field` | `yes` / `no` | Keep or drop the worked field example (see below). |
 
-Accept a prompt's default by pressing enter, or answer everything
-non-interactively:
+Accept a prompt's default by pressing enter, or answer everything non-interactively:
 
 ```bash
 cookiecutter --no-input plugins/cookiecutter-starlette-admin-plugin/ \
@@ -58,7 +52,7 @@ cookiecutter --no-input plugins/cookiecutter-starlette-admin-plugin/ \
     github_username="janedoe"
 ```
 
-## What you get
+## What You Get
 
 ```
 starlette_admin_geospatial/
@@ -69,8 +63,8 @@ starlette_admin_geospatial/
 │   ├── __init__.py           # exports the Plugin, Config, and (optionally) the example field
 │   ├── plugin.py             # BasePlugin subclass + frozen Config dataclass
 │   ├── fields.py             # worked example field (dropped if include_example_field=no)
-│   ├── templates/plugins/geospatial/fields/{form,detail,list}/rating.html
-│   └── static/plugins/geospatial/{css,js}/rating.*
+│   ├── templates/plugins/geospatial/fields/{form,detail,list}/slider.html
+│   └── static/plugins/geospatial/{css,js}/slider.*
 ├── tests/
 │   ├── conftest.py           # in-memory sqlite Admin + CsrfTestClient fixtures
 │   ├── test_plugin.py        # registration, list/create pages load
@@ -79,28 +73,15 @@ starlette_admin_geospatial/
 └── docs/index.md             # usage doc: install, options, overriding templates/assets
 ```
 
-Every template and static file already lives under the required
-`plugins/<plugin_slug>/` namespace (`BasePlugin` rejects anything outside
-it at registration time), and `.html` files are copied verbatim, not
-Jinja-rendered by cookiecutter itself (see "How this template avoids
-double-rendering Jinja" below) — so they render correctly the moment
-`Admin(plugins=[...])` picks the plugin up.
+Every template and static file already lives under the required `plugins/<plugin_slug>/` namespace (`BasePlugin` rejects anything outside it at registration time). Additionally, `.html` files are copied verbatim and not Jinja-rendered by cookiecutter itself (see "How this Template Avoids Double-Rendering Jinja" below). They render correctly the moment `Admin(plugins=[...])` picks the plugin up.
 
 ### `include_example_field`
 
-Answering `yes` (the default) scaffolds a complete, working field —
-`{ClassPrefix}RatingField`, a dependency-free star-rating widget — wired
-through every layer a real field touches: a `BaseField` subclass, its three
-namespaced templates, a CSS/JS pair served through the shared static mount,
-and the `additional_css_links`/`additional_js_links` + `_needs_form_assets`
-pattern that only ships form JS on pages that render the field. Use it as
-the copy-paste starting point for your own field; delete what you don't
-need. Answering `no` removes `fields.py`, its templates/static/tests, and
-leaves just the plugin skeleton (`plugin.py` + `setup()`) for plugins that
-only register into existing extension points (a storage backend, a model
-converter, an event subscriber) rather than shipping a field.
+Answering `yes` (the default) scaffolds a complete, working field: `{ClassPrefix}SliderField`. This is a dependency-free range-slider widget with a live value label, wired through every layer a real field touches. This includes a `BaseField` subclass, its three namespaced templates, a CSS/JS pair served through the shared static mount, and the `additional_css_links`/`additional_js_links` + `_needs_form_assets` pattern that only ships form JS on pages that render the field. Use it as the copy-paste starting point for your own field, and delete what you do not need.
 
-## After generating
+Answering `no` removes `fields.py`, its templates, static files, and tests. It leaves just the plugin skeleton (`plugin.py` and `setup()`) for plugins that only register into existing extension points (such as a storage backend, a model converter, or an event subscriber) rather than shipping a field.
+
+## After Generating
 
 ```bash
 cd starlette_admin_geospatial
@@ -109,42 +90,25 @@ uv run pytest
 uv run python example/app.py   # demo admin at http://localhost:8000/admin/
 ```
 
-If you're developing the plugin inside this monorepo (under `plugins/`),
-uncomment the `[tool.uv.sources]` block at the bottom of the generated
-`pyproject.toml` and add the plugin to this repo's root
-`[tool.uv.workspace] members`, so `uv sync` links your local core checkout
-instead of resolving `starlette-admin` from PyPI. Third-party authors
-publishing their own repo leave it commented out.
+If you are developing the plugin inside this monorepo (under `plugins/`), uncomment the `[tool.uv.sources]` block at the bottom of the generated `pyproject.toml` and add the plugin to this repository's root `[tool.uv.workspace] members`. This allows `uv sync` to link your local core checkout instead of resolving `starlette-admin` from PyPI. Third-party authors publishing their own repository leave it commented out.
 
-## How this template avoids double-rendering Jinja
+## How this Template Avoids Double-Rendering Jinja
 
-A generated plugin ships its own Jinja templates (the field's
-`form`/`detail`/`list` `.html` files), which use the exact same `{{ }}` /
-`{% %}` delimiters cookiecutter itself uses to render this template. Left
-alone, cookiecutter would try to evaluate `{{ field.id }}` as a cookiecutter
-variable and silently blank it out. `cookiecutter.json` lists `*.html` under
-`_copy_without_render`, so every `.html` file is copied byte-for-byte —
-only its path (which does contain real cookiecutter variables, e.g.
-`plugins/{{cookiecutter.plugin_slug}}/...`) is still rendered. If you add
-another file type that contains literal Jinja or another `{{ }}`-shaped
-syntax (Vue single-file components, Go templates, GitHub Actions'
-`${{ }}` expressions), either add its pattern to `_copy_without_render` or
-escape the delimiters as string literals, e.g. `{{ '{%' }}` / `{{ '%}' }}`
-(used in `docs/index.md` to document the `@<name>` template-override
-syntax) or `{{ '${{ matrix.python-version }}' }}` (used in `ci.yml`).
+A generated plugin ships its own Jinja templates (the field's `form`, `detail`, and `list` `.html` files). These files use the exact same `{{ }}` and `{% %}` delimiters that cookiecutter uses to render this template. By default, cookiecutter would try to evaluate `{{ field.id }}` as a cookiecutter variable and silently blank it out.
 
-## Editing this template
+To prevent this, `cookiecutter.json` lists `*.html` under `_copy_without_render`, ensuring every `.html` file is copied byte-for-byte. Only its path (which contains real cookiecutter variables, such as `plugins/{{cookiecutter.plugin_slug}}/`) is rendered.
 
-- `cookiecutter.json`: prompted variables, private ones (leading `_`
-  convention) go last.
-- `hooks/post_gen_project.py`: post-generation cleanup. Cookiecutter
-  renders this file as Jinja too before running it, so it can read
-  `include_example_field` etc. directly as plain Python strings.
-- After changing anything under `"{{cookiecutter.distribution_name}}"/`, render
-  both branches and run the generated test suite before committing:
+If you add another file type that contains literal Jinja or another `{{ }}`-shaped syntax (like Vue single-file components, Go templates, or GitHub Actions `${{ }}` expressions), you must either add its pattern to `_copy_without_render` or escape the delimiters as string literals. For example, use `{{ '{%' }}` and `{{ '%}' }}` (as seen in `docs/index.md` to document the `@<name>` template-override syntax) or `{{ '${{ matrix.python-version }}' }}` (as seen in `ci.yml`).
+
+## Editing this Template
+
+- `cookiecutter.json`: Prompted variables, private ones (leading `_` convention) go last.
+- `hooks/post_gen_project.py`: Post-generation cleanup. Cookiecutter renders this file as Jinja too before running it, so it can read `include_example_field` etc. directly as plain Python strings.
+- After changing anything under `"{{cookiecutter.distribution_name}}"/`, render both branches and run the generated test suite before committing:
 
   ```bash
   cookiecutter --no-input -o /tmp/cc-check plugins/cookiecutter-starlette-admin-plugin/
   cookiecutter --no-input -o /tmp/cc-check-nofield plugins/cookiecutter-starlette-admin-plugin/ include_example_field=no
   cd /tmp/cc-check/starlette-admin-my-plugin && uv sync --extra dev && uv run pytest
   ```
+

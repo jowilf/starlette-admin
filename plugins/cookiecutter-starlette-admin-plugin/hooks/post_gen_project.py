@@ -1,6 +1,7 @@
-"""Post-generation cleanup. Cookiecutter renders this file as a Jinja
-template before running it, so the cookiecutter answer values below are
-substituted in at generation time.
+"""Post-generation cleanup script.
+
+Cookiecutter renders this file as a Jinja template before execution,
+substituting the cookiecutter answer values directly into the code.
 """
 
 import os
@@ -14,8 +15,8 @@ INCLUDE_EXAMPLE_FIELD = "{{ cookiecutter.include_example_field }}" == "yes"
 PATHS_TO_REMOVE_WITHOUT_EXAMPLE_FIELD = [
     f"src/{PACKAGE_SLUG}/fields.py",
     f"src/{PACKAGE_SLUG}/templates/plugins/{PLUGIN_SLUG}/fields",
-    f"src/{PACKAGE_SLUG}/static/plugins/{PLUGIN_SLUG}/js/rating.js",
-    f"src/{PACKAGE_SLUG}/static/plugins/{PLUGIN_SLUG}/css/rating.css",
+    f"src/{PACKAGE_SLUG}/static/plugins/{PLUGIN_SLUG}/js/slider.js",
+    f"src/{PACKAGE_SLUG}/static/plugins/{PLUGIN_SLUG}/css/slider.css",
     "tests/test_field.py",
 ]
 

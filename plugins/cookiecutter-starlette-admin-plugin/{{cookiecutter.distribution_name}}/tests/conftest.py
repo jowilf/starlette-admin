@@ -8,7 +8,7 @@ from starlette_admin.contrib.sqla import Admin, ModelView
 
 from {{ cookiecutter.package_slug }} import {{ cookiecutter.class_prefix }}Plugin
 {% if cookiecutter.include_example_field == "yes" %}
-from {{ cookiecutter.package_slug }}.fields import {{ cookiecutter.class_prefix }}RatingField
+from {{ cookiecutter.package_slug }}.fields import {{ cookiecutter.class_prefix }}SliderField
 {% endif %}
 
 
@@ -22,7 +22,7 @@ class Product(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str]
 {% if cookiecutter.include_example_field == "yes" %}
-    rating: Mapped[int] = mapped_column(Integer, default=0)
+    discount: Mapped[int] = mapped_column(Integer, default=0)
 {% endif %}
 
 
@@ -31,20 +31,15 @@ class ProductView(ModelView):
         "id",
         "name",
 {% if cookiecutter.include_example_field == "yes" %}
-        {{ cookiecutter.class_prefix }}RatingField("rating"),
+        {{ cookiecutter.class_prefix }}SliderField("discount"),
 {% endif %}
     ]
 
 
 class CsrfTestClient(TestClient):
-    """Drop-in `TestClient` replacement that handles CSRF automatically.
+    """Drop-in `TestClient` replacement that automatically handles CSRF.
 
-    `BaseAdmin` always attaches CSRF middleware, even without an explicit
-    `secret_key` (see `starlette_admin.base.BaseAdmin._init_csrf`), so a
-    plain `TestClient` POST is rejected with 403. This client fetches the
-    admin index on construction to obtain the signed
-    `starlette_admin_csrftoken` cookie, then attaches it as `X-CSRFToken` on
-    every mutating request.
+    `BaseAdmin` always attaches CSRF middleware even without an explicit `secret_key` (see `starlette_admin.base.BaseAdmin._init_csrf`). Consequently, a plain `TestClient` POST is rejected with a 403 status. This client fetches the admin index on construction to obtain the signed `starlette_admin_csrftoken` cookie. It then attaches it as `X-CSRFToken` on every mutating request.
     """
 
     def __init__(self, app, **kwargs):
@@ -75,9 +70,6 @@ def plugin():
 
 @pytest.fixture
 def admin(plugin):
-    # StaticPool: SQLA views run queries in a worker thread, and a plain
-    # ":memory:" database is otherwise per-connection, so a second thread
-    # would see an empty database.
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
