@@ -92,8 +92,9 @@ class ModelView(BaseModelView):
 class SoftDeleteModelView(ModelView):
     """Base view for a model mixing in SoftDeleteMixin.
 
-    Hides trashed rows from the list/count/detail queries, and turns "delete"
-    into stamping `deleted_at` rather than issuing a SQL DELETE.
+    Hides trashed rows from the list/count queries (the detail query defaults
+    to the list query, so it is hidden there too), and turns "delete" into
+    stamping `deleted_at` rather than issuing a SQL DELETE.
     """
 
     exclude_fields_from_list = ["deleted_at"]
@@ -105,9 +106,6 @@ class SoftDeleteModelView(ModelView):
 
     def get_count_query(self, request: Request):
         return super().get_count_query(request).where(self.model.deleted_at.is_(None))
-
-    def get_detail_query(self, request: Request):
-        return super().get_detail_query(request).where(self.model.deleted_at.is_(None))
 
     async def delete(self, request: Request, pks: list[Any]) -> int | None:
         session: Session = request.state.session

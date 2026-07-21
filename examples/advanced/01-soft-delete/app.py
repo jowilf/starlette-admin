@@ -1,7 +1,8 @@
 """
 01-soft-delete: two views on one table, active posts and the trash.
 
-PostView  : hides soft-deleted rows from list, count, and detail queries;
+PostView  : hides soft-deleted rows from list and count queries (the detail
+            query defaults to the list query, so it is hidden there too);
             "delete" sets deleted_at instead of removing the row from the
             database.
 TrashView : shows only soft-deleted rows; supports "restore" (clears
@@ -71,9 +72,6 @@ class PostView(ModelView):
     def get_count_query(self, request: Request):
         return super().get_count_query(request).where(Post.deleted_at.is_(None))
 
-    def get_detail_query(self, request: Request):
-        return super().get_detail_query(request).where(Post.deleted_at.is_(None))
-
     async def delete(self, request: Request, pks: list[Any]) -> int | None:
         session: Session = request.state.session
         objs: list[Post] = await self.find_by_pks(request, pks)
@@ -110,9 +108,6 @@ class TrashView(ModelView):
 
     def get_count_query(self, request: Request):
         return select(func.count()).select_from(Post).where(Post.deleted_at.isnot(None))
-
-    def get_detail_query(self, request: Request):
-        return select(Post).where(Post.deleted_at.isnot(None))
 
     def can_create(self, request: Request) -> bool:
         return False

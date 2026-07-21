@@ -6,13 +6,13 @@ Demonstrates soft delete: "deleting" a record marks it with a `deleted_at` times
 
 ### `PostView`: active posts
 
-- **`get_list_query` / `get_count_query` / `get_detail_query`** filtered to `deleted_at IS NULL`, so soft-deleted rows never appear in the list, count, or detail page.
+- **`get_list_query` / `get_count_query`** filtered to `deleted_at IS NULL`, so soft-deleted rows never appear in the list or count. `get_detail_query` defaults to `get_list_query`, so the detail page is filtered too without an extra override.
 - **`delete()` override**: instead of issuing a SQL `DELETE`, it sets `deleted_at = datetime.utcnow()` on each selected row and commits. The built-in delete action and row-level delete button both call this method, so no extra wiring is needed.
 
 ### `TrashView`: deleted posts
 
 - Same `Post` model, different `key` (`"trash"`), so starlette-admin treats it as a separate resource with its own URL.
-- **`get_list_query` / `get_count_query` / `get_detail_query`** filtered to `deleted_at IS NOT NULL`.
+- **`get_list_query` / `get_count_query`** filtered to `deleted_at IS NOT NULL` (`get_detail_query` follows `get_list_query` automatically).
 - **`can_create` / `can_edit`** return `False`: trash rows cannot be created or edited directly.
 - **`restore` action**: clears `deleted_at` on the selected rows so they reappear in `PostView`.
 - **`delete` action** (built-in, kept in `actions`): performs a real `DELETE` from the database (permanent purge).

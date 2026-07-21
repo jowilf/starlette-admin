@@ -32,9 +32,9 @@ This approach requires no separate trash table or external soft-delete mixin lib
 
 ## Hiding Deleted Rows from the Active View
 
-The `ModelView` class builds its list, count, and detail queries using three overridable methods. By filtering these queries to include only records where `deleted_at IS NULL`, you can effectively hide soft-deleted rows from the list page, pagination counts, and direct detail links:
+The `ModelView` class builds its list, count, and detail queries using overridable methods. `get_detail_query` defaults to `get_list_query`, so filtering the list query also filters the detail page, direct URLs included. `get_count_query` is independent and must be filtered separately. By filtering these queries to include only records where `deleted_at IS NULL`, you can effectively hide soft-deleted rows from the list page, pagination counts, and direct detail links:
 
-```python title="app.py" hl_lines="7-8 10-11 13-14"
+```python title="app.py" hl_lines="7-8 10-11"
 class PostView(ModelView):
     exclude_fields_from_list = ["deleted_at"]
     exclude_fields_from_create = ["deleted_at", "created_at"]
@@ -46,15 +46,12 @@ class PostView(ModelView):
 
     def get_count_query(self, request: Request):
         return super().get_count_query(request).where(Post.deleted_at.is_(None))
-
-    def get_detail_query(self, request: Request):
-        return super().get_detail_query(request).where(Post.deleted_at.is_(None))
 ```
 
 You must also exclude `deleted_at` from the create and edit forms. Operators should never set this field manually; it should only be modified programmatically by the `delete()` method and the restore action.
 
 !!! warning
-Missing any one of these three query overrides creates a data visibility leak. For example, skipping `get_count_query` causes the pagination and search-result totals to include deleted rows, even if they do not render in the list. Skipping `get_detail_query` leaves a soft-deleted record accessible via its direct URL. You must override all three methods together.
+Missing `get_count_query` creates a data visibility leak: pagination and search-result totals will include deleted rows even though they do not render in the list. `get_detail_query` does not need a separate override here, since it defaults to `get_list_query` and inherits the same filter automatically. If you do give a view a custom `get_detail_query`, it stops inheriting from `get_list_query` and must filter `deleted_at` itself.
 
 ## Redefining Delete
 
@@ -121,7 +118,7 @@ However, the primary rule of `on_commit` still applies: the callback must not wr
 
 The `TrashView` targets the same `Post` model but registers under a unique `key`. This configuration instructs `starlette-admin` to treat it as a distinct resource with a separate URL and menu entry:
 
-```python title="app.py" hl_lines="8 11 14"
+```python title="app.py" hl_lines="8 11"
 class TrashView(ModelView):
     menu_label = "Trash"
     icon = "fa fa-trash"
@@ -134,9 +131,6 @@ class TrashView(ModelView):
     def get_count_query(self, request: Request):
         return select(func.count()).select_from(Post).where(Post.deleted_at.isnot(None))
 
-    def get_detail_query(self, request: Request):
-        return select(Post).where(Post.deleted_at.isnot(None))
-
     def can_create(self, request: Request) -> bool:
         return False
 
@@ -144,7 +138,7 @@ class TrashView(ModelView):
         return False
 ```
 
-These queries are the exact inverse of the `PostView` queries, filtering for `IS NOT NULL` instead of `IS NULL`. The `can_create` and `can_edit` methods return `False` because operators should never create or edit records directly within the trash. Records can only enter the trash via `PostView.delete()` and exit via a restore action or a permanent purge.
+These queries are the exact inverse of the `PostView` queries, filtering for `IS NOT NULL` instead of `IS NULL`. `get_detail_query` again defaults to `get_list_query`, so trashed records resolve correctly on their detail page without a separate override. The `can_create` and `can_edit` methods return `False` because operators should never create or edit records directly within the trash. Records can only enter the trash via `PostView.delete()` and exit via a restore action or a permanent purge.
 
 ## Restoring, and the Case for a Real Delete
 

@@ -242,15 +242,19 @@ class ModelView(BaseModelView):
         [find_by_pk][starlette_admin.views.BaseModelView.find_by_pk] and
         [find_by_pks][starlette_admin.views.BaseModelView.find_by_pks].
 
+        Defaults to [get_list_query][starlette_admin.contrib.sqla.ModelView.get_list_query]
+        so overrides of the latter (e.g. eager loading options) also apply
+        to the detail view.
+
         Examples:
             ```python  hl_lines="3-4"
             class PostView(ModelView):
 
                     def get_detail_query(self, request: Request):
-                        return super().get_detail_query().options(selectinload(Post.author))
+                        return super().get_detail_query(request).options(selectinload(Post.author))
             ```
         """
-        return select(self.model)
+        return self.get_list_query(request)
 
     def get_list_query(self, request: Request) -> Select:
         """Return the base `Select` statement used by

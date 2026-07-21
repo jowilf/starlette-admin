@@ -160,8 +160,11 @@ class ModelView(BaseModelView):
         """Return the base `QuerySet` used by
         [find_by_pk][starlette_admin.views.BaseModelView.find_by_pk] and
         [find_by_pks][starlette_admin.views.BaseModelView.find_by_pks].
+
+        Defaults to [get_list_query][starlette_admin.contrib.tortoise.ModelView.get_list_query]
+        so overrides of the latter also apply to the detail view.
         """
-        return self.model.all()
+        return self.get_list_query(request)
 
     def get_search_query(self, request: Request, term: str) -> Q:
         """Return the ``Q`` expression used for full-text search: a
