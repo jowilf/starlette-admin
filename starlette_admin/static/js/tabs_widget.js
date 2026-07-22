@@ -9,7 +9,6 @@
         var navLinks = card.querySelectorAll('.nav-tabs[role="tablist"] > .nav-item > .nav-link');
 
         var saved = sessionStorage.getItem(storageKey);
-        console.log('tabs_widget.js: saved tab index for', storageKey, 'is', saved);
         if (saved !== null && bs) {
             var link = navLinks[parseInt(saved, 10)];
             if (link) bs.Tab.getOrCreateInstance(link).show();

@@ -1,9 +1,9 @@
 """Plugin API: `BasePlugin` and the namespace rules enforced when a plugin
 is registered through `Admin(plugins=[...])`.
 
-See `ai/PLUGIN_DESIGN.md` for the full design and rationale. Registration
-itself (`BaseAdmin._register_plugins`) lives in `base.py`, since it needs
-direct access to the admin instance being built.
+Registration itself (`BaseAdmin._register_plugins`) lives in `base.py`,
+since it needs direct access to the admin instance being built. Themes are
+a separate concept: see `starlette_admin.theme`.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ class PluginError(StarletteAdminException):
 
 
 #: These back the core template prefixes (`@core` and its `@starlette-admin`
-#: alias, see section 2.1), so a plugin cannot shadow them.
+#: alias), so a plugin cannot shadow them.
 RESERVED_PLUGIN_NAMES = frozenset({"core", "starlette-admin"})
 
 

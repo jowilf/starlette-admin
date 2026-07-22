@@ -46,7 +46,7 @@
                                            aria-label="{{ _('Search in list') }}"
                                            autocomplete="off" />
                                     <button class="btn" type="submit">
-                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                        <i class="{{ icon('list.search') }}"></i>
                                     </button>
                                 </div>
                                 {% for s_name, s_dir in list_params.sorts %}
@@ -77,7 +77,7 @@
                                                 class="btn dropdown-toggle"
                                                 data-bs-toggle="dropdown"
                                                 data-bs-auto-close="outside">
-                                            <i class="fa-solid fa-table-columns me-2"></i>{{ _("Columns") }}
+                                            <i class="{{ icon('list.columns') }} me-2"></i>{{ _("Columns") }}
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-end p-2">
                                             {% for field in all_fields %}
@@ -108,14 +108,14 @@
                                             class="btn"
                                             data-bs-toggle="modal"
                                             data-bs-target="#modal-import">
-                                        <i class="fa-solid fa-file-import me-2"></i>{{ _("Import") }}
+                                        <i class="{{ icon('list.import') }} me-2"></i>{{ _("Import") }}
                                     </button>
                                 {% endif %}
                                 {% block list_toolbar_extra %}{% endblock %}
                                 {% if view.can_create(request) %}
                                     <a href="{{ create_url(request, view.key) }}"
                                        class="btn btn-primary btn-block ms-2">
-                                        <i class="fa-solid fa-plus me-2"></i>
+                                        <i class="{{ icon('list.new') }} me-2"></i>
                                         {{ _("New %(name)s", name=view.display_name) }}
                                     </a>
                                 {% endif %}

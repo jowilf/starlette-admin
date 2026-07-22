@@ -27,7 +27,7 @@ from starlette_admin.i18n import lazy_gettext as _
 from starlette_admin.importers import ImportConfig
 from starlette_admin.logging import get_logger
 from starlette_admin.plugins import BasePlugin
-from starlette_admin.theme import ThemeSettings
+from starlette_admin.theme import BaseTheme
 from starlette_admin.views import CustomView
 
 _log = get_logger(__name__)
@@ -47,7 +47,7 @@ class Admin(BaseAdmin):
         additional_loaders: Sequence[BaseLoader] | None = None,
         static_dir: str | None = None,
         index_view: CustomView | None = None,
-        theme: ThemeSettings | None = None,
+        theme: BaseTheme | None = None,
         auth_provider: BaseAuthProvider | None = None,
         secret_key: str | None = None,
         middlewares: Sequence[Middleware] | None = None,

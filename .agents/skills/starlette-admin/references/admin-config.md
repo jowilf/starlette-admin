@@ -12,7 +12,7 @@ All settings are keyword arguments; SQLAlchemy/SQLModel additionally take `sessi
 | `route_name` | `"admin"` | Starlette mount name; internal links use `url_for(route_name + ":list", ...)` |
 | `templates_dir` | `"templates"` | Override directory checked before built-in templates |
 | `static_dir` | `None` | Extra static files served alongside built-ins |
-| `theme` | `ThemeSettings()` | Bootstrap/Tabler theme, see below |
+| `theme` | `DefaultTheme()` | Admin UI layout and Tabler palette, see below |
 | `index_view` | `DefaultIndexView` | Home page, see [dashboards.md](dashboards.md) |
 | `auth_provider` | `None` (public!) | See [auth.md](auth.md) |
 | `secret_key` | random + warning | Signs CSRF and flash cookies; always set explicitly |
@@ -80,12 +80,17 @@ Example: `examples/10-i18n-timezone`.
 ## Themes
 
 ```python
-from starlette_admin import ThemeSettings
+from starlette_admin.theme import DefaultTheme, TablerSettings
 
-admin = Admin(engine, theme=ThemeSettings(base="slate", primary="blue", radius=2, mode="dark"))
+admin = Admin(
+    engine,
+    theme=DefaultTheme(
+        settings=TablerSettings(base="slate", primary="blue", radius=2, mode="dark")
+    )
+)
 ```
 
-`mode`: light/dark. `base`: slate, gray, zinc, neutral, stone, pink. `primary`: blue, azure, indigo, purple, pink, red, orange, yellow, lime, green, teal, cyan, inverted. `radius`: 0 to 2 in 0.5 steps. For deeper changes use `templates_dir` (files shadow built-ins at the same relative path) and `static_dir`. Example: `examples/08-themes`.
+The default theme uses Tabler. `mode`: light/dark. `base`: slate, gray, zinc, neutral, stone, pink. `primary`: blue, azure, indigo, purple, pink, red, orange, yellow, lime, green, teal, cyan, inverted. `radius`: 0 to 2 in 0.5 steps. To build and publish reusable theme packages (similar to plugins), subclass `BaseTheme` to bundle an `IconSet`, `templates/`, and `static/`. For local template overrides, use `templates_dir` and `static_dir`. Example: `examples/08-themes`.
 
 ## Multiple admin instances
 

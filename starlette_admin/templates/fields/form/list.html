@@ -13,7 +13,7 @@
                         {% endwith %}
                     </div>
                     <button type="button" class="field-list-btn-remove btn btn-ghost-danger btn-icon mx-2">
-                        <i class="fa fa-close"></i>
+                        <i class="{{ icon('action.close') }}"></i>
                     </button>
                 </div>
             </div>
@@ -31,7 +31,7 @@
                         </div>
                         <button type="button"
                                 class="field-list-btn-remove btn btn-ghost-danger btn-icon mx-2">
-                            <i class="fa fa-close"></i>
+                            <i class="{{ icon('action.close') }}"></i>
                         </button>
                     </div>
                 </div>
@@ -39,7 +39,7 @@
         {% endif %}
     </div>
     <a type="button" class="field-list-btn-add mt-2">
-        <i class="fa fa-add me-2"></i>
+        <i class="{{ icon('list_field.add') }} me-2"></i>
         {{ _("Add item") }}
     </a>
 </div>

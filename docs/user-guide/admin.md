@@ -84,7 +84,7 @@ Running more than one `Admin` within the same application requires a distinct `b
 | --- | --- | --- | --- |
 | `templates_dir` | `str` | `"templates"` | Directory checked for template overrides before falling back to the built-in templates. |
 | `static_dir` | `str | None` | `None` | Directory of extra static files served alongside the built-in CSS/JS. |
-| `theme` | `ThemeSettings | None` | `None` (renders as `ThemeSettings()`) | Bootstrap theme attributes (`base`, `primary`, `radius`, `mode`). |
+| `theme` | `BaseTheme` | `DefaultTheme()` | A theme subclass defining the layout templates, icon set, and static assets. |
 
 These options are covered in full in [Custom Themes](../advanced/custom-themes.md) and [Templates](../advanced/templates.md).
 

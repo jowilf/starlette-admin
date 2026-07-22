@@ -3,7 +3,7 @@
         <a class="m-1 py-1 px-2 badge bg-primary-lt lead"
            href="{{ file.url | safe_url }}"
            target="_blank">
-            <i class="fas fa-fw {{ file.content_type | file_icon }}"></i> {{ file.filename }}
+            <i class="{{ icon('field.file') }} {{ file.content_type | file_icon }}"></i> {{ file.filename }}
         </a>
     {% endfor %}
 </div>

@@ -25,7 +25,7 @@
                 {% set prev_page = [1, list_params.page - 1] | max %}
                 <a class="page-link"
                    href="{{ list_url(request, page=(None if prev_page == 1 else prev_page) ) }}">
-                    <i class="fa-solid fa-chevron-left"></i>
+                    <i class="{{ icon('pagination.prev') }}"></i>
                 </a>
             </li>
             {% set window_start = [1, list_params.page - 2] | max %}
@@ -39,7 +39,7 @@
             <li class="page-item {{ 'disabled' if list_params.page >= total_pages }}">
                 {% set next_page = [total_pages, list_params.page + 1] | min %}
                 <a class="page-link" href="{{ list_url(request, page=next_page) }}">
-                    <i class="fa-solid fa-chevron-right"></i>
+                    <i class="{{ icon('pagination.next') }}"></i>
                 </a>
             </li>
             <li class="page-item {{ 'disabled' if list_params.page >= total_pages }}">

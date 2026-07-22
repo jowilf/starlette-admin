@@ -3,7 +3,7 @@
         <a class="nav-link" href="{{ view.url }}" target="{{ view.target }}">
             {% if view.icon %}
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                    <i class="{{ view.icon }}"></i>
+                    <i class="{{ icon(view.icon) }}"></i>
                 </span>
             {% endif %}
             <span class="nav-link-title">{{ view.menu_label }}</span>
@@ -16,7 +16,7 @@
            href="{{ url_for(__name__,path=view.path) }}">
             {% if view.icon %}
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                    <i class="{{ view.icon }}"></i>
+                    <i class="{{ icon(view.icon) }}"></i>
                 </span>
             {% endif %}
             <span class="nav-link-title">{{ view.menu_label }}</span>
@@ -29,7 +29,7 @@
            href="{{ url_for(__name__ ~ ':list', key=view.key) }}">
             {% if view.icon %}
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                    <i class="{{ view.icon }}"></i>
+                    <i class="{{ icon(view.icon) }}"></i>
                 </span>
             {% endif %}
             <span class="nav-link-title">{{ view.menu_label }}</span>
@@ -46,7 +46,7 @@
            aria-expanded="{% if view.is_active(request) %}true{% else %}false{% endif %}">
             {% if view.icon %}
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                    <i class="{{ view.icon }}"></i>
+                    <i class="{{ icon(view.icon) }}"></i>
                 </span>
             {% endif %}
             <span class="nav-link-title">{{ view.menu_label }}</span>

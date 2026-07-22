@@ -47,7 +47,9 @@ from .i18n import TimezoneConfig as TimezoneConfig
 from .plugins import BasePlugin as BasePlugin
 from .plugins import PluginError as PluginError
 from .routing import route as route
-from .theme import ThemeSettings as ThemeSettings
+from .theme import BaseTheme as BaseTheme
+from .theme import DefaultTheme as DefaultTheme
+from .theme import TablerSettings as TablerSettings
 from .types import RequestAction as RequestAction
 from .types import RowActionsDisplayType as RowActionsDisplayType
 from .types import RowActionsPosition as RowActionsPosition
@@ -81,6 +83,7 @@ __all__ = [
     "BaseAdmin",
     "BaseField",
     "BaseModelView",
+    "BaseTheme",
     "BaseWidget",
     "BooleanField",
     "Breakpoints",
@@ -98,6 +101,7 @@ __all__ = [
     "DateTimeField",
     "DecimalField",
     "DefaultIndexView",
+    "DefaultTheme",
     "DividerWidget",
     "DropDown",
     "EmailField",
@@ -131,11 +135,11 @@ __all__ = [
     "StatWidget",
     "StringField",
     "TableWidget",
+    "TablerSettings",
     "TabsWidget",
     "TagsField",
     "TextAreaField",
     "TextWidget",
-    "ThemeSettings",
     "TimeField",
     "TimeZoneField",
     "TimezoneConfig",

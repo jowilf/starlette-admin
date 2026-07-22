@@ -15,7 +15,7 @@
                value="{% if row.delete %}1{% endif %}">
         <div class="text-end mb-3">
             <button type="button" class="btn btn-sm btn-danger inline-delete-btn">
-                <i class="fa fa-trash me-1"></i>{{ _("Delete") }}
+                <i class="{{ icon('inline.delete_row') }} me-1"></i>{{ _("Delete") }}
             </button>
         </div>
     {% endif %}

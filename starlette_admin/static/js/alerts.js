@@ -1,3 +1,5 @@
+window.StarletteAdmin = window.StarletteAdmin || {};
+
 // autoDismissMs: if set, the alert closes itself after that delay.
 function dismissAlertAfter($alert, autoDismissMs) {
   if (!autoDismissMs) return;
@@ -12,30 +14,54 @@ function dismissAlertAfter($alert, autoDismissMs) {
   }, autoDismissMs);
 }
 
-function successAlert(msg, autoDismissMs) {
-    const $alert = $(`<div class="alert alert-success alert-dismissible mb-2" role="alert">
+// Maps an alert type to its Bootstrap contextual class and semantic icon name.
+const ALERT_TYPES = {
+  success: { cls: "alert-success", icon: "flash.success" },
+  danger: { cls: "alert-danger", icon: "flash.error" },
+  warning: { cls: "alert-warning", icon: "flash.warning" },
+  info: { cls: "alert-info", icon: "flash.info" },
+};
+
+// Default alert renderer. Themes may override window.StarletteAdmin.alertHandler
+// to supply their own notification UI while keeping the same signature.
+window.StarletteAdmin.alertHandler = function (type, msg, autoDismissMs) {
+  const spec = ALERT_TYPES[type] || ALERT_TYPES.info;
+  const iconClass = window.StarletteAdmin.getIcon(spec.icon, "");
+  const $alert = $(
+    `<div class="alert ${spec.cls} alert-dismissible mb-2" role="alert">
     <div class="alert-icon">
-      <i class="fa-solid fa-circle-check icon"></i>
+      <i class="${iconClass} icon"></i>
     </div>
     <div>
       <div class="alert-description">${msg}</div>
     </div>
     <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
   </div>
-  `).appendTo("#alertContainer");
-    dismissAlertAfter($alert, autoDismissMs);
+  `
+  ).appendTo("#alertContainer");
+  dismissAlertAfter($alert, autoDismissMs);
+};
+
+// Renders an alert through the active handler.
+function showAlert(type, msg, autoDismissMs) {
+  window.StarletteAdmin.alertHandler(type, msg, autoDismissMs);
+}
+
+// Backward-compatible wrappers.
+function successAlert(msg, autoDismissMs) {
+  showAlert("success", msg, autoDismissMs);
 }
 
 function dangerAlert(msg, autoDismissMs) {
-    const $alert = $(`<div class="alert alert-danger alert-dismissible mb-2" role="alert">
-    <div class="alert-icon">
-      <i class="fa-solid fa-circle-exclamation icon"></i>
-    </div>
-    <div>
-      <div class="alert-description">${msg}</div>
-    </div>
-    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
-  </div>
-  `).appendTo("#alertContainer");
-    dismissAlertAfter($alert, autoDismissMs);
+  showAlert("danger", msg, autoDismissMs);
 }
+
+function warningAlert(msg, autoDismissMs) {
+  showAlert("warning", msg, autoDismissMs);
+}
+
+function infoAlert(msg, autoDismissMs) {
+  showAlert("info", msg, autoDismissMs);
+}
+
+window.StarletteAdmin.showAlert = showAlert;

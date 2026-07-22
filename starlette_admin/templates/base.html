@@ -13,23 +13,31 @@
         {% endblock %}
         {% block head_meta %}{% endblock %}
         {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
-        <link rel="stylesheet"
-              href="{{ static_url(request, 'css/vendor/tabler.min.css', v='1.4.0') }}">
-        <link rel="stylesheet"
-              href="{{ static_url(request, 'css/vendor/tabler-theme.min.css', v='1.4.0') }}">
-        <link rel="stylesheet"
-              href="{{ static_url(request, 'css/vendor/fontawesome.min.css', v='7.2.0') }}">
+        {% block core_css %}
+            <link rel="stylesheet"
+                  href="{{ static_url(request, 'css/vendor/tabler.min.css', v='1.4.0') }}">
+            <link rel="stylesheet"
+                  href="{{ static_url(request, 'css/vendor/tabler-theme.min.css', v='1.4.0') }}">
+        {% endblock %}
+        {% block icon_css %}
+            {% for link in icon_css_links(request) %}
+                <link rel="stylesheet" href="{{ link }}">
+            {% endfor %}
+        {% endblock %}
+        {% block fonts %}
+            <style>
+                @import url('https://rsms.me/inter/inter.css');
+
+                :root {
+                    --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+                }
+
+                body {
+                    font-feature-settings: "cv03", "cv04", "cv11";
+                }
+            </style>
+        {% endblock %}
         <style>
-            @import url('https://rsms.me/inter/inter.css');
-
-            :root {
-                --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-            }
-
-            body {
-                font-feature-settings: "cv03", "cv04", "cv11";
-            }
-
             .navbar-logo {
                 width: auto;
                 height: 2rem;
@@ -40,10 +48,13 @@
                 padding: 0em;
             }
         </style>
-        {% for link in plugin_css_links(request) %}
-            <link rel="stylesheet" href="{{ link }}">
-        {% endfor %}
-        {% block head_css %}{% endblock %}
+        {% block plugin_css %}
+            {% for link in plugin_css_links(request) %}
+                <link rel="stylesheet" href="{{ link }}">
+            {% endfor %}
+        {% endblock %}
+        {% block head_css %}
+        {% endblock %}
         <style>
             .is-invalid .select2-selection {
                 border-color: var(--tblr-danger) !important;
@@ -175,23 +186,36 @@
                 padding: 0px;
             }
         </style>
-        {% block head %}{% endblock %}
+        {% block head %}
+        {% endblock %}
     </head>
     <body>
         {% block body %}{% endblock %}
         {% block modal %}{% endblock %}
-        <script type="text/javascript"
-                src="{{ static_url(request, 'js/vendor/jquery.min.js', v='v4.0.0') }}"></script>
-        <script type="text/javascript"
-                src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
-        <script type="text/javascript"
-                src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.4.0') }}"></script>
-        {% for link in plugin_js_links(request) %}
-            <script type="text/javascript" src="{{ link }}"></script>
-        {% endfor %}
+        {% block core_js %}
+            <script type="text/javascript"
+                    src="{{ static_url(request, 'js/vendor/jquery.min.js', v='v4.0.0') }}"></script>
+            <script type="text/javascript"
+                    src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
+            <script type="text/javascript"
+                    src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.4.0') }}"></script>
+        {% endblock %}
+        {% block plugin_js %}
+            {% for link in plugin_js_links(request) %}<script type="text/javascript" src="{{ link }}"></script>{% endfor %}
+        {% endblock %}
         {% block script %}{% endblock %}
         {# djlint:off #}
 <script>
+    // Expose the active theme's IconSet so client scripts resolve semantic
+    // icon names to markup classes without hardcoding a library.
+    window.StarletteAdmin = window.StarletteAdmin || {};
+    window.StarletteAdmin.icons = {{ icon_registry | tojson }};
+    window.StarletteAdmin.getIcon = function (name, fallback) {
+        var icons = window.StarletteAdmin.icons || {};
+        if (Object.prototype.hasOwnProperty.call(icons, name)) return icons[name];
+        return fallback !== undefined ? fallback : name;
+    };
+
     $(function () {
         // Send CSRF token on every jQuery-initiated mutating request
         $.ajaxSetup({
@@ -227,6 +251,7 @@
     });
 </script>
         {# djlint:on #}
-        {% block tail %}{% endblock %}
+        {% block tail %}
+        {% endblock %}
     </body>
 </html>

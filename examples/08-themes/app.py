@@ -9,7 +9,7 @@ from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
 from starlette.routing import Route
 from starlette_admin.contrib.sqla import Admin, ModelView
-from starlette_admin.theme import ThemeSettings
+from starlette_admin.theme import DefaultTheme, TablerSettings
 
 engine = create_engine(
     "sqlite:///08_themes.sqlite",
@@ -17,8 +17,8 @@ engine = create_engine(
 )
 
 
-def random_theme() -> ThemeSettings:
-    return ThemeSettings(
+def random_theme() -> TablerSettings:
+    return TablerSettings(
         base=random.choice(["slate", "gray", "zinc", "neutral", "stone"]),
         primary=random.choice(
             ["azure", "indigo", "purple", "yellow", "lime", "green", "teal", "cyan"]
@@ -57,12 +57,10 @@ app = Starlette(
     ],
 )
 
-theme = random_theme()
-
 admin = Admin(
     engine,
     title="Example: Themes",
-    theme=theme,
+    theme=DefaultTheme(settings=random_theme()),
     secret_key="dev-only-change-me",
 )
 

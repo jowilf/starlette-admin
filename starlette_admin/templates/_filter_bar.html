@@ -10,7 +10,7 @@
                data-bs-toggle="tooltip"
                title="{{ _('Remove this filter') }}">
                 {{ chip.label }}
-                <i class="fa-solid fa-xmark"></i>
+                <i class="{{ icon('filter.remove_chip') }}"></i>
             </a>
         {% endfor %}
         <a href="{{ list_url(request, filter=None, page=None) }}"

@@ -7,7 +7,7 @@ This page provides a centralized reference for all pluggable surfaces in `starle
 | **Custom filter** | Subclass `BaseFilter` and override `get_filter_registry()` on a `ModelView`. | [Custom Filters](custom-filters.md) |
 | **Custom exporter** | Subclass `BaseExporter`. | [Export & Import](../user-guide/export-import.md) |
 | **Custom importer** | Subclass `BaseImporter`. | [Export & Import](../user-guide/export-import.md) |
-| **Custom theme** | Pass a `ThemeSettings` instance to `Admin(theme=...)`. | [Custom Themes](custom-themes.md) |
+| **Custom theme** | Subclass `BaseTheme`. | [Custom Themes](custom-themes.md) |
 | **Custom authentication backend** | Subclass `BaseAuthProvider`. | [Authentication](../user-guide/auth.md) |
 | **Custom file storage** | Subclass `BaseStorage` (automatically registered via its `name` attribute). | [File Storage](../user-guide/file-storage.md) |
 | **Custom widget** | Subclass `BaseWidget`. | [Custom Views](../user-guide/custom-views.md) |
@@ -15,7 +15,7 @@ This page provides a centralized reference for all pluggable surfaces in `starle
 | **Plugin** | Subclass `BasePlugin` to bundle fields, views, assets, and more. | [Plugins](plugins.md) |
 
 !!! note
-    Unlike other extension points, themes do not rely on subclassing. `ThemeSettings` is a plain configuration object rather than a base class to extend. To customize a theme, construct an instance with your desired attribute values.
+    To customize the default Tabler theme colors without building a custom theme from scratch, you can pass a `TablerSettings` object into a `DefaultTheme` instance.
 
 ---
 

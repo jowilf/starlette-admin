@@ -607,7 +607,9 @@ class PanelWidget(BaseWidget):
             "children": self.children,
             "collapsible": self.collapsible,
             "collapsed": self.collapsed,
-            "icon": self.icon,
+            # "icon" is reserved for the global icon(name) resolver, so this
+            # widget's own icon is named "panel_icon" in the render context.
+            "panel_icon": self.icon,
         }
 
     async def render(self, request: Request, env: Environment) -> Markup:

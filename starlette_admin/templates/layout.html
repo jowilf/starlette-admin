@@ -33,23 +33,7 @@
                             {% if i18n_config.language_switcher %}
                                 <div class="nav-item dropdown">
                                     <a href="#" class="nav-link" data-bs-toggle="dropdown">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="icon icon-tabler icon-tabler-language"
-                                             width="24"
-                                             height="24"
-                                             viewBox="0 0 24 24"
-                                             stroke-width="2"
-                                             stroke="currentColor"
-                                             fill="none"
-                                             stroke-linecap="round"
-                                             stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <path d="M4 5h7"></path>
-                                            <path d="M9 3v2c0 4.418 -2.239 8 -5 8"></path>
-                                            <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4"></path>
-                                            <path d="M12 20l4 -9l4 9"></path>
-                                            <path d="M19.1 18h-6.2"></path>
-                                        </svg>
+                                        <i class="{{ icon('nav.language') }}"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         {% for lang in i18n_config.language_switcher %}
@@ -64,23 +48,7 @@
                             {% if timezone_config and timezone_config.timezone_switcher %}
                                 <div class="nav-item dropdown">
                                     <a href="#" class="nav-link" data-bs-toggle="dropdown">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="icon icon-tabler icon-tabler-world"
-                                             width="24"
-                                             height="24"
-                                             viewBox="0 0 24 24"
-                                             stroke-width="2"
-                                             stroke="currentColor"
-                                             fill="none"
-                                             stroke-linecap="round"
-                                             stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <circle cx="12" cy="12" r="9"></circle>
-                                            <line x1="3.6" y1="9" x2="20.4" y2="9"></line>
-                                            <line x1="3.6" y1="15" x2="20.4" y2="15"></line>
-                                            <path d="M11.5 3a17 17 0 0 0 0 18"></path>
-                                            <path d="M12.5 3a17 17 0 0 1 0 18"></path>
-                                        </svg>
+                                        <i class="{{ icon('nav.world') }}"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         {% for tz in timezone_config.timezone_switcher %}
@@ -102,20 +70,7 @@
                                             <span class="avatar avatar-sm"
                                                   {% if current_user.photo_url %}style="background-image: url({{ current_user.photo_url }})"{% endif %}>
                                                 {% if not current_user.photo_url %}
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         class="icon icon-tabler icon-tabler-user"
-                                                         width="24"
-                                                         height="24"
-                                                         viewBox="0 0 24 24"
-                                                         stroke-width="2"
-                                                         stroke="currentColor"
-                                                         fill="none"
-                                                         stroke-linecap="round"
-                                                         stroke-linejoin="round">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                        <circle cx="12" cy="7" r="4"></circle>
-                                                        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
-                                                    </svg>
+                                                    <i class="{{ icon('nav.user') }}"></i>
                                                 {% endif %}
                                             </span>
                                             <div class="d-none d-xl-block ps-2">
@@ -157,7 +112,7 @@
                                           class="m-0">
                                         {{ csrf_input(request) }}
                                         <button type="submit" class="btn btn-light mx-1 mt-2">
-                                            <i class="fa fa-sign-out"></i>
+                                            <i class="{{ icon('auth.logout') }}"></i>
                                             <span class="ms-2">{{ _("Logout") }}</span>
                                         </button>
                                     </form>
@@ -165,8 +120,7 @@
                             </ul>
                         {% endblock %}
                     </div>
-                    {% block sidebar_footer %}
-                    {% endblock %}
+                    {% block sidebar_footer %}{% endblock %}
                 </div>
             </aside>
         {% endblock %}
@@ -184,27 +138,12 @@
                             <span class="navbar-toggler-icon"></span>
                         </button>
                         <div class="navbar-nav flex-row order-md-last gap-2">
-                            {% block navbar_extra %}{% endblock %}
+                            {% block navbar_extra %}
+                            {% endblock %}
                             {% if i18n_config.language_switcher %}
                                 <div class="nav-item dropdown">
                                     <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="icon icon-tabler icon-tabler-language"
-                                             width="24"
-                                             height="24"
-                                             viewBox="0 0 24 24"
-                                             stroke-width="2"
-                                             stroke="currentColor"
-                                             fill="none"
-                                             stroke-linecap="round"
-                                             stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <path d="M4 5h7"></path>
-                                            <path d="M9 3v2c0 4.418 -2.239 8 -5 8"></path>
-                                            <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4"></path>
-                                            <path d="M12 20l4 -9l4 9"></path>
-                                            <path d="M19.1 18h-6.2"></path>
-                                        </svg>
+                                        <i class="{{ icon('nav.language') }}"></i>
                                         {{ get_locale_display_name(get_locale() ) }}
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -220,23 +159,7 @@
                             {% if timezone_config and timezone_config.timezone_switcher %}
                                 <div class="nav-item dropdown">
                                     <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="icon icon-tabler icon-tabler-world"
-                                             width="24"
-                                             height="24"
-                                             viewBox="0 0 24 24"
-                                             stroke-width="2"
-                                             stroke="currentColor"
-                                             fill="none"
-                                             stroke-linecap="round"
-                                             stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <circle cx="12" cy="12" r="9"></circle>
-                                            <line x1="3.6" y1="9" x2="20.4" y2="9"></line>
-                                            <line x1="3.6" y1="15" x2="20.4" y2="15"></line>
-                                            <path d="M11.5 3a17 17 0 0 0 0 18"></path>
-                                            <path d="M12.5 3a17 17 0 0 1 0 18"></path>
-                                        </svg>
+                                        <i class="{{ icon('nav.world') }}"></i>
                                         {{ get_timezone_display_name(get_timezone() ) }}
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -278,11 +201,11 @@
                             {%- if flashed_messages %}
                                 {%- for msg in flashed_messages %}
                                     {%- set alert_class = "danger" if msg.category == "error" else msg.category %}
-                                    {%- set icon_class = "fa-circle-check" if msg.category == "success" else ("fa-triangle-exclamation" if msg.category == "warning" else ("fa-circle-exclamation" if msg.category == "error" else "fa-circle-info")) %}
+                                    {%- set flash_icon_name = "flash.success" if msg.category == "success" else ("flash.warning" if msg.category == "warning" else ("flash.error" if msg.category == "error" else "flash.info")) %}
                                     <div class="alert alert-{{ alert_class }} alert-dismissible mb-2"
                                          role="alert">
                                         <div class="alert-icon">
-                                            <i class="fa-solid {{ icon_class }} icon"></i>
+                                            <i class="{{ icon(flash_icon_name) }} icon"></i>
                                         </div>
                                         <div>
                                             <div class="alert-description">{{ msg.message }}</div>
@@ -295,12 +218,12 @@
                     {% endblock %}
                     {% block content_before %}
                     {% endblock %}
-                    {% block content %}
-                    {% endblock %}
+                    {% block content %}{% endblock %}
                     {% block content_after %}{% endblock %}
                 </div>
             </div>
-            {% block page_footer %}{% endblock %}
+            {% block page_footer %}
+            {% endblock %}
         </div>
     </div>
 {% endblock %}

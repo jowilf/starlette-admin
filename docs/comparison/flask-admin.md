@@ -44,7 +44,7 @@ This guide maps the Flask-Admin API, attribute by attribute, to its starlette-ad
     admin.mount_to(app)
     ```
 
-There is no `template_mode` switch. The UI uses [Tabler](https://tabler.io) (Bootstrap 5) with built-in dark mode support. You customize the appearance using [`ThemeSettings`](../advanced/custom-themes.md) and [template overrides](../advanced/templates.md).
+There is no `template_mode` switch. The UI uses [Tabler](https://tabler.io) (Bootstrap 5) with built-in dark mode support. You customize the appearance using a custom [`BaseTheme`](../advanced/custom-themes.md) and [template overrides](../advanced/templates.md).
 
 ## List Page Attributes
 

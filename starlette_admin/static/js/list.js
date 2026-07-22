@@ -378,8 +378,12 @@ function initInlineEdit(config, selection) {
       "</div>" +
       "</div>" +
       '<div class="inline-edit-actions">' +
-      '<button type="submit" class="btn btn-primary btn-icon inline-edit-save" aria-label="Save" disabled><i class="fa-solid fa-check"></i></button>' +
-      '<button type="button" class="btn btn-icon inline-edit-cancel" aria-label="Cancel"><i class="fa-solid fa-xmark"></i></button>' +
+      '<button type="submit" class="btn btn-primary btn-icon inline-edit-save" aria-label="Save" disabled><i class="' +
+      StarletteAdmin.getIcon("inline_edit.save", "fa-solid fa-check") +
+      '"></i></button>' +
+      '<button type="button" class="btn btn-icon inline-edit-cancel" aria-label="Cancel"><i class="' +
+      StarletteAdmin.getIcon("inline_edit.cancel", "fa-solid fa-xmark") +
+      '"></i></button>' +
       "</div>" +
       "</div>" +
       '<div class="inline-edit-errors" role="alert" hidden></div>' +
@@ -450,7 +454,7 @@ function initInlineEdit(config, selection) {
     cancelBtn.disabled = saving;
     saveBtn.innerHTML = saving
       ? '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
-      : '<i class="fa-solid fa-check"></i>';
+      : '<i class="' + StarletteAdmin.getIcon("inline_edit.save", "fa-solid fa-check") + '"></i>';
   }
 
   // Fetch the freshly saved row from the row endpoint (carrying the current

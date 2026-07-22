@@ -6,6 +6,7 @@ import pytest
 from jinja2 import Environment, PackageLoader
 from markupsafe import Markup
 from starlette.requests import Request
+from starlette_admin.theme import CoreIcons
 from starlette_admin.widgets import (
     BaseWidget,
     Breakpoints,
@@ -37,6 +38,7 @@ def widget_env() -> Environment:
         autoescape=True,
     )
     env.install_gettext_callables(lambda x: x, lambda s, p, n: s if n == 1 else p)
+    env.globals["icon"] = lambda name: CoreIcons.icons.get(name, name)
     return env
 
 

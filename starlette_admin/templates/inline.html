@@ -7,7 +7,7 @@
         <h3 class="card-title text-white">{{ inline.menu_label or inline.display_name }}</h3>
         {% if inline.collapsible %}
             <div class="card-actions">
-                <i class="fa-solid fa-chevron-down sa-panel-toggle-icon text-white"></i>
+                <i class="{{ icon('panel.collapse_toggle') }} sa-panel-toggle-icon text-white"></i>
             </div>
         {% endif %}
     </div>
@@ -30,7 +30,7 @@
             </div>
             <button type="button"
                     class="btn btn-outline-primary btn-sm inline-add-row mt-2">
-                <i class="fa fa-plus me-1"></i>
+                <i class="{{ icon('inline.add_row') }} me-1"></i>
                 {{ _("Add %(name)s", name=(inline.display_name or inline.menu_label) ) }}
             </button>
         </div>

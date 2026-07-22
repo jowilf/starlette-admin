@@ -76,17 +76,20 @@ function initImportModal(importUrl, i18n) {
       submitBtn.classList.remove("btn-secondary");
       submitBtn.classList.add("btn-primary");
     } else if (step === "upload") {
-      submitBtn.innerHTML = '<i class="fa-solid fa-eye me-2"></i>' + i18n.btnPreview;
+      submitBtn.innerHTML =
+        '<i class="' + StarletteAdmin.getIcon("import.preview") + ' me-2"></i>' + i18n.btnPreview;
       submitBtn.classList.remove("btn-secondary");
       submitBtn.classList.add("btn-primary");
     } else if (step === "preview") {
       const total = lastPreview ? lastPreview.rows_total : 0;
       submitBtn.innerHTML =
-        '<i class="fa-solid fa-file-import me-2"></i>' + _fmt(i18n.btnImport, { count: total });
+        '<i class="' + StarletteAdmin.getIcon("list.import") + ' me-2"></i>' +
+        _fmt(i18n.btnImport, { count: total });
       submitBtn.classList.remove("btn-secondary");
       submitBtn.classList.add("btn-primary");
     } else {
-      submitBtn.innerHTML = '<i class="fa-solid fa-check me-2"></i>' + i18n.btnDone;
+      submitBtn.innerHTML =
+        '<i class="' + StarletteAdmin.getIcon("flash.success") + ' me-2"></i>' + i18n.btnDone;
       submitBtn.classList.remove("btn-primary");
       submitBtn.classList.add("btn-secondary");
     }
@@ -190,9 +193,10 @@ function initImportModal(importUrl, i18n) {
     const errorsEl = document.getElementById("import-preview-errors");
 
     const alertClass = data.has_errors ? "alert-warning" : "alert-success";
-    const icon = data.has_errors
-      ? '<i class="fa-solid fa-triangle-exclamation me-2"></i>'
-      : '<i class="fa-solid fa-circle-check me-2"></i>';
+    const icon =
+      '<i class="' +
+      StarletteAdmin.getIcon(data.has_errors ? "flash.warning" : "flash.success") +
+      ' me-2"></i>';
     let summaryText = _fmt(i18n.previewSummary, { total: data.rows_total, new: data.rows_new });
     if (data.rows_updated) summaryText += _fmt(i18n.clauseUpdated, { count: data.rows_updated });
     if (data.errors.length) summaryText += _fmt(i18n.clauseErrors, { count: data.errors.length });
@@ -245,10 +249,10 @@ function initImportModal(importUrl, i18n) {
         .map((row) => {
           const badgeClass =
             row.status === "error"
-              ? "bg-red-lt"
+              ? "text-bg-danger"
               : row.status === "update"
-                ? "bg-blue-lt"
-                : "bg-green-lt";
+                ? "text-bg-primary"
+                : "text-bg-success";
           const cells = columns
             .map((c) => "<td>" + _escapeHtml(String(row.cells[c] ?? "")) + "</td>")
             .join("");
@@ -320,9 +324,10 @@ function initImportModal(importUrl, i18n) {
     const errorsEl = document.getElementById("import-result-errors");
 
     const alertClass = data.has_errors ? "alert-warning" : "alert-success";
-    const icon = data.has_errors
-      ? '<i class="fa-solid fa-triangle-exclamation me-2"></i>'
-      : '<i class="fa-solid fa-circle-check me-2"></i>';
+    const icon =
+      '<i class="' +
+      StarletteAdmin.getIcon(data.has_errors ? "flash.warning" : "flash.success") +
+      ' me-2"></i>';
     let summaryText = _fmt(i18n.resultSummary, {
       total: data.rows_total,
       created: data.rows_created,

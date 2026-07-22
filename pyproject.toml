@@ -124,7 +124,7 @@ docs = ["mkdocstrings[python] >=0.27.0", "zensical >=0.0.44"]
 e2e = ["pytest-playwright >=0.5.0, <0.8.0"]
 
 [tool.uv]
-default-groups = ["dev", "lint", "test", "cov", "docs"]
+default-groups = ["dev", "lint", "test", "cov", "docs", "e2e"]
 
 [tool.uv.workspace]
 members = [".", "examples/*", "examples/advanced/*"]

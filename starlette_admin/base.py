@@ -94,7 +94,7 @@ from starlette_admin.storage.base import (
     get_storage,
     secure_filename,
 )
-from starlette_admin.theme import ThemeSettings
+from starlette_admin.theme import BaseTheme, DefaultTheme, IconSet
 from starlette_admin.types import RequestAction
 from starlette_admin.views import (
     BaseModelView,
@@ -131,7 +131,7 @@ class BaseAdmin:
         additional_loaders: Sequence[BaseLoader] | None = None,
         static_dir: str | None = None,
         index_view: CustomView | None = None,
-        theme: ThemeSettings | None = None,
+        theme: BaseTheme | None = None,
         auth_provider: BaseAuthProvider | None = None,
         secret_key: str | None = None,
         middlewares: Sequence[Middleware] | None = None,
@@ -165,8 +165,9 @@ class BaseAdmin:
                 falling back to the built-in static files.
             index_view: Custom view rendered at the admin's root path.
                 Defaults to a generated index listing all registered views.
-            theme: Theme settings applied as ``data-bs-theme-*`` attributes on
-                ``<html>``.
+            theme: The admin layout: templates, static assets, icon set, and
+                template variables. Defaults to :class:`~starlette_admin.theme.DefaultTheme`,
+                starlette-admin's default Tabler-based theme.
             auth_provider: Authentication provider guarding access to the
                 admin. Leaving this unset makes the admin publicly accessible.
             secret_key: Secret key used to sign admin cookies (CSRF token and
@@ -224,13 +225,14 @@ class BaseAdmin:
         self.events: AdminEventBus = AdminEventBus()
         self.i18n_config = i18n_config
         self.timezone_config = timezone_config
-        self.theme = theme or ThemeSettings()
+        self.theme: BaseTheme = theme or DefaultTheme()
         _log.info(
             "Admin initializing: route_name=%r base_url=%r title=%r",
             route_name,
             base_url,
             title,
         )
+        self._register_theme()
         self._register_plugins(plugins or [])
         _log.debug(
             "Admin: setting up Jinja2 templates (templates_dir=%r)", templates_dir
@@ -434,7 +436,16 @@ class BaseAdmin:
         _log.debug("_init_routes: registering core routes")
         static = StaticFiles(
             directory=self.static_dir,
-            packages=[("starlette_admin", "static"), *self._plugin_static_packages],
+            packages=[
+                ("starlette_admin", "static"),  # core, always available as fallback
+                *(
+                    [self._theme_static_package]
+                    if self._theme_static_package
+                    and self._theme_static_package != ("starlette_admin", "static")
+                    else []
+                ),
+                *self._plugin_static_packages,
+            ],
         )
         self.routes.append(Mount("/static", app=static, name="static"))
         self.routes.extend(self._collect_core_routes())
@@ -467,6 +478,29 @@ class BaseAdmin:
             )
         return routes
 
+    def _register_theme(self) -> None:
+        """Wire `self.theme` into this admin: its `templates/` and `static/`
+        folders, if present, and its icon set.
+        """
+        package = self.theme.resolved_package()
+        root = importlib.resources.files(package)
+        # A theme ships templates at their bare path (base.html, layout.html,
+        # ...), so every page inherits its chrome through Jinja's bare-name
+        # resolution. Unlike a plugin, it is not namespaced.
+        self._theme_template_loader = (
+            PackageLoader(package, "templates")
+            if (root / "templates").is_dir()
+            else None
+        )
+        self._theme_static_package: tuple[str, str] | None = (
+            (package, "static") if (root / "static").is_dir() else None
+        )
+        self._theme_icon_set: IconSet = self.theme.get_icon_set()
+        self._icon_registry: dict[str, str] = dict(self._theme_icon_set.icons)
+        _log.info(
+            "_register_theme: %r registered (package=%r)", self.theme.name, package
+        )
+
     def _register_plugins(self, plugins: Sequence[BasePlugin]) -> None:
         """Wire `plugins` into this admin: validate each plugin's name and
         asset namespace, then collect the template loaders, static
@@ -476,7 +510,6 @@ class BaseAdmin:
         Runs before `_setup_templates`/`_init_routes` so plugin
         contributions are just entries in the lists those methods already
         build, with no live `ChoiceLoader`/`StaticFiles` mutation needed.
-        See `ai/PLUGIN_DESIGN.md` section 1.2.
         """
         self.plugins: dict[str, BasePlugin] = {}
         self._plugin_template_loaders: list[PackageLoader] = []
@@ -487,9 +520,8 @@ class BaseAdmin:
         for plugin in plugins:
             self._register_plugin(plugin)
 
-    def _register_plugin(self, plugin: BasePlugin) -> None:
-        """Validate and wire a single plugin. Split out of
-        `_register_plugins` to keep each step easy to follow."""
+    def _check_plugin_name(self, plugin: BasePlugin) -> str:
+        """Validate `plugin.name`: present, not reserved, not a duplicate."""
         name = getattr(plugin, "name", None)
         if not name:
             raise PluginError(
@@ -502,7 +534,12 @@ class BaseAdmin:
             )
         if name in self.plugins:
             raise PluginError(f"Duplicate plugin name {name!r}.")
-        package = plugin.resolved_package()
+        return name
+
+    def _register_plugin_assets(
+        self, plugin: BasePlugin, name: str, package: str
+    ) -> None:
+        """Wire `plugin`'s `templates/` and `static/` folders, if present."""
         root = importlib.resources.files(package)
         if (root / "templates").is_dir():
             validate_plugin_namespace(root / "templates", name, "templates")
@@ -513,6 +550,13 @@ class BaseAdmin:
         if (root / "static").is_dir():
             validate_plugin_namespace(root / "static", name, "static")
             self._plugin_static_packages.append((package, "static"))
+
+    def _register_plugin(self, plugin: BasePlugin) -> None:
+        """Validate and wire a single plugin. Split out of
+        `_register_plugins` to keep each step easy to follow."""
+        name = self._check_plugin_name(plugin)
+        package = plugin.resolved_package()
+        self._register_plugin_assets(plugin, name, package)
         self.middlewares.extend(plugin.middlewares())
         plugin_routes = list(plugin.routes())
         if plugin_routes:
@@ -533,15 +577,29 @@ class BaseAdmin:
         env = Environment(
             loader=ChoiceLoader(
                 [
-                    FileSystemLoader(self.templates_dir),
+                    FileSystemLoader(self.templates_dir),  # 1. user always wins
                     *self.additional_loaders,
-                    *self._plugin_template_loaders,
-                    PackageLoader("starlette_admin", "templates"),
+                    # 2. theme, above plugins so it can restyle their templates
+                    *(
+                        [self._theme_template_loader]
+                        if self._theme_template_loader
+                        else []
+                    ),
+                    *self._plugin_template_loaders,  # 3. namespaced plugins
+                    PackageLoader("starlette_admin", "templates"),  # 4. core
                     PrefixLoader(
                         {
                             "@core": PackageLoader("starlette_admin", "templates"),
                             "@starlette-admin": PackageLoader(
                                 "starlette_admin", "templates"
+                            ),
+                            # Theme originals, so a user override or the
+                            # theme's own base.html can extend it without
+                            # recursion.
+                            **(
+                                {"@theme": self._theme_template_loader}
+                                if self._theme_template_loader
+                                else {}
                             ),
                             **self._plugin_prefix_loaders,
                         }
@@ -574,10 +632,9 @@ class BaseAdmin:
         templates.env.globals["get_timezone"] = get_timezone
         templates.env.globals["get_timezone_display_name"] = get_timezone_display_name
         templates.env.globals["timezone_config"] = self.timezone_config
-        templates.env.globals["theme_settings"] = self.theme
         templates.env.globals["csrf_input"] = csrf_input
-        # Plugin-contributed page-wide assets (2.3), rendered by layout.html
-        # after core CSS/JS. Per-field assets stay on the field mechanism.
+        # Plugin-contributed page-wide assets, rendered by layout.html after
+        # core CSS/JS. Per-field assets stay on the field mechanism.
         templates.env.globals["plugin_css_links"] = lambda request: [
             link
             for plugin in self.plugins.values()
@@ -588,6 +645,16 @@ class BaseAdmin:
             for plugin in self.plugins.values()
             for link in plugin.js_links(request)
         ]
+        # Icon abstraction. `icon(name)` resolves a semantic name through the
+        # merged registry, passing an unregistered value (a user's free-form
+        # `view.icon`) through unchanged. `icon_css_links` gathers every
+        # active library's stylesheet for base.html's `icon_css` block.
+        templates.env.globals["icon"] = self._resolve_icon
+        templates.env.globals["icon_css_links"] = self._icon_css_links
+        # Full semantic-name -> markup-class map, serialized to client JS so
+        # scripts resolve theme icons through `StarletteAdmin.getIcon`.
+        templates.env.globals["icon_registry"] = self._icon_registry
+        templates.env.globals.update(self.theme.template_globals())
         templates.env.globals.update(self._plugin_template_globals)
         # Template filters, registered for use with the Jinja2 `|` syntax.
         templates.env.filters["is_custom_view"] = lambda r: isinstance(r, CustomView)
@@ -609,6 +676,19 @@ class BaseAdmin:
         # Install gettext/ngettext so `{% trans %}` works in templates.
         templates.env.install_gettext_callables(gettext, ngettext, True)  # type: ignore
         self.templates = templates
+
+    def _resolve_icon(self, name: str) -> str:
+        """Resolve a semantic icon name to its active markup class.
+
+        A registered name resolves through `self._icon_registry`, the
+        active theme's `IconSet`. Anything else, such as a user's free-form
+        `view.icon` or `action.icon_class`, is returned unchanged.
+        """
+        return self._icon_registry.get(name, name)
+
+    def _icon_css_links(self, request: Request) -> list[str]:
+        """Stylesheets for the active theme's icon library."""
+        return list(self._theme_icon_set.css_links(request))
 
     def _set_admin(self, view: BaseView) -> None:
         """Stamp `view._admin` (and any DropDown sub-views) with this admin."""

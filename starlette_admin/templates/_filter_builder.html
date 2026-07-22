@@ -5,7 +5,7 @@
                     class="btn dropdown-toggle"
                     data-bs-toggle="dropdown"
                     data-bs-auto-close="outside">
-                <i class="fa-solid fa-filter me-2"></i>{{ _("Filters") }}
+                <i class="{{ icon('list.filter') }} me-2"></i>{{ _("Filters") }}
                 {% if filter_chips %}
                     <span class="badge bg-primary text-white ms-1">{{ filter_chips | length }}</span>
                 {% endif %}
@@ -44,10 +44,10 @@
                     <div class="d-flex justify-content-between align-items-center mt-1">
                         <div class="btn-list">
                             <button type="button" class="btn btn-sm" id="add-filter-row">
-                                <i class="fa-solid fa-plus me-1"></i>{{ _("Add filter") }}
+                                <i class="{{ icon('filter_builder.add_condition') }} me-1"></i>{{ _("Add filter") }}
                             </button>
                             <button type="button" class="btn btn-sm" id="add-filter-group">
-                                <i class="fa-solid fa-layer-group me-1"></i>{{ _("Add group") }}
+                                <i class="{{ icon('filter_builder.add_group') }} me-1"></i>{{ _("Add group") }}
                             </button>
                         </div>
                         <div class="btn-list">
@@ -79,7 +79,7 @@
                 <button type="button"
                         class="btn btn-sm btn-action filter-row-remove"
                         aria-label="{{ _('Remove filter') }}">
-                    <i class="fa-solid fa-trash"></i>
+                    <i class="{{ icon('filter_builder.remove') }}"></i>
                 </button>
             </div>
         </template>
@@ -96,15 +96,15 @@
                     <span class="text-muted small">{{ _("of:") }}</span>
                     <div class="btn-list ms-auto">
                         <button type="button" class="btn btn-sm filter-group-add-row">
-                            <i class="fa-solid fa-plus me-1"></i>{{ _("Filter") }}
+                            <i class="{{ icon('filter_builder.add_condition') }} me-1"></i>{{ _("Filter") }}
                         </button>
                         <button type="button" class="btn btn-sm filter-group-add-group">
-                            <i class="fa-solid fa-layer-group me-1"></i>{{ _("Group") }}
+                            <i class="{{ icon('filter_builder.add_group') }} me-1"></i>{{ _("Group") }}
                         </button>
                         <button type="button"
                                 class="btn btn-sm btn-action filter-group-remove"
                                 aria-label="{{ _('Remove group') }}">
-                            <i class="fa-solid fa-trash"></i>
+                            <i class="{{ icon('filter_builder.remove') }}"></i>
                         </button>
                     </div>
                 </div>

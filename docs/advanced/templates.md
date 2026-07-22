@@ -21,7 +21,7 @@ The `Admin` class builds a Jinja2 `ChoiceLoader` that evaluates paths in a speci
 
 | Path | Rendered for |
 | --- | --- |
-| `base.html` | Outer HTML shell (`<html>`, `<head>`, scripts) |
+| `base.html` | Outer HTML layout (`<html>`, `<head>`, scripts) |
 | `layout.html` | Sidebar and topbar chrome (extends `base.html`) |
 | `index.html` | Dashboard or home page |
 | `list.html` | Model list page (table, filter bar, pagination) |
@@ -310,7 +310,7 @@ These variables are available in every template without being passed explicitly.
 | `get_timezone` | `callable` | `get_timezone()` → Active timezone string (requires no `request` argument) |
 | `get_timezone_display_name` | `callable` | `get_timezone_display_name(timezone, show_offset=False)` → Human-readable name of a timezone string |
 | `timezone_config` | `TimezoneConfig | None` | The admin's timezone configuration |
-| `theme_settings` | `ThemeSettings` | Active theme configuration (base, primary, radius, mode) |
+| `theme_settings` | `TablerSettings` | Active Tabler theme configuration (base, primary, radius, mode) exposed by `DefaultTheme` |
 | `csrf_input` | `callable` | `csrf_input(request)` → Renders the hidden CSRF `<input>` |
 
 !!! note

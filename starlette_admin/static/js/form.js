@@ -314,7 +314,12 @@ registerFieldInitializer(function (element) {
 
   $(".field-tinymce-editor", element).each(function () {
     let options = $(this).data("options");
-    if (localStorage.getItem("tablerTheme") === "dark") {
+    const root = document.documentElement;
+    const isDark =
+      root.getAttribute("data-bs-theme") === "dark" ||
+      root.classList.contains("dark") ||
+      localStorage.getItem("tablerTheme") === "dark";
+    if (isDark) {
       options.skin = "oxide-dark";
       options.content_css = "dark";
     }

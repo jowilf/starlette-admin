@@ -1368,7 +1368,7 @@ class BaseModelView(BaseView):
         text=_("Export"),
         confirmation="",
         header=_("Configure your export"),
-        icon_class="fa-solid fa-file-export",
+        icon_class="list.export",
         submit_btn_text=_("Export"),
         form=build_export_form,
         custom_response=True,
@@ -1438,7 +1438,7 @@ class BaseModelView(BaseView):
     @link_row_action(
         name="view",
         text=_("View"),
-        icon_class="fa-solid fa-eye",
+        icon_class="default_actions.view",
         exclude_from_detail=True,
     )
     def row_action_1_view(self, request: Request, pk: Any) -> str:
@@ -1447,7 +1447,7 @@ class BaseModelView(BaseView):
     @link_row_action(
         name="edit",
         text=_("Edit"),
-        icon_class="fa-solid fa-edit",
+        icon_class="default_actions.edit",
         action_btn_class="btn-primary",
     )
     def row_action_2_edit(self, request: Request, pk: Any) -> str:
@@ -1457,7 +1457,7 @@ class BaseModelView(BaseView):
         name="delete",
         text=_("Delete"),
         confirmation=_("Are you sure you want to delete this item?"),
-        icon_class="fa-solid fa-trash",
+        icon_class="default_actions.delete",
         submit_btn_text=_("Yes, delete"),
         submit_btn_class="btn-danger",
         action_btn_class="btn-danger",
