@@ -74,7 +74,7 @@ def _tortoise_field(ctx: FilterApplyContext) -> Any:
     """Return the Tortoise field object being filtered on
     (`ctx.view` is always the owning `ModelView` here).
     """
-    return ctx.view.model._meta.fields_map[ctx.field_name]  # type: ignore[union-attr]
+    return ctx.view.model._meta.fields_map[ctx.field_name]  # ty: ignore[unresolved-attribute]
 
 
 def _coerce_enum(ctx: FilterApplyContext, raw: Any) -> Any:
@@ -112,14 +112,14 @@ class IsNotNullFilter(BaseIsNotNullFilter):
 
 class RelationIsNullFilter(BaseIsNullFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        source = relation_source_field(ctx.view.model, ctx.field_name)  # type: ignore[union-attr]
+        source = relation_source_field(ctx.view.model, ctx.field_name)  # ty: ignore[unresolved-attribute]
         filters: dict[str, Any] = {f"{source}__isnull": True}
         return Q(**filters)
 
 
 class RelationIsNotNullFilter(BaseIsNotNullFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
-        source = relation_source_field(ctx.view.model, ctx.field_name)  # type: ignore[union-attr]
+        source = relation_source_field(ctx.view.model, ctx.field_name)  # ty: ignore[unresolved-attribute]
         filters: dict[str, Any] = {f"{source}__isnull": False}
         return Q(**filters)
 

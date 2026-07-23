@@ -563,6 +563,6 @@ def _as_url_callable(
     A plain string or ``None`` is wrapped in a lambda that ignores the request
     and returns the value directly.  An existing callable is returned unchanged.
     """
-    if callable(value):
-        return value
-    return lambda _request: value
+    if value is None or isinstance(value, str):
+        return lambda _request: value
+    return value

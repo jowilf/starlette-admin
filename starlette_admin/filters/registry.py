@@ -1,6 +1,6 @@
 import inspect
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from starlette_admin.fields import BaseField
@@ -25,7 +25,7 @@ def filters(
     def wrap(
         method: Callable[..., Sequence[type["BaseFilter"]]],
     ) -> Callable[..., Sequence[type["BaseFilter"]]]:
-        method._filters_for = frozenset(field_types)  # type: ignore[attr-defined]
+        method._filters_for = frozenset(field_types)  # ty: ignore[unresolved-attribute]
         return method
 
     return wrap
@@ -107,7 +107,7 @@ class FilterRegistry:
             return list(field.filters)
         for cls in type(field).__mro__:
             if cls in self._registry:
-                return list(self._registry[cls](field))
+                return list(self._registry[cast(type["BaseField"], cls)](field))
         return []
 
     def get_filter(self, field: "BaseField", name: str) -> type["BaseFilter"] | None:

@@ -33,9 +33,9 @@ def route(
     """
 
     def wrap(fn: Callable) -> Callable:
-        fn._route_path = path  # type: ignore[attr-defined]
-        fn._route_methods = methods or ["GET"]  # type: ignore[attr-defined]
-        fn._route_name = name  # type: ignore[attr-defined]
+        fn._route_path = path  # ty: ignore[unresolved-attribute]
+        fn._route_methods = methods or ["GET"]  # ty: ignore[unresolved-attribute]
+        fn._route_name = name  # ty: ignore[unresolved-attribute]
         return fn
 
     return wrap

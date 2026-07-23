@@ -129,7 +129,11 @@ try:
         return _current_translation.get().ngettext(msgid1, msgid2, n)
 
     def lazy_gettext(message: str) -> str:
-        return LazyProxy(gettext, message, enable_cache=False)  # type: ignore[return-value]
+        # `LazyProxy` duck-types as `str`, resolving lazily on first use so
+        # translations pick up the locale active at render time, not call time.
+        return LazyProxy(  # ty: ignore[invalid-return-type]
+            gettext, message, enable_cache=False
+        )
 
     def format_datetime(
         datetime: datetime.datetime,
@@ -157,7 +161,7 @@ try:
         return [(str(x), f"{x} - {locale.currencies[x]}") for x in locale.currencies]
 
     def get_locale_display_name(locale: str) -> str:
-        return Locale(locale).display_name.capitalize()
+        return (Locale(locale).display_name or locale).capitalize()
 
 except ImportError:
     # Provide i18n support even if Babel is not installed.

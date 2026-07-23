@@ -269,7 +269,7 @@ class ModelView(BaseModelView, Generic[T]):
         result = self.document.find(query, fetch_links=True, nesting_depth=1)
 
         if is_full_text_query and self.full_text_override_order_by:
-            result = result.sort(("score", {"$meta": "textScore"}))  # type: ignore
+            result = result.sort(("score", {"$meta": "textScore"}))
         elif sorts:
             result = result.sort(build_order_clauses(sorts))
         result = result.skip(skip)

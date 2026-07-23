@@ -79,7 +79,7 @@ dev = [
     "uvicorn >=0.20.0, <0.52.0",
 ]
 
-lint = ["mypy ==2.2.0", "ruff ==0.15.21"]
+lint = ["ty ==0.0.62", "ruff ==0.15.21"]
 
 test = [
     "aiobotocore >=2.5.0",
@@ -133,11 +133,11 @@ exclude = ["examples/advanced", "examples/__pycache__"]
 [tool.poe.tasks]
 # Code quality
 format = ["_ruff-fix", "_ruff-format", "_dj-lint-format"]
-lint = ["_mypy", "_ruff-check", "_ruff-format-check"]
+lint = ["_ty", "_ruff-check", "_ruff-format-check"]
 _ruff-fix = "ruff check starlette_admin tests examples --fix --unsafe-fixes"
 _ruff-format = "ruff format starlette_admin tests examples"
 _dj-lint-format = "djlint starlette_admin tests examples --reformat --format-css --format-js"
-_mypy = "mypy starlette_admin"
+_ty = "ty check starlette_admin"
 _ruff-check = "ruff check starlette_admin tests examples"
 _ruff-format-check = "ruff format starlette_admin tests examples --check"
 
@@ -161,7 +161,7 @@ i18n-update = "pybabel update -i i18n/admin.pot -d starlette_admin/translations 
 i18n-compile = "pybabel compile -f -D admin -d starlette_admin/translations"
 
 # Clean
-clean = "rm -rf .coverage .coverage.* coverage.xml .mypy_cache site .ruff_cache dist build .cache .pytest_cache htmlcov"
+clean = "rm -rf .coverage .coverage.* coverage.xml site .ruff_cache dist build .cache .pytest_cache htmlcov"
 
 # Docs
 docs-serve = "zensical serve -a localhost:8080"
@@ -240,17 +240,9 @@ known-third-party = ["starlette_admin"]
 "examples/**/seed.py" = ["T201"]
 "tests/**" = ["RUF012", "SIM115"]
 
-[tool.mypy]
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-implicit_reexport = false
-strict_equality = true
-ignore_missing_imports = true
+[tool.ty.rules]
+unused-ignore-comment = "error"
+unused-type-ignore-comment = "error"
 
 [tool.djlint]
 profile = "jinja"

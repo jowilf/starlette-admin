@@ -339,7 +339,7 @@ class ObjectIdNotEqualFilter(BaseFilter):
 
 
 class ObjectIdInFilter(BaseArrayInFilter):
-    def parse_value(self, raw: Any) -> list[ObjectId]:  # type: ignore[override]
+    def parse_value(self, raw: Any) -> list[ObjectId]:  # ty: ignore[invalid-method-override]
         return _parse_object_id_list(raw)
 
     def apply(self, ctx: FilterApplyContext) -> dict:
@@ -347,7 +347,7 @@ class ObjectIdInFilter(BaseArrayInFilter):
 
 
 class ObjectIdNotInFilter(BaseArrayNotInFilter):
-    def parse_value(self, raw: Any) -> list[ObjectId]:  # type: ignore[override]
+    def parse_value(self, raw: Any) -> list[ObjectId]:  # ty: ignore[invalid-method-override]
         return _parse_object_id_list(raw)
 
     def apply(self, ctx: FilterApplyContext) -> dict:

@@ -319,7 +319,7 @@ class ObjectIdNotEqualFilter(BaseFilter):
 class ObjectIdInFilter(BaseArrayInFilter):
     """ObjectId field is one of the given ObjectIds (tag-style input)."""
 
-    def parse_value(self, raw: Any) -> list[ObjectId]:  # type: ignore[override]
+    def parse_value(self, raw: Any) -> list[ObjectId]:  # ty: ignore[invalid-method-override]
         return _parse_object_id_list(raw)
 
     def apply(self, ctx: FilterApplyContext) -> Any:
@@ -329,7 +329,7 @@ class ObjectIdInFilter(BaseArrayInFilter):
 class ObjectIdNotInFilter(BaseArrayNotInFilter):
     """ObjectId field is not one of the given ObjectIds."""
 
-    def parse_value(self, raw: Any) -> list[ObjectId]:  # type: ignore[override]
+    def parse_value(self, raw: Any) -> list[ObjectId]:  # ty: ignore[invalid-method-override]
         return _parse_object_id_list(raw)
 
     def apply(self, ctx: FilterApplyContext) -> Any:

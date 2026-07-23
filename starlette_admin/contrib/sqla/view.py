@@ -122,20 +122,24 @@ class ModelView(BaseModelView):
         )
         self._columns: set[str] = {attr.key for attr in mapper.column_attrs}
         self._setup_primary_key()
-        self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
-        self.exclude_fields_from_detail = normalize_list(
-            self.exclude_fields_from_detail
-        )  # type: ignore
-        self.exclude_fields_from_create = normalize_list(
-            self.exclude_fields_from_create
-        )  # type: ignore
-        self.exclude_fields_from_edit = normalize_list(self.exclude_fields_from_edit)  # type: ignore
-        self.exclude_fields_from_export = normalize_list(
-            self.exclude_fields_from_export
-        )  # type: ignore
-        self.exclude_fields_from_import = normalize_list(
-            self.exclude_fields_from_import
-        )  # type: ignore
+        self.exclude_fields_from_list = (
+            normalize_list(self.exclude_fields_from_list) or []
+        )
+        self.exclude_fields_from_detail = (
+            normalize_list(self.exclude_fields_from_detail) or []
+        )
+        self.exclude_fields_from_create = (
+            normalize_list(self.exclude_fields_from_create) or []
+        )
+        self.exclude_fields_from_edit = (
+            normalize_list(self.exclude_fields_from_edit) or []
+        )
+        self.exclude_fields_from_export = (
+            normalize_list(self.exclude_fields_from_export) or []
+        )
+        self.exclude_fields_from_import = (
+            normalize_list(self.exclude_fields_from_import) or []
+        )
         _default_list = [
             field.name
             for field in self.fields
@@ -517,6 +521,7 @@ class ModelView(BaseModelView):
                 id2 == val4)`.
         """
         assert isinstance(self._pk_coerce, tuple)
+        assert isinstance(self._pk_column, tuple)
         decoded_pks = tuple(iterdecode(pk) for pk in pks)
         if use_composite_in:
             return tuple_(*self._pk_column).in_(
@@ -674,9 +679,13 @@ class ModelView(BaseModelView):
             if isinstance(field, RelationField) and data[field.name] is not None:
                 foreign_view = self._find_foreign_view(field.key)  # type: ignore
                 if isinstance(field, HasMany):
+                    # `collection_class` also allows a zero-arg factory, but this
+                    # call site only ever uses it as an iterable-accepting container type.
                     arranged_data[field.name] = field.collection_class(
-                        await foreign_view.find_by_pks(request, data[field.name])
-                    )  # type: ignore[call-arg]
+                        await foreign_view.find_by_pks(  # ty: ignore[too-many-positional-arguments]
+                            request, data[field.name]
+                        )
+                    )
                 else:
                     arranged_data[field.name] = await foreign_view.find_by_pk(
                         request, data[field.name]
@@ -852,7 +861,7 @@ class InlineModelView(BaseInlineModelView, ModelView):
             raise RuntimeError(
                 "Cannot auto-detect fk_attr before the inline is wired to a parent view"
             )
-        parent_mapper = inspect(self.parent_view.model)  # type: ignore[attr-defined]
+        parent_mapper = inspect(self.parent_view.model)  # ty: ignore[unresolved-attribute]
         child_mapper: Any = inspect(self.model)
         for rel in parent_mapper.relationships:
             if rel.mapper.class_ is not self.model:
@@ -869,7 +878,7 @@ class InlineModelView(BaseInlineModelView, ModelView):
                     "%s: auto-detected fk_attr=%r from relationship to %s",
                     type(self).__name__,
                     fk_keys[0],
-                    self.parent_view.model.__name__,  # type: ignore[attr-defined]
+                    self.parent_view.model.__name__,  # ty: ignore[unresolved-attribute]
                 )
                 return fk_keys[0]
             if fk_keys:
@@ -877,18 +886,18 @@ class InlineModelView(BaseInlineModelView, ModelView):
                     "%s: auto-detected composite fk_attr=%r from relationship to %s",
                     type(self).__name__,
                     tuple(fk_keys),
-                    self.parent_view.model.__name__,  # type: ignore[attr-defined]
+                    self.parent_view.model.__name__,  # ty: ignore[unresolved-attribute]
                 )
                 return tuple(fk_keys)
         _log.error(
             "%s: cannot auto-detect fk_attr, no relationship from %s to %s",
             type(self).__name__,
-            self.parent_view.model.__name__,  # type: ignore[attr-defined]
+            self.parent_view.model.__name__,  # ty: ignore[unresolved-attribute]
             self.model.__name__,
         )
         raise ValueError(
             f"{type(self).__name__}: cannot auto-detect fk_attr, "
-            f"no relationship from {self.parent_view.model.__name__} to "  # type: ignore[attr-defined]
+            f"no relationship from {self.parent_view.model.__name__} to "  # ty: ignore[unresolved-attribute]
             f"{self.model.__name__} found. Set fk_attr explicitly."
         )
 
@@ -904,7 +913,7 @@ class InlineModelView(BaseInlineModelView, ModelView):
 
         # Restrict parent_col_map to PK columns using parent_view._pk_column
         assert self.parent_view is not None
-        parent_view: ModelView = self.parent_view  # type: ignore[assignment]
+        parent_view: ModelView = self.parent_view  # ty: ignore[invalid-assignment]
         parent_pk_cols = (
             parent_view._pk_column
             if isinstance(parent_view._pk_column, tuple)
@@ -997,7 +1006,8 @@ class InlineModelView(BaseInlineModelView, ModelView):
             )
             stmt = select(self.model).where(clause)
         else:
-            parent_pk = await self.parent_view.get_pk_value(request, parent)  # type: ignore[union-attr]
+            assert self.parent_view is not None
+            parent_pk = await self.parent_view.get_pk_value(request, parent)
             fk_col = getattr(self.model, fk_attr)
             stmt = select(self.model).where(fk_col == parent_pk)
         for field in self.get_fields_list(request):

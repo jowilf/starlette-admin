@@ -27,7 +27,7 @@ def login_not_required(endpoint: Callable[..., Any]) -> Callable[..., Any]:
     `AuthMiddleware` checks for the `_login_not_required` attribute set here before
     redirecting to the login page.
     """
-    endpoint._login_not_required = True  # type: ignore[attr-defined]
+    endpoint._login_not_required = True  # ty: ignore[unresolved-attribute]
     return endpoint
 
 

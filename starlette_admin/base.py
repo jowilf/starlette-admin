@@ -612,35 +612,38 @@ class BaseAdmin:
         templates = Jinja2Templates(env=env)
 
         # Template globals, available in every rendered template.
-        templates.env.globals["views"] = self._views
-        templates.env.globals["app_title"] = self.title
-        templates.env.globals["is_auth_enabled"] = self.auth_provider is not None
-        templates.env.globals["__name__"] = self.route_name
-        templates.env.globals["static_url"] = static_url
-        templates.env.globals["logo_url"] = _as_url_callable(self.logo_url)
-        templates.env.globals["login_logo_url"] = _as_url_callable(self.login_logo_url)
-        templates.env.globals["favicon_url"] = _as_url_callable(self.favicon_url)
-        templates.env.globals["list_url"] = list_url
-        templates.env.globals["detail_url"] = detail_url
-        templates.env.globals["edit_url"] = edit_url
-        templates.env.globals["create_url"] = create_url
-        templates.env.globals["back_url"] = back_url
-        templates.env.globals["import_url"] = import_url
-        templates.env.globals["get_locale"] = get_locale
-        templates.env.globals["get_locale_display_name"] = get_locale_display_name
-        templates.env.globals["i18n_config"] = self.i18n_config or I18nConfig()
-        templates.env.globals["get_timezone"] = get_timezone
-        templates.env.globals["get_timezone_display_name"] = get_timezone_display_name
-        templates.env.globals["timezone_config"] = self.timezone_config
-        templates.env.globals["csrf_input"] = csrf_input
+        # Jinja2 seeds `Environment.globals` from an untyped literal dict, so
+        # its inferred type is too narrow for our values; widen it here.
+        env_globals: dict[str, Any] = templates.env.globals
+        env_globals["views"] = self._views
+        env_globals["app_title"] = self.title
+        env_globals["is_auth_enabled"] = self.auth_provider is not None
+        env_globals["__name__"] = self.route_name
+        env_globals["static_url"] = static_url
+        env_globals["logo_url"] = _as_url_callable(self.logo_url)
+        env_globals["login_logo_url"] = _as_url_callable(self.login_logo_url)
+        env_globals["favicon_url"] = _as_url_callable(self.favicon_url)
+        env_globals["list_url"] = list_url
+        env_globals["detail_url"] = detail_url
+        env_globals["edit_url"] = edit_url
+        env_globals["create_url"] = create_url
+        env_globals["back_url"] = back_url
+        env_globals["import_url"] = import_url
+        env_globals["get_locale"] = get_locale
+        env_globals["get_locale_display_name"] = get_locale_display_name
+        env_globals["i18n_config"] = self.i18n_config or I18nConfig()
+        env_globals["get_timezone"] = get_timezone
+        env_globals["get_timezone_display_name"] = get_timezone_display_name
+        env_globals["timezone_config"] = self.timezone_config
+        env_globals["csrf_input"] = csrf_input
         # Plugin-contributed page-wide assets, rendered by layout.html after
         # core CSS/JS. Per-field assets stay on the field mechanism.
-        templates.env.globals["plugin_css_links"] = lambda request: [
+        env_globals["plugin_css_links"] = lambda request: [
             link
             for plugin in self.plugins.values()
             for link in plugin.css_links(request)
         ]
-        templates.env.globals["plugin_js_links"] = lambda request: [
+        env_globals["plugin_js_links"] = lambda request: [
             link
             for plugin in self.plugins.values()
             for link in plugin.js_links(request)
@@ -649,13 +652,13 @@ class BaseAdmin:
         # merged registry, passing an unregistered value (a user's free-form
         # `view.icon`) through unchanged. `icon_css_links` gathers every
         # active library's stylesheet for base.html's `icon_css` block.
-        templates.env.globals["icon"] = self._resolve_icon
-        templates.env.globals["icon_css_links"] = self._icon_css_links
+        env_globals["icon"] = self._resolve_icon
+        env_globals["icon_css_links"] = self._icon_css_links
         # Full semantic-name -> markup-class map, serialized to client JS so
         # scripts resolve theme icons through `StarletteAdmin.getIcon`.
-        templates.env.globals["icon_registry"] = self._icon_registry
-        templates.env.globals.update(self.theme.template_globals())
-        templates.env.globals.update(self._plugin_template_globals)
+        env_globals["icon_registry"] = self._icon_registry
+        env_globals.update(self.theme.template_globals())
+        env_globals.update(self._plugin_template_globals)
         # Template filters, registered for use with the Jinja2 `|` syntax.
         templates.env.filters["is_custom_view"] = lambda r: isinstance(r, CustomView)
         templates.env.filters["is_link"] = lambda res: isinstance(res, Link)
@@ -816,7 +819,7 @@ class BaseAdmin:
                 raise HTTPException(HTTP_403_FORBIDDEN)
             return await handler(request)
 
-        wrapper._login_not_required = getattr(  # type: ignore[attr-defined]
+        wrapper._login_not_required = getattr(  # ty: ignore[unresolved-attribute]
             handler, "_login_not_required", False
         )
         return wrapper
@@ -1009,7 +1012,7 @@ class BaseAdmin:
             raise HTTPException(HTTP_403_FORBIDDEN)
         # This endpoint's own URL isn't a page a user can return to -- point
         # detail/edit links rendered for this row back at the real list page.
-        request.state.origin_override = list_page_origin(request, key)  # type: ignore[arg-type]
+        request.state.origin_override = list_page_origin(request, cast(str, key))
         pk = request.query_params.get("pk")
         obj = await view.find_by_pk(request, pk)
         if obj is None:

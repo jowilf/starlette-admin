@@ -12,6 +12,7 @@ from json import JSONDecodeError
 from typing import (
     TYPE_CHECKING,
     Any,
+    cast,
 )
 
 from starlette.datastructures import FormData, Headers, UploadFile
@@ -67,11 +68,12 @@ _log = get_logger(__name__)
 
 if TYPE_CHECKING:
     from starlette_admin.filters.base import BaseFilter
+    from starlette_admin.views import BaseModelView
 
 try:
     import arrow
 except ImportError:
-    arrow = None  # type: ignore[assignment]
+    arrow = None  # ty: ignore[invalid-assignment]
 
 
 @dataclass
@@ -179,6 +181,14 @@ class BaseField:
     empty_template: str = "fields/detail/_empty.html"
     extra: dict[str, Any] | None = None
     error_class = "is-invalid"
+    # Set by `BaseModelView._init_fields`: the field's fully dotted name.
+    # Differs from `name` only for fields nested under a CollectionField.
+    _name: str = dc_field(default="", init=False, repr=False, compare=False)
+    # Set by `BaseModelView._init_fields` on RelationField/CollectionField
+    # instances, so nested serialization can resolve the owning view.
+    _view: "BaseModelView | None" = dc_field(
+        default=None, init=False, repr=False, compare=False
+    )
 
     def __post_init__(self) -> None:
         if self.label is None:
@@ -663,7 +673,7 @@ class IntegerField(NumberField):
     ) -> int | None:
         raw = form_data.get(self.id)
         try:
-            result = int(raw)  # type: ignore
+            result = int(raw)  # ty: ignore[invalid-argument-type]
             _log.debug(
                 "IntegerField.parse_form_data: field=%r raw=%r -> %r",
                 self.name,
@@ -732,7 +742,7 @@ class DecimalField(NumberField):
     ) -> decimal.Decimal | None:
         raw = form_data.get(self.id)
         try:
-            result = decimal.Decimal(raw)  # type: ignore
+            result = decimal.Decimal(raw)  # ty: ignore[invalid-argument-type]
             _log.debug(
                 "DecimalField.parse_form_data: field=%r raw=%r -> %r",
                 self.name,
@@ -802,7 +812,7 @@ class FloatField(StringField):
     ) -> float | None:
         raw = form_data.get(self.id)
         try:
-            result = float(raw)  # type: ignore
+            result = float(raw)  # ty: ignore[invalid-argument-type]
             _log.debug(
                 "FloatField.parse_form_data: field=%r raw=%r -> %r",
                 self.name,
@@ -878,7 +888,7 @@ class TagsField(BaseField):
             len(result),
             result,
         )
-        return result  # type: ignore
+        return result  # ty: ignore[invalid-return-type]
 
     async def serialize_value(self, request: Request, value: Any) -> Any:
         action = request.state.action
@@ -1117,8 +1127,10 @@ class EnumField(StringField):
         if self.select2 is None:
             self.select2 = self.multiple
         if self.choices and not isinstance(self.choices[0], (list, tuple)):
-            choices = list(zip(self.choices, self.choices))
-            self.choices = choices  # type: ignore[assignment]
+            choices = cast(
+                "list[tuple[str, str]]", list(zip(self.choices, self.choices))
+            )
+            self.choices = choices
             _log.debug(
                 "EnumField %r: plain-value list coerced to (value, label) pairs (%d choices)",
                 self.name,
@@ -1769,24 +1781,34 @@ class FileField(BaseField):
             should_be_deleted,
         )
         if self.multiple:
+            # `getlist` is typed to also allow plain str values (form fields
+            # in general can be text), but this field only ever submits files.
             files = form_data.getlist(self.id)
-            non_empty = [f for f in files if not is_empty_file(f.file)]  # type: ignore[union-attr]
+            non_empty = [
+                f
+                for f in files
+                if not is_empty_file(f.file)  # ty: ignore[unresolved-attribute]
+            ]
             _log.debug(
                 "FileField.parse_form_data: field=%r %d/%d files non-empty",
                 self.name,
                 len(non_empty),
                 len(files),
             )
-            return non_empty, should_be_deleted  # type: ignore
+            return non_empty, should_be_deleted  # ty: ignore[invalid-return-type]
         file = form_data.get(self.id)
-        result = None if (file and is_empty_file(file.file)) else file  # type: ignore
+        result = (
+            None
+            if (file and is_empty_file(file.file))  # ty: ignore[unresolved-attribute]
+            else file
+        )
         _log.debug(
             "FileField.parse_form_data: field=%r file=%r (empty=%r)",
             self.name,
             getattr(file, "filename", file),
             result is None and file is not None,
         )
-        return result, should_be_deleted  # type: ignore[return-value]
+        return result, should_be_deleted  # ty: ignore[invalid-return-type]
 
     async def serialize_value(self, request: Request, value: Any) -> Any:
         _log.debug(
@@ -2111,9 +2133,7 @@ class RelationField(BaseField):
         return result
 
     async def serialize_value(self, request: Request, value: Any) -> Any:
-        try:
-            foreign_view = self._view._find_foreign_view(self.key)  # type: ignore[attr-defined]
-        except AttributeError:
+        if self._view is None:
             _log.error(
                 "RelationField %r has no _view; it must be used inside a BaseModelView",
                 self.name,
@@ -2121,7 +2141,8 @@ class RelationField(BaseField):
             raise RuntimeError(
                 f"RelationField {self.name!r} has no _view; it must be used "
                 "inside a BaseModelView (set during BaseModelView.__init__)"
-            ) from None
+            )
+        foreign_view = self._view._find_foreign_view(not_none(self.key))
         action = request.state.action
         _log.debug(
             "RelationField.serialize_value: field=%r key=%r action=%s multiple=%r",
@@ -2294,13 +2315,12 @@ class CollectionField(BaseField):
     def get_fields_list(
         self, request: Request, *, action: RequestAction | None = None
     ) -> Sequence[BaseField]:
-        try:
-            view = self._view  # type: ignore[attr-defined]
-        except AttributeError:  # pragma: no cover
+        view = self._view
+        if view is None:  # pragma: no cover
             raise RuntimeError(
                 f"CollectionField {self.name!r} has no _view; it must be used "
                 "inside a BaseModelView (set during BaseModelView.__init__)"
-            ) from None
+            )
         return [
             f for f in self.fields if view.can_access_field(request, f, action=action)
         ]

@@ -79,24 +79,28 @@ class ModelView(BaseModelView):
         self.icon = icon or self.icon
         self.pk_attr = "id"
         if self.fields is None or len(self.fields) == 0:
-            self.fields = document._fields_ordered
+            self.fields = document._fields_ordered  # ty: ignore[unresolved-attribute]
         self.fields = (converter or ModelConverter()).convert_fields_list(
             fields=self.fields, model=self.document
         )
-        self.exclude_fields_from_list = normalize_list(self.exclude_fields_from_list)  # type: ignore
-        self.exclude_fields_from_detail = normalize_list(
-            self.exclude_fields_from_detail
-        )  # type: ignore
-        self.exclude_fields_from_create = normalize_list(
-            self.exclude_fields_from_create
-        )  # type: ignore
-        self.exclude_fields_from_edit = normalize_list(self.exclude_fields_from_edit)  # type: ignore
-        self.exclude_fields_from_export = normalize_list(
-            self.exclude_fields_from_export
-        )  # type: ignore
-        self.exclude_fields_from_import = normalize_list(
-            self.exclude_fields_from_import
-        )  # type: ignore
+        self.exclude_fields_from_list = (
+            normalize_list(self.exclude_fields_from_list) or []
+        )
+        self.exclude_fields_from_detail = (
+            normalize_list(self.exclude_fields_from_detail) or []
+        )
+        self.exclude_fields_from_create = (
+            normalize_list(self.exclude_fields_from_create) or []
+        )
+        self.exclude_fields_from_edit = (
+            normalize_list(self.exclude_fields_from_edit) or []
+        )
+        self.exclude_fields_from_export = (
+            normalize_list(self.exclude_fields_from_export) or []
+        )
+        self.exclude_fields_from_import = (
+            normalize_list(self.exclude_fields_from_import) or []
+        )
         self.searchable_fields = normalize_list(self.searchable_fields)
         self.sortable_fields = normalize_list(self.sortable_fields)
         self.fields_default_sort = normalize_list(
@@ -116,7 +120,7 @@ class ModelView(BaseModelView):
     ) -> int:
         """Return the number of documents matching the search term and filters."""
         qs = await self._build_query(request, q, filters)
-        total = self.document.objects(qs).count()
+        total = self.document.objects(qs).count()  # ty: ignore[unresolved-attribute]
         _log.debug("count: key=%r q=%r total=%d", self.key, q, total)
         return total
 
@@ -142,7 +146,9 @@ class ModelView(BaseModelView):
             q,
         )
         qs = await self._build_query(request, q, filters)
-        objs = self.document.objects(qs).order_by(*build_order_clauses(sorts or []))
+        objs = self.document.objects(qs).order_by(  # ty: ignore[unresolved-attribute]
+            *build_order_clauses(sorts or [])
+        )
         if limit > 0:
             return objs[skip : skip + limit]
         return objs[skip:]
@@ -152,7 +158,7 @@ class ModelView(BaseModelView):
         exist or `pk` is not a valid ObjectId.
         """
         try:
-            obj = self.document.objects(id=pk).get()
+            obj = self.document.objects(id=pk).get()  # ty: ignore[unresolved-attribute]
             _log.debug("find_by_pk: key=%r pk=%s found", self.key, pk)
             return obj
         except (DoesNotExist, ValidationError):
@@ -163,7 +169,7 @@ class ModelView(BaseModelView):
         self, request: Request, pks: list[Any]
     ) -> Sequence[me.Document]:
         """Return the documents whose primary key is in `pks`."""
-        return self.document.objects(id__in=pks)
+        return self.document.objects(id__in=pks)  # ty: ignore[unresolved-attribute]
 
     async def create(self, request: Request, data: dict[str, Any]) -> Any:
         """Create and save a new document from converted form data.
@@ -193,7 +199,12 @@ class ModelView(BaseModelView):
         try:
             await self.validate(request, data)
             obj = await self.find_by_pk(request, pk)
-            obj = await self._populate_obj(request, obj, data, True)
+            obj = await self._populate_obj(
+                request,
+                obj,  # ty: ignore[invalid-argument-type]
+                data,
+                True,
+            )
             await self._emit_before_edit(request, data, obj, pk=pk)
             obj.save()
             _log.info("edit: key=%r pk=%s saved", self.key, pk)
@@ -208,7 +219,7 @@ class ModelView(BaseModelView):
         obj: me.Document,
         data: dict[str, Any],
         is_edit: bool = False,
-        document: BaseDocument | None = None,
+        document: type[BaseDocument] | None = None,
         fields: Sequence[sa.BaseField] | None = None,
     ) -> me.Document:
         """Assign converted form values onto `obj`, one field at a time.
@@ -346,6 +357,7 @@ class ModelView(BaseModelView):
         assert isinstance(field, sa.ListField) and isinstance(
             field.field, sa.CollectionField
         )
+        assert me_field.field is not None
         old_value = getattr(obj, name, [])
         if len(old_value) < len(value):
             old_value.extend(
@@ -380,7 +392,7 @@ class ModelView(BaseModelView):
             The number of documents deleted.
         """
         _log.debug("delete: key=%r pks=%s", self.key, pks)
-        objs = self.document.objects(id__in=pks)
+        objs = self.document.objects(id__in=pks)  # ty: ignore[unresolved-attribute]
         for obj in objs:
             await self._emit_before_delete(
                 request, await self.get_pk_value(request, obj), obj
@@ -482,7 +494,7 @@ class InlineModelView(BaseInlineModelView, ModelView):
             inlines = [CommentInline]
     """
 
-    document: ClassVar[type]  # type: ignore[misc]
+    document: ClassVar[type[me.Document]]
 
     def __init__(self, parent_view: BaseModelView | None = None) -> None:
         self.parent_view = parent_view
@@ -504,9 +516,9 @@ class InlineModelView(BaseInlineModelView, ModelView):
         )
         ref_fields = [
             name
-            for name, field in self.document._fields.items()  # type: ignore[attr-defined]
+            for name, field in self.document._fields.items()  # ty: ignore[unresolved-attribute]
             if isinstance(field, me.ReferenceField)
-            and field.document_type is self.parent_view.document  # type: ignore[attr-defined]
+            and field.document_type is self.parent_view.document  # ty: ignore[unresolved-attribute]
         ]
         if len(ref_fields) == 1:
             _log.debug(
@@ -527,15 +539,19 @@ class InlineModelView(BaseInlineModelView, ModelView):
             f"({ref_fields}). Set fk_attr explicitly."
         )
 
-    async def find_by_parent(self, _request: Request, parent: Any) -> Sequence[Any]:
+    async def find_by_parent(self, request: Request, parent: Any) -> Sequence[Any]:
         """Return the child documents whose `fk_attr` equals `parent`'s primary key."""
+        # Composite fk_attr (see BaseInlineModelView) is not supported here.
+        assert isinstance(self.fk_attr, str)
         _log.debug(
             "find_by_parent %s: parent pk=%s fk_attr=%r",
             self.document.__name__,
             parent.pk,
             self.fk_attr,
         )
-        rows = list(self.document.objects(**{self.fk_attr: parent.pk}))  # type: ignore[attr-defined, arg-type]
+        rows = list(
+            self.document.objects(**{self.fk_attr: parent.pk})  # ty: ignore[unresolved-attribute]
+        )
         _log.debug("find_by_parent %s → %d row(s)", self.document.__name__, len(rows))
         return rows
 
@@ -545,7 +561,7 @@ class InlineModelView(BaseInlineModelView, ModelView):
         obj: me.Document,
         data: dict[str, Any],
         is_edit: bool = False,
-        document: BaseDocument | None = None,
+        document: type[BaseDocument] | None = None,
         fields: Sequence[sa.BaseField] | None = None,
     ) -> me.Document:
         """Populate `obj` via the base `ModelView` logic, then stamp the parent
@@ -558,6 +574,8 @@ class InlineModelView(BaseInlineModelView, ModelView):
         parent reference is not reassigned on edit.
         """
         await super()._populate_obj(request, obj, data, is_edit, document, fields)
+        # Composite fk_attr (see BaseInlineModelView) is not supported here.
+        assert isinstance(self.fk_attr, str)
         if not is_edit and self.fk_attr in data:
             _log.debug(
                 "_populate_objtry obj : %s, fk : %s, %s", obj, self.fk_attr, data

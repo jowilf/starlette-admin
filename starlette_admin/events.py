@@ -6,7 +6,7 @@ from collections import defaultdict
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from starlette.requests import Request
 
@@ -176,9 +176,10 @@ class AfterLoginContext(EventContext):
     user: AdminUser | None = None
 
 
+EventHandler = Callable[["EventContext"], Awaitable[None]]
 HandlerSpec = (
-    Callable  # bare handler, priority=0
-    | tuple[Callable, int]  # (handler, priority)
+    EventHandler  # bare handler, priority=0
+    | tuple[EventHandler, int]  # (handler, priority)
 )
 
 _ADMIN_EVENTS_ATTR = "_admin_events"
@@ -197,9 +198,9 @@ def on(*events: AdminEvent | str, priority: int = 0) -> Callable:
 
     def decorator(fn: Callable) -> Callable:
         if not hasattr(fn, _ADMIN_EVENTS_ATTR):
-            fn._admin_events = []  # type: ignore[attr-defined]
+            fn._admin_events = []  # ty: ignore[invalid-assignment]
         for event in events:
-            fn._admin_events.append((event, priority))  # type: ignore[attr-defined]
+            fn._admin_events.append((event, priority))  # ty: ignore[unresolved-attribute]
         return fn
 
     return decorator
@@ -255,7 +256,7 @@ class EventBus:
             self._handlers[key].sort(key=lambda x: x[0], reverse=True)
             logger.debug(
                 "EventBus: registered handler %s for event %r (priority=%d)",
-                fn.__qualname__,
+                fn.__qualname__,  # ty: ignore[unresolved-attribute]
                 key,
                 priority,
             )
@@ -274,10 +275,10 @@ class EventBus:
             items = spec if isinstance(spec, list) else [spec]
             for item in items:
                 if isinstance(item, tuple):
-                    fn, prio = item
+                    fn, prio = cast("tuple[EventHandler, int]", item)
                     self.on(event, fn, priority=prio)
                 else:
-                    self.on(event, item)
+                    self.on(event, cast(EventHandler, item))
 
     def off(self, event: AdminEvent | str, handler: Callable) -> None:
         """Remove a handler for an event."""
@@ -293,10 +294,10 @@ class EventBus:
             items = spec if isinstance(spec, list) else [spec]
             for item in items:
                 if isinstance(item, tuple):
-                    fn, _ = item
+                    fn, _ = cast("tuple[EventHandler, int]", item)
                     self.off(event, fn)
                 else:
-                    self.off(event, item)
+                    self.off(event, cast(EventHandler, item))
 
     async def emit(self, ctx: EventContext) -> None:
         """Fire all registered handlers in priority order."""
@@ -306,7 +307,9 @@ class EventBus:
 
         for _priority, handler in handlers:
             logger.debug(
-                "EventBus: calling %s (priority=%d)", handler.__qualname__, _priority
+                "EventBus: calling %s (priority=%d)",
+                handler.__qualname__,  # ty: ignore[unresolved-attribute]
+                _priority,
             )
             result = handler(ctx)
             if inspect.isawaitable(result):
@@ -422,10 +425,10 @@ class AdminEventBus:
             items = spec if isinstance(spec, list) else [spec]
             for item in items:
                 if isinstance(item, tuple):
-                    fn, prio = item
+                    fn, prio = cast("tuple[EventHandler, int]", item)
                     self.on(sub_event, fn, keys=keys, priority=prio)
                 else:
-                    self.on(sub_event, item, keys=keys)
+                    self.on(sub_event, cast(EventHandler, item), keys=keys)
 
     def off(self, event: AdminEvent | str, handler: Callable) -> None:
         """Remove a handler from all view buses, or from the admin-level bus."""
@@ -446,7 +449,7 @@ class AdminEventBus:
             items = spec if isinstance(spec, list) else [spec]
             for item in items:
                 if isinstance(item, tuple):
-                    fn, _ = item
+                    fn, _ = cast("tuple[EventHandler, int]", item)
                     self.off(sub_event, fn)
                 else:
-                    self.off(sub_event, item)
+                    self.off(sub_event, cast(EventHandler, item))

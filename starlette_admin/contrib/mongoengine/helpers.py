@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Literal, overload
 
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.queryset import Q as BaseQ
@@ -44,9 +44,17 @@ def build_order_clauses(sorts: Sequence[tuple[str, str]]) -> list[str]:
     return clauses
 
 
+@overload
+def normalize_list(
+    arr: Sequence[Any] | None, is_default_sort_list: Literal[False] = False
+) -> Sequence[str] | None: ...
+@overload
+def normalize_list(
+    arr: Sequence[Any] | None, is_default_sort_list: Literal[True]
+) -> Sequence[str | tuple[str, bool]] | None: ...
 def normalize_list(
     arr: Sequence[Any] | None, is_default_sort_list: bool = False
-) -> Sequence[str] | None:
+) -> Sequence[str | tuple[str, bool]] | None:
     """Normalize a list of field references into a list of field-name strings.
 
     Lets view configuration attributes (e.g. `searchable_fields`, `sortable_fields`,

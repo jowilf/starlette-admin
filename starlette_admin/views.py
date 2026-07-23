@@ -434,12 +434,12 @@ class CustomView(BaseView):
 
     async def _resolve_widget(self, request: Request) -> "BaseWidget | None":
         """Return the widget for this request, calling it if it is a callable."""
-        if callable(self.widget):
-            result = self.widget(request)
-            if inspect.isawaitable(result):
-                return await result
-            return result
-        return self.widget
+        if self.widget is None or isinstance(self.widget, BaseWidget):
+            return self.widget
+        result = self.widget(request)
+        if inspect.isawaitable(result):
+            return await result
+        return result
 
     @route("")
     async def index(self, request: Request) -> Response:
@@ -700,15 +700,15 @@ class BaseModelView(BaseView):
         queue: deque[BaseField] = deque(self.fields)
         while queue:
             field = queue.popleft()
-            if not hasattr(field, "_name"):
-                field._name = field.name  # type: ignore[attr-defined]
+            if not field._name:
+                field._name = field.name
             if isinstance(field, CollectionField):
-                field._view = self  # type: ignore[attr-defined]
+                field._view = self
                 for f in field.fields:
-                    f._name = f"{field._name}.{f.name}"  # type: ignore[attr-defined]
+                    f._name = f"{field._name}.{f.name}"
                 queue.extend(field.fields)
             elif isinstance(field, RelationField):
-                field._view = self  # type: ignore[attr-defined]
+                field._view = self
                 _log.debug(
                     "_init_fields: RelationField %r wired to view (key=%r)",
                     field.name,
@@ -718,7 +718,7 @@ class BaseModelView(BaseView):
                 field.field, CollectionField
             ):
                 queue.append(field.field)
-            name: str = field._name  # type: ignore[attr-defined]
+            name: str = field._name
             if name == self.pk_attr and not self.show_pk_in_forms:
                 field.exclude_from_create = True
                 field.exclude_from_edit = True
@@ -757,8 +757,8 @@ class BaseModelView(BaseView):
             self.searchable_fields = all_field_names[:]
         if self.sortable_fields is None:
             self.sortable_fields = all_field_names[:]
-        if self.fields_default_sort is None:
-            self.fields_default_sort = [self.pk_attr]  # type: ignore[list-item]
+        if self.fields_default_sort is None and self.pk_attr:
+            self.fields_default_sort = [self.pk_attr]
         _log.debug(
             "_init_fields done: key=%r resolved %d leaf field(s): %s",
             self.key,
@@ -2465,7 +2465,7 @@ class BaseModelView(BaseView):
             if field_name in accessible_sortable:
                 if direction not in ("asc", "desc"):
                     direction = "asc"
-                sorts.append((field_name, cast(Literal["asc", "desc"], direction)))
+                sorts.append((field_name, direction))
             elif field_name in (self.sortable_fields or []):
                 raise HTTPException(
                     HTTP_400_BAD_REQUEST,
@@ -2522,10 +2522,11 @@ class BaseModelView(BaseView):
         }
         sorts = self._parse_sorts(query_params.getlist("sort"), accessible_sortable)
         if not sorts:
-            sorts = [
+            default_sorts: list[tuple[str, Literal["asc", "desc"]]] = [
                 (field, "desc" if desc else "asc")
                 for field, desc in self._default_sort()
             ]
+            sorts = default_sorts
 
         q = query_params.get("q") or None
 

@@ -87,7 +87,7 @@ def _column(ctx: FilterApplyContext) -> InstrumentedAttribute:
     """Resolve `ctx.field_name` into the model column/relationship attribute
     being filtered on (`ctx.view` is always the owning `ModelView` here).
     """
-    return getattr(ctx.view.model, ctx.field_name)  # type: ignore[union-attr]
+    return getattr(ctx.view.model, ctx.field_name)  # ty: ignore[unresolved-attribute]
 
 
 def _is_null(column: InstrumentedAttribute) -> Any:

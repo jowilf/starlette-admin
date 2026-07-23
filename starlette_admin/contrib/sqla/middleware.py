@@ -1,3 +1,5 @@
+from typing import cast
+
 import anyio.to_thread
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
@@ -44,8 +46,14 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
         if isinstance(self.session_provider, (AsyncEngine, async_sessionmaker)):
-            return await self._dispatch_async(request, call_next, self.session_provider)
-        return await self._dispatch_sync(request, call_next, self.session_provider)
+            return await self._dispatch_async(
+                request,
+                call_next,
+                cast(AsyncSessionProvider, self.session_provider),
+            )
+        return await self._dispatch_sync(
+            request, call_next, cast(SyncSessionProvider, self.session_provider)
+        )
 
     @staticmethod
     async def _dispatch_async(
@@ -58,8 +66,8 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
             request.method,
             request.url.path,
         )
-        session = (
-            session_provider()
+        session: AsyncSession = (
+            cast(AsyncSession, session_provider())
             if isinstance(session_provider, async_sessionmaker)
             else AsyncSession(session_provider, expire_on_commit=False)
         )
@@ -107,8 +115,8 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
         )
         # Session() does not connect until first use, so it is safe to
         # construct here; all blocking calls below run in a worker thread.
-        session = (
-            session_provider()
+        session: Session = (
+            cast(Session, session_provider())
             if isinstance(session_provider, sessionmaker)
             else Session(session_provider, expire_on_commit=False)
         )

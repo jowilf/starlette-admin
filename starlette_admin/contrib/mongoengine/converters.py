@@ -1,5 +1,5 @@
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import Any, cast
 
 import mongoengine.fields as me
 import starlette_admin.contrib.mongoengine.fields as internal_fields
@@ -62,7 +62,9 @@ class BaseMongoEngineModelConverter(BaseModelConverter):
         """Convert a single mongoengine field, passed as the `field` keyword argument,
         to its admin field equivalent.
         """
-        return self.get_converter(kwargs.get("field"))(*args, **kwargs)
+        return self.get_converter(cast(me.BaseField, kwargs.get("field")))(
+            *args, **kwargs
+        )
 
     def convert_fields_list(
         self,
@@ -273,7 +275,8 @@ class ModelConverter(BaseMongoEngineModelConverter):
             return self.convert(*args, **kwargs)
         if isinstance(field.field, me.EnumField):
             admin_field = self.convert(*args, **kwargs)
-            admin_field.multiple = True  # type: ignore [attr-defined]
-            admin_field.select2 = True  # type: ignore [attr-defined]
+            assert isinstance(admin_field, sa.EnumField)
+            admin_field.multiple = True
+            admin_field.select2 = True
             return admin_field
         return sa.ListField(self.convert(*args, **kwargs), required=field.required)

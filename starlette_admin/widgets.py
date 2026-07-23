@@ -4,7 +4,7 @@ import uuid
 from abc import ABC
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeAlias
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeAlias, cast
 
 from jinja2 import Environment
 from markupsafe import Markup
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 try:
     import markdown as _markdown
 except ImportError:  # pragma: no cover
-    _markdown = None
+    _markdown = None  # ty: ignore[invalid-assignment]
 
 
 @dataclass
@@ -382,8 +382,12 @@ def normalize_widget(node: WidgetShorthand) -> BaseWidget:
     if isinstance(node, str):
         return FieldRef(node)
     if isinstance(node, tuple):
+        # `Col`/`ColumnWidget` accept `WidgetShorthand` at construction and
+        # normalize it in `__post_init__`, but their fields are declared as
+        # the already-normalized `BaseWidget` for readers after that point.
         cols: list[BaseWidget | Col] = [
-            Col(item, Breakpoints(default=12, md="auto")) for item in node
+            Col(cast(BaseWidget, item), Breakpoints(default=12, md="auto"))
+            for item in node
         ]
         row_cls = (
             CardRowWidget
@@ -396,7 +400,7 @@ def normalize_widget(node: WidgetShorthand) -> BaseWidget:
         )
         return row_cls(children=cols)
     if isinstance(node, list):
-        return ColumnWidget(children=node)
+        return ColumnWidget(children=cast("list[BaseWidget]", node))
     return node
 
 

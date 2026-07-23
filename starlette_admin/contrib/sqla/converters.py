@@ -184,7 +184,7 @@ class BaseSQLAModelConverter(BaseModelConverter):
     def convert_fields_list(
         self, *, fields: Sequence[Any], model: type[Any], **kwargs: Any
     ) -> Sequence[BaseField]:
-        mapper: Mapper = kwargs.get("mapper")  # type: ignore [assignment]
+        mapper: Mapper = kwargs["mapper"]
         _log.debug(
             "convert_fields_list for %s (%d field(s))", model.__name__, len(fields)
         )

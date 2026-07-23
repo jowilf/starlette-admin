@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Literal, overload
 
 from sqlalchemy.orm import InstrumentedAttribute
 from starlette_admin.logging import get_logger
@@ -7,9 +7,17 @@ from starlette_admin.logging import get_logger
 _log = get_logger(__name__)
 
 
+@overload
+def normalize_list(
+    arr: Sequence[Any] | None, is_default_sort_list: Literal[False] = False
+) -> Sequence[str] | None: ...
+@overload
+def normalize_list(
+    arr: Sequence[Any] | None, is_default_sort_list: Literal[True]
+) -> Sequence[str | tuple[str, bool]] | None: ...
 def normalize_list(
     arr: Sequence[Any] | None, is_default_sort_list: bool = False
-) -> Sequence[str] | None:
+) -> Sequence[str | tuple[str, bool]] | None:
     """Normalize a list of column references into plain strings.
 
     Converts each `InstrumentedAttribute` in `arr` to its column key so
