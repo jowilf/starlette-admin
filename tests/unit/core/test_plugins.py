@@ -20,6 +20,30 @@ if str(_FIXTURES_DIR) not in sys.path:
     sys.path.insert(0, str(_FIXTURES_DIR))
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _compile_i18n_plugin_mo():
+    """Compile the fixture plugin's admin.po into admin.mo so that
+    register_translation_catalog can load it at test time."""
+    from babel.messages.mofile import write_mo
+    from babel.messages.pofile import read_po
+
+    po = (
+        _FIXTURES_DIR
+        / "sa_i18n_plugin"
+        / "translations"
+        / "en"
+        / "LC_MESSAGES"
+        / "admin.po"
+    )
+    mo = po.with_suffix(".mo")
+    with open(po, "rb") as f:
+        catalog = read_po(f)
+    with open(mo, "wb") as f:
+        write_mo(f, catalog)
+    yield
+    mo.unlink(missing_ok=True)
+
+
 class _NoopMiddleware:
     def __init__(self, app):
         self.app = app
@@ -208,3 +232,51 @@ def test_default_hooks_are_empty():
     assert plugin.resolved_package() == "sa_empty_plugin"
     assert admin.templates.env.globals["plugin_css_links"](None) == []
     assert admin.templates.env.globals["plugin_js_links"](None) == []
+
+
+class _I18nPlugin(BasePlugin):
+    """Plugin that ships a translations/ folder with a single en catalog."""
+
+    name = "i18nplugin"
+    package = "sa_i18n_plugin"
+
+
+def test_plugin_with_translations_merges_catalog():
+    """A plugin that ships translations/ has its MO catalog merged into the
+    active i18n catalogs during Admin construction."""
+    from starlette_admin.i18n import gettext
+
+    admin = BaseAdmin(secret_key="test", plugins=[_I18nPlugin()])
+
+    assert ("sa_i18n_plugin", "admin") in admin._plugin_translation_catalogs
+    assert gettext("test_plugin_greeting") == "Hello from test plugin"
+
+
+def test_register_catalog_noop_without_translations_dir():
+    """register_translation_catalog silently returns when the package has no
+    translations/ folder."""
+    from starlette_admin.i18n import register_translation_catalog, translations
+
+    snapshot = {loc: t for loc, t in translations.items()}
+    register_translation_catalog("os")
+    assert {loc: type(t).__name__ for loc, t in translations.items()} == {
+        loc: type(t).__name__ for loc, t in snapshot.items()
+    }
+
+
+def test_register_catalog_replaces_null_translations():
+    """When the active catalog for a locale is a NullTranslations (not a full
+    Translations), register_translation_catalog replaces it entirely instead
+    of merging."""
+    from babel.support import NullTranslations, Translations as BabelTranslations
+    from starlette_admin.i18n import register_translation_catalog, translations
+
+    saved = translations["en"]
+    translations["en"] = NullTranslations()
+    try:
+        register_translation_catalog("sa_i18n_plugin")
+        result = translations["en"]
+        assert isinstance(result, BabelTranslations)
+        assert result.gettext("test_plugin_greeting") == "Hello from test plugin"
+    finally:
+        translations["en"] = saved

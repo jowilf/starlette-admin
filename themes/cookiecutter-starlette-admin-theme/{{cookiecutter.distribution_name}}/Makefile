@@ -1,8 +1,7 @@
 # {{ cookiecutter.distribution_name }} development tasks.
 PACKAGE = src/{{ cookiecutter.package_slug }}
 TRANSLATIONS = $(PACKAGE)/translations
-DOMAIN = admin
-POT = $(TRANSLATIONS)/$(DOMAIN).pot
+POT = $(TRANSLATIONS)/messages.pot
 
 .PHONY: install test lint format extract-messages update-messages compile-messages
 
@@ -26,7 +25,7 @@ extract-messages:
 	uv run pybabel extract -F babel.cfg -o $(POT) $(PACKAGE)
 
 update-messages: extract-messages
-	uv run pybabel update -i $(POT) -d $(TRANSLATIONS) -D $(DOMAIN)
+	uv run pybabel update -i $(POT) -d $(TRANSLATIONS)
 
 compile-messages:
-	uv run pybabel compile -d $(TRANSLATIONS) -D $(DOMAIN)
+	uv run pybabel compile -d $(TRANSLATIONS)

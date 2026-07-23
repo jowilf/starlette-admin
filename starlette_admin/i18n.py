@@ -115,6 +115,33 @@ try:
         "current_translation", default=translations[DEFAULT_LOCALE]
     )
 
+    def register_translation_catalog(package: str, domain: str = "admin") -> None:
+        """Merge the compiled catalogs shipped under ``<package>/translations``
+        into the active catalogs.
+
+        For each supported locale whose MO file is present, the catalog is
+        loaded and merged into ``translations[locale]``; later calls win for
+        shared message ids. Used at ``Admin`` construction to fold plugin and
+        theme catalogs on top of the core ones. No-op when ``package`` ships no
+        ``translations/`` folder.
+        """
+        import importlib.resources
+
+        folder = importlib.resources.files(package) / "translations"
+        if not folder.is_dir():
+            return
+        for locale in SUPPORTED_LOCALES:
+            mo = folder / locale / "LC_MESSAGES" / f"{domain}.mo"
+            if not mo.is_file():
+                continue
+            with mo.open("rb") as fp:
+                extra = Translations(fp=fp, domain=domain)
+            target = translations[locale]
+            if isinstance(target, Translations):
+                target.merge(extra)
+            elif isinstance(extra, Translations):
+                translations[locale] = extra
+
     def set_locale(locale: str) -> None:
         _current_locale.set(locale if locale in translations else DEFAULT_LOCALE)
         _current_translation.set(translations[get_locale()])
@@ -165,6 +192,9 @@ try:
 
 except ImportError:
     # Provide i18n support even if Babel is not installed.
+
+    def register_translation_catalog(package: str, domain: str = "admin") -> None:
+        return None
 
     def set_locale(locale: str) -> None:
         pass

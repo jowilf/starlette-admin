@@ -51,6 +51,12 @@ class BasePlugin:
     #: package, so a plugin laid out conventionally never sets it.
     package: ClassVar[str | None] = None
 
+    #: Gettext domain under which the plugin's MO catalogs are compiled
+    #: (``<package>/translations/<locale>/LC_MESSAGES/<domain>.mo``). Matches
+    #: the core ``admin`` domain so plugin messages merge into the same
+    #: catalog.
+    translation_domain: ClassVar[str] = "admin"
+
     # -- Declarative hooks (return data, admin wires it) ---------------------
     #
     # Templates, static files, and translation catalogs are NOT hooks: they

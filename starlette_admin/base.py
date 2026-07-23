@@ -70,6 +70,7 @@ from starlette_admin.i18n import (
     get_timezone_display_name,
     gettext,
     ngettext,
+    register_translation_catalog,
 )
 from starlette_admin.i18n import lazy_gettext as _
 from starlette_admin.importers import (
@@ -234,6 +235,7 @@ class BaseAdmin:
         )
         self._register_theme()
         self._register_plugins(plugins or [])
+        self._register_translations()
         _log.debug(
             "Admin: setting up Jinja2 templates (templates_dir=%r)", templates_dir
         )
@@ -479,8 +481,8 @@ class BaseAdmin:
         return routes
 
     def _register_theme(self) -> None:
-        """Wire `self.theme` into this admin: its `templates/` and `static/`
-        folders, if present, and its icon set.
+        """Wire `self.theme` into this admin: its `templates/`, `static/`,
+        and `translations/` folders, if present, and its icon set.
         """
         package = self.theme.resolved_package()
         root = importlib.resources.files(package)
@@ -494,6 +496,13 @@ class BaseAdmin:
         )
         self._theme_static_package: tuple[str, str] | None = (
             (package, "static") if (root / "static").is_dir() else None
+        )
+        # Theme catalogs are merged after plugin ones in _register_translations
+        # so a theme can reword messages a plugin introduced.
+        self._theme_translation_catalogs: list[tuple[str, str]] = (
+            [(package, self.theme.translation_domain)]
+            if (root / "translations").is_dir()
+            else []
         )
         self._theme_icon_set: IconSet = self.theme.get_icon_set()
         self._icon_registry: dict[str, str] = dict(self._theme_icon_set.icons)
@@ -515,6 +524,7 @@ class BaseAdmin:
         self._plugin_template_loaders: list[PackageLoader] = []
         self._plugin_prefix_loaders: dict[str, PackageLoader] = {}
         self._plugin_static_packages: list[tuple[str, str]] = []
+        self._plugin_translation_catalogs: list[tuple[str, str]] = []
         self._plugin_template_globals: dict[str, Any] = {}
         self._plugin_template_filters: dict[str, Callable] = {}
         for plugin in plugins:
@@ -539,7 +549,8 @@ class BaseAdmin:
     def _register_plugin_assets(
         self, plugin: BasePlugin, name: str, package: str
     ) -> None:
-        """Wire `plugin`'s `templates/` and `static/` folders, if present."""
+        """Wire `plugin`'s `templates/`, `static/`, and `translations/`
+        folders, if present."""
         root = importlib.resources.files(package)
         if (root / "templates").is_dir():
             validate_plugin_namespace(root / "templates", name, "templates")
@@ -550,6 +561,10 @@ class BaseAdmin:
         if (root / "static").is_dir():
             validate_plugin_namespace(root / "static", name, "static")
             self._plugin_static_packages.append((package, "static"))
+        if (root / "translations").is_dir():
+            self._plugin_translation_catalogs.append(
+                (package, plugin.translation_domain)
+            )
 
     def _register_plugin(self, plugin: BasePlugin) -> None:
         """Validate and wire a single plugin. Split out of
@@ -572,6 +587,18 @@ class BaseAdmin:
         plugin.setup(self)
         self.plugins[name] = plugin
         _log.info("_register_plugins: %r registered (package=%r)", name, package)
+
+    def _register_translations(self) -> None:
+        """Merge plugin then theme catalogs into the active i18n catalogs.
+
+        Plugins are merged first, the theme last, so a theme can reword any
+        message introduced by a plugin or core (mirroring the template loader
+        precedence: theme above plugins above core).
+        """
+        for package, domain in self._plugin_translation_catalogs:
+            register_translation_catalog(package, domain)
+        for package, domain in self._theme_translation_catalogs:
+            register_translation_catalog(package, domain)
 
     def _setup_templates(self) -> None:
         env = Environment(

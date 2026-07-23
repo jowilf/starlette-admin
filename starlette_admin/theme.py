@@ -184,18 +184,25 @@ class BaseTheme:
     it can restyle their templates too. Exactly one theme is active at a
     time.
 
-    A theme's surface is: the `templates/` and `static/` folders under its
-    `package`, an `IconSet` swapping the icon library the whole admin
-    renders through, and template variables exposed to every page.
+    A theme's surface is: the `templates/`, `static/`, and `translations/`
+    folders under its `package`, an `IconSet` swapping the icon library the
+    whole admin renders through, and template variables exposed to every page.
     """
 
     #: Identifier used for logging. Unlike a plugin name, it does not
     #: namespace templates or static files: a theme owns the global templates.
     name: ClassVar[str]
 
-    #: Import package holding the theme's `templates/` and `static/`
-    #: folders. Defaults to the theme class's top-level package.
+    #: Import package holding the theme's `templates/`, `static/`, and
+    #: `translations/` folders. Defaults to the theme class's top-level
+    #: package.
     package: ClassVar[str | None] = None
+
+    #: Gettext domain under which the theme's MO catalogs are compiled
+    #: (``<package>/translations/<locale>/LC_MESSAGES/<domain>.mo``). Matches
+    #: the core ``admin`` domain so theme messages merge into the same
+    #: catalog.
+    translation_domain: ClassVar[str] = "admin"
 
     @abstractmethod
     def get_icon_set(self) -> IconSet:
