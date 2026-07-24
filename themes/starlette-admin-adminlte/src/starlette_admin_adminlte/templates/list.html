@@ -1,0 +1,253 @@
+{% extends "@core/list.html" %}
+{# Macros must be re-imported here: names imported at the top level of the
+   parent (@core/list.html) are not in scope inside a child-overridden block. #}
+{% from "_column_header.html" import render as column_header with context %}
+{% from "_pagination.html" import render as pagination with context %}
+{% from "_filter_bar.html" import render as filter_bar with context %}
+{% from "_filter_builder.html" import render as filter_builder with context %}
+{% from "actions.html" import action_item with context %}
+{% set inline_edit_enabled = view.inline_editable_fields and view.can_edit(request) %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title d-flex align-items-center gap-3">
+                        {% block list_search %}
+                            <form method="GET" class="d-flex">
+                                <div class="input-group">
+                                    <input type="search"
+                                           name="q"
+                                           value="{{ list_params.q or '' }}"
+                                           class="form-control"
+                                           placeholder="{{ _('Search') }}..."
+                                           aria-label="{{ _('Search in list') }}"
+                                           autocomplete="off" />
+                                    <button class="btn btn-outline-secondary" type="submit">
+                                        <i class="{{ icon('list.search') }}"></i>
+                                    </button>
+                                </div>
+                                {% for s_name, s_dir in list_params.sorts %}
+                                    <input type="hidden" name="sort" value="{{ s_name }}__{{ s_dir }}" />
+                                {% endfor %}
+                                {% if list_params.page_size != view.page_size %}
+                                    <input type="hidden" name="page_size" value="{{ list_params.page_size }}" />
+                                {% endif %}
+                                {% if list_params.visible_cols is not none %}
+                                    <input type="hidden"
+                                           name="cols"
+                                           value="{{ list_params.visible_cols | join(',') }}" />
+                                {% endif %}
+                                {% if raw_filter %}
+                                    <input type="hidden" name="filter" value="{{ raw_filter }}" />
+                                {% endif %}
+                            </form>
+                        {% endblock %}
+                    </div>
+                    {# ===== Toolbar — AdminLTE 4 .card-tools replaces Tabler's
+                         .card-actions / .btn-list wrapper. #}
+                    <div class="card-tools d-flex flex-wrap gap-2">
+                        {% block list_toolbar %}
+                            {% include "actions.html" %}
+                            {{ filter_builder(view,list_params, filter_chips, filter_builder_fields) }}
+                            {% if view.column_visibility %}
+                                <div class="dropdown" id="column-visibility-dropdown">
+                                    <button type="button"
+                                            class="btn btn-outline-secondary dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            data-bs-auto-close="outside">
+                                        <i class="{{ icon('list.columns') }} me-2"></i>{{ _("Columns") }}
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2">
+                                        {% for field in all_fields %}
+                                            <label class="dropdown-item">
+                                                <input type="checkbox"
+                                                       class="form-check-input me-2 column-visibility-toggle"
+                                                       value="{{ field.name }}"
+                                                       {% if list_params.visible_cols is none or field.name in list_params.visible_cols %}checked{% endif %}>
+                                                {{ field.label }}
+                                            </label>
+                                        {% endfor %}
+                                        <div class="dropdown-divider"></div>
+                                        <div class="d-flex justify-content-between align-items-center px-2 pt-1">
+                                            <a href="{{ list_url(request, cols=None, page=None) }}"
+                                               class="btn btn-sm btn-link">{{ _("Reset") }}</a>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-primary"
+                                                    onclick="applyColumnVisibility()">{{ _("Apply") }}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% for action in _actions | selectattr("dedicated_button") | list %}
+                                {{ action_item(action, dedicated=True) }}
+                            {% endfor %}
+                            {% if view.can_import(request) and view.importers %}
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modal-import">
+                                    <i class="{{ icon('list.import') }} me-2"></i>{{ _("Import") }}
+                                </button>
+                            {% endif %}
+                            {% block list_toolbar_extra %}{% endblock %}
+                            {% if view.can_create(request) %}
+                                <a href="{{ create_url(request, view.key) }}"
+                                   class="btn btn-primary ms-2">
+                                    <i class="{{ icon('list.new') }} me-2"></i>
+                                    {{ _("New %(name)s", name=view.display_name) }}
+                                </a>
+                            {% endif %}
+                        {% endblock %}
+                    </div>
+                </div>
+                {% if filter_chips %}
+                    <div class="card-body border-bottom py-2">{{ filter_bar(filter_chips, filter_logic, list_params) }}</div>
+                {% endif %}
+                {% block list_before_table %}
+                {% endblock %}
+                {% block list_table %}
+                    {% if total > (rows | length) %}
+                        <div id="select-all-banner"
+                             class="alert alert-info py-2 mb-0 d-none d-flex align-items-center justify-content-between"
+                             role="alert">
+                            <span id="select-all-banner-page">
+                                {{ _("All %(count)s rows on this page are selected.", count=(rows | length) ) }}
+                                <a href="#" id="select-all-matching-link">{{ _("Select all %(total)s rows matching the current filter.", total=total) }}</a>
+                            </span>
+                            <span id="select-all-banner-all" class="d-none">
+                                {{ _("All %(total)s rows matching the current filter are selected.", total=total) }}
+                                <a href="#" id="clear-select-all-link">{{ _("Clear selection") }}</a>
+                            </span>
+                        </div>
+                    {% endif %}
+                    <div class="table-responsive">
+                        {# card-table (Tabler borderless) -> table-hover (Bootstrap/AdminLTE). #}
+                        <table class="table table-vcenter table-hover">
+                            <thead>
+                                {% block list_header %}
+                                    <tr>
+                                        <th class="w-1 checkbox-cell">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   id="select-all-rows"
+                                                   aria-label="{{ _('Select all rows') }}" />
+                                        </th>
+                                        {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}<th class="w-1"></th>{% endif %}
+                                        {% for field in fields %}<th data-column="{{ field.name }}">{{ column_header(field, list_params) }}</th>{% endfor %}
+                                        {% if view.row_actions_position.value == "AFTER_COLUMNS" %}<th class="w-1"></th>{% endif %}
+                                    </tr>
+                                {% endblock %}
+                            </thead>
+                            <tbody>
+                                {% for row in rows %}
+                                    {# The row markup lives in _list_row.html so the inline-edit
+                                       row endpoint can render an identical replacement row. #}
+                                    {% block list_row scoped %}
+                                        {% include "_list_row.html" %}
+                                    {% endblock %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="{{ (fields | length) + 2 }}"
+                                            class="text-center text-muted py-4">
+                                            {% block list_empty scoped %}{{ _("No data") }}{% endblock %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endblock %}
+                {% block list_after_table %}{% endblock %}
+                {% block list_footer %}
+                    <div class="card-footer d-flex align-items-center">
+                        {{ pagination(list_params, view, total, total_pages, range_start, range_end) }}
+                    </div>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block head_css %}
+    {{ super() }}
+    <style>
+        {# ===================================================================
+           Polyfills for Tabler-specific classes used by the partials this
+           page includes (actions.html, _filter_builder.html, _filter_bar.html,
+           _column_header.html, _pagination.html, row-actions.html) that have
+           no equivalent in Bootstrap 5 / AdminLTE 4.
+
+           Keeping the core partials rendering correctly avoids overriding each
+           one individually. These rules supplement the Tabler-only constructs
+           inherited via {{ super() }} (e.g. the .checkbox-cell cursor, which
+           already works under Bootstrap).
+           =================================================================== #}
+
+        /* .w-1 -> Tabler fixed width used for checkbox / actions columns */
+        .w-1 {
+            width: 2rem;
+        }
+
+        /* .bg-blue-lt -> light primary background (filter chips) */
+        .bg-blue-lt {
+            background-color: rgba(var(--bs-primary-rgb), 0.12);
+        }
+
+        /* .text-primary-fg -> primary text color (sort index badge) */
+        .text-primary-fg {
+            color: var(--bs-primary);
+        }
+
+        /* .badge-pill -> pill-shaped badge (BS5 uses rounded-pill) */
+        .badge-pill {
+            border-radius: var(--bs-border-radius-pill);
+        }
+
+        /* .btn-ghost-primary -> ghost-style icon button (row actions kebab) */
+        .btn-ghost-primary {
+            color: var(--bs-primary);
+            background-color: transparent;
+            border-color: transparent;
+        }
+        .btn-ghost-primary:hover {
+            color: var(--bs-primary);
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+        }
+
+        /* .btn-action -> compact icon-only button (filter builder remove) */
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            line-height: 1;
+        }
+
+        {# Bootstrap 5 leaves a bare .btn transparent; Tabler gives it a visible
+           default. The toolbar's main controls (Search, Columns, Import,
+           Actions, With selected, Add filter, Add group) already carry the
+           explicit btn-outline-secondary class. This rule covers the remaining
+           bare .btn emitted by the partials: dedicated action links
+           (action_item dedicated=True) and the Filters dropdown toggle. It
+           mirrors .btn-outline-secondary so they share the same neutral,
+           theme-aware look. #}
+        .card-tools .btn:not([class*="btn-"]) {
+            --bs-btn-color: var(--bs-secondary-color);
+            --bs-btn-bg: transparent;
+            --bs-btn-border-color: var(--bs-secondary);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-hover-bg: var(--bs-secondary);
+            --bs-btn-hover-border-color: var(--bs-secondary);
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: var(--bs-secondary);
+            --bs-btn-active-border-color: var(--bs-secondary);
+            --bs-btn-disabled-color: var(--bs-secondary);
+            --bs-btn-disabled-bg: transparent;
+            --bs-btn-disabled-border-color: var(--bs-secondary);
+        }
+
+        {# row-clickable hover: core's head_css (via super()) references
+           --tblr-* variables that don't exist under AdminLTE. Reproduce the
+           hover affordance on Bootstrap variables instead. #}
+        tbody tr.row-clickable:hover > * {
+            background-color: rgba(var(--bs-emphasis-color-rgb, var(--bs-body-color-rgb)), 0.03);
+        }
+    </style>
+{% endblock %}

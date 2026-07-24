@@ -61,6 +61,9 @@ class {{ cookiecutter.class_prefix }}Icons(IconSet):
         # Inline forms
         "inline.add_row": "ti ti-plus",
         "inline.delete_row": "ti ti-trash",
+        # Inline cell editing (list page popover)
+        "inline_edit.save": "ti ti-check",
+        "inline_edit.cancel": "ti ti-x",
         # Collapsible panels (inline formsets, panel widget)
         "panel.collapse_toggle": "ti ti-chevron-down",
         # Filter bar / builder
@@ -70,6 +73,9 @@ class {{ cookiecutter.class_prefix }}Icons(IconSet):
         "filter_builder.remove": "ti ti-trash",
         # Import modal
         "import.preview": "ti ti-eye",
+        # Create/edit form footer
+        "form.cancel": "ti ti-x",
+        "form.save": "ti ti-arrow-right",
     }
 
     def css_links(self, request: Request) -> list[str]:

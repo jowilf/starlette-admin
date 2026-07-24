@@ -4,72 +4,86 @@
      role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{ _("Import") }}</h5>
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="{{ _('Close') }}"></button>
-            </div>
+            {% block import_modal_header %}
+                <div class="modal-header">
+                    <h5 class="modal-title">{% block import_modal_title %}{{ _("Import") }}{% endblock %}</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="{{ _('Close') }}"></button>
+                </div>
+            {% endblock %}
             <div class="modal-body">
-                <ul class="steps steps-counter mb-4" id="import-steps">
-                    <li class="step-item" id="import-step-indicator-upload">{{ _("Upload") }}</li>
-                    <li class="step-item" id="import-step-indicator-preview">{{ _("Preview") }}</li>
-                    <li class="step-item" id="import-step-indicator-result">{{ _("Result") }}</li>
-                </ul>
+                {% block import_steps %}
+                    <ul class="steps steps-counter mb-4" id="import-steps">
+                        <li class="step-item" id="import-step-indicator-upload">{{ _("Upload") }}</li>
+                        <li class="step-item" id="import-step-indicator-preview">{{ _("Preview") }}</li>
+                        <li class="step-item" id="import-step-indicator-result">{{ _("Result") }}</li>
+                    </ul>
+                {% endblock %}
                 <div id="import-step-upload">
-                    <form id="import-form" enctype="multipart/form-data" novalidate>
-                        <div class="mb-3">
-                            <label class="form-label" for="import-format">{{ _("Format") }}</label>
-                            <select class="form-select" name="format" id="import-format">
-                                {% for fmt in view.importers %}
-                                    <option value="{{ fmt.format_key or fmt.extension }}">{{ (fmt.format_key or fmt.extension) | upper }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="import-file">{{ _("File") }}</label>
-                            <input type="file"
-                                   class="form-control"
-                                   name="file"
-                                   id="import-file"
-                                   required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-check">
-                                <input type="checkbox" class="form-check-input" id="import-update-existing">
-                                <span class="form-check-label">{{ _("Update existing records by primary key") }}</span>
-                            </label>
-                        </div>
-                    </form>
+                    {% block import_upload_form %}
+                        <form id="import-form" enctype="multipart/form-data" novalidate>
+                            <div class="mb-3">
+                                <label class="form-label" for="import-format">{{ _("Format") }}</label>
+                                <select class="form-select" name="format" id="import-format">
+                                    {% for fmt in view.importers %}
+                                        <option value="{{ fmt.format_key or fmt.extension }}">{{ (fmt.format_key or fmt.extension) | upper }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="import-file">{{ _("File") }}</label>
+                                <input type="file"
+                                       class="form-control"
+                                       name="file"
+                                       id="import-file"
+                                       required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="import-update-existing">
+                                    <span class="form-check-label">{{ _("Update existing records by primary key") }}</span>
+                                </label>
+                            </div>
+                        </form>
+                    {% endblock %}
                 </div>
-                <div id="import-step-preview" class="d-none">
-                    <div id="import-preview-loading" class="d-none text-center py-5">
-                        <div class="spinner-border text-primary" role="status"></div>
-                        <div class="text-muted mt-2">{{ _("Loading preview...") }}</div>
+                {% block import_preview %}
+                    <div id="import-step-preview" class="d-none">
+                        <div id="import-preview-loading" class="d-none text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <div class="text-muted mt-2">{{ _("Loading preview...") }}</div>
+                        </div>
+                        <div id="import-preview-content">
+                            <div id="import-preview-summary" class="mb-3"></div>
+                            <div id="import-preview-mapping" class="mb-3"></div>
+                            <div id="import-preview-sample" class="mb-3"></div>
+                            <div id="import-preview-errors"></div>
+                        </div>
                     </div>
-                    <div id="import-preview-content">
-                        <div id="import-preview-summary" class="mb-3"></div>
-                        <div id="import-preview-mapping" class="mb-3"></div>
-                        <div id="import-preview-sample" class="mb-3"></div>
-                        <div id="import-preview-errors"></div>
+                {% endblock %}
+                {% block import_result %}
+                    <div id="import-step-result" class="d-none">
+                        <div id="import-result-summary" class="mb-3"></div>
+                        <div id="import-result-errors"></div>
                     </div>
-                </div>
-                <div id="import-step-result" class="d-none">
-                    <div id="import-result-summary" class="mb-3"></div>
-                    <div id="import-result-errors"></div>
-                </div>
-                <div id="import-error" class="alert alert-danger d-none" role="alert"></div>
+                {% endblock %}
+                {% block import_error_alert %}
+                    <div id="import-error" class="alert alert-danger d-none" role="alert"></div>
+                {% endblock %}
             </div>
-            <div class="modal-footer">
-                <button type="button"
-                        class="btn btn-link link-secondary me-auto"
-                        data-bs-dismiss="modal">{{ _("Cancel") }}</button>
-                <button type="button" class="btn btn-link d-none" id="import-back">{{ _("Back") }}</button>
-                <button type="button" class="btn btn-primary" id="import-submit">
-                    <i class="{{ icon('import.preview') }} me-2"></i>{{ _("Preview") }}
-                </button>
-            </div>
+            {% block import_modal_footer %}
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-link link-secondary me-auto"
+                            data-bs-dismiss="modal">{{ _("Cancel") }}</button>
+                    <button type="button" class="btn btn-link d-none" id="import-back">{{ _("Back") }}</button>
+                    <button type="button" class="btn btn-primary" id="import-submit">
+                        <i class="{{ icon('import.preview') }} me-2"></i>{{ _("Preview") }}
+                    </button>
+                </div>
+            {% endblock %}
         </div>
     </div>
 </div>

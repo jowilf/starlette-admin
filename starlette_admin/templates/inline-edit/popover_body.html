@@ -1,0 +1,37 @@
+{# Inline-edit popover body (static/js/list.js `initInlineEdit`): the control
+   slot starts in a loading state (spinner) and is swapped with the
+   server-rendered form fragment (`inline-edit/field.html`) once fetched. The
+   save button is the form's submit button so Enter in a single-line input
+   saves; it stays disabled until the fragment has loaded. The cancel button
+   is wrapped in `inline_edit_cancel_button` so a theme can restyle it (e.g.
+   give it a visible Bootstrap button variant) without duplicating the rest
+   of this fragment. The `.inline-edit-cancel` class is required by list.js. #}
+<template id="inline-edit-popover-body-template">
+    <form class="inline-edit-form" novalidate>
+        <div class="inline-edit-main">
+            <div class="inline-edit-control">
+                <div class="inline-edit-loading-state">
+                    <span class="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"></span>
+                </div>
+            </div>
+            <div class="inline-edit-actions">
+                <button type="submit"
+                        class="btn btn-primary btn-icon inline-edit-save"
+                        aria-label="{{ _('Save') }}"
+                        disabled>
+                    <i class="{{ icon('inline_edit.save') }}"></i>
+                </button>
+                {% block inline_edit_cancel_button %}
+                    <button type="button"
+                            class="btn btn-icon inline-edit-cancel"
+                            aria-label="{{ _('Cancel') }}">
+                        <i class="{{ icon('inline_edit.cancel') }}"></i>
+                    </button>
+                {% endblock %}
+            </div>
+        </div>
+        <div class="inline-edit-errors" role="alert" hidden></div>
+    </form>
+</template>

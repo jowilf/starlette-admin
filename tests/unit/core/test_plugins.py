@@ -257,7 +257,7 @@ def test_register_catalog_noop_without_translations_dir():
     translations/ folder."""
     from starlette_admin.i18n import register_translation_catalog, translations
 
-    snapshot = {loc: t for loc, t in translations.items()}
+    snapshot = dict(translations.items())
     register_translation_catalog("os")
     assert {loc: type(t).__name__ for loc, t in translations.items()} == {
         loc: type(t).__name__ for loc, t in snapshot.items()
@@ -268,7 +268,8 @@ def test_register_catalog_replaces_null_translations():
     """When the active catalog for a locale is a NullTranslations (not a full
     Translations), register_translation_catalog replaces it entirely instead
     of merging."""
-    from babel.support import NullTranslations, Translations as BabelTranslations
+    from babel.support import NullTranslations
+    from babel.support import Translations as BabelTranslations
     from starlette_admin.i18n import register_translation_catalog, translations
 
     saved = translations["en"]

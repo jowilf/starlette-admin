@@ -1,0 +1,8 @@
+{% extends "@core/modals/import.html" %}
+{% block import_steps %}
+    <ol class="wizard-steps mb-4" id="wizard-steps">
+        <li class="active" data-step="0" id="import-step-indicator-upload">{{ _("Upload") }}</li>
+        <li data-step="1" id="import-step-indicator-preview">{{ _("Preview") }}</li>
+        <li data-step="2" id="import-step-indicator-result">{{ _("Result") }}</li>
+    </ol>
+{% endblock %}

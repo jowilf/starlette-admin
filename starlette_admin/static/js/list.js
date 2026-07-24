@@ -351,6 +351,8 @@ function initInlineEdit(config, selection) {
 
   const templateEl = document.getElementById("inline-edit-popover-template");
   const popoverTemplate = templateEl ? templateEl.innerHTML : undefined;
+  const bodyTemplateEl = document.getElementById("inline-edit-popover-body-template");
+  const popoverBodyHtml = bodyTemplateEl ? bodyTemplateEl.innerHTML : undefined;
 
   // Field widgets that render outside the popover (select2 dropdown,
   // flatpickr calendar, TinyMCE dialogs, JSONEditor modals) must not count
@@ -362,33 +364,6 @@ function initInlineEdit(config, selection) {
 
   function csrfToken() {
     return (typeof Cookies !== "undefined" && Cookies.get("starlette_admin_csrftoken")) || "";
-  }
-
-  // The popover body: the control slot starts in a loading state (spinner)
-  // and is filled with the server-rendered form fragment once fetched. The
-  // save button is the form's submit button so Enter in a single-line input
-  // saves; it stays disabled until the fragment has loaded.
-  function popoverBodyHtml() {
-    return (
-      '<form class="inline-edit-form" novalidate>' +
-      '<div class="inline-edit-main">' +
-      '<div class="inline-edit-control">' +
-      '<div class="inline-edit-loading-state">' +
-      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>' +
-      "</div>" +
-      "</div>" +
-      '<div class="inline-edit-actions">' +
-      '<button type="submit" class="btn btn-primary btn-icon inline-edit-save" aria-label="Save" disabled><i class="' +
-      StarletteAdmin.getIcon("inline_edit.save", "fa-solid fa-check") +
-      '"></i></button>' +
-      '<button type="button" class="btn btn-icon inline-edit-cancel" aria-label="Cancel"><i class="' +
-      StarletteAdmin.getIcon("inline_edit.cancel", "fa-solid fa-xmark") +
-      '"></i></button>' +
-      "</div>" +
-      "</div>" +
-      '<div class="inline-edit-errors" role="alert" hidden></div>' +
-      "</form>"
-    );
   }
 
   function destroyEditors(controlEl) {
@@ -551,7 +526,7 @@ function initInlineEdit(config, selection) {
     const popover = new bs.Popover(cell, {
       html: true,
       sanitize: false,
-      content: popoverBodyHtml(),
+      content: popoverBodyHtml,
       template: popoverTemplate,
       placement: "bottom",
       fallbackPlacements: ["top"],

@@ -1,0 +1,231 @@
+{% extends "@core/layout.html" %}
+{% import "macros/views.html" as macros with context %}
+{% if is_auth_enabled and not request.state.is_anonymous %}
+    {% set current_user = request.state.admin_user %}
+{% endif %}
+{% block body %}
+    <div class="app-wrapper">
+        {# ===== Top header (app-header) =====
+             Always rendered in AdminLTE 4 because it carries the
+             sidebar toggle. Right-side controls stay conditional. #}
+        {% block navbar %}
+            <nav class="app-header navbar navbar-expand bg-body">
+                <div class="container-fluid">
+                    {# Left: sidebar toggle + extensibility hook #}
+                    <ul class="navbar-nav">
+                        {% block navbar_start %}
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   data-lte-toggle="sidebar"
+                                   href="#"
+                                   role="button"
+                                   aria-label="{{ _("Toggle sidebar") }}">
+                                    <i class="fa-solid fa-bars"></i>
+                                </a>
+                            </li>
+                        {% endblock %}
+                    </ul>
+                    {# Right: extras + language/timezone switchers + user menu #}
+                    <ul class="navbar-nav ms-auto">
+                        {% block navbar_extra %}
+                        {% endblock %}
+                        {% if i18n_config.language_switcher %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link"
+                                   data-bs-toggle="dropdown"
+                                   href="#"
+                                   role="button"
+                                   aria-expanded="false">
+                                    <i class="{{ icon("nav.language") }}"></i>
+                                    <span class="d-none d-md-inline ms-1">{{ get_locale_display_name(get_locale() ) }}</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% for lang in i18n_config.language_switcher %}
+                                        <li>
+                                            <a href="#"
+                                               class="dropdown-item language-switcher-item"
+                                               data-lang="{{ lang }}"
+                                               data-cookie-name="{{ i18n_config.language_cookie_name }}">{{ get_locale_display_name(lang) }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                        {% if timezone_config and timezone_config.timezone_switcher %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link"
+                                   data-bs-toggle="dropdown"
+                                   href="#"
+                                   role="button"
+                                   aria-expanded="false">
+                                    <i class="{{ icon("nav.world") }}"></i>
+                                    <span class="d-none d-md-inline ms-1">{{ get_timezone_display_name(get_timezone() ) }}</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% for tz in timezone_config.timezone_switcher %}
+                                        <li>
+                                            <a href="#"
+                                               class="dropdown-item timezone-switcher-item"
+                                               data-tz="{{ tz }}"
+                                               data-cookie-name="{{ timezone_config.timezone_cookie_name }}">{{ get_timezone_display_name(tz, show_offset=True) }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                        {% if current_user %}
+                            <li class="nav-item dropdown ms-2">
+                                <a href="#"
+                                   class="nav-link d-flex align-items-center lh-1 text-reset p-0"
+                                   data-bs-toggle="dropdown"
+                                   role="button"
+                                   aria-expanded="false"
+                                   aria-label="{{ _("Open user menu") }}">
+                                    {% block user_menu_trigger %}
+                                        {% if current_user.photo_url %}
+                                            <img src="{{ current_user.photo_url }}"
+                                                 class="rounded-circle"
+                                                 alt="{{ current_user.username }}"
+                                                 style="width: 1.5rem;
+                                                        height: 1.5rem" />
+                                        {% else %}
+                                            <i class="{{ icon("nav.user") }}"></i>
+                                        {% endif %}
+                                        <div class="d-none d-md-block ps-2">
+                                            <div>{{ current_user.username }}</div>
+                                        </div>
+                                    {% endblock %}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% block user_menu_items %}
+                                        <li>
+                                            <form action="{{ request.url_for(__name__ ~ ':logout') }}"
+                                                  method="post"
+                                                  class="m-0">
+                                                {{ csrf_input(request) }}
+                                                <button type="submit" class="dropdown-item">{{ _("Logout") }}</button>
+                                            </form>
+                                        </li>
+                                    {% endblock %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+        {% endblock %}
+        {# ===== Sidebar (app-sidebar) ===== #}
+        {% block sidebar %}
+            <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+                <div class="sidebar-brand">
+                    <a class="brand-link" href="{{ url_for(__name__ ~ ':index') }}">
+                        {% block brand %}
+                            {% if logo_url(request) %}
+                                <img src="{{ logo_url(request) }}" class="brand-image opacity-75 shadow" />
+                                <span class="brand-text fw-light">{{ app_title }}</span>
+                            {% else %}
+                                <span class="brand-text fw-light">{{ app_title }}</span>
+                            {% endif %}
+                        {% endblock %}
+                    </a>
+                </div>
+                <div class="sidebar-wrapper">
+                    <nav class="mt-2" aria-label="{{ _("Main navigation") }}">
+                        {% block sidebar_menu %}
+                            <ul class="nav sidebar-menu flex-column"
+                                data-lte-toggle="treeview"
+                                data-accordion="false"
+                                role="menu">
+                                {% for view in views if view.is_accessible(request) %}
+                                    {% if (view | is_link) %}
+                                        {{ macros.extern_link(view) }}
+                                    {% elif (view | is_custom_view) and view.add_to_menu %}
+                                        {{ macros.custom_link(view) }}
+                                    {% elif (view | is_model_view) %}
+                                        {{ macros.view_link(view) }}
+                                    {% elif (view | is_dropdown) %}
+                                        {{ macros.dropdown_link(view) }}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if is_auth_enabled and current_user is none %}
+                                    <li class="nav-item mt-2">
+                                        <form action="{{ request.url_for(__name__ ~ ':logout') }}"
+                                              method="post"
+                                              class="m-0">
+                                            {{ csrf_input(request) }}
+                                            <button type="submit" class="nav-link">
+                                                <i class="nav-icon {{ icon("auth.logout") }}"></i>
+                                                <p>{{ _("Logout") }}</p>
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        {% endblock %}
+                    </nav>
+                    {% block sidebar_footer %}{% endblock %}
+                </div>
+            </aside>
+        {% endblock %}
+        {# ===== Main content (app-main) ===== #}
+        <main class="app-main">
+            <div class="app-content-header">
+                <div class="container-fluid">
+                    {% block header %}
+                    {% endblock %}
+                </div>
+            </div>
+            <div class="app-content">
+                <div class="container-fluid">
+                    {% block flash_messages %}
+                        <div id="alertContainer">
+                            {%- if flashed_messages %}
+                                {%- for msg in flashed_messages %}
+                                    {%- set alert_class = "danger" if msg.category == "error" else msg.category %}
+                                    {%- set flash_icon_name = "flash.success" if msg.category == "success" else ("flash.warning" if msg.category == "warning" else ("flash.error" if msg.category == "error" else "flash.info")) %}
+                                    <div class="alert alert-{{ alert_class }} alert-dismissible d-flex align-items-center mb-2"
+                                         role="alert">
+                                        <i class="{{ icon(flash_icon_name) }} me-2"></i>
+                                        <div class="flex-grow-1">{{ msg.message }}</div>
+                                        <button type="button"
+                                                class="btn-close"
+                                                data-bs-dismiss="alert"
+                                                aria-label="{{ _("close") }}"></button>
+                                    </div>
+                                {%- endfor %}
+                            {%- endif %}
+                        </div>
+                    {% endblock %}
+                    {% block content_before %}
+                    {% endblock %}
+                    {% block content %}
+                    {% endblock %}
+                    {% block content_after %}
+                    {% endblock %}
+                </div>
+            </div>
+            {% block page_footer %}{% endblock %}
+        </main>
+    </div>
+{% endblock %}
+{% block tail %}
+    {{ super() }}
+    {# djlint:off #}
+    <script>
+        // Override the default Tabler alert markup with AdminLTE-compatible
+        // markup so AJAX alerts match server-side flash rendering.
+        window.StarletteAdmin.alertHandler = function (type, msg, autoDismissMs) {
+            var spec = ALERT_TYPES[type] || ALERT_TYPES.info;
+            var iconClass = window.StarletteAdmin.getIcon(spec.icon, "");
+            var $alert = $(
+                '<div class="alert ' + spec.cls + ' alert-dismissible d-flex align-items-center mb-2" role="alert">' +
+                '<i class="' + iconClass + ' me-2"></i>' +
+                '<div class="flex-grow-1">' + msg + '</div>' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>' +
+                '</div>'
+            ).appendTo("#alertContainer");
+            dismissAlertAfter($alert, autoDismissMs);
+        };
+    </script>
+    {# djlint:on #}
+{% endblock %}

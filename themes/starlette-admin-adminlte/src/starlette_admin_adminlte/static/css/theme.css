@@ -1,0 +1,51 @@
+.mark,
+mark {
+  padding: 0em;
+}
+
+.is-invalid .select2-selection {
+  border-color: var(--tblr-danger) !important;
+}
+
+.select2-container {
+  width: 100% !important;
+}
+
+td[data-inline-editable] .inline-edit-value {
+  border-bottom: 1px dashed var(--bs-secondary-color);
+  padding-bottom: 1px;
+}
+
+td[data-inline-editable]:hover .inline-edit-value {
+  border-bottom-color: var(--bs-primary);
+}
+
+
+.card-actions {
+  float: right;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-animate-icon .sa-animate-icon {
+  transition: transform 0.3s ease;
+}
+
+.btn-animate-icon:focus-visible .sa-animate-icon,
+.btn-animate-icon:hover .sa-animate-icon {
+  transform: translateX(4px);
+}
+
+.btn-animate-icon.btn-animate-icon-rotate:focus-visible .sa-animate-icon,
+.btn-animate-icon.btn-animate-icon-rotate:hover .sa-animate-icon {
+  transform: rotate(90deg);
+}

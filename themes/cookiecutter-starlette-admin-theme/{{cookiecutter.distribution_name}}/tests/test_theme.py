@@ -10,6 +10,20 @@ def test_theme_uses_custom_icon_set(theme):
     assert icon_set.icons["default_actions.delete"] == "ti ti-trash"
 
 
+def test_full_vocabulary_mapped(theme):
+    from starlette_admin.theme import CoreIcons
+
+    icon_set = theme.get_icon_set()
+    missing = CoreIcons.icons.keys() - icon_set.icons.keys()
+    assert not missing, f"unmapped core icon keys: {sorted(missing)}"
+
+
+def test_icon_classes_use_ti_prefix(theme):
+    icon_set = theme.get_icon_set()
+    bad = {k: v for k, v in icon_set.icons.items() if not v.startswith("ti ")}
+    assert not bad, f"non-tabler icon classes: {bad}"
+
+
 def test_list_page_loads(client):
     response = client.get("/admin/product/list")
     assert response.status_code == 200

@@ -1,0 +1,10 @@
+<div class="d-flex align-items-center gap-2">
+    {% for v in (data if field.multiple else [data]) %}
+        <div>
+            <img src="{{ v.thumbnail_url or v.url }}"
+                 alt=""
+                 class="img-thumbnail"
+                 style="width:2rem;height:2rem;object-fit:cover;padding:0;">
+        </div>
+    {% endfor %}
+</div>

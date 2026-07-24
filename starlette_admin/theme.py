@@ -81,6 +81,9 @@ class CoreIcons(IconSet):
         # Inline forms
         "inline.add_row": "fa fa-plus",
         "inline.delete_row": "fa fa-trash",
+        # Inline cell editing (list page popover)
+        "inline_edit.save": "fa-solid fa-check",
+        "inline_edit.cancel": "fa-solid fa-xmark",
         # Collapsible panels (inline formsets, panel widget)
         "panel.collapse_toggle": "fa-solid fa-chevron-down",
         # Filter bar / builder
@@ -90,6 +93,9 @@ class CoreIcons(IconSet):
         "filter_builder.remove": "fa-solid fa-trash",
         # Import modal
         "import.preview": "fa-solid fa-eye",
+        # Create/edit form footer
+        "form.cancel": "fa-solid fa-xmark",
+        "form.save": "fa-solid fa-arrow-right",
     }
 
     def css_links(self, request: Request) -> list[str]:
