@@ -1,6 +1,6 @@
 # SQLAlchemy
 
-The SQLAlchemy backend serves as the reference implementation for `BaseModelView`. It has only been tested against SQLAlchemy 2 `DeclarativeBase` models. Other backends (such as Beanie, MongoEngine, or your custom implementation) fulfill this identical contract against their respective data stores.
+The SQLAlchemy backend serves as the reference implementation for `BaseModelView`. It has only been tested against SQLAlchemy 2 `DeclarativeBase` models. Other backends (such as Beanie, MongoEngine, Tortoise ORM, or your custom implementation) fulfill this identical contract against their respective data stores.
 
 ```python
 from sqlalchemy import create_engine
@@ -438,3 +438,4 @@ You can now navigate to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admi
 * [Filters](../user-guide/filters.md): Details on the filter builder and URL format powered by the filter registry.
 * [Views](../user-guide/views.md): A comprehensive list of every `ModelView` configuration option (backend-agnostic).
 * [Beanie](beanie.md): A guide to using the identical `ModelView` API against a MongoDB database.
+* [Tortoise ORM](tortoise.md): The other relational backend built into starlette-admin.

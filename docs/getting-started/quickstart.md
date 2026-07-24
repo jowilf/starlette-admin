@@ -124,7 +124,7 @@ class PostView(ModelView):
 `PostView` serves as the central object for this resource. The `fields` attribute controls which columns appear in the list and form, while `searchable_fields` enables the search bar. All configurations regarding how `Post` looks and behaves in the admin dashboard reside within this single class.
 
 !!! note
-    The example imports `ModelView` from `starlette_admin.contrib.sqla` because it relies on SQLAlchemy. If you use a different backend like Beanie or MongoEngine, you must import `ModelView` from the corresponding contrib package. The configuration API remains consistent across all supported backends.
+    The example imports `ModelView` from `starlette_admin.contrib.sqla` because it relies on SQLAlchemy. If you use a different backend like Beanie, MongoEngine, or Tortoise ORM, you must import `ModelView` from the corresponding contrib package. The configuration API remains consistent across all supported backends.
 
 ### The admin
 

@@ -6,7 +6,7 @@ task-oriented walkthrough, see [Filters](../user-guide/filters.md) and
 
 The classes below are backend-agnostic: they declare a filter's `name`, `label`, and
 `data_type`, but not its query logic. Each ORM backend (`contrib.sqla`, `contrib.beanie`,
-`contrib.mongoengine`) subclasses them to add the actual `apply()` implementation for that
+`contrib.mongoengine`, `contrib.tortoise`) subclasses them to add the actual `apply()` implementation for that
 backend. See the relevant [integration page](../integrations/sqlalchemy.md) for the concrete,
 importable filter classes.
 

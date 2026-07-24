@@ -11,6 +11,7 @@ from starlette_admin.contrib.sqla import Admin  # SQLAlchemy
 from starlette_admin.contrib.sqlmodel import Admin  # SQLModel
 from starlette_admin.contrib.beanie import Admin  # Beanie
 from starlette_admin.contrib.mongoengine import Admin  # MongoEngine
+from starlette_admin.contrib.tortoise import Admin  # Tortoise ORM
 ```
 
 Here is a minimal configuration using SQLAlchemy:
@@ -43,7 +44,7 @@ admin.mount_to(app)
 Every `Admin` class accepts all the configuration options documented below and occasionally adds backend-specific functionality:
 
 * `contrib.sqla.Admin(session_provider, ...)` requires an `Engine`, `AsyncEngine`, `sessionmaker`, or `async_sessionmaker` as its first positional argument and automatically inserts `DBSessionMiddleware`. Note that `contrib.sqlmodel.Admin` is simply this same class re-exported. See [SQLAlchemy](../integrations/sqlalchemy.md).
-* `contrib.beanie.Admin` and `contrib.mongoengine.Admin` take no extra constructor arguments because Beanie and MongoEngine manage their own connections outside the admin interface. Additionally, `mongoengine.Admin` registers a GridFS file-serving route within `mount_to`. See [Beanie](../integrations/beanie.md) and [MongoEngine](../integrations/mongoengine.md).
+* `contrib.beanie.Admin`, `contrib.mongoengine.Admin`, and `contrib.tortoise.Admin` take no extra constructor arguments because Beanie, MongoEngine, and Tortoise ORM manage their own connections outside the admin interface. Additionally, `mongoengine.Admin` registers a GridFS file-serving route within `mount_to`. See [Beanie](../integrations/beanie.md), [MongoEngine](../integrations/mongoengine.md), and [Tortoise ORM](../integrations/tortoise.md).
 
 ## Full reference
 

@@ -68,7 +68,7 @@ See [examples/01-quickstart](https://github.com/jowilf/starlette-admin/tree/main
 Registering a view instantly generates paginated, sortable, and searchable interfaces for listing, viewing, creating, editing, and deleting records. No custom routes or templates are required.
 
 !!! note
-    `ModelView` is imported from your specific backend's contrib package (e.g., `starlette_admin.contrib.sqla`, `.beanie`, `.mongoengine`, or `.sqlmodel`). However, **every attribute described below is identical across backends**. You can swap a SQLAlchemy model for a MongoEngine document later without changing your view logic.
+    `ModelView` is imported from your specific backend's contrib package (e.g., `starlette_admin.contrib.sqla`, `.beanie`, `.mongoengine`, `.sqlmodel`, or `.tortoise`). However, **every attribute described below is identical across backends**. You can swap a SQLAlchemy model for a MongoEngine document later without changing your view logic.
 
 ### Core Configuration
 

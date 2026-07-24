@@ -82,7 +82,7 @@ class ProductView(ModelView):
 ```
 
 !!! info "Backend-Specific Imports"
-    The filter classes passed to `filters=` must be the concrete implementations for your specific database backend (`starlette_admin.contrib.sqla.filters`, `.beanie.filters`, or `.mongoengine.filters`). Make sure you import from your backend's `filters` module, not from `starlette_admin.filters` directly.
+    The filter classes passed to `filters=` must be the concrete implementations for your specific database backend (`starlette_admin.contrib.sqla.filters`, `.beanie.filters`, `.mongoengine.filters`, or `.tortoise.filters`). Make sure you import from your backend's `filters` module, not from `starlette_admin.filters` directly.
 
 ## The filter URL format
 

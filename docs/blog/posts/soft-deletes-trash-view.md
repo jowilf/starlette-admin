@@ -185,7 +185,7 @@ This configuration establishes two separate administrative views for a single da
 
 ## Extending to Other Backends
 
-The core principles of this pattern are not exclusive to SQLAlchemy. You can implement this approach on any backend that allows overriding list, count, and detail queries alongside the `delete()` method. For instance, if you are using Beanie or MongoEngine, the equivalent overrides will filter the query on a `deleted_at` field in the exact same manner. The specific query syntax changes, but the architectural pattern remains identical.
+The core principles of this pattern are not exclusive to SQLAlchemy. You can implement this approach on any backend that allows overriding list, count, and detail queries alongside the `delete()` method. For instance, if you are using Beanie, MongoEngine, or Tortoise ORM, the equivalent overrides will filter the query on a `deleted_at` field in the exact same manner. The specific query syntax changes, but the architectural pattern remains identical.
 
 ---
 

@@ -11,7 +11,7 @@ hide:
     New documentation &nbsp;·&nbsp; See what changed
   </a>
   <h1 class="home-title">Extensible <span class="home-gradient">admin interfaces</span><br>for FastAPI &amp; Starlette</h1>
-  <p class="home-sub">Instantly generate a complete administrative UI from your SQLAlchemy, SQLModel, Beanie, or MongoEngine models. Built on the modern <a href="https://tabler.io">Tabler UI kit</a>, starlette-admin delivers robust list views, auto-generated forms, data exports, and secure authentication. Configure everything entirely in Python with zero frontend tooling required.</p>
+  <p class="home-sub">Instantly generate a complete administrative UI from your SQLAlchemy, SQLModel, Beanie, MongoEngine, or Tortoise ORM models. Built on the modern <a href="https://tabler.io">Tabler UI kit</a>, starlette-admin delivers robust list views, auto-generated forms, data exports, and secure authentication. Configure everything entirely in Python with zero frontend tooling required.</p>
   <div class="home-actions">
     <a class="md-button md-button--primary home-btn" href="getting-started/quickstart/">Get started</a>
     <a class="md-button home-btn" href="https://starlette-admin-demo.jowilf.com/">Live demo</a>

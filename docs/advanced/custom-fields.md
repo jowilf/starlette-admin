@@ -151,7 +151,7 @@ Overriding only `list_template` and `detail_template` while retaining the defaul
 
 ## Registering With the Converter Registry
 
-The `fields = [...]` list on a view accepts plain attribute names as well as instantiated field objects. Any item that is not already a `BaseField` passes through a **converter registry** that maps the column type to a specific field class. Each ORM backend provides its own registry (such as `starlette_admin.contrib.sqla.converters.ModelConverter` or the equivalents for `beanie` and `mongoengine`), which are all built on the same foundation:
+The `fields = [...]` list on a view accepts plain attribute names as well as instantiated field objects. Any item that is not already a `BaseField` passes through a **converter registry** that maps the column type to a specific field class. Each ORM backend provides its own registry (such as `starlette_admin.contrib.sqla.converters.ModelConverter` or the equivalents for `beanie`, `mongoengine`, and `tortoise`), which are all built on the same foundation:
 
 ```python
 from starlette_admin.converters import BaseModelConverter, converts

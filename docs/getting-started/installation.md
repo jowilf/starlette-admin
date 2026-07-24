@@ -16,7 +16,7 @@ Install **starlette-admin** using your preferred package manager.
 
 starlette-admin requires **Python 3.11 or later**.
 
-The core package is backend agnostic. To build an admin interface for your application, install the appropriate integration for your data layer (such as SQLAlchemy, Beanie, or MongoEngine) alongside the base package.
+The core package is backend agnostic. To build an admin interface for your application, install the appropriate integration for your data layer (such as SQLAlchemy, Beanie, MongoEngine, or Tortoise ORM) alongside the base package.
 
 ## Included dependencies
 

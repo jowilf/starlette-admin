@@ -88,7 +88,7 @@ Pass the custom filter into the target field's `filters=` list. You can provide 
 
 ### Registry-wide (every matching field type)
 
-Each backend includes a `FilterRegistry` subclass. Examples include `SqlaFilterRegistry` for SQLAlchemy, `BeanieFilterRegistry` for Beanie, and `MongoEngineFilterRegistry` for MongoEngine. These classes contain methods decorated with `@filters(FieldType, ...)` to define default filters for each supported field type:
+Each backend includes a `FilterRegistry` subclass. Examples include `SqlaFilterRegistry` for SQLAlchemy, `BeanieFilterRegistry` for Beanie, `MongoEngineFilterRegistry` for MongoEngine, and `TortoiseFilterRegistry` for Tortoise ORM. These classes contain methods decorated with `@filters(FieldType, ...)` to define default filters for each supported field type:
 
 ```python
 # starlette_admin/contrib/sqla/filters.py
