@@ -68,8 +68,6 @@ This package targets the modern asynchronous Python stack. If your application u
 
 ## Trade-Offs
 
-A fair technical evaluation must acknowledge areas where other tools excel.
-
 * **Complete user system:** Django Admin includes a comprehensive user system out of the box. Users, groups, permissions, and password management are handled by `django.contrib.auth` automatically. starlette-admin requires you to implement `authenticate()` against your own data store. This demands more initial setup but provides greater architectural flexibility later.
 * **Automated change history:** Django Admin automatically records change history via `LogEntry`. In starlette-admin, you must build your own audit trail by subscribing to lifecycle [events](../advanced/events.md). This only requires a few lines of code, but it is not automatic.
 * **Third-party ecosystem:** Django Admin benefits from a massive ecosystem of third-party packages for themes, widgets, and data workflows. While starlette-admin includes many of these features natively, highly specialized niche extensions might not yet exist.
