@@ -91,7 +91,6 @@ Run with `fastapi dev` and open [http://127.0.0.1:8000/admin](http://127.0.0.1:8
 - Local and S3-compatible file storage (Amazon S3, MinIO, ...)
 - Event hooks before and after CRUD operations
 - Pluggable authentication, storage, fields, actions, and model views
-- Secure defaults suitable for production deployments
 - Theme customization, dark mode, internationalization, and timezone support
 
 

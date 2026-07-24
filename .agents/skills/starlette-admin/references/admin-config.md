@@ -50,7 +50,7 @@ Examples: `examples/15-beanie`, `examples/16-mongoengine`. A custom backend impl
 
 ## Security defaults
 
-Automatic: CSRF double-submit cookie on every form and jQuery AJAX call, signed flash cookie (no SessionMiddleware needed for flash), filename sanitization on uploads, Pillow image verification on `ImageField`, 100k-row export cap, spreadsheet formula escaping, 10 MB import cap.
+Automatic: CSRF double-submit cookie on every form and jQuery AJAX call, signed flash cookie (no SessionMiddleware needed for flash), filename sanitization on uploads, Pillow image verification on `ImageField`, 100k-row export cap, 10 MB import cap. Spreadsheet formula escaping is opt-in via `escape_formulas=True` on the exporters.
 
 Your responsibility: HTTPS, an `auth_provider` (the admin is public without one), network exposure, dependency updates, and the `can_*`/`is_accessible` permission checks. Custom forms in your own templates must render `{{ csrf_input(request) }}`.
 

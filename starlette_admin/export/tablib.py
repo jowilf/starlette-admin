@@ -41,15 +41,16 @@ class TablibExporter(BaseExporter):
     """Exports through ``tablib.Dataset`` for any format tablib supports."""
 
     def __init__(
-        self, format: str, escape_formulas: bool = True, **export_kwargs: Any
+        self, format: str, escape_formulas: bool = False, **export_kwargs: Any
     ) -> None:
         """
         Args:
             format: A tablib export format name (``"xlsx"``, ``"yaml"``, ...).
-            escape_formulas: When ``True`` (the default) and *format* is a
-                spreadsheet format (xlsx, xls, ods), cell values starting
-                with ``=``, ``+``, ``-`` or ``@`` are prefixed with a single
-                quote to prevent formula injection.
+            escape_formulas: When ``True`` and *format* is a spreadsheet
+                format (xlsx, xls, ods), cell values starting with ``=``,
+                ``+``, ``-`` or ``@`` are prefixed with a single quote to
+                prevent formula injection. Disabled by default; enable it
+                when exported data can contain user-supplied strings.
             export_kwargs: Forwarded to ``tablib.Dataset.export()``.
         """
         self.format = format

@@ -104,7 +104,7 @@ There is no `template_mode` switch. The UI uses [Tabler](https://tabler.io) (Boo
         exclude_fields_from_export = ["internal_notes"]
     ```
 
-Exporting to CSV and JSON is enabled by default and hardened out of the box. Rate limiting, row caps, and spreadsheet formula escaping apply automatically. Importing, a feature Flask-Admin lacks entirely, includes a preview step with per-row validation and optional updates of existing records by primary key. See [Export and Import](../user-guide/export-import.md).
+Exporting to CSV and JSON is enabled by default. Row caps apply automatically, and spreadsheet formula escaping is available as an opt-in exporter setting. Importing, a feature Flask-Admin lacks entirely, includes a preview step with per-row validation and optional updates of existing records by primary key. See [Export and Import](../user-guide/export-import.md).
 
 ## Actions
 
@@ -235,7 +235,7 @@ You configure timezone-aware datetime rendering similarly using `TimezoneConfig`
 ## What You Gain by Switching
 
 * **An async stack.** Runs natively on FastAPI and Starlette, bringing full support for async SQLAlchemy, Beanie, and Tortoise ORM. Flask-Admin remains strictly synchronous.
-* **Security by default.** Features like CSRF protection, upload filename sanitization, image content verification, export rate limits, and formula escaping are enabled automatically when you instantiate the `Admin` class. See [Security](../user-guide/security.md).
+* **Security features built in.** CSRF protection, upload filename sanitization, image content verification, and export row limits are enabled automatically when you instantiate the `Admin` class, and spreadsheet formula escaping can be enabled on the exporters. See [Security](../user-guide/security.md).
 * **Robust data import.** Includes a built-in preview step that validates every row before writing, a feature Flask-Admin lacks entirely.
 * **A dashboard widget system.** Construct index pages and custom views programmatically instead of relying on hand-written templates.
 * **Modern design.** An actively maintained codebase utilizing a polished UI, built-in dark mode, and first-class type hinting.

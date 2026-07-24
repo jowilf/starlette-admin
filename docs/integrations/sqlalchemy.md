@@ -228,34 +228,6 @@ When using a synchronous engine, `request.state.session` evaluates to a standard
 
 In all other scenarios where the handler yields a 2xx or 3xx response, the middleware commits the session and releases the connection. This lifecycle explains why the `publish` action demonstrated above does not require explicit commit or close statements. The session middleware opens the session before your code executes and subsequently handles the commit or rollback operations before the response leaves the view.
 
-## SQLModel
-
-[SQLModel](https://sqlmodel.tiangolo.com/) models utilize SQLAlchemy models under the hood. Consequently, `starlette_admin.contrib.sqlmodel` functions as a thin wrapper around the existing `sqla` backend rather than an entirely separate implementation:
-
-```python
-from starlette_admin.contrib.sqlmodel import Admin, ModelView
-```
-
-`sqlmodel.Admin` exposes the exact same functionality as `sqla.Admin`. It utilizes the same constructor, session middleware, and synchronous or asynchronous engine handling. `sqlmodel.ModelView` inherits SQLAlchemy field auto-detection, primary key management, and filtering. It also adds an important validation layer. Its `validate()` method calls `self.model.model_validate(data)` before writing the record. This processes the submitted form data through the model's native Pydantic validators (such as `Field(min_length=...)` or custom `@field_validator` methods) instead of relying strictly on SQLAlchemy column constraints. File fields and relationship fields are intentionally excluded from this validation call because they fall outside the model's Pydantic validation surface.
-
-```python
-from datetime import datetime
-
-from pydantic import EmailStr
-from sqlmodel import Field, Relationship, SQLModel
-
-
-class Author(SQLModel, table=True):
-    id: int | None = Field(primary_key=True, default=None)
-    full_name: str = Field(min_length=2, index=True)
-    email: EmailStr
-    created_at: datetime | None = Field(default=None)
-
-    articles: list["Article"] = Relationship(back_populates="author")
-```
-
-An input like a `full_name` shorter than two characters or an invalid email address will fail validation. These failures return as per-field form errors before any `INSERT` or `UPDATE` operation reaches the database. Please see [examples/14-sqlmodel](https://github.com/jowilf/starlette-admin/tree/main/examples/14-sqlmodel) for a full example.
-
 ## Pydantic validation
 
 You might use plain SQLAlchemy models but still want to validate form data against a Pydantic schema before saving. In this case, `starlette_admin.contrib.sqla.ext.pydantic.ModelView` accepts a `pydantic_model` argument to execute validation against that schema rather than the underlying SQLAlchemy column types:
@@ -437,5 +409,6 @@ You can now navigate to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admi
 * **[Views](../user-guide/views.md)**: Explore `BaseModelView` configuration options independent of the backend.
 * [Filters](../user-guide/filters.md): Details on the filter builder and URL format powered by the filter registry.
 * [Views](../user-guide/views.md): A comprehensive list of every `ModelView` configuration option (backend-agnostic).
+* [SQLModel](sqlmodel.md): A thin wrapper around this backend that adds Pydantic validation to forms.
 * [Beanie](beanie.md): A guide to using the identical `ModelView` API against a MongoDB database.
 * [Tortoise ORM](tortoise.md): The other relational backend built into starlette-admin.

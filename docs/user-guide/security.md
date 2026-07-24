@@ -1,8 +1,8 @@
 # Security
 
-starlette-admin provides built-in protections for the risks specific to running an admin panel. Features like Cross-Site Request Forgery (CSRF) mitigation and export/import rate limiting are wired up the moment you construct `Admin`.
+Starlette-admin includes built-in safeguards to mitigate the specific risks associated with running an administration panel. Protections against Cross-Site Request Forgery (CSRF) and strict limits on export and import payload sizes are active as soon as you instantiate the `Admin` class.
 
-While these defaults harden the admin against common attack vectors, they do not replace standard deployment security. Transport security (HTTPS/TLS), network access control, user authentication ([Authentication](auth.md)), dependency updates, and comprehensive security reviews remain your responsibility. Read this page as a set of security best practices: what is handled automatically, what you should configure, and the critical `secret_key` setting required before deployment.
+While these default behaviors harden the interface against common attack vectors, they do not replace standard deployment security. You remain responsible for transport layer security (HTTPS/TLS), network access control, user authentication ([Authentication](auth.md)), dependency updates, and comprehensive security reviews. This document details the automated security features, configurable protections, and the critical `secret_key` setting required for production deployments.
 
 ## What you get automatically
 
@@ -17,17 +17,18 @@ admin = Admin(engine, title="My Admin")
 admin.mount_to(app)
 ```
 
-Even without passing any security-specific arguments, this admin instance automatically guards against several common issues:
+Even without providing specific security parameters, the admin instance automatically defends against several common vulnerabilities:
 
-* **CSRF protection:** Enabled on every form and jQuery AJAX call (including row actions and confirm dialogs).
-* **Flash messages:** Delivered through a signed cookie, meaning no `SessionMiddleware` is required.
-* **Filename sanitization:** Applied to every file upload passing through a storage backend.
-* **Image content verification:** Applied to `ImageField` uploads when Pillow is installed.
-* **Export limits:** Capped at 100,000 rows per request.
-* **Formula escaping:** Applied to CSV and spreadsheet (XLSX/XLS/ODS) exports to neutralize spreadsheet formula injection.
-* **Import limits:** Capped at 10 MB per request.
+* **CSRF protection:** Active on every form and jQuery AJAX call, including row actions and confirmation dialogs.
+* **Flash messages:** Secured via a signed cookie, completely eliminating the need for `SessionMiddleware`.
+* **Filename sanitization:** Enforced on every file upload processed through a storage backend.
+* **Image content verification:** Validates `ImageField` uploads at the byte level using Pillow, if installed.
+* **Export limits:** Capped at 100,000 rows per request to prevent resource exhaustion and denial of service.
+* **Import limits:** Restricted to 10 MB per request to mitigate memory overflow risks.
 
-The rest of this page explains each of these protections and how to adjust the configurable ones.
+An additional, opt-in protection is available to prevent spreadsheet formula injection during CSV and spreadsheet (XLSX, XLS, ODS) exports. Refer to the [Formula injection](%23formula-injection) section for configuration details.
+
+The following sections explain these protections and how to adjust the configurable thresholds.
 
 ## The secret key
 
@@ -35,46 +36,48 @@ The rest of this page explains each of these protections and how to adjust the c
 admin = Admin(engine, title="My Admin", secret_key="a-long-random-string")
 ```
 
-The `secret_key` signs two cookies: the CSRF token and the flash-message cookie. Both use [itsdangerous](https://itsdangerous.palletsprojects.com/), meaning a client can read the cookie but cannot forge or tamper with its contents without the key.
+The `secret_key` acts as the cryptographic root for signing two critical cookies: the CSRF token and the flash-message cookie. Because these leverage [itsdangerous](https://itsdangerous.palletsprojects.com/), clients can read the cookies but cannot forge or tamper with the payload without the key.
 
-!!! warning 
-    If you do not pass a `secret_key`, `Admin` generates a random one at startup and emits a `UserWarning`. While convenient for a quick demo, each **worker process** generates its own key independently. If you run more than one worker (`uvicorn --workers 4`, gunicorn, or multiple containers) without an explicit `secret_key`, a CSRF token signed by the worker that served the form will not validate on the worker that receives the submission. The request will fail with an invalid CSRF token error on a seemingly random fraction of submissions. Always set `secret_key` explicitly before running more than one process.
+!!! warning "Always configure an explicit secret key in production environments"
+    If you omit the `secret_key`, the `Admin` instance generates a random key at startup and emits a `UserWarning`. While this is acceptable for local demonstrations, it causes failures in multi-worker environments. If you run multiple workers (such as `uvicorn --workers 4`, Gunicorn, or multiple containers) without an explicit `secret_key`, each process generates its own independent key. Consequently, a CSRF token signed by the worker that served the form will fail validation if a different worker handles the form submission. This results in invalid CSRF token errors on a seemingly random fraction of requests. Always set the `secret_key` explicitly before scaling beyond a single process.
 
 ## CSRF protection
 
-`CSRFMiddleware` implements a signed double-submit cookie, which protects against most types of CSRF attacks. It sets a `starlette_admin_csrftoken` cookie on safe responses (`GET`, `HEAD`, `OPTIONS`, `TRACE`), and on every mutating request, it compares that cookie against either an `X-CSRFToken` header or a `csrftoken` hidden form field. All three admin form templates (`create`, `edit`, `login`) render the hidden field automatically:
+The `CSRFMiddleware` utilizes a signed double-submit cookie pattern to prevent Cross-Site Request Forgery. It issues a `starlette_admin_csrftoken` cookie on safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`). For mutating requests, it validates this cookie against either an `X-CSRFToken` header or a `csrftoken` hidden form field.
+
+All built-in admin templates (`create`, `edit`, and `login`) automatically render the required hidden field:
 
 ```jinja
 {{ csrf_input(request) }}
 
 ```
 
-The bundled JavaScript attaches the header to every jQuery AJAX call automatically, ensuring row actions and other AJAX-driven interactions are covered without extra code. You only need to call `csrf_input(request)` directly if you add a custom form outside the admin's own templates. For more details, see [Custom Views](custom-views.md).
-
+Additionally, the bundled JavaScript automatically attaches the necessary header to all jQuery AJAX calls. This guarantees that row actions and asynchronous interactions are protected without requiring boilerplate code. You only need to invoke `csrf_input(request)` manually if you are building custom forms outside the default templates. For further instructions, consult the [Custom Views](custom-views.md) documentation.
 
 ## File uploads
 
-Every upload that goes through a [storage](file-storage.md) backend has its filename sanitized with `secure_filename`. Path components are stripped, and anything outside `[A-Za-z0-9_.-]` is collapsed to `_` regardless of field configuration. This protection is not optional.
+All uploads routed through a [storage](file-storage.md) backend undergo mandatory filename sanitization using `secure_filename`. Directory traversal path components are stripped, and any characters outside the standard alphanumeric set (`[A-Za-z0-9_.-]`) are replaced with underscores (`_`). This foundational protection cannot be disabled.
 
-Content-type and size restrictions are opt-in per field via `accept` and `max_size`:
+You can configure content-type and size restrictions on a per-field basis using `accept` and `max_size`:
 
 ```python
 from starlette_admin.fields import FileField
 
 
 class DocumentView:
-    invoice = FileField(accept=".pdf,.docx", max_size=5 * 1024 * 1024)  # 5 MB
+    invoice = FileField(accept=".pdf,.docx", max_size=5 * 1024 * 1024)  # 5 MB limit
 ```
 
-If you leave both unset, a plain `FileField` accepts any file of any size since `accept` and `max_size` default to `None`. `ImageField` is the exception. It defaults to `accept="image/*"` and, when Pillow is installed, prepends a validator that opens the upload with `PIL.Image` to verify it decodes as a real image instead of trusting the filename extension or the browser-supplied content type.
+If omitted, a standard `FileField` accepts any file type and size. The `ImageField` is a notable exception: it defaults to `accept="image/*"` and, when Pillow is installed, automatically prepends a validator. This validator opens the upload using `PIL.Image` to confirm it decodes as a valid image rather than relying on browser-supplied metadata.
 
-!!! important
-    Do not rely on `max_size` alone: it is checked only after the request has already reached the application. It is strongly advised that you limit the maximum request body size in your web server configuration (for example `client_max_body_size` in nginx, or the equivalent on your load balancer) to prevent denial-of-service (DoS) attacks.
+!!! important "Enforce request size limits at the web server level"
+    Do not rely exclusively on the `max_size` parameter. This application-level check is evaluated only after the server has received the full request payload. To effectively prevent denial-of-service (DoS) attacks, restrict the maximum request body size directly in your web server configuration (such as `client_max_body_size` in NGINX or the equivalent setting on your load balancer).
 
+!!! warning "File extensions and Content-Type headers can be spoofed"
+    The `accept` attribute relies entirely on the filename extension and the browser-provided `Content-Type` header, both of which are trivially spoofed by malicious actors. A file disguised as `invoice.pdf` could contain an executable payload.
 
-!!! warning 
-    The `accept` attribute only checks the filename extension and the `Content-Type` header sent by the browser. Both of these values are client-supplied and trivial to spoof. A file named `invoice.pdf` with `Content-Type: application/pdf` can still contain anything, including an executable or a malicious script.
-    For non-image uploads, pair `accept` with a custom `validators` callable that inspects the file's magic bytes using a library like [`filetype`](https://github.com/h2non/filetype.py) or [`python-magic`](https://github.com/ahupp/python-magic). You can then raise a `ValueError` when the detected type does not match your allowed formats:
+    For non-image files, pair the `accept` attribute with a custom validator that inspects the file's magic bytes. Libraries like [`filetype`](https://github.com/h2non/filetype.py) or [`python-magic`](https://github.com/ahupp/python-magic) allow you to verify the true file format:
+
     ```python
     import filetype
     from starlette.datastructures import UploadFile
@@ -102,12 +105,9 @@ If you leave both unset, a plain `FileField` accepts any file of any size since 
             raise ValueError(
                 f"Invalid file type '{detected}'. Only PDF, DOC, and DOCX are allowed."
             )
-
     ```
 
-  
-  Pass this validator to your field using `FileField(..., validators=[validate_document_type])`. For a complete working setup, refer to the [`examples/04-filestorage`](https://github.com/jowilf/starlette-admin/tree/main/examples/04-filestorage) directory.
-
+    Apply this validator to your field using `FileField(..., validators=[validate_document_type])`. For a comprehensive implementation, refer to the [`examples/04-filestorage`](https://github.com/jowilf/starlette-admin/tree/main/examples/04-filestorage) directory.
 
 ## Export limits
 
@@ -119,26 +119,35 @@ admin = Admin(engine, title="My Admin", export_config=ExportConfig(max_rows=50_0
 
 | Attribute | Default | Description |
 | --- | --- | --- |
-| `max_rows` | `100_000` | Rows allowed per export request. Above this limit, the endpoint flashes an error and redirects back to the list page. Set to `None` to disable the cap. |
-| `restrict_url_download` | `True` | For URL-only file references, this limits the export ZIP to files whose origin matches the admin's `base_url`. |
-| `max_download_size` | `20 MB` | Per-file cap on URL-only downloads pulled into an export ZIP. Oversized files are skipped with a warning. |
-| `safe_download_url` | `None` | Callback `(url, request) -> str` |
+| `max_rows` | `100_000` | The maximum number of rows permitted per export request. Exceeding this threshold flashes an error and redirects the user back to the list view. Set to `None` to disable the limit. |
+| `restrict_url_download` | `True` | Applies to URL-only file references. Restricts the resulting export ZIP to include only files whose origin matches the admin interface's `base_url`. |
+| `max_download_size` | `20 MB` | The maximum file size limit for URL-only downloads packaged into an export ZIP. Oversized files are skipped and logged with a warning. |
+| `safe_download_url` | `None` | A custom callback function signature: `(url, request) -> str`. |
 
-See [Export & Import](export-import.md) for details on how the ZIP bundle is built.
+Refer to the [Export & Import](export-import.md) documentation for a technical breakdown of how the ZIP bundle is constructed.
 
 ### Formula injection
 
-Spreadsheet applications treat cell values starting with `=`, `+`, `-`, or `@` as formulas. A record containing a value like `=HYPERLINK(...)`, entered by any user who can write to an exported field, executes when someone opens the exported file in Excel or LibreOffice. This is known as CSV (or formula) injection.
+Spreadsheet software interprets cell values beginning with `=`, `+`, `-`, or `@` as executable formulas. If a malicious payload like `=HYPERLINK(...)` is saved into an exported field by an untrusted user, the spreadsheet application will execute it when an administrator opens the file. This vulnerability is commonly referred to as CSV injection or formula injection.
 
-Both spreadsheet exporters neutralize it by default: the `csv` format and the tablib spreadsheet formats (`xlsx`, `xls`, `ods`) prefix any string cell starting with a trigger character with a single quote, so the value displays as text instead of executing. To disable the escaping, replace the format string with a configured exporter instance, and only if you trust everyone who can write to the exported data:
+Because exported values are written exactly as they are stored in the database, formula escaping is **disabled by default**. Both the CSV exporter and the Tablib spreadsheet exporters (`xlsx`, `xls`, `ods`) accept an `escape_formulas` parameter. When enabled, any string starting with a trigger character is prefixed with a single quote (`'`), forcing the application to render the value strictly as plain text.
+
+!!! warning "Enable formula escaping for user-supplied data"
+    If any non-administrator accounts can write data to an exported field, you must set `escape_formulas=True`. Failing to sanitize exports allows attacker-controlled values to execute system commands or exfiltrate sensitive data when the file is opened locally.
+
+To enable escaping, replace the string format identifier with an explicit exporter instance in your configuration:
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
-from starlette_admin.export import CsvExporter
+from starlette_admin.export import CsvExporter, TablibExporter
 
 
 class ProductView(ModelView):
-    exporters = [CsvExporter(escape_formulas=False), "json"]
+    exporters = [
+        CsvExporter(escape_formulas=True),
+        TablibExporter("xlsx", escape_formulas=True),
+        "json",
+    ]
 ```
 
 ## Import limits
@@ -158,27 +167,27 @@ admin = Admin(
 
 | Attribute | Default | Description |
 | --- | --- | --- |
-| `max_upload_size` | `10 MB` | Checked before any parsing begins. |
-| `max_rows` | `100_000` | Rows allowed per import request. The file is counted in a pre-pass, so an oversized file is rejected with HTTP 400 before any record is created. Set to `None` to disable the cap. |
+| `max_upload_size` | `10 MB` | Validated immediately upon request receipt before any parsing is executed. |
+| `max_rows` | `100_000` | The maximum number of rows permitted per import request. The payload is counted during a pre-pass phase. Oversized files are rejected with an HTTP 400 response before any database records are initialized. Set to `None` to disable the limit. |
 
-Import does not accept ZIP archives, so there's no ZIP-bomb surface to guard against on this endpoint. `FileField` and `ImageField` are always excluded from import (`exclude_from_import=True` by default); attach files through the create/edit forms instead.
+The import feature strictly rejects ZIP archives, completely neutralizing the risk of ZIP-bomb attacks on this endpoint. Furthermore, `FileField` and `ImageField` are systematically excluded from bulk imports (`exclude_from_import=True` by default). Users must attach files individually through the standard create or edit interfaces.
 
 ## What this page doesn't cover
 
-The protections above reduce risk in the admin's own code, but they do not secure your deployment as a whole. The following areas fall outside the scope of starlette-admin and remain your responsibility:
+The built-in protections mitigate risks specifically within the admin codebase. However, they do not guarantee the security of your overall architecture. The following operational security measures are outside the scope of Starlette-admin and remain your responsibility:
 
-* **Transport security:** Serve the admin over HTTPS. CSRF and flash cookies are signed but not encrypted in transit, meaning anyone on the network path can read them over plain HTTP.
-* **Authentication and authorization:** `Admin` has no login screen until you attach an `AuthProvider` (see [Authentication](auth.md)). Without one, every route is open to anyone who can reach it.
-* **Network exposure:** Place the admin behind a firewall, VPN, or IP allowlist if it does not need to be public. Restricting access to the login page limits potential attackers.
-* **Dependency hygiene:** Keep starlette-admin, Starlette, and your ORM driver up to date, and monitor their security advisories.
-* **Post-authentication actions:** CSRF and upload checks do not limit what an authenticated user can do once logged in. That is governed by the permission checks you implement in `is_accessible`, `can_create`, `can_edit`, and `can_delete` (see [Authentication](auth.md)).
+* **Transport security:** You must serve the admin over HTTPS. While CSRF and flash cookies are cryptographically signed, they are not encrypted in transit. Anyone intercepting plain HTTP traffic can read their contents.
+* **Authentication and authorization:** The `Admin` instance is entirely public until you attach an `AuthProvider`. Without one, every endpoint and route is completely unrestricted. See [Authentication](auth.md).
+* **Network exposure:** If the administration panel does not require public access, restrict it via a firewall, VPN, or strict IP allowlisting.
+* **Dependency hygiene:** Monitor security advisories and keep `starlette-admin`, `Starlette`, your ORM driver, and all underlying dependencies actively updated.
+* **Post-authentication actions:** CSRF and upload validation do not restrict an authenticated user's privileges. Granular access control is governed entirely by the permission checks you implement within `is_accessible`, `can_create`, `can_edit`, and `can_delete` (see [Authentication](auth.md)).
 
-Treat this page as best practices for the admin itself, not as a complete checklist for securing your deployment in isolation.
+Treat this documentation as a guide to configuring the admin package itself, rather than a comprehensive checklist for securing your entire production deployment.
 
 ---
 
 ## What's next
 
-* **[Export & Import](export-import.md):** The export dialog, the import preview step, and the ZIP bundle format.
-* **[File Storage](file-storage.md):** Configuring storage backends for `FileField` and `ImageField`.
-* **[Authentication](auth.md):** How `secret_key` gates login and CSRF when an auth provider is set.
+* **[Export & Import](export-import.md):** Deep dive into the export dialog, the import preview lifecycle, and the ZIP bundle specification.
+* **[File Storage](file-storage.md):** Architectural patterns for configuring storage backends targeting `FileField` and `ImageField`.
+* **[Authentication](auth.md):** Learn how the `secret_key` securely gates login sessions and CSRF checks once an authentication provider is established.

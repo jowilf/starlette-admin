@@ -943,6 +943,7 @@ def _make_upload_file(content: bytes):
     file_obj = io.BytesIO(content)
     mock = MagicMock()
     mock.file = file_obj
+    mock.size = len(content)
     return mock
 
 

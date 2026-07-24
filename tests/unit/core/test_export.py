@@ -312,6 +312,23 @@ def test_escape_formula_empty_string():
     assert escape_formula("") == ""
 
 
+@pytest.mark.parametrize("prefix", [" ", "  ", "\n", "\n\n", "\x0b", "\x0c"])
+@pytest.mark.parametrize("trigger", ["=", "+", "-", "@"])
+def test_escape_formula_prefixes_after_leading_whitespace(prefix, trigger):
+    value = f"{prefix}{trigger}cmd|'/c calc'!A1"
+    assert escape_formula(value) == f"'{value}"
+
+
+@pytest.mark.parametrize("trigger", ["\t", "\r"])
+def test_escape_formula_prefixes_tab_and_cr(trigger):
+    value = f"{trigger}not even a trigger char follows"
+    assert escape_formula(value) == f"'{value}"
+
+
+def test_escape_formula_leaves_whitespace_only_value_untouched():
+    assert escape_formula("   ") == "   "
+
+
 # ── TablibExporter (xlsx) ────────────────────────────────────────────────────
 
 

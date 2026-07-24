@@ -66,6 +66,8 @@ from starlette_admin.validators import (
 
 _log = get_logger(__name__)
 
+DEFAULT_MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 MB
+
 if TYPE_CHECKING:
     from starlette_admin.filters.base import BaseFilter
     from starlette_admin.views import BaseModelView
@@ -1747,7 +1749,8 @@ class FileField(BaseField):
         multiple: Allows uploading (and storing) several files.
         storage: The storage backend to which uploads are delegated.
         upload_folder: The storage-relative folder where uploads for this field are saved.
-        max_size: The maximum accepted upload size, in bytes.
+        max_size: The maximum accepted upload size, in bytes (default: 50 MB).
+            Set to `None` to disable the cap.
         validators: Additional validators executed after the built-in
             `accept`/`max_size` checks. Unlike other fields, each validator
             receives a single `UploadFile` as its value and runs once per
@@ -1764,7 +1767,7 @@ class FileField(BaseField):
     multiple: bool = False
     storage: BaseStorage | None = None
     upload_folder: str = ""
-    max_size: int | None = None
+    max_size: int | None = DEFAULT_MAX_UPLOAD_SIZE
     exclude_from_import: bool | None = True
     list_template: str = "fields/list/file.html"
     form_template: str = "fields/form/file.html"

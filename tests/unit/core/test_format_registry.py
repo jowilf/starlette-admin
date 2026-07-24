@@ -199,7 +199,7 @@ async def test_every_import_format_roundtrips(fmt):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("fmt", ["xlsx", "ods"])
 async def test_tablib_spreadsheet_formats_escape_formulas(fmt):
-    exporter = TablibExporter(fmt)
+    exporter = TablibExporter(fmt, escape_formulas=True)
     importer = resolve_importer(fmt)
     fields = [_Field("cmd", "Cmd")]
     data = await exporter.generate(fields, [{"cmd": "=cmd|'/c calc'!A1"}])
@@ -212,8 +212,9 @@ async def test_tablib_spreadsheet_formats_escape_formulas(fmt):
 @pytest.mark.asyncio
 async def test_tablib_non_spreadsheet_format_does_not_escape_formulas():
     """yaml/json/html/latex/dbf are not opened as spreadsheets, so a leading
-    '=' must not be corrupted with an extra leading quote."""
-    exporter = TablibExporter("yaml")
+    '=' must not be corrupted with an extra leading quote even when
+    escaping is enabled."""
+    exporter = TablibExporter("yaml", escape_formulas=True)
     fields = [_Field("cmd", "Cmd")]
     data = await exporter.generate(fields, [{"cmd": "=SUM(A1)"}])
     assert b"'=SUM(A1)" not in data
@@ -221,9 +222,9 @@ async def test_tablib_non_spreadsheet_format_does_not_escape_formulas():
 
 
 @pytest.mark.asyncio
-async def test_tablib_exporter_escape_formulas_disabled():
-    """With escaping off, a leading '=' reaches the sheet as a literal
-    formula (xlsx's own semantics) instead of being prefixed with a
+async def test_tablib_exporter_does_not_escape_formulas_by_default():
+    """Without opting in to escaping, a leading '=' reaches the sheet as a
+    literal formula (xlsx's own semantics) instead of being prefixed with a
     protective quote. tablib's importer always opens with `data_only=True`
     (no cached result for a freshly written formula), so this is checked by
     reading the formula text back via openpyxl directly, not by round-
@@ -233,7 +234,7 @@ async def test_tablib_exporter_escape_formulas_disabled():
 
     import openpyxl
 
-    exporter = TablibExporter("xlsx", escape_formulas=False)
+    exporter = TablibExporter("xlsx")
     fields = [_Field("cmd", "Cmd")]
     data = await exporter.generate(fields, [{"cmd": "=SUM(A1)"}])
 

@@ -291,6 +291,7 @@ async def count(self, request, q=None, filters=None): ...
 * **URL State:** List state now lives in the URL. Bookmarked admin URLs from previous versions will land on default list states, because saved DataTables states are not migrated.
 * **Email Validation:** `EmailField` now validates on the server when `email-validator` is installed.
 * **CSRF Protection:** CSRF protection is built-in and cookie-based. If you previously wrapped the admin with custom CSRF middleware, you can safely remove it. Ensure your `secret_key` is set so tokens survive server restarts.
+* **FileField Upload Size:** `FileField.max_size` now defaults to 50 MB instead of unlimited. Pass `max_size=None` to restore the old unbounded behavior, or set an explicit value to change the cap.
 
 ### Removed with No Replacement
 

@@ -82,6 +82,8 @@ class ProductView(ModelView):
 
 `CsvExporter` forwards keyword arguments to `csv.writer` and accepts an `escape_formulas` parameter. `TablibExporter(format, **kwargs)` covers every tablib format and forwards keyword arguments to `tablib.Dataset.export()`.
 
+Formula escaping is disabled by default. If exported fields can contain user-supplied strings, set `escape_formulas=True` on `CsvExporter`, `TsvExporter`, or `TablibExporter` to prevent formula injection when the file is opened in a spreadsheet application. See [Formula injection](security.md#formula-injection).
+
 Export is active by default. The **Export** button appears in the toolbar as long as the `exporters` list is non-empty. To restrict export access, override the `can_export(request)` method:
 
 ```python hl_lines="5 6"

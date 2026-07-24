@@ -4,7 +4,7 @@ Full attribute and method reference for the SQLModel backend (`starlette_admin.c
 generated from docstrings. SQLModel is SQLAlchemy underneath, so `Admin` and `ModelView` are thin
 subclasses of the [SQLAlchemy backend](sqlalchemy.md) that validate form data through the model's
 Pydantic layer. For a task-oriented walkthrough, see
-[SQLAlchemy: SQLModel](../../integrations/sqlalchemy.md#sqlmodel).
+[SQLModel Integration](../../integrations/sqlmodel.md).
 
 ::: starlette_admin.contrib.sqlmodel.admin.Admin
 

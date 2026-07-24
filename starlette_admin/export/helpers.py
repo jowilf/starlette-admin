@@ -84,18 +84,24 @@ def safe_zip_key(key: str) -> str:
     return normalized
 
 
-_FORMULA_TRIGGER_CHARS = ("=", "+", "-", "@")
+_FORMULA_TRIGGER_CHARS = frozenset("=+-@")
+_LEADING_WHITESPACE = " \t\r\n\x0b\x0c"
 
 
 def escape_formula(value: str) -> str:
-    """Prefix *value* with a single quote if it starts with a formula trigger
-    character (``=``, ``+``, ``-``, ``@``).
+    """Prefix *value* with a single quote if it is or starts with a formula
+    trigger character (``=``, ``+``, ``-``, ``@``, tab, or CR).
 
     Spreadsheet applications (Excel, LibreOffice, Google Sheets) treat cells
-    starting with these characters as formulas. Without escaping, exported
-    data containing attacker-controlled strings like ``=cmd|'/c calc'!A1``
-    can execute arbitrary commands when the file is opened.
+    starting with these characters as formulas, and trim leading whitespace
+    before checking, so ``" =cmd|'/c calc'!A1"`` is still evaluated. Without
+    escaping, such attacker-controlled strings can execute arbitrary commands
+    when the file is opened.
     """
-    if value and value[0] in _FORMULA_TRIGGER_CHARS:
+    if not value:
+        return value
+    if value[0] in "\t\r":
+        return "'" + value
+    if value.lstrip(_LEADING_WHITESPACE)[:1] in _FORMULA_TRIGGER_CHARS:
         return "'" + value
     return value

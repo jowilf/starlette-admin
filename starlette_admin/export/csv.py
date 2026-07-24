@@ -17,13 +17,14 @@ class CsvExporter(BaseExporter):
     content_type = "text/csv"
     extension = "csv"
 
-    def __init__(self, escape_formulas: bool = True, **fmtparams: Any) -> None:
+    def __init__(self, escape_formulas: bool = False, **fmtparams: Any) -> None:
         """
         Args:
-            escape_formulas: When ``True`` (the default), cell values starting
-                with ``=``, ``+``, ``-`` or ``@`` are prefixed with a single
-                quote to prevent formula injection when the CSV is opened in
-                a spreadsheet application.
+            escape_formulas: When ``True``, cell values starting with ``=``,
+                ``+``, ``-`` or ``@`` are prefixed with a single quote to
+                prevent formula injection when the CSV is opened in a
+                spreadsheet application. Disabled by default; enable it when
+                exported data can contain user-supplied strings.
             fmtparams: Forwarded to ``csv.writer`` (``delimiter``,
                 ``quotechar``, ``quoting``, ``lineterminator``,
                 ``escapechar``, ``doublequote``, ...).
@@ -53,7 +54,7 @@ class TsvExporter(CsvExporter):
     content_type = "text/tab-separated-values"
     extension = "tsv"
 
-    def __init__(self, escape_formulas: bool = True, **fmtparams: Any) -> None:
+    def __init__(self, escape_formulas: bool = False, **fmtparams: Any) -> None:
         """
         Args:
             escape_formulas: See :class:`CsvExporter`.

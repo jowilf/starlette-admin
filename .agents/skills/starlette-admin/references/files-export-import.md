@@ -56,7 +56,7 @@ class ProductView(ModelView):
 - Every scope honors the active `q`, `filter`, and `sort`: what the user sees is what exports.
 - Fields with `exclude_from_export=True` are skipped and never appear in the dialog.
 - Row cap: `Admin(..., export_config=ExportConfig(max_rows=50_000))`; default 100,000, checked per scope before fetching; over the cap flashes an error and redirects to the list page, `None` disables.
-- Formula injection: CSV and spreadsheet (xlsx/xls/ods) exporters prefix `=`, `+`, `-`, `@` cells with a quote by default; `CsvExporter(escape_formulas=False)` disables.
+- Formula injection: escaping is off by default; `CsvExporter(escape_formulas=True)` or `TablibExporter("xlsx", escape_formulas=True)` prefixes `=`, `+`, `-`, `@` cells with a quote. Recommended whenever exported fields can contain user-supplied strings.
 - Views with storage-backed file fields export a ZIP: the data file plus an `assets/<storage-name>/<key>` tree; the file column holds the ZIP-relative path.
 
 Custom exporter: subclass `BaseExporter`, set `content_type` and `extension`, implement `async def generate(self, fields, rows) -> bytes`. File values arrive pre-replaced by ZIP-relative path strings.

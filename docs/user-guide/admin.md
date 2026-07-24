@@ -43,7 +43,7 @@ admin.mount_to(app)
 
 Every `Admin` class accepts all the configuration options documented below and occasionally adds backend-specific functionality:
 
-* `contrib.sqla.Admin(session_provider, ...)` requires an `Engine`, `AsyncEngine`, `sessionmaker`, or `async_sessionmaker` as its first positional argument and automatically inserts `DBSessionMiddleware`. Note that `contrib.sqlmodel.Admin` is simply this same class re-exported. See [SQLAlchemy](../integrations/sqlalchemy.md).
+* `contrib.sqla.Admin(session_provider, ...)` requires an `Engine`, `AsyncEngine`, `sessionmaker`, or `async_sessionmaker` as its first positional argument and automatically inserts `DBSessionMiddleware`. Note that `contrib.sqlmodel.Admin` is simply this same class re-exported. See [SQLAlchemy](../integrations/sqlalchemy.md) and [SQLModel](../integrations/sqlmodel.md).
 * `contrib.beanie.Admin`, `contrib.mongoengine.Admin`, and `contrib.tortoise.Admin` take no extra constructor arguments because Beanie, MongoEngine, and Tortoise ORM manage their own connections outside the admin interface. Additionally, `mongoengine.Admin` registers a GridFS file-serving route within `mount_to`. See [Beanie](../integrations/beanie.md), [MongoEngine](../integrations/mongoengine.md), and [Tortoise ORM](../integrations/tortoise.md).
 
 ## Full reference
