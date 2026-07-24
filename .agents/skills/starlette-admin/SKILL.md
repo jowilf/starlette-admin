@@ -168,4 +168,6 @@ Read the reference that matches the task before writing code:
 | Admin constructor, backends and sessions, security, i18n, themes, deployment | [references/admin-config.md](references/admin-config.md) |
 | Field validators, custom field types, converter registry | [references/fields.md](references/fields.md) |
 
+Upgrading an app from starlette-admin 0.17.x to 1.0.0 is covered by the separate `starlette-admin-migration` skill.
+
 When working inside the starlette-admin repository itself, the full documentation lives in `docs/` and runnable apps in `examples/` (numbered 01-16 plus `examples/advanced/`). Each example runs with `cd examples/<name> && uv run app.py`.
