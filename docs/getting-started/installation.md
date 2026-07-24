@@ -35,7 +35,6 @@ Applications built with FastAPI require no additional integration because FastAP
 
 starlette-admin provides the following optional dependencies:
 
-- `excel`: Excel import and export support ([openpyxl](https://openpyxl.readthedocs.io/)).
 - `pdf`: PDF export ([reportlab](https://www.reportlab.com/)).
 - `i18n`: Internationalization ([Babel](https://babel.pocoo.org/)).
 - `tinymce`: Rich text editor support. Installs [nh3](https://nh3.readthedocs.io/), which sanitizes HTML submitted by `TinyMCEEditorField`.
@@ -46,11 +45,11 @@ Install one or more optional dependencies together with starlette-admin:
 === "pip"
 
     ```bash
-    # Install the `excel` extra
-    pip install "starlette-admin[excel]"
+    # Install the `pdf` extra
+    pip install "starlette-admin[pdf]"
 
     # Install multiple extras
-    pip install "starlette-admin[excel,pdf,s3]"
+    pip install "starlette-admin[i18n,pdf,s3]"
     ```
 
 === "uv"
