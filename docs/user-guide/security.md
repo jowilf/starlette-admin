@@ -91,7 +91,7 @@ If omitted, a standard `FileField` accepts any file type and size. The `ImageFie
     }
 
     def validate_document_type(
-        request: Request, field: BaseField, upload: UploadFile
+        request: Request, field: BaseField, upload: UploadFile, form_values: dict
     ) -> None:
         upload.file.seek(0)
         try:

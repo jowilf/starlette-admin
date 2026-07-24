@@ -30,7 +30,7 @@ ALLOWED_DOCUMENT_MIME_TYPES = {
 
 
 def validate_document_type(
-    request: Request, field: BaseField, upload: UploadFile
+    request: Request, field: BaseField, upload: UploadFile, form_values: dict
 ) -> None:
     """
     Validate document MIME type by inspecting the file's magic bytes.

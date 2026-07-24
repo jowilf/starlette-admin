@@ -216,7 +216,7 @@ Validation runs in the following order:
 2. `max_size`
 3. custom `validators`
 
-Custom validators are callables that receive the request, the field, and an `UploadFile`. They must either return `None` or raise `ValueError`.
+Custom validators are callables that receive the request, the field, an `UploadFile`, and the full submitted form values. They must either return `None` or raise `ValueError`.
 
 The following example validates the actual file contents using the `filetype` library:
 
@@ -234,7 +234,7 @@ ALLOWED_DOCUMENT_MIME_TYPES = {
 
 
 def validate_document_type(
-    request: Request, field: BaseField, upload: UploadFile
+    request: Request, field: BaseField, upload: UploadFile, form_values: dict
 ) -> None:
     upload.file.seek(0)
     try:
