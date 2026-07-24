@@ -43,11 +43,11 @@
                                            name="q"
                                            value="{{ list_params.q or '' }}"
                                            class="form-control"
-                                           placeholder="{{ _("Search") }}..."
-                                           aria-label="{{ _("Search in list") }}"
+                                           placeholder="{{ _('Search') }}..."
+                                           aria-label="{{ _('Search in list') }}"
                                            autocomplete="off" />
                                     <button class="btn" type="submit">
-                                        <i class="{{ icon("list.search") }}"></i>
+                                        <i class="{{ icon('list.search') }}"></i>
                                     </button>
                                 </div>
                                 {% for s_name, s_dir in list_params.sorts %}
@@ -59,7 +59,7 @@
                                 {% if list_params.visible_cols is not none %}
                                     <input type="hidden"
                                            name="cols"
-                                           value="{{ list_params.visible_cols | join(",") }}" />
+                                           value="{{ list_params.visible_cols | join(',') }}" />
                                 {% endif %}
                                 {% if raw_filter %}
                                     <input type="hidden" name="filter" value="{{ raw_filter }}" />
@@ -78,7 +78,7 @@
                                                 class="btn dropdown-toggle"
                                                 data-bs-toggle="dropdown"
                                                 data-bs-auto-close="outside">
-                                            <i class="{{ icon("list.columns") }} me-2"></i>{{ _("Columns") }}
+                                            <i class="{{ icon('list.columns') }} me-2"></i>{{ _("Columns") }}
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-end p-2">
                                             {% for field in all_fields %}
@@ -109,14 +109,14 @@
                                             class="btn"
                                             data-bs-toggle="modal"
                                             data-bs-target="#modal-import">
-                                        <i class="{{ icon("list.import") }} me-2"></i>{{ _("Import") }}
+                                        <i class="{{ icon('list.import') }} me-2"></i>{{ _("Import") }}
                                     </button>
                                 {% endif %}
                                 {% block list_toolbar_extra %}{% endblock %}
                                 {% if view.can_create(request) %}
                                     <a href="{{ create_url(request, view.key) }}"
                                        class="btn btn-primary btn-block ms-2">
-                                        <i class="{{ icon("list.new") }} me-2"></i>
+                                        <i class="{{ icon('list.new') }} me-2"></i>
                                         {{ _("New %(name)s", name=view.display_name) }}
                                     </a>
                                 {% endif %}
@@ -153,7 +153,7 @@
                                             <input class="form-check-input"
                                                    type="checkbox"
                                                    id="select-all-rows"
-                                                   aria-label="{{ _("Select all rows") }}" />
+                                                   aria-label="{{ _('Select all rows') }}" />
                                         </th>
                                         {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}<th class="w-1"></th>{% endif %}
                                         {% for field in fields %}<th data-column="{{ field.name }}">{{ column_header(field, list_params) }}</th>{% endfor %}
@@ -207,64 +207,71 @@
                 --tblr-table-color-state: var(--tblr-table-hover-color);
                 --tblr-table-bg-state: var(--tblr-table-hover-bg);
             }
-      .wizard-steps {
-        counter-reset: step;
-        list-style: none;
-        padding: 0;
-        display: flex;
-        justify-content: space-between;
-        position: relative;
-      }
-      .wizard-steps::before {
-        content: '';
-        position: absolute;
-        top: 1rem;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: var(--bs-border-color);
-        z-index: 0;
-      }
-      .wizard-steps li {
-        position: relative;
-        z-index: 1;
-        background: var(--bs-body-bg);
-        padding: 0 0.75rem;
-        text-align: center;
-        color: var(--bs-secondary-color);
-        font-size: 0.875rem;
-      }
-      .wizard-steps li::before {
-        counter-increment: step;
-        content: counter(step);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        margin: 0 auto 0.5rem;
-        border-radius: 50%;
-        background: var(--bs-body-tertiary-bg);
-        border: 2px solid var(--bs-border-color);
-        color: var(--bs-secondary-color);
-        font-weight: 600;
-      }
-      .wizard-steps li.active {
-        color: var(--bs-primary);
-        font-weight: 600;
-      }
-      .wizard-steps li.active::before {
-        background: var(--bs-primary);
-        border-color: var(--bs-primary);
-        color: #fff;
-      }
-      .wizard-steps li.completed::before {
-        background: var(--bs-success);
-        border-color: var(--bs-success);
-        color: #fff;
-        content: '\f633';
-        font-family: 'bootstrap-icons';
-      }
+
+            .wizard-steps {
+                counter-reset: step;
+                list-style: none;
+                padding: 0;
+                display: flex;
+                justify-content: space-between;
+                position: relative;
+            }
+
+            .wizard-steps::before {
+                content: '';
+                position: absolute;
+                top: 1rem;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: var(--bs-border-color);
+                z-index: 0;
+            }
+
+            .wizard-steps li {
+                position: relative;
+                z-index: 1;
+                background: var(--bs-body-bg);
+                padding: 0 0.75rem;
+                text-align: center;
+                color: var(--bs-secondary-color);
+                font-size: 0.875rem;
+            }
+
+            .wizard-steps li::before {
+                counter-increment: step;
+                content: counter(step);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 2rem;
+                height: 2rem;
+                margin: 0 auto 0.5rem;
+                border-radius: 50%;
+                background: var(--bs-body-tertiary-bg);
+                border: 2px solid var(--bs-border-color);
+                color: var(--bs-secondary-color);
+                font-weight: 600;
+            }
+
+            .wizard-steps li.active {
+                color: var(--bs-primary);
+                font-weight: 600;
+            }
+
+            .wizard-steps li.active::before {
+                background: var(--bs-primary);
+                border-color: var(--bs-primary);
+                color: #fff;
+            }
+
+            .wizard-steps li.completed::before {
+                background: var(--bs-success);
+                border-color: var(--bs-success);
+                color: #fff;
+                content: '\f633';
+                font-family: 'bootstrap-icons';
+            }
         </style>
     {% endif %}
     {% for link in view._additional_css_links(request) %}<link rel="stylesheet" href="{{ link }}">{% endfor %}
