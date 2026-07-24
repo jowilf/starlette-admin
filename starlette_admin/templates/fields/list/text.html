@@ -7,8 +7,9 @@
         <button type="button"
                 class="btn btn-action btn-sm copy-to-clipboard"
                 data-copy-value="{{ data }}"
-                title="{{ _('Copy to clipboard') }}">
-            <i class="{{ icon('action.copy') }}"></i>
+                title="{{ _('Copy to clipboard') }}"
+                aria-label="{{ _('Copy to clipboard') }}">
+            <i class="{{ icon('action.copy') }}" aria-hidden="true"></i>
         </button>
     </span>
 {% else %}

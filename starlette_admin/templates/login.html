@@ -99,30 +99,29 @@
                                         <path d="M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.055 9.055 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87" />
                                         <path d="M3 3l18 18" />
                                     </svg>
-                                </svg>
-                            </a>
-                        </span>
+                                </a>
+                            </span>
+                        </div>
+                        {% if form_errors and form_errors.has('password') %}
+                            <div class="invalid-feedback">{{ form_errors.msg("password") }}</div>
+                        {% endif %}
                     </div>
-                    {% if form_errors and form_errors.has('password') %}
-                        <div class="invalid-feedback">{{ form_errors.msg("password") }}</div>
-                    {% endif %}
-                </div>
-                <div class="mb-2">
-                    <label class="form-check">
-                        <input name="remember_me" type="checkbox" class="form-check-input" />
-                        <span class="form-check-label">{{ _("Remember me") }}</span>
-                    </label>
-                </div>
-            {% endblock %}
-            {% block login_form_footer %}
-                <div class="form-footer">
-                    <button type="submit" class="btn btn-primary w-100">{{ _("Sign in") }}</button>
-                </div>
-            {% endblock %}
-        </div>
-    </form>
-    {% block login_card_footer %}{% endblock %}
-</div>
+                    <div class="mb-2">
+                        <label class="form-check">
+                            <input name="remember_me" type="checkbox" class="form-check-input" />
+                            <span class="form-check-label">{{ _("Remember me") }}</span>
+                        </label>
+                    </div>
+                {% endblock %}
+                {% block login_form_footer %}
+                    <div class="form-footer">
+                        <button type="submit" class="btn btn-primary w-100">{{ _("Sign in") }}</button>
+                    </div>
+                {% endblock %}
+            </div>
+        </form>
+        {% block login_card_footer %}{% endblock %}
+    </div>
 {% endblock %}
 {% block script %}
     {{ super() }}

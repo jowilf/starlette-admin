@@ -36,10 +36,12 @@ function get_file_icon(mimeType) {
 $(document).on("click", ".copy-to-clipboard", function () {
   var btn = $(this);
   var icon = btn.find("i");
+  var copyIcon = StarletteAdmin.getIcon("action.copy", "fa-solid fa-copy");
+  var doneIcon = StarletteAdmin.getIcon("action.copy_done", "fa-solid fa-check");
   navigator.clipboard.writeText(btn.attr("data-copy-value")).then(function () {
-    icon.removeClass("fa-copy").addClass("fa-check");
+    icon.attr("class", doneIcon);
     setTimeout(function () {
-      icon.removeClass("fa-check").addClass("fa-copy");
+      icon.attr("class", copyIcon);
     }, 1500);
   });
 });

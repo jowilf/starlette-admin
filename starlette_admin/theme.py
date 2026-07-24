@@ -73,6 +73,7 @@ class CoreIcons(IconSet):
         # Generic actions
         "action.close": "fa fa-close",
         "action.copy": "fa-solid fa-copy",
+        "action.copy_done": "fa-solid fa-check",
         # Fields
         "field.file": "fa-solid fa-fw",
         "field.boolean_true": "fa-solid fa-check-circle",

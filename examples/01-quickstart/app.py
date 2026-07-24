@@ -156,7 +156,7 @@ class PostView(ModelView):
     )
     fields_default_sort = (("created_at", True),)
     search_auto_submit = True
-    inline_editable_fields = ["title", "slug", "status"]
+    inline_editable_fields = ["status"]
 
 
 admin = Admin(

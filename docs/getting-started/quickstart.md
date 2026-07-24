@@ -18,6 +18,9 @@ Install the necessary packages using your preferred package manager:
     uv add starlette-admin sqlalchemy "fastapi[standard]"
     ```
 
+!!! note 
+    The `fastapi[standard]` package includes the FastAPI CLI, allowing you to start the development server by running `fastapi dev`.
+
 ## The complete example
 
 Create a file named `main.py` and add the following code:
