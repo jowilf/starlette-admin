@@ -82,7 +82,7 @@ nav = [
     ] },
   ] },
   { "Migration Guide" = "migration.md" },
-  { "Changelog" = "changelog/index.md" },
+  { "Changelog" = "changelog.md" },
 ]
 
 [project.theme]

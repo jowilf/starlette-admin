@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[1.0.0rc1\] - 2026-07-24
+
+This release refactors starlette-admin's internals and adds a large set of new features. The high-level
+API is mostly unchanged; the one big rewrite is the list page rendering, which replaces DataTables with a server-rendered table.
+
+See the [Migration Guide](migration.md#from-017x-to-100) for what's new, every breaking change,
+and step-by-step upgrade instructions from 0.17.x.
+
+
 ## \[0.17.1\] - 2026-07-19
 
 ### Fixed
@@ -116,7 +125,7 @@ update** their definitions to include the `request` parameter.
 
     ```python
     def get_list_query(self, request: Request) -> Select:
-      return super().get_list_query(request).where(Post.published == true())
+        return super().get_list_query(request).where(Post.published == true())
     ```
 
 ### Added
@@ -255,6 +264,7 @@ update** their definitions to include the `request` parameter.
         title: Mapped[str] = mapped_column()
         user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
         user: Mapped[User] = relationship(back_populates="posts")
+
 
     class PostView(ModelView):
         sortable_field = ["id", "title", "user"]
@@ -440,6 +450,7 @@ Add [TimeZoneField](../api/fields/#starlette_admin.fields.TimeZoneField), [Count
     class UserView(ModelView):
         fields_default_sort = ["last_name", ("first_name", True)]
 
+
     admin.add_view(UserView(User))
     ```
 
@@ -572,7 +583,8 @@ Add [TimeZoneField](../api/fields/#starlette_admin.fields.TimeZoneField), [Count
         id: int
         title: str
 
-    admin.add_view(ModelView(Post, icon="fa fa-blog", label = "Blog Posts"))
+
+    admin.add_view(ModelView(Post, icon="fa fa-blog", label="Blog Posts"))
     ```
 
 === "Before"
@@ -587,6 +599,7 @@ Add [TimeZoneField](../api/fields/#starlette_admin.fields.TimeZoneField), [Count
         icon = "fa fa-blog"
         label = "Blog Posts"
 
+
     admin.add_view(PostView)
     ```
 
@@ -595,7 +608,9 @@ Add [TimeZoneField](../api/fields/#starlette_admin.fields.TimeZoneField), [Count
 === "Now"
 
     ```python
-    admin.add_view(CustomView(label="Home", icon="fa fa-home", path="/home", template_path="home.html"))
+    admin.add_view(
+        CustomView(label="Home", icon="fa fa-home", path="/home", template_path="home.html")
+    )
     ```
 
 === "Before"
@@ -607,6 +622,7 @@ Add [TimeZoneField](../api/fields/#starlette_admin.fields.TimeZoneField), [Count
         path = "/home"
         template_path = "home.html"
 
+
     admin.add_view(HomeView)
     ```
 
@@ -615,7 +631,7 @@ Add [TimeZoneField](../api/fields/#starlette_admin.fields.TimeZoneField), [Count
 === "Now"
 
     ```python
-    admin.add_view(Link(label="Back to Home", icon="fa fa-home", url="/", target = "_blank"))
+    admin.add_view(Link(label="Back to Home", icon="fa fa-home", url="/", target="_blank"))
     ```
 
 === "Before"
