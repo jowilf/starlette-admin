@@ -81,6 +81,7 @@ nav = [
       { "MongoEngine" = "api/contrib/mongoengine.md" },
     ] },
   ] },
+  { "Migration Guide" = "migration.md" },
   { "Changelog" = "changelog/index.md" },
 ]
 
