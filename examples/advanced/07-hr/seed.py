@@ -307,9 +307,11 @@ def build_project(
         actual_hours=Decimal(f"{estimated * progress:.1f}"),
         start_date=start,
         end_date=end_date,
-        plan={"milestones": [fake.bs() for _ in range(rng.randint(2, 4))]}
-        if rng.random() < 0.3
-        else None,
+        plan=(
+            {"milestones": [fake.bs() for _ in range(rng.randint(2, 4))]}
+            if rng.random() < 0.3
+            else None
+        ),
     )
 
 
@@ -327,12 +329,14 @@ def build_task(
         sort=rng.randint(0, 50),
         assignee=rng.choice(employees) if rng.random() < 0.85 else None,
         description=fake.paragraph(nb_sentences=2) if rng.random() < 0.5 else None,
-        due_date=fake.date_between(start_date="-3M", end_date="+3M")
-        if rng.random() < 0.7
-        else None,
-        labels=rng.sample(TASK_LABELS, k=rng.randint(1, 3))
-        if rng.random() < 0.4
-        else None,
+        due_date=(
+            fake.date_between(start_date="-3M", end_date="+3M")
+            if rng.random() < 0.7
+            else None
+        ),
+        labels=(
+            rng.sample(TASK_LABELS, k=rng.randint(1, 3)) if rng.random() < 0.4 else None
+        ),
     )
     if status == "completed":
         task.completed_at = fake.date_time_between(start_date="-6M", end_date="now")

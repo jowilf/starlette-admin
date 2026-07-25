@@ -431,10 +431,12 @@ class ModelView(BaseModelView):
             assert isinstance(self._pk_coerce, tuple)
             clause = and_(
                 *(
-                    _pk_col == _coerce(_pk)
-                    if _coerce is not bool
-                    # bool("False") is True, so compare the decoded string directly.
-                    else _pk_col == (_pk == "True")
+                    (
+                        _pk_col == _coerce(_pk)
+                        if _coerce is not bool
+                        # bool("False") is True, so compare the decoded string directly.
+                        else _pk_col == (_pk == "True")
+                    )
                     for _pk_col, _coerce, _pk in zip(
                         self._pk_column,
                         self._pk_coerce,
@@ -540,10 +542,12 @@ class ModelView(BaseModelView):
                 clauses.append(
                     and_(
                         *(
-                            _pk_col == _coerce(_pk)
-                            if _coerce is not bool
-                            # bool("False") is True, so compare the decoded string directly.
-                            else (_pk_col == (_pk == "True"))
+                            (
+                                _pk_col == _coerce(_pk)
+                                if _coerce is not bool
+                                # bool("False") is True, so compare the decoded string directly.
+                                else (_pk_col == (_pk == "True"))
+                            )
                             for _pk_col, _coerce, _pk in zip(
                                 self._pk_column,
                                 self._pk_coerce,

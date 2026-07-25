@@ -1142,9 +1142,11 @@ class HRDashboardView(CustomView):
                 project.department.name if project.department else "Unassigned",
                 _fmt_money(project.budget),
                 _fmt_money(project.spent),
-                f"{float(project.spent) / float(project.budget) * 100:.0f}%"
-                if project.budget
-                else "n/a",
+                (
+                    f"{float(project.spent) / float(project.budget) * 100:.0f}%"
+                    if project.budget
+                    else "n/a"
+                ),
             ]
             for project in projects
         ]
@@ -1185,9 +1187,11 @@ class HRDashboardView(CustomView):
                 expense.employee.name,
                 _title(expense.category.value),
                 f"${expense.total_amount:,.2f}",
-                expense.submitted_at.strftime("%Y-%m-%d")
-                if expense.submitted_at
-                else "",
+                (
+                    expense.submitted_at.strftime("%Y-%m-%d")
+                    if expense.submitted_at
+                    else ""
+                ),
             ]
             for expense in expenses
         ]

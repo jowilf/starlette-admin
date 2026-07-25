@@ -25,7 +25,8 @@ def _get_csrf_cookie(client) -> str:
 class CsrfTestClient(TestClient):
     """Drop-in replacement for `TestClient` that automatically handles CSRF.
 
-    Upon construction, the admin index is accessed, prompting the server to set a signed `starlette_admin_csrftoken` cookie. Every mutating request (POST, PUT, PATCH, or DELETE) then receives an `X-CSRFToken` header set to this same signed value, satisfying the double-submit cookie check without requiring tests to manually manage the token."""
+    Upon construction, the admin index is accessed, prompting the server to set a signed `starlette_admin_csrftoken` cookie. Every mutating request (POST, PUT, PATCH, or DELETE) then receives an `X-CSRFToken` header set to this same signed value, satisfying the double-submit cookie check without requiring tests to manually manage the token.
+    """
 
     def __init__(self, app, **kwargs):
         super().__init__(app, **kwargs)
@@ -58,7 +59,8 @@ async def make_csrf_async_client(
 ) -> AsyncClient:
     """Returns an `httpx2 AsyncClient` with a server-signed CSRF cookie.
 
-    The client initially accesses the admin index to obtain a signed `starlette_admin_csrftoken` cookie. Subsequently, it attaches an `X-CSRFToken` to every non-safe request."""
+    The client initially accesses the admin index to obtain a signed `starlette_admin_csrftoken` cookie. Subsequently, it attaches an `X-CSRFToken` to every non-safe request.
+    """
     token_holder = {"value": ""}
 
     async def _attach_csrf(request):

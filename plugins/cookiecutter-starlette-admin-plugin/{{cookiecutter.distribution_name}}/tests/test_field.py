@@ -2,7 +2,9 @@ def test_field_template_resolves_by_plain_and_prefixed_path(admin):
     plain = admin.templates.env.get_template(
         "plugins/{{ cookiecutter.plugin_slug }}/fields/form/slider.html"
     )
-    prefixed = admin.templates.env.get_template("@{{ cookiecutter.plugin_slug }}/fields/form/slider.html")
+    prefixed = admin.templates.env.get_template(
+        "@{{ cookiecutter.plugin_slug }}/fields/form/slider.html"
+    )
     assert plain.filename == prefixed.filename
 
 

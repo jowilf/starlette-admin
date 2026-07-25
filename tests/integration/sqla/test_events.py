@@ -409,9 +409,11 @@ async def test_committed_event_not_fired_on_commit_failure_after_delete(
     monkeypatch.setattr(
         commit_cls,
         "commit",
-        _raise_integrity_error_async
-        if isinstance(engine, AsyncEngine)
-        else _raise_integrity_error,
+        (
+            _raise_integrity_error_async
+            if isinstance(engine, AsyncEngine)
+            else _raise_integrity_error
+        ),
     )
 
     pk = await _get_pk(engine)
@@ -531,9 +533,11 @@ async def test_committed_event_not_fired_on_session_error_during_create(
     monkeypatch.setattr(
         flush_cls,
         "flush",
-        _raise_integrity_error_async
-        if isinstance(engine, AsyncEngine)
-        else _raise_integrity_error,
+        (
+            _raise_integrity_error_async
+            if isinstance(engine, AsyncEngine)
+            else _raise_integrity_error
+        ),
     )
 
     with pytest.raises(IntegrityError):
@@ -573,9 +577,11 @@ async def test_committed_event_not_fired_on_commit_failure_after_create(
     monkeypatch.setattr(
         commit_cls,
         "commit",
-        _raise_integrity_error_async
-        if isinstance(engine, AsyncEngine)
-        else _raise_integrity_error,
+        (
+            _raise_integrity_error_async
+            if isinstance(engine, AsyncEngine)
+            else _raise_integrity_error
+        ),
     )
 
     with pytest.raises(IntegrityError):
