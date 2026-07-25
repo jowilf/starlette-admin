@@ -58,4 +58,3 @@ function initJsonViewers(selector) {
     });
   });
 }
-

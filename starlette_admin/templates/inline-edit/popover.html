@@ -4,7 +4,9 @@
    `.inline-edit-popover` so CSS in `static/css/inline-edit.css` never leaks
    onto unrelated popovers (e.g. the file-field delete help popover). #}
 <template id="inline-edit-popover-template">
-    <div class="popover inline-edit-popover" role="tooltip">
+    <div class="popover inline-edit-popover"
+         role="dialog"
+         aria-label="{{ _('Edit value') }}">
         <div class="popover-arrow"></div>
         <div class="popover-body"></div>
     </div>

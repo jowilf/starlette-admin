@@ -8,9 +8,10 @@
             <a href="{{ chip.remove_url }}"
                class="badge bg-primary-lt text-decoration-none d-inline-flex align-items-center gap-1"
                data-bs-toggle="tooltip"
-               title="{{ _('Remove this filter') }}">
+               title="{{ _('Remove this filter') }}"
+               aria-label="{{ _('Remove this filter') }}: {{ chip.label }}">
                 {{ chip.label }}
-                <i class="{{ icon('filter.remove_chip') }}"></i>
+                <i class="{{ icon('filter.remove_chip') }}" aria-hidden="true"></i>
             </a>
         {% endfor %}
         <a href="{{ list_url(request, filter=None, page=None) }}"

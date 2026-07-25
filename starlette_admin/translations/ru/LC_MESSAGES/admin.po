@@ -826,9 +826,8 @@ msgid "Error"
 msgstr ""
 
 #: starlette_admin/templates/list.html:348
-#, fuzzy
 msgid "new"
-msgstr "Добавить %(name)s"
+msgstr "новый"
 
 #: starlette_admin/templates/list.html:349
 msgid "update"
@@ -1012,4 +1011,3 @@ msgstr "Загрузка"
 #~ " be ignored and a new key will"
 #~ " be assigned."
 #~ msgstr ""
-

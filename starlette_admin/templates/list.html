@@ -46,8 +46,8 @@
                                            placeholder="{{ _('Search') }}..."
                                            aria-label="{{ _('Search in list') }}"
                                            autocomplete="off" />
-                                    <button class="btn" type="submit">
-                                        <i class="{{ icon('list.search') }}"></i>
+                                    <button class="btn" type="submit" aria-label="{{ _('Search') }}">
+                                        <i class="{{ icon('list.search') }}" aria-hidden="true"></i>
                                     </button>
                                 </div>
                                 {% for s_name, s_dir in list_params.sorts %}
@@ -149,15 +149,15 @@
                             <thead>
                                 {% block list_header %}
                                     <tr>
-                                        <th class="w-1 checkbox-cell">
+                                        <th scope="col" class="w-1 checkbox-cell">
                                             <input class="form-check-input"
                                                    type="checkbox"
                                                    id="select-all-rows"
                                                    aria-label="{{ _('Select all rows') }}" />
                                         </th>
-                                        {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}<th class="w-1"></th>{% endif %}
-                                        {% for field in fields %}<th data-column="{{ field.name }}">{{ column_header(field, list_params) }}</th>{% endfor %}
-                                        {% if view.row_actions_position.value == "AFTER_COLUMNS" %}<th class="w-1"></th>{% endif %}
+                                        {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}<th scope="col" class="w-1"></th>{% endif %}
+                                        {% for field in fields %}<th scope="col" data-column="{{ field.name }}">{{ column_header(field, list_params) }}</th>{% endfor %}
+                                        {% if view.row_actions_position.value == "AFTER_COLUMNS" %}<th scope="col" class="w-1"></th>{% endif %}
                                     </tr>
                                 {% endblock %}
                             </thead>
@@ -285,7 +285,7 @@
     <script type="text/javascript"
             src="{{ static_url(request, 'js/utils.js', v=1) }}"></script>
     <script type="text/javascript"
-            src="{{ static_url(request, 'js/alerts.js', v=1) }}"></script>
+            src="{{ static_url(request, 'js/alerts.js', v=2) }}"></script>
     <script type="text/javascript"
             src="{{ static_url(request, 'js/actions.js', v=2) }}"></script>
     {% if inline_edit_enabled %}

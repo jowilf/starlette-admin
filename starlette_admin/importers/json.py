@@ -15,7 +15,7 @@ _log = get_logger(__name__)
 class JsonImporter(BaseImporter):
     extension = "json"
 
-    async def parse(self, ctx: ImportContext) -> AsyncGenerator[dict[str, Any], None]:
+    async def parse(self, ctx: ImportContext) -> AsyncGenerator[dict[str, Any]]:
         _log.debug("JSON parse starting: %d bytes", len(ctx.content))
         data = json.loads(ctx.content.decode("utf-8"))
         if not isinstance(data, list):

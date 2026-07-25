@@ -24,7 +24,7 @@ class CsvImporter(BaseImporter):
         """
         self.fmtparams = fmtparams
 
-    async def parse(self, ctx: ImportContext) -> AsyncGenerator[dict[str, Any], None]:
+    async def parse(self, ctx: ImportContext) -> AsyncGenerator[dict[str, Any]]:
         _log.debug("CSV parse starting: %d bytes", len(ctx.content))
         # utf-8-sig strips the BOM written by Excel
         text = ctx.content.decode("utf-8-sig")

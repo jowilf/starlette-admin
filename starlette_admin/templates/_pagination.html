@@ -18,14 +18,20 @@
             {{ _("entries") }}
         </div>
         <ul class="pagination mb-0">
-            <li class="page-item {{ 'disabled' if list_params.page <= 1 }}">
-                <a class="page-link" href="{{ list_url(request, page=None) }}">{{ _("First") }}</a>
+            {% set on_first = list_params.page <= 1 %}
+            {% set on_last = list_params.page >= total_pages %}
+            <li class="page-item {{ 'disabled' if on_first }}">
+                <a class="page-link"
+                   href="{{ list_url(request, page=None) }}"
+                   {% if on_first %}tabindex="-1" aria-disabled="true"{% endif %}>{{ _("First") }}</a>
             </li>
-            <li class="page-item {{ 'disabled' if list_params.page <= 1 }}">
+            <li class="page-item {{ 'disabled' if on_first }}">
                 {% set prev_page = [1, list_params.page - 1] | max %}
                 <a class="page-link"
-                   href="{{ list_url(request, page=(None if prev_page == 1 else prev_page) ) }}">
-                    <i class="{{ icon('pagination.prev') }}"></i>
+                   href="{{ list_url(request, page=(None if prev_page == 1 else prev_page) ) }}"
+                   aria-label="{{ _('Previous page') }}"
+                   {% if on_first %}tabindex="-1" aria-disabled="true"{% endif %}>
+                    <i class="{{ icon('pagination.prev') }}" aria-hidden="true"></i>
                 </a>
             </li>
             {% set window_start = [1, list_params.page - 2] | max %}
@@ -33,17 +39,23 @@
             {% for p in range(window_start, window_end + 1) %}
                 <li class="page-item {{ 'active' if p == list_params.page }}">
                     <a class="page-link"
-                       href="{{ list_url(request, page=(None if p == 1 else p) ) }}">{{ p }}</a>
+                       href="{{ list_url(request, page=(None if p == 1 else p) ) }}"
+                       {% if p == list_params.page %}aria-current="page"{% endif %}>{{ p }}</a>
                 </li>
             {% endfor %}
-            <li class="page-item {{ 'disabled' if list_params.page >= total_pages }}">
+            <li class="page-item {{ 'disabled' if on_last }}">
                 {% set next_page = [total_pages, list_params.page + 1] | min %}
-                <a class="page-link" href="{{ list_url(request, page=next_page) }}">
-                    <i class="{{ icon('pagination.next') }}"></i>
+                <a class="page-link"
+                   href="{{ list_url(request, page=next_page) }}"
+                   aria-label="{{ _('Next page') }}"
+                   {% if on_last %}tabindex="-1" aria-disabled="true"{% endif %}>
+                    <i class="{{ icon('pagination.next') }}" aria-hidden="true"></i>
                 </a>
             </li>
-            <li class="page-item {{ 'disabled' if list_params.page >= total_pages }}">
-                <a class="page-link" href="{{ list_url(request, page=total_pages) }}">{{ _("Last") }}</a>
+            <li class="page-item {{ 'disabled' if on_last }}">
+                <a class="page-link"
+                   href="{{ list_url(request, page=total_pages) }}"
+                   {% if on_last %}tabindex="-1" aria-disabled="true"{% endif %}>{{ _("Last") }}</a>
             </li>
         </ul>
         {% if view.show_goto_page %}
@@ -60,9 +72,7 @@
                            aria-label="{{ _('Go to page') }}" />
                     <button class="btn" type="submit">{{ _("Go to page") }}</button>
                 </div>
-                {% if list_params.q %}
-                    <input type="hidden" name="q" value="{{ list_params.q }}" />
-                {% endif %}
+                {% if list_params.q %}<input type="hidden" name="q" value="{{ list_params.q }}" />{% endif %}
                 {% for s_name, s_dir in list_params.sorts %}
                     <input type="hidden" name="sort" value="{{ s_name }}__{{ s_dir }}" />
                 {% endfor %}

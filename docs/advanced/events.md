@@ -204,7 +204,7 @@ async def log_deletion(ctx: BeforeDeleteContext) -> None:
 
 Handlers registered with the same priority run in their order of registration. `AdminEventSubscriber` methods take a priority through `@on(AdminEvent.X, priority=10)`, which is forwarded the same way.
 
-!!! warning 
+!!! warning
     A `BEFORE_DELETE` (or any `BEFORE_*`) handler that raises an exception stops the operation, and later handlers for that event will not run. An `AFTER_*` handler that raises an exception turns an already-committed change into a failed request. Wrap risky logic (like network calls or third-party APIs) in its own `try`/`except` block inside the handler if a failure there should not surface as an admin error.
 
 ## Extended Example

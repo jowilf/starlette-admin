@@ -61,11 +61,11 @@ sync_engine = create_engine("postgresql+psycopg2://user:pass@localhost/store")
 async_engine = create_async_engine("postgresql+asyncpg://user:pass@localhost/store")
 ```
 
-`starlette_admin.contrib.sqla.middleware.DBSessionMiddleware` inspects the engine once at request time and opens the matching session type: an `AsyncSession` for an `AsyncEngine` or a plain `Session` for a sync `Engine`. Internally, `ModelView` branches on `isinstance(session, AsyncSession)`. For synchronous sessions, it routes the blocking call through `anyio.to_thread.run_sync` to avoid blocking the event loop. 
+`starlette_admin.contrib.sqla.middleware.DBSessionMiddleware` inspects the engine once at request time and opens the matching session type: an `AsyncSession` for an `AsyncEngine` or a plain `Session` for a sync `Engine`. Internally, `ModelView` branches on `isinstance(session, AsyncSession)`. For synchronous sessions, it routes the blocking call through `anyio.to_thread.run_sync` to avoid blocking the event loop.
 
 ## Passing a `sessionmaker` instead of an engine
 
-The `session_provider` parameter also accepts a `sessionmaker` or `async_sessionmaker`. Provide a session maker instead of a bare engine when you must configure the session directly. 
+The `session_provider` parameter also accepts a `sessionmaker` or `async_sessionmaker`. Provide a session maker instead of a bare engine when you must configure the session directly.
 
 ```python
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -193,7 +193,7 @@ Every field type receives a default set of filters from `SqlaFilterRegistry`. Th
 
 !!! note
     The SQLAlchemy backend does not provide `ArrayInFilter` or `ArrayNotInFilter` (the "is one of" filters for list-valued columns) as Beanie and MongoEngine do. You must write your own `apply()` logic if you require "is one of" filtering on a `TagsField`-backed JSON or ARRAY column. Consult the [Custom Filters](../advanced/custom-filters.md) documentation for more details.
-    
+
 ## Sessions and transactions
 
 The session middleware opens exactly one session per request and stores it securely on `request.state.session`. This object will be an `AsyncSession` when using an asynchronous engine (or `async_sessionmaker`) and a standard `Session` otherwise. Every component touched by the request shares this single session. The list query, the relationship lookups within forms, and any custom logic running in a hook, action, or endpoint will all operate inside the exact same transaction. You retrieve it uniformly regardless of the underlying engine type:

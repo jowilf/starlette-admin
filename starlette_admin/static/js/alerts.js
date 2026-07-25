@@ -30,7 +30,7 @@ window.StarletteAdmin.alertHandler = function (type, msg, autoDismissMs) {
   const $alert = $(
     `<div class="alert ${spec.cls} alert-dismissible mb-2" role="alert">
     <div class="alert-icon">
-      <i class="${iconClass} icon"></i>
+      <i class="${iconClass} icon" aria-hidden="true"></i>
     </div>
     <div>
       <div class="alert-description">${msg}</div>

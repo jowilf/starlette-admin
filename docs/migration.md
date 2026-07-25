@@ -12,14 +12,14 @@ This guide covers every breaking change in the order you are most likely to enco
 
 Customizations of the old list page require the most attention. DataTables options and JavaScript render functions have no direct equivalent and must be ported to server-side templates (see [DataTables Removal](#datatables-removal)).
 
-!!! tip 
+!!! tip
     Upgrade your dependencies in one step and start your application. Most removed or renamed attributes raise clear errors at startup rather than failing silently at runtime.
 
 ### What's New
 
 Beyond the breaking changes outlined below, this release includes:
 
-* **In-house list table:** DataTables is gone. Lists are now server-rendered with URL-driven state, making every list, filter, and sort state shareable and bookmarkable.
+* **Native list tables:** DataTables has been removed in favor of a built-in, server-rendered implementation. Table state is now entirely URL-driven, meaning all page, filter, and sort configurations are immediately shareable and bookmarkable.
 * **[Filters](user-guide/filters.md):** A nested `AND`/`OR` filter builder replaces the DataTables SearchBuilder. Filters are derived from field types and are fully extensible in pure Python. You can write a filter class without needing any JavaScript.
 * **[Import and Server-Side Export](user-guide/export-import.md):** Enjoy CSV/JSON import capabilities with per-row error reporting, alongside server-side exporters (CSV, JSON, Excel, PDF, etc.) that replace client-side DataTables buttons.
 * **[Events](advanced/events.md):** Subscribe to lifecycle hooks like `before_create`, `after_edit_committed`, `after_login`, and various action events.

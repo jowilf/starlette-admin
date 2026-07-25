@@ -1,9 +1,12 @@
+{% set describedby = ((field.id ~ '-error') if error else None, (field.id ~ '-help') if field.help_text else None) | select | join(' ') %}
 <div class="{% if error %}{{ field.error_class }}{% endif %}">
     <select id="{{ field.id }}"
             name="{{ field.id }}"
             data-allow-clear="true"
             data-placeholder="{{ _('Select a %(label)s', label=field.label) }}"
             class="{{ field.class_ }} {% if error %}{{ field.error_class }}{% endif %}"
+            {% if error %}aria-invalid="true"{% endif %}
+            {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}
             {% if field.multiple %}multiple{% endif %}
             {% if field.disabled %}disabled{% endif %}
             {% if field.select2 %}data-role="select2"{% endif %}>
@@ -14,6 +17,6 @@
             </option>
         {% endfor %}
     </select>
-    {% if field.help_text %}<small class="form-hint mt-2">{{ field.help_text }}</small>{% endif %}
+    {% if field.help_text %}<small class="form-hint mt-2" id="{{ field.id }}-help">{{ field.help_text }}</small>{% endif %}
 </div>
 {% include "fields/form/_error.html" %}

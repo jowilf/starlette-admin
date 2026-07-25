@@ -5,6 +5,7 @@
                class="field-boolean form-check-input"
                type="checkbox"
                {{ 'checked' if data else '' }}
+               {% if error %}aria-invalid="true" aria-describedby="{{ field.id }}-error"{% endif %}
                {{ field.input_params() | safe }} />
         {% if field.help_text %}<span class="form-check-label">{{ field.help_text }}</span>{% endif %}
     </label>

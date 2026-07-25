@@ -46,7 +46,7 @@ You do not need to manually call `flash()` for standard CRUD operations. The adm
 | **Delete (Single)** | `The item "<repr>" was successfully deleted.` |
 | **Delete (Bulk)** | `%(count)d items were successfully deleted.` |
 
-!!! note "**Note on `<repr>`:**" 
+!!! note "**Note on `<repr>`:**"
     The automatic messages use the object's row representation defined by `view.repr()`, not the model's class name. For example, creating a post will flash *“The item ‘My First Post’ was added successfully,”* rather than a generic *“Post was added successfully.”*
 
 ## Using Flash Messages in Custom Actions
@@ -68,7 +68,7 @@ class PostView(BaseModelView):
             obj = await self.find_by_pk(request, pk)
             obj.published = True
             await self.edit(request, pk, {"published": True})
-            
+
         # Notify the user that the custom action succeeded
         flash(request, f"{len(pks)} post(s) published.", category="success")
 

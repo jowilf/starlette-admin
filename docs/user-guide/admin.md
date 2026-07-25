@@ -1,6 +1,6 @@
 # Admin
 
-Every admin-wide setting (such as the navbar title, the mount location, CSRF and authentication configurations, and the rendered theme) is passed as a keyword argument to the `Admin` class. 
+Every admin-wide setting (such as the navbar title, the mount location, CSRF and authentication configurations, and the rendered theme) is passed as a keyword argument to the `Admin` class.
 
 ## Basic usage
 
@@ -130,7 +130,7 @@ admin = Admin(
 )
 ```
 
-This is highly useful during development. Every request logs the executed middleware, the view that resolved a given URL, and the reasoning behind a passed or failed permission check. Keep this disabled in production; it is verbose and adds significant logging overhead to every request. 
+This is highly useful during development. Every request logs the executed middleware, the view that resolved a given URL, and the reasoning behind a passed or failed permission check. Keep this disabled in production; it is verbose and adds significant logging overhead to every request.
 
 For a lighter approach, call `starlette_admin.logging.configure_logging(level=logging.INFO)` manually instead of passing `debug=True`. This provides the handler without the complete DEBUG verbosity.
 

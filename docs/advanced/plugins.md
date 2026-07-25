@@ -127,7 +127,7 @@ Plugins that provide custom fields should package their frontend scripts accordi
 
 ## Extension Points via the Setup Hook
 
-Plugins leverage existing public registries rather than inventing separate extension pathways. 
+Plugins leverage existing public registries rather than inventing separate extension pathways.
 
 * **Converters**: Call `register_converter` (from the respective contrib backend) to map ORM column types to your custom field classes. Define the field itself as a regular `StringField` subclass, storing and displaying geometries as WKT text:
 
@@ -153,7 +153,7 @@ Plugins leverage existing public registries rather than inventing separate exten
 
   ```python
   from starlette_admin.contrib.sqla.filters import register_filters
-  
+
   register_filters(MyGeoField, WithinBoundingBoxFilter)
   ```
 
@@ -161,7 +161,7 @@ Plugins leverage existing public registries rather than inventing separate exten
 
   ```python
   from starlette_admin.storage import register_storage
-  
+
   register_storage(AzureBlobStorage())
   ```
 
@@ -169,7 +169,7 @@ Plugins leverage existing public registries rather than inventing separate exten
 
   ```python
   from starlette_admin.export import register_export_format
-  
+
   register_export_format("pdf", PDFExporter())
   ```
 

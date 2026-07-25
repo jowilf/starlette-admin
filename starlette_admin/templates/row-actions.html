@@ -25,8 +25,10 @@
 {% if display_type == "ICON_LIST" -%}
     <div class="d-flex">
         {% for action in _actions -%}
-            <a title="{{ action.text }}" {{ action_data_attributes(action) }}>
-                <span class="me-1"><i class="{{ icon(action.icon_class) }}"></i></span>
+            <a title="{{ action.text }}"
+               aria-label="{{ action.text }}"
+               {{ action_data_attributes(action) }}>
+                <span class="me-1"><i class="{{ icon(action.icon_class) }}" aria-hidden="true"></i></span>
             </a>
         {% endfor %}
     </div>
@@ -43,7 +45,7 @@
                    type="button"
                    {{ action_data_attributes(action) }}>
                     {% if action.icon_class -%}
-                        <i class="{{ icon(action.icon_class) }} me-2"></i>
+                        <i class="{{ icon(action.icon_class) }} me-2" aria-hidden="true"></i>
                     {% endif -%}
                     {{ action.text }}
                 </a>
@@ -58,14 +60,14 @@
                 data-bs-toggle="dropdown"
                 data-bs-config='{"popperConfig": {"strategy": "fixed"}}'
                 aria-label="{{ _('Actions') }}">
-            <i class="{{ icon('list.row_actions') }}"></i>
+            <i class="{{ icon('list.row_actions') }}" aria-hidden="true"></i>
         </button>
         <div class="dropdown-menu dropdown-menu-end">
             {% for action in _actions -%}
                 <a class="dropdown-item row-action-item"
                    {{ action_data_attributes(action) }}>
                     {% if action.icon_class -%}
-                        <i class="{{ icon(action.icon_class) }} me-2"></i>
+                        <i class="{{ icon(action.icon_class) }} me-2" aria-hidden="true"></i>
                     {% endif -%}
                     {{ action.text }}
                 </a>
@@ -81,7 +83,7 @@
             <a class="row-action-item small d-inline-flex flex-column align-items-center"
                {{ action_data_attributes(action) }}>
                 {% if action.icon_class -%}
-                    <i class="{{ icon(action.icon_class) }}"></i>
+                    <i class="{{ icon(action.icon_class) }}" aria-hidden="true"></i>
                 {% endif -%}
                 {{ action.text }}
             </a>
@@ -95,7 +97,7 @@
                role="button"
                {{ action_data_attributes(action) }}>
                 {% if action.icon_class -%}
-                    <i class="{{ icon(action.icon_class) }} me-2"></i>
+                    <i class="{{ icon(action.icon_class) }} me-2" aria-hidden="true"></i>
                 {% endif -%}
                 {{ action.text }}
             </a>

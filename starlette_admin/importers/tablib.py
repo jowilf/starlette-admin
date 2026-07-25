@@ -39,7 +39,7 @@ class TablibImporter(BaseImporter):
         self.requires = _REQUIRES.get(format, "tablib")
         self.import_kwargs = import_kwargs
 
-    async def parse(self, ctx: ImportContext) -> AsyncGenerator[dict[str, Any], None]:
+    async def parse(self, ctx: ImportContext) -> AsyncGenerator[dict[str, Any]]:
         try:
             import tablib
         except ImportError as exc:

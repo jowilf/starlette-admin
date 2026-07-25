@@ -264,7 +264,7 @@ def validate_document_type(
     Use custom validators when you need to inspect file contents or enforce application-specific rules.
 
     **Do not** rely on file extensions or `Content-Type` headers for security-sensitive validation. Use a content-based inspection library such as `filetype` or `python-magic`.
-    
+
 
 ## File Cleanup Limitations
 
@@ -277,7 +277,7 @@ This design keeps the storage layer simple and prevents application-level errors
 
 ### Transactional Alternative
 
-If your application requires file storage operations to be strictly transactional with database writes, you should use a library that ties file storage to the SQLAlchemy unit of work. 
+If your application requires file storage operations to be strictly transactional with database writes, you should use a library that ties file storage to the SQLAlchemy unit of work.
 
 Instead of relying on the `storage=` parameter on the field, you can use [sqlalchemy-file](https://github.com/jowilf/sqlalchemy-file). This library stores files as part of the ORM flush and rollback cycle, ensuring that a failed transaction or a row deletion automatically undoes the corresponding file write. For a working example, refer to [examples/13-sqlachemy-file](https://github.com/jowilf/starlette-admin/tree/main/examples/13-sqlachemy-file).
 

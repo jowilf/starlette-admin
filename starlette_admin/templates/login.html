@@ -9,7 +9,7 @@
                     <a href="." class="navbar-brand navbar-brand-autodark">
                         <img src="{{ login_logo_url(request) or logo_url(request) }}"
                              height="36"
-                             alt=""
+                             alt="{{ app_title }}"
                              class="navbar-brand-image" />
                     </a>
                 </div>
@@ -28,7 +28,7 @@
                     <div class="alert alert-important alert-danger alert-dismissible"
                          role="alert">
                         <div class="alert-icon">
-                            <i class="{{ icon('flash.error') }}"></i>
+                            <i class="{{ icon('flash.error') }}" aria-hidden="true"></i>
                         </div>
                         <div>
                             <div class="alert-description">{{ error }}</div>
@@ -42,30 +42,34 @@
                 {% endblock %}
                 {% block login_fields %}
                     <div class="mb-3">
-                        <label class="form-label">{{ _("Username") }}</label>
+                        <label class="form-label" for="username">{{ _("Username") }}</label>
                         <input type="text"
+                               id="username"
                                name="username"
                                class="form-control {% if form_errors and form_errors.has('username') %}is-invalid{% endif %}"
                                placeholder="{{ _('Username') }}"
-                               autocomplete="username" />
+                               autocomplete="username"
+                               {% if form_errors and form_errors.has('username') %}aria-invalid="true" aria-describedby="username-error"{% endif %} />
                         {% if form_errors and form_errors.has('username') %}
-                            <div class="invalid-feedback">{{ form_errors.msg("username") }}</div>
+                            <div class="invalid-feedback" id="username-error">{{ form_errors.msg("username") }}</div>
                         {% endif %}
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">{{ _("Password") }}</label>
+                        <label class="form-label" for="password">{{ _("Password") }}</label>
                         <div class="input-group input-group-flat {% if form_errors and form_errors.has('password') %}is-invalid{% endif %}">
                             <input type="password"
                                    id="password"
                                    name="password"
                                    class="form-control {% if form_errors and form_errors.has('password') %}is-invalid{% endif %}"
                                    placeholder="{{ _('Password') }}"
-                                   autocomplete="current-password" />
+                                   autocomplete="current-password"
+                                   {% if form_errors and form_errors.has('password') %}aria-invalid="true" aria-describedby="password-error"{% endif %} />
                             <span class="input-group-text">
                                 <a href="#"
                                    id="toggle-password"
                                    class="link-secondary"
                                    title="{{ _('Show password') }}"
+                                   aria-label="{{ _('Show password') }}"
                                    data-bs-toggle="tooltip"
                                    tabindex="-1">
                                     <svg id="icon-eye"
@@ -78,7 +82,8 @@
                                          stroke-width="2"
                                          stroke-linecap="round"
                                          stroke-linejoin="round"
-                                         class="icon icon-1">
+                                         class="icon icon-1"
+                                         aria-hidden="true">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                         <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
                                         <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
@@ -93,7 +98,8 @@
                                          stroke-width="2"
                                          stroke-linecap="round"
                                          stroke-linejoin="round"
-                                         class="icon icon-1 d-none">
+                                         class="icon icon-1 d-none"
+                                         aria-hidden="true">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                         <path d="M10.585 10.587a2 2 0 0 0 2.829 2.828" />
                                         <path d="M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.055 9.055 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87" />
@@ -103,7 +109,7 @@
                             </span>
                         </div>
                         {% if form_errors and form_errors.has('password') %}
-                            <div class="invalid-feedback">{{ form_errors.msg("password") }}</div>
+                            <div class="invalid-feedback" id="password-error">{{ form_errors.msg("password") }}</div>
                         {% endif %}
                     </div>
                     <div class="mb-2">

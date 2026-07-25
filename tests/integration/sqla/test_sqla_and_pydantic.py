@@ -21,7 +21,7 @@ from starlette_admin.contrib.sqla import Admin
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 from tests.integration.sqla.utils import get_test_engine
-from tests.utils import csrf_async_client
+from tests.utils import csrf_async_client, has_invalid_feedback
 
 pytestmark = pytest.mark.asyncio
 
@@ -133,9 +133,7 @@ async def test_create_validation_error(client: AsyncClient, session: Session):
         },
     )
     assert response.status_code == 422
-    assert (
-        '<div class="invalid-feedback">This field is required.</div>' in response.text
-    )
+    assert has_invalid_feedback(response.text, "This field is required.")
 
     # Once field-level validation passes, Pydantic model errors surface.
     response = await client.post(
@@ -148,13 +146,11 @@ async def test_create_validation_error(client: AsyncClient, session: Session):
         },
     )
     assert response.status_code == 422
-    assert (
-        '<div class="invalid-feedback">ensure this value has at least 10'
-        " characters</div>"
-        in response.text
-        or '<div class="invalid-feedback">String should have at least 10'  # pydantic v2
-        " characters</div>"
-        in response.text
+    assert has_invalid_feedback(
+        response.text, "ensure this value has at least 10 characters"
+    ) or has_invalid_feedback(
+        response.text,
+        "String should have at least 10 characters",  # pydantic v2
     )
 
 
@@ -196,9 +192,7 @@ async def test_edit_validation_error(client: AsyncClient, session: Session):
         },
     )
     assert response.status_code == 422
-    assert (
-        '<div class="invalid-feedback">This field is required.</div>' in response.text
-    )
+    assert has_invalid_feedback(response.text, "This field is required.")
 
     # Once field-level validation passes, Pydantic model errors surface.
     response = await client.post(
@@ -211,13 +205,11 @@ async def test_edit_validation_error(client: AsyncClient, session: Session):
         },
     )
     assert response.status_code == 422
-    assert (
-        '<div class="invalid-feedback">ensure this value has at least 10'
-        " characters</div>"
-        in response.text
-        or '<div class="invalid-feedback">String should have at least 10'  # pydantic v2
-        " characters</div>"
-        in response.text
+    assert has_invalid_feedback(
+        response.text, "ensure this value has at least 10 characters"
+    ) or has_invalid_feedback(
+        response.text,
+        "String should have at least 10 characters",  # pydantic v2
     )
 
 

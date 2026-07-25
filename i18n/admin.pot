@@ -968,4 +968,3 @@ msgstr ""
 #: starlette_admin/templates/modals/loading.html:10
 msgid "Loading"
 msgstr ""
-

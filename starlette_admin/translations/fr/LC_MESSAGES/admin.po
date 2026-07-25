@@ -1002,4 +1002,3 @@ msgstr "Chargement en cours"
 #~ " automatiquement les clés. La colonne "
 #~ "sera ignorée et une nouvelle clé "
 #~ "sera attribuée."
-

@@ -57,7 +57,7 @@ class ArticleView(ModelView):
     inlines = [CommentInline]
 ```
 
-Setting this up requires two steps: defining an `InlineModelView` subclass for the child model, and adding it to the `inlines` list on the parent's `ModelView`. 
+Setting this up requires two steps: defining an `InlineModelView` subclass for the child model, and adding it to the `inlines` list on the parent's `ModelView`.
 The `ArticleView` create and edit pages will now render a `Comments` formset below the article's own fields. The formset begins with one empty row (`extra = 1`) and includes add and delete controls that the SQLAlchemy backend wires up automatically.
 
 Notice that `CommentInline` never sets the `fk_attr` property. The SQLAlchemy backend inspects `Article.comments` and infers `Comment.article_id` as the foreign key because it is the only relationship pointing to `Comment`. You only need to explicitly set `fk_attr` when this inference is ambiguous or if the relationship is not declared on the ORM model. See [Explicit and composite foreign keys](#explicit-and-composite-foreign-keys) for more details.

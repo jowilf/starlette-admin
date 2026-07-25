@@ -21,13 +21,13 @@
                         class="btn btn-primary btn-icon inline-edit-save"
                         aria-label="{{ _('Save') }}"
                         disabled>
-                    <i class="{{ icon('inline_edit.save') }}"></i>
+                    <i class="{{ icon('inline_edit.save') }}" aria-hidden="true"></i>
                 </button>
                 {% block inline_edit_cancel_button %}
                     <button type="button"
                             class="btn btn-icon inline-edit-cancel"
                             aria-label="{{ _('Cancel') }}">
-                        <i class="{{ icon('inline_edit.cancel') }}"></i>
+                        <i class="{{ icon('inline_edit.cancel') }}" aria-hidden="true"></i>
                     </button>
                 {% endblock %}
             </div>

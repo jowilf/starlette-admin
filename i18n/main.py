@@ -1,4 +1,3 @@
-
 import click
 import requests
 from babel.messages.frontend import CommandLineInterface

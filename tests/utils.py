@@ -1,9 +1,16 @@
 """Shared test utilities."""
 
+import re
 from contextlib import asynccontextmanager
 
 from httpx2 import ASGITransport, AsyncClient
 from starlette.testclient import TestClient
+
+
+def has_invalid_feedback(html: str, message: str) -> bool:
+    """Checks for an invalid-feedback div with the given message, regardless of its id attribute."""
+    pattern = rf'<div class="invalid-feedback"[^>]*>{re.escape(message)}</div>'
+    return re.search(pattern, html) is not None
 
 
 def _get_csrf_cookie(client) -> str:

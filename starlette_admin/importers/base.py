@@ -132,7 +132,7 @@ class BaseImporter(ABC):
     def parse(
         self,
         ctx: ImportContext,
-    ) -> AsyncGenerator[dict[str, Any], None]:
+    ) -> AsyncGenerator[dict[str, Any]]:
         """Yield parsed row dictionaries from ``ctx.content``.
 
         Each yielded dictionary maps column headers (or field names) to raw string values.

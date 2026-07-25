@@ -21,7 +21,9 @@
                         <a class="brand-link" href="{{ url_for(__name__ ~ ':index') }}">
                             {% block brand %}
                                 {% if logo_url(request) %}
-                                    <img src="{{ logo_url(request) }}" class="navbar-logo" />
+                                    <img src="{{ logo_url(request) }}"
+                                         class="navbar-logo"
+                                         alt="{{ app_title }}" />
                                 {% else %}
                                     <h3 class="text-center text-wrap">{{ app_title }}</h3>
                                 {% endif %}
@@ -32,8 +34,12 @@
                         <div class="navbar-nav flex-row d-lg-none">
                             {% if i18n_config.language_switcher %}
                                 <div class="nav-item dropdown">
-                                    <a href="#" class="nav-link" data-bs-toggle="dropdown">
-                                        <i class="{{ icon('nav.language') }}"></i>
+                                    <a href="#"
+                                       class="nav-link"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false"
+                                       aria-label="{{ _('Change language') }}">
+                                        <i class="{{ icon('nav.language') }}" aria-hidden="true"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         {% for lang in i18n_config.language_switcher %}
@@ -47,8 +53,12 @@
                             {% endif %}
                             {% if timezone_config and timezone_config.timezone_switcher %}
                                 <div class="nav-item dropdown">
-                                    <a href="#" class="nav-link" data-bs-toggle="dropdown">
-                                        <i class="{{ icon('nav.world') }}"></i>
+                                    <a href="#"
+                                       class="nav-link"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false"
+                                       aria-label="{{ _('Change timezone') }}">
+                                        <i class="{{ icon('nav.world') }}" aria-hidden="true"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         {% for tz in timezone_config.timezone_switcher %}
@@ -205,7 +215,7 @@
                                     <div class="alert alert-{{ alert_class }} alert-dismissible mb-2"
                                          role="alert">
                                         <div class="alert-icon">
-                                            <i class="{{ icon(flash_icon_name) }} icon"></i>
+                                            <i class="{{ icon(flash_icon_name) }} icon" aria-hidden="true"></i>
                                         </div>
                                         <div>
                                             <div class="alert-description">{{ msg.message }}</div>

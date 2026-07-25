@@ -9,7 +9,7 @@
        data-submit-btn-class="{{ action.submit_btn_class }}"
        data-form="{{ action.form |forceescape }}">
         {% if action.icon_class %}
-            <i class="{{ icon(action.icon_class) }} me-2"></i>
+            <i class="{{ icon(action.icon_class) }} me-2" aria-hidden="true"></i>
         {% endif %}
         {{ action.text }}
     </a>

@@ -1,10 +1,13 @@
+{% set describedby = ((field.id ~ '-error') if error else None, (field.id ~ '-help') if field.help_text else None) | select | join(' ') %}
 <div class="{% if error %}{{ field.error_class }}{% endif %}">
     <input type="file"
            class="form-control {% if error %}is-invalid{% endif %}"
            id="{{ field.id }}"
            name="{{ field.id }}"
+           {% if error %}aria-invalid="true"{% endif %}
+           {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}
            {{ field.input_params() | safe }} />
-    {% if field.help_text %}<small class="form-hint">{{ field.help_text }}</small>{% endif %}
+    {% if field.help_text %}<small class="form-hint" id="{{ field.id }}-help">{{ field.help_text }}</small>{% endif %}
 </div>
 {% include "fields/form/_error.html" %}
 {% if request.state.action=='EDIT' and field._isvalid_value(data) %}

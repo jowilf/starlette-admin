@@ -127,7 +127,11 @@ try:
         """
         import importlib.resources
 
-        folder = importlib.resources.files(package) / "translations"
+        try:
+            folder = importlib.resources.files(package) / "translations"
+        except TypeError:
+            # `package` is a module, not a package (no translations/ to ship).
+            return
         if not folder.is_dir():
             return
         for locale in SUPPORTED_LOCALES:

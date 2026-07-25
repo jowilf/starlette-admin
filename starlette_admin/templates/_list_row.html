@@ -7,7 +7,7 @@
 {% set row_pk = row[view.pk_attr] %}
 {% set row_clickable = view.row_click_navigate and view.can_view_detail(request) %}
 <tr data-pk="{{ row_pk }}"
-    {% if row_clickable %}data-href="{{ detail_url(request, view.key, row_pk) }}" class="row-clickable"{% endif %}>
+    {% if row_clickable %}data-href="{{ detail_url(request, view.key, row_pk) }}" class="row-clickable" tabindex="0"{% endif %}>
     <td class="checkbox-cell">
         <input class="form-check-input row-checkbox"
                type="checkbox"

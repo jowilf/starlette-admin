@@ -111,4 +111,3 @@ If you add another file type that contains literal Jinja or another `{{ }}`-shap
   cookiecutter --no-input -o /tmp/cc-check-nofield plugins/cookiecutter-starlette-admin-plugin/ include_example_field=no
   cd /tmp/cc-check/starlette-admin-my-plugin && uv sync --extra dev && uv run pytest
   ```
-

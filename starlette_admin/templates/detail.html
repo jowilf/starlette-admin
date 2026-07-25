@@ -82,8 +82,8 @@
                             <table class="table table-bordered table-vcenter table-mobile-md">
                                 <thead>
                                     <tr>
-                                        <th>{{ _("Attribute") }}</th>
-                                        <th>{{ _("Value") }}</th>
+                                        <th scope="col">{{ _("Attribute") }}</th>
+                                        <th scope="col">{{ _("Value") }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableContent">
@@ -127,7 +127,7 @@
 {% block script %}
     {{ super() }}
     <script type="text/javascript"
-            src="{{ static_url(request, 'js/alerts.js', v=1) }}"></script>
+            src="{{ static_url(request, 'js/alerts.js', v=2) }}"></script>
     <script type="text/javascript"
             src="{{ static_url(request, 'js/actions.js', v=2) }}"></script>
     <script type="text/javascript"

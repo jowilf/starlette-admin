@@ -47,7 +47,7 @@ from starlette_admin.contrib.sqla import Admin
 from starlette_admin.contrib.sqla.view import ModelView
 
 from tests.integration.sqla.utils import get_async_test_engine, get_test_engine
-from tests.utils import csrf_async_client
+from tests.utils import csrf_async_client, has_invalid_feedback
 
 
 class Base(DeclarativeBase):
@@ -511,10 +511,7 @@ async def test_file_validation_error(client: AsyncClient, fake_invalid_image):
         files={"image": ("image.png", fake_invalid_image, "image/png")},
     )
     assert response.status_code == 422
-    assert (
-        '<div class="invalid-feedback">Upload a valid image file.</div>'
-        in response.text
-    )
+    assert has_invalid_feedback(response.text, "Upload a valid image file.")
 
 
 async def test_create_with_empty_file(client: AsyncClient, session, fake_empty_file):

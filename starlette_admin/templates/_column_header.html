@@ -37,9 +37,11 @@
                 {% if list_params.sorts | length > 1 %}
                     <span class="badge bg-primary text-primary-fg badge-pill ms-1">{{ ns.sort_index + 1 }}</span>
                 {% endif %}
-                <i class="{{ icon('sort.asc' if ns.current_dir == 'asc' else 'sort.desc') }} ms-1"></i>
+                <i class="{{ icon('sort.asc' if ns.current_dir == 'asc' else 'sort.desc') }} ms-1"
+                   aria-hidden="true"></i>
             {%- else -%}
-                <i class="{{ icon('sort.none') }} ms-1 text-muted opacity-50"></i>
+                <i class="{{ icon('sort.none') }} ms-1 text-muted opacity-50"
+                   aria-hidden="true"></i>
             {%- endif %}
         </a>
     {%- else -%}

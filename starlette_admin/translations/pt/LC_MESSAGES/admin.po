@@ -825,9 +825,8 @@ msgid "Error"
 msgstr ""
 
 #: starlette_admin/templates/list.html:348
-#, fuzzy
 msgid "new"
-msgstr "Novo(a) %(name)s"
+msgstr "novo"
 
 #: starlette_admin/templates/list.html:349
 msgid "update"
@@ -1011,4 +1010,3 @@ msgstr "Carregando"
 #~ " be ignored and a new key will"
 #~ " be assigned."
 #~ msgstr ""
-

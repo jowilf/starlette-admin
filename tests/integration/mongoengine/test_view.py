@@ -14,7 +14,7 @@ from starlette.requests import Request
 from starlette_admin import StringField
 from starlette_admin.contrib.mongoengine import Admin, ModelView
 
-from tests.utils import CsrfTestClient
+from tests.utils import CsrfTestClient, has_invalid_feedback
 
 
 class Brand(StrEnum):
@@ -212,10 +212,7 @@ class TestMongoBasic:
             },
         )
         assert response.status_code == 422
-        assert (
-            '<div class="invalid-feedback">String value is too short</div>'
-            in response.text
-        )
+        assert has_invalid_feedback(response.text, "String value is too short")
         assert Product.objects.count() == 5
         with pytest.raises(me.DoesNotExist):
             Product.objects(brand="Infinix").get()
@@ -256,10 +253,7 @@ class TestMongoBasic:
             },
         )
         assert response.status_code == 422
-        assert (
-            '<div class="invalid-feedback">String value is too short</div>'
-            in response.text
-        )
+        assert has_invalid_feedback(response.text, "String value is too short")
         assert Product.objects.count() == 5
         with pytest.raises(me.DoesNotExist):
             Product.objects(brand="Infinix").get()
