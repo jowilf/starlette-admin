@@ -21,7 +21,7 @@ Beyond the breaking changes outlined below, this release includes:
 
 * **Native list tables:** DataTables has been removed in favor of a built-in, server-rendered implementation. Table state is now entirely URL-driven, meaning all page, filter, and sort configurations are immediately shareable and bookmarkable.
 * **[Filters](user-guide/filters.md):** A nested `AND`/`OR` filter builder replaces the DataTables SearchBuilder. Filters are derived from field types and are fully extensible in pure Python. You can write a filter class without needing any JavaScript.
-* **[Import and Server-Side Export](user-guide/export-import.md):** Enjoy CSV/JSON import capabilities with per-row error reporting, alongside server-side exporters (CSV, JSON, Excel, PDF, etc.) that replace client-side DataTables buttons.
+* **[Import and Server-Side Export](user-guide/export-import.md):** Import data from CSV, JSON, Excel, and more with per-row error reporting, alongside server-side exporters (CSV, JSON, Excel, PDF, etc.) that replace client-side DataTables buttons.
 * **[Events](advanced/events.md):** Subscribe to lifecycle hooks like `before_create`, `after_edit_committed`, `after_login`, and various action events.
 * **[Themes](advanced/custom-themes.md) and [Plugins](advanced/plugins.md):** Package and reuse custom aesthetics and behaviors. Cookiecutter templates are available to help you get started quickly.
 * **[Widgets and Dashboards](user-guide/custom-views.md):** Build index pages and custom views using `StatWidget`, `ChartWidget`, `TableWidget`, and more.
@@ -29,6 +29,7 @@ Beyond the breaking changes outlined below, this release includes:
 * **[Inline Edit](user-guide/inline-edit.md):** Edit a single field directly from the list page.
 * **[Inline Forms](user-guide/inline-forms.md):** Edit related models inside a parent form using `InlineModelView`.
 * **Other Enhancements:** [Flash messages](user-guide/flash-messages.md), [OAuth login](user-guide/auth.md), a [Tortoise ORM backend](integrations/tortoise.md), new fields (`ComputedField`, `SlugField`, `UUIDField`, `IPAddressField`), field-level `validators`, and clipboard copy functionality on any field.
+* **[Logging](user-guide/admin.md#debugging):** The package now logs internally under the `starlette_admin` namespace, silent by default. Pass `Admin(debug=True)` or call `starlette_admin.logging.configure_logging()` to see request routing, middleware, and permission decisions in the console, which is especially handy while migrating.
 * **Expanded Test Coverage:** The test suite is now substantially larger, featuring Playwright end-to-end tests that validate critical workflows across the admin interface.
 
 ### Requirements
@@ -37,7 +38,7 @@ Beyond the breaking changes outlined below, this release includes:
 * **Core Dependencies:** `itsdangerous` is now a core dependency used to sign admin cookies (CSRF tokens and flash messages).
 * **New Optional Extras:**
 
- | Extra | Enables |
+    | Extra | Enables |
     | --- | --- |
     | `starlette-admin[email]` | `EmailField` server-side validation via `email-validator` |
     | `starlette-admin[pdf]` | PDF export via `reportlab` |
@@ -46,7 +47,7 @@ Beyond the breaking changes outlined below, this release includes:
     | `starlette-admin[i18n]` | Translations via `babel` (unchanged) |
 
 * **Beanie Backend:** Beanie 2.0+ is required.
-* **Odmantic Backend:** Removed. Odmantic is no longer actively maintained. If you depend on it, stay on `starlette-admin<=0.17.1` or migrate to Beanie for MongoDB support.
+* **Odmantic Backend:** Removed. If you depend on it, stay on `starlette-admin<=0.17.1` and show your interest by [opening an issue](https://github.com/jowilf/starlette-admin/issues); support can be re-added if there is enough demand.
 
 ### The Admin Constructor
 
@@ -199,6 +200,7 @@ class PostView(ModelView):
 ```
 
 * `export_types` is now `exporters`. This accepts a list of format names or `BaseExporter` instances. Supported built-ins include `csv`, `json`, `tsv`, `xlsx`, `ods`, `html`, `yaml`, and `pdf`. Formats other than `csv` or `json` require `tablib`, and PDF requires the `pdf` extra.
+* `importers` accepts a list of format names or `BaseImporter` instances. Supported built-ins include `csv`, `tsv`, `json`, `yaml`, `xlsx`, `xls`, `ods`, `dbf`, and `html`. Formats other than `csv`, `tsv`, or `json` require `tablib`.
 * `export_fields` (an include list) is replaced by `exclude_fields_from_export` (an exclude list). This matches the naming convention of other `exclude_fields_from_*` attributes.
 * Fields also accept `exclude_from_export` and `exclude_from_import` on an individual basis.
 * Configure global limits using `ExportConfig` and `ImportConfig` on the `Admin` instance. Refer to the [Export & Import](user-guide/export-import.md) documentation for details.
@@ -301,4 +303,4 @@ async def count(self, request, q=None, filters=None): ...
 
 ## Getting Help
 
-If you encounter a migration issue not covered in this guide, please [open an issue](https://github.com/jowilf/starlette-admin/issues). Include a minimal reproduction of the problem and specify the version you are upgrading from.
+If you encounter a migration issue not covered in this guide, please [open an issue](https://github.com/jowilf/starlette-admin/issues). Include a minimal reproduction of the problem and specify the version you are upgrading from. Running with [`Admin(debug=True)`](user-guide/admin.md#debugging) often reveals the cause directly, and the resulting logs make a great addition to your report.
