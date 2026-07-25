@@ -2152,7 +2152,7 @@ class BaseModelView(BaseView):
         Returns a string representation of the given object, suitable for display in the admin interface.
 
         If the object defines a custom representation method, `__admin_repr__`, it is used to generate the string.
-        Otherwise, the value of the object's primary key attribute is used.
+        Otherwise, the fallback is `"{display_name}({pk})"`.
 
         Args:
             obj: The object to represent.
@@ -2174,7 +2174,8 @@ class BaseModelView(BaseView):
         """
         repr_method = getattr(obj, "__admin_repr__", None)
         if repr_method is None:
-            return str(await self.get_pk_value(request, obj))
+            pk = await self.get_pk_value(request, obj)
+            return f"{self.display_name}({pk})"
         if inspect.iscoroutinefunction(repr_method):
             return await repr_method(request)
         return repr_method(request)
