@@ -45,7 +45,12 @@ class ProductView(TinydbModelView):
         FloatField("price"),
         StringField("sku"),
     ]
-    exporters = [CsvExporter(), TablibExporter("xlsx"), JsonExporter(), PdfExporter()]
+    exporters = [
+        CsvExporter(escape_formulas=True),
+        TablibExporter("xlsx"),
+        JsonExporter(),
+        PdfExporter(),
+    ]
     importers = [CsvImporter(), TablibImporter("xlsx"), JsonImporter()]
     searchable_fields = ("name", "sku")
 
@@ -357,6 +362,16 @@ class TestExportHappyPath:
         assert "Widget" in text
         assert "Gadget" in text
         assert "Doohickey" in text
+
+    def test_csv_export_escapes_formula_injection(self, client_with_data):
+        ProductView._db.insert(
+            Product(name="=cmd|'/c calc'!A1", price=0.0).to_tinydb_doc()
+        )
+        r = _export(client_with_data, "product", fmt="csv")
+        reader = csv.reader(io.StringIO(r.text))
+        rows = list(reader)[1:]  # skip header
+        names = [row[1] for row in rows]
+        assert "'=cmd|'/c calc'!A1" in names
 
     def test_csv_export_has_header_row(self, client_with_data):
         r = _export(client_with_data, "product", fmt="csv")
