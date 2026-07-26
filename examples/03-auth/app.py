@@ -201,7 +201,7 @@ class ArticleView(ModelView):
         text="Mark selected articles as published",
         confirmation="Are you sure you want to mark selected articles as published?",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
     )
     async def make_published_action(self, request: Request, pks: list[Any]) -> None:
         session: Session = request.state.session
@@ -217,8 +217,8 @@ class ArticleView(ModelView):
         confirmation="Are you sure you want to mark this article as published?",
         icon_class="fas fa-bullhorn",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
-        action_btn_class="btn-info",
+        submit_btn_class="btn btn-success",
+        action_btn_class="btn btn-info",
     )
     async def make_published_row_action(self, request: Request, pk: Any) -> None:
         session: Session = request.state.session

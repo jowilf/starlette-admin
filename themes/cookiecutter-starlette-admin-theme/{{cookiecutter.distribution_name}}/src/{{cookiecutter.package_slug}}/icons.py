@@ -19,7 +19,6 @@ _TABLER_ICONS_CSS = (
 class {{ cookiecutter.class_prefix }}Icons(IconSet):
     """Maps the core icon vocabulary to Tabler Icons classes."""
 
-    library = "tabler"
     icons = {
         # List page toolbar
         "list.new": "ti ti-plus",
@@ -53,6 +52,7 @@ class {{ cookiecutter.class_prefix }}Icons(IconSet):
         # Generic actions
         "action.close": "ti ti-x",
         "action.copy": "ti ti-copy",
+        "action.copy_done": "ti ti-check",
         # Fields
         "field.file": "ti ti-file",
         "field.boolean_true": "ti ti-circle-check",

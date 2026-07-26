@@ -49,13 +49,13 @@ class ActionManager {
    */
   initNoConfirmationActions(root) {
     let self = this;
-    $(root || document).find('a[data-no-confirmation-action="true"]').each(function () {
+    $(root || document).find('a[data-sa-no-confirmation-action="true"]').each(function () {
       $(this).on("click", function (event) {
-        let isRowAction = $(this).data("is-row-action") === true;
+        let isRowAction = $(this).data("sa-is-row-action") === true;
         self.submitAction(
-          $(this).data("name"),
+          $(this).data("sa-name"),
           null,
-          $(this).data("custom-response") === true,
+          $(this).data("sa-custom-response") === true,
           isRowAction,
           $(this)
         );
@@ -68,17 +68,17 @@ class ActionManager {
    */
   initActionModal() {
     let self = this;
-    $("#modal-action").on("show.bs.modal", function (event) {
+    $('[data-sa-hook="modal-action"]').on("show.bs.modal", function (event) {
       let button = $(event.relatedTarget); // Button that triggered the modal
-      let confirmation = button.data("confirmation");
-      let header = button.data("header");
-      let form = button.data("form");
-      let name = button.data("name");
-      let submit_btn_text = button.data("submit-btn-text");
-      let submit_btn_class = button.data("submit-btn-class");
-      let modalSize = button.data("modal-size") || "sm";
-      let customResponse = button.data("custom-response") === true;
-      let isRowAction = button.data("is-row-action") === true;
+      let confirmation = button.data("sa-confirmation");
+      let header = button.data("sa-header");
+      let form = button.data("sa-form");
+      let name = button.data("sa-name");
+      let submit_btn_text = button.data("sa-submit-btn-text");
+      let submit_btn_class = button.data("sa-submit-btn-class");
+      let modalSize = button.data("sa-modal-size") || "sm";
+      let customResponse = button.data("sa-custom-response") === true;
+      let isRowAction = button.data("sa-is-row-action") === true;
 
       let modal = $(this);
       let modalDialog = modal.find(".modal-dialog");
@@ -86,19 +86,24 @@ class ActionManager {
       if (modalSize !== "md") {
         modalDialog.addClass(`modal-${modalSize}`);
       }
-      let modalHeader = modal.find("#modal-action-header");
+      let modalHeader = modal.find('[data-sa-hook="modal-action-header"]');
       if (header) {
-        modal.find("#modal-action-title").text(header);
+        modal.find('[data-sa-hook="modal-action-title"]').text(header);
         modalHeader.removeClass("d-none");
       } else {
         modalHeader.addClass("d-none");
       }
-      modal.find("#actionConfirmation").text(confirmation);
-      let modalForm = modal.find("#modal-form");
+      modal.find('[data-sa-hook="action-confirmation"]').text(confirmation);
+      let modalForm = modal.find('[data-sa-hook="modal-form"]');
       modalForm.html(form);
-      let actionSubmit = modal.find("#actionSubmit");
+      let actionSubmit = modal.find('[data-sa-action="action-submit"]');
       actionSubmit.text(submit_btn_text);
-      actionSubmit.removeClass().addClass(`btn ${submit_btn_class}`);
+      actionSubmit
+        .removeClass()
+        .addClass(
+          submit_btn_class ||
+            StarletteAdmin.getClass("action.modal_confirm_button"),
+        );
       actionSubmit.unbind();
       actionSubmit.on("click", function (event) {
         const formElements = modalForm.find("form");
@@ -160,7 +165,7 @@ class ActionManager {
       }
     } else {
       var csrfHeader = csrfToken;
-      let loadingModal = $("#modal-loading");
+      let loadingModal = $('[data-sa-hook="modal-loading"]');
       (async () => {
         await showModal(loadingModal);
         let response;

@@ -179,7 +179,7 @@ class LoanView(ModelView):
         text="Mark as returned",
         confirmation="Mark the selected loans as returned?",
         submit_btn_text="Mark returned",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
     )
     async def mark_returned_action(self, request: Request, pks: list[Any]) -> None:
         count = 0
@@ -196,7 +196,7 @@ class LoanView(ModelView):
         text="Mark as overdue",
         confirmation="Mark the selected loans as overdue?",
         submit_btn_text="Mark overdue",
-        submit_btn_class="btn-warning",
+        submit_btn_class="btn btn-warning",
     )
     async def mark_overdue_action(self, request: Request, pks: list[Any]) -> None:
         count = 0
@@ -215,8 +215,8 @@ class LoanView(ModelView):
         confirmation="Mark this loan as returned?",
         icon_class="fas fa-check",
         submit_btn_text="Return",
-        submit_btn_class="btn-success",
-        action_btn_class="btn-info",
+        submit_btn_class="btn btn-success",
+        action_btn_class="btn btn-info",
     )
     async def mark_returned_row_action(self, request: Request, pk: Any) -> None:
         loan = await self.find_by_pk(request, pk)

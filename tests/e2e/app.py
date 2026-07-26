@@ -182,7 +182,7 @@ class BookView(ModelView):
         text="Mark selected books as out of stock",
         confirmation="Are you sure you want to mark selected books as out of stock?",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-danger",
+        submit_btn_class="btn btn-danger",
     )
     async def mark_out_of_stock_action(
         self, request: Request, selection: ActionSelection
@@ -201,8 +201,8 @@ class BookView(ModelView):
         confirmation="Mark this book as back in stock?",
         icon_class="fas fa-box",
         submit_btn_text="Yes, restock",
-        submit_btn_class="btn-success",
-        action_btn_class="btn-outline-success",
+        submit_btn_class="btn btn-success",
+        action_btn_class="btn btn-outline-success",
     )
     async def restock_row_action(self, request: Request, pk: Any) -> None:
         session: Session = request.state.session

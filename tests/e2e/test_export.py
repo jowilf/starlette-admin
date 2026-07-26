@@ -57,7 +57,7 @@ def test_export_selected_rows_defaults_scope_to_selected(page: Page):
     row.locator(".row-checkbox").check()
 
     _open_export_modal(page)
-    expect(page.locator("[data-export-scope-selected]")).to_be_checked()
+    expect(page.locator("[data-sa-export-scope-selected]")).to_be_checked()
     page.locator("#export-action-format").select_option("csv")
     download = _submit_export(page)
 
@@ -75,7 +75,7 @@ def test_export_select_all_matching_exports_every_row(page: Page):
     page.locator("#select-all-matching-link").click()
 
     _open_export_modal(page)
-    expect(page.locator("[data-export-scope-selected]")).to_be_checked()
+    expect(page.locator("[data-sa-export-scope-selected]")).to_be_checked()
     page.locator("#export-action-format").select_option("csv")
     download = _submit_export(page)
 

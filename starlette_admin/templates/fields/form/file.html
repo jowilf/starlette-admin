@@ -1,7 +1,7 @@
 {% set describedby = ((field.id ~ '-error') if error else None, (field.id ~ '-help') if field.help_text else None) | select | join(' ') %}
-<div class="{% if error %}{{ field.error_class }}{% endif %}">
+<div class="{% if error %}{{ cls(field.error_class) }}{% endif %}">
     <input type="file"
-           class="form-control {% if error %}is-invalid{% endif %}"
+           class="form-control {% if error %}{{ cls(field.error_class) }}{% endif %}"
            id="{{ field.id }}"
            name="{{ field.id }}"
            {% if error %}aria-invalid="true"{% endif %}

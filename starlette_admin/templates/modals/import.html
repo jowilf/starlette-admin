@@ -1,5 +1,6 @@
-<div class="modal modal-blur fade"
+<div class="{{ cls('modal.base') }}"
      id="modal-import"
+     data-sa-hook="modal-import"
      tabindex="-1"
      role="dialog"
      aria-modal="true"
@@ -17,15 +18,24 @@
             {% endblock %}
             <div class="modal-body">
                 {% block import_steps %}
-                    <ul class="steps steps-counter mb-4" id="import-steps">
-                        <li class="step-item" id="import-step-indicator-upload">{{ _("Upload") }}</li>
-                        <li class="step-item" id="import-step-indicator-preview">{{ _("Preview") }}</li>
-                        <li class="step-item" id="import-step-indicator-result">{{ _("Result") }}</li>
+                    <ul class="{{ cls('steps.container') }}" id="import-steps">
+                        <li class="{{ cls('steps.item') }}"
+                            id="import-step-indicator-upload"
+                            data-sa-hook="import-step-indicator-upload">{{ _("Upload") }}</li>
+                        <li class="{{ cls('steps.item') }}"
+                            id="import-step-indicator-preview"
+                            data-sa-hook="import-step-indicator-preview">{{ _("Preview") }}</li>
+                        <li class="{{ cls('steps.item') }}"
+                            id="import-step-indicator-result"
+                            data-sa-hook="import-step-indicator-result">{{ _("Result") }}</li>
                     </ul>
                 {% endblock %}
-                <div id="import-step-upload">
+                <div id="import-step-upload" data-sa-hook="import-step-upload">
                     {% block import_upload_form %}
-                        <form id="import-form" enctype="multipart/form-data" novalidate>
+                        <form id="import-form"
+                              data-sa-hook="import-form"
+                              enctype="multipart/form-data"
+                              novalidate>
                             <div class="mb-3">
                                 <label class="form-label" for="import-format">{{ _("Format") }}</label>
                                 <select class="form-select" name="format" id="import-format">
@@ -44,7 +54,10 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="import-update-existing">
+                                    <input type="checkbox"
+                                           class="form-check-input"
+                                           id="import-update-existing"
+                                           data-sa-hook="import-update-existing">
                                     <span class="form-check-label">{{ _("Update existing records by primary key") }}</span>
                                 </label>
                             </div>
@@ -52,36 +65,59 @@
                     {% endblock %}
                 </div>
                 {% block import_preview %}
-                    <div id="import-step-preview" class="d-none">
-                        <div id="import-preview-loading" class="d-none text-center py-5">
+                    <div id="import-step-preview"
+                         data-sa-hook="import-step-preview"
+                         class="d-none">
+                        <div id="import-preview-loading"
+                             data-sa-hook="import-preview-loading"
+                             class="d-none text-center py-5">
                             <div class="spinner-border text-primary" role="status"></div>
                             <div class="text-muted mt-2">{{ _("Loading preview...") }}</div>
                         </div>
-                        <div id="import-preview-content">
-                            <div id="import-preview-summary" class="mb-3"></div>
-                            <div id="import-preview-mapping" class="mb-3"></div>
-                            <div id="import-preview-sample" class="mb-3"></div>
-                            <div id="import-preview-errors"></div>
+                        <div id="import-preview-content" data-sa-hook="import-preview-content">
+                            <div id="import-preview-summary"
+                                 data-sa-hook="import-preview-summary"
+                                 class="mb-3"></div>
+                            <div id="import-preview-mapping"
+                                 data-sa-hook="import-preview-mapping"
+                                 class="mb-3"></div>
+                            <div id="import-preview-sample"
+                                 data-sa-hook="import-preview-sample"
+                                 class="mb-3"></div>
+                            <div id="import-preview-errors" data-sa-hook="import-preview-errors"></div>
                         </div>
                     </div>
                 {% endblock %}
                 {% block import_result %}
-                    <div id="import-step-result" class="d-none">
-                        <div id="import-result-summary" class="mb-3"></div>
-                        <div id="import-result-errors"></div>
+                    <div id="import-step-result"
+                         data-sa-hook="import-step-result"
+                         class="d-none">
+                        <div id="import-result-summary"
+                             data-sa-hook="import-result-summary"
+                             class="mb-3"></div>
+                        <div id="import-result-errors" data-sa-hook="import-result-errors"></div>
                     </div>
                 {% endblock %}
                 {% block import_error_alert %}
-                    <div id="import-error" class="alert alert-danger d-none" role="alert"></div>
+                    <div id="import-error"
+                         data-sa-hook="import-error"
+                         class="alert {{ cls('alert.error') }} d-none"
+                         role="alert"></div>
                 {% endblock %}
             </div>
             {% block import_modal_footer %}
                 <div class="modal-footer">
                     <button type="button"
-                            class="btn btn-link link-secondary me-auto"
+                            class="{{ cls('action.modal_cancel_button') }}"
                             data-bs-dismiss="modal">{{ _("Cancel") }}</button>
-                    <button type="button" class="btn btn-link d-none" id="import-back">{{ _("Back") }}</button>
-                    <button type="button" class="btn btn-primary" id="import-submit">
+                    <button type="button"
+                            class="{{ cls('import.back_button') }} d-none"
+                            id="import-back"
+                            data-sa-action="import-back">{{ _("Back") }}</button>
+                    <button type="button"
+                            class="{{ cls('import.submit_button') }}"
+                            id="import-submit"
+                            data-sa-action="import-submit">
                         <i class="{{ icon('import.preview') }} me-2"></i>{{ _("Preview") }}
                     </button>
                 </div>
@@ -89,3 +125,108 @@
         </div>
     </div>
 </div>
+<script type="application/json" data-sa-hook="import-i18n">
+    {{
+        {
+            "btnPreview": _("Preview"),
+            "btnDone": _("Done"),
+            "loadingPreview": _("Loading preview..."),
+            "loadingImport": _("Importing..."),
+            "btnImport": _("Import {count} row(s)"),
+            "networkError": _("Network error: {status}"),
+            "columns": _("Columns"),
+            "ignored": _("Ignored: {headers}"),
+            "previewHeading": _("Preview (first {count} row(s))"),
+            "colStatus": _("Status"),
+            "colErrors": _("Errors"),
+            "allErrors": _("All errors"),
+            "colRow": _("Row"),
+            "colField": _("Field"),
+            "colError": _("Error"),
+            "statusNew": _("new"),
+            "statusUpdate": _("update"),
+            "statusError": _("error"),
+            "previewSummary": _("{total} row(s): {new} new"),
+            "resultSummary": _("{total} row(s) scanned, {created} created"),
+            "clauseUpdated": _(", {count} updated"),
+            "clauseErrors": _(", {count} error(s)"),
+            "clauseSkipped": _(", {count} skipped"),
+        } | tojson | safe
+    }}
+</script>
+{% block import_templates %}
+    <template data-sa-template="import-summary-alert">
+        <div class="alert">
+            <i data-sa-slot="icon" class="me-2" aria-hidden="true"></i><span data-sa-slot="message"></span>
+        </div>
+    </template>
+    <template data-sa-template="import-mapping-shell">
+        <div>
+            <div class="mb-2 fw-bold" data-sa-slot="heading"></div>
+            <div data-sa-slot="rows"></div>
+            <div class="text-muted mt-2" data-sa-slot="ignored"></div>
+        </div>
+    </template>
+    <template data-sa-template="import-mapping-row">
+        <label class="form-check">
+            <input type="checkbox"
+                   class="form-check-input"
+                   data-sa-hook="import-field-toggle">
+            <span class="form-check-label" data-sa-slot="label"></span>
+        </label>
+    </template>
+    <template data-sa-template="import-sample-table">
+        <div>
+            <div class="mb-2 fw-bold" data-sa-slot="heading"></div>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr data-sa-slot="header-row"></tr>
+                    </thead>
+                    <tbody data-sa-slot="body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+    <template data-sa-template="import-sample-row">
+        <tr>
+            <td>
+                <span class="{{ cls('import.status_badge') }}" data-sa-slot="status"></span>
+            </td>
+        </tr>
+    </template>
+    <template data-sa-template="import-errors-table">
+        <div>
+            <div class="mb-2 fw-bold" data-sa-slot="heading"></div>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th data-sa-slot="col-row"></th>
+                            <th data-sa-slot="col-field"></th>
+                            <th data-sa-slot="col-error"></th>
+                        </tr>
+                    </thead>
+                    <tbody data-sa-slot="body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+    <template data-sa-template="import-error-row">
+        <tr>
+            <td data-sa-slot="row"></td>
+            <td data-sa-slot="field"></td>
+            <td data-sa-slot="message"></td>
+        </tr>
+    </template>
+    <template data-sa-template="import-button-icon-label">
+        <span><i data-sa-slot="icon" class="me-2" aria-hidden="true"></i><span data-sa-slot="label"></span></span>
+    </template>
+    <template data-sa-template="import-button-spinner-label">
+        <span><span class="spinner-border spinner-border-sm me-2"
+      role="status"
+      aria-hidden="true"></span><span data-sa-slot="label"></span></span>
+    </template>
+{% endblock %}

@@ -20,7 +20,6 @@
 {% endblock %}
 {% block modal %}
     {% include "modals/loading.html" %}
-    {% include "modals/error.html" %}
     {% include "modals/actions.html" %}
     {% if view.can_import(request) and view.importers %}
         {% include "modals/import.html" %}
@@ -46,7 +45,9 @@
                                            placeholder="{{ _('Search') }}..."
                                            aria-label="{{ _('Search in list') }}"
                                            autocomplete="off" />
-                                    <button class="btn" type="submit" aria-label="{{ _('Search') }}">
+                                    <button class="{{ cls('list.search_button') }}"
+                                            type="submit"
+                                            aria-label="{{ _('Search') }}">
                                         <i class="{{ icon('list.search') }}" aria-hidden="true"></i>
                                     </button>
                                 </div>
@@ -75,7 +76,7 @@
                                 {% if view.column_visibility %}
                                     <div class="dropdown" id="column-visibility-dropdown">
                                         <button type="button"
-                                                class="btn dropdown-toggle"
+                                                class="{{ cls('list.columns_toggle') }}"
                                                 data-bs-toggle="dropdown"
                                                 data-bs-auto-close="outside">
                                             <i class="{{ icon('list.columns') }} me-2"></i>{{ _("Columns") }}
@@ -85,6 +86,7 @@
                                                 <label class="dropdown-item">
                                                     <input type="checkbox"
                                                            class="form-check-input me-2 column-visibility-toggle"
+                                                           data-sa-hook="column-visibility-toggle"
                                                            value="{{ field.name }}"
                                                            {% if list_params.visible_cols is none or field.name in list_params.visible_cols %}checked{% endif %}>
                                                     {{ field.label }}
@@ -93,9 +95,9 @@
                                             <div class="dropdown-divider"></div>
                                             <div class="d-flex justify-content-between align-items-center px-2 pt-1">
                                                 <a href="{{ list_url(request, cols=None, page=None) }}"
-                                                   class="btn btn-sm btn-link">{{ _("Reset") }}</a>
+                                                   class="{{ cls('list.columns_reset_button') }}">{{ _("Reset") }}</a>
                                                 <button type="button"
-                                                        class="btn btn-sm btn-primary"
+                                                        class="{{ cls('list.columns_apply_button') }}"
                                                         onclick="applyColumnVisibility()">{{ _("Apply") }}</button>
                                             </div>
                                         </div>
@@ -106,7 +108,7 @@
                                 {% endfor %}
                                 {% if view.can_import(request) and view.importers %}
                                     <button type="button"
-                                            class="btn"
+                                            class="{{ cls('list.import_button') }}"
                                             data-bs-toggle="modal"
                                             data-bs-target="#modal-import">
                                         <i class="{{ icon('list.import') }} me-2"></i>{{ _("Import") }}
@@ -115,7 +117,7 @@
                                 {% block list_toolbar_extra %}{% endblock %}
                                 {% if view.can_create(request) %}
                                     <a href="{{ create_url(request, view.key) }}"
-                                       class="btn btn-primary btn-block ms-2">
+                                       class="{{ cls('list.create_button') }}">
                                         <i class="{{ icon('list.new') }} me-2"></i>
                                         {{ _("New %(name)s", name=view.display_name) }}
                                     </a>
@@ -132,27 +134,35 @@
                 {% block list_table %}
                     {% if total > (rows | length) %}
                         <div id="select-all-banner"
-                             class="alert alert-info py-2 mb-0 d-none d-flex align-items-center justify-content-between"
+                             data-sa-hook="select-all-banner"
+                             class="alert {{ cls('alert.info') }} py-2 mb-0 d-none d-flex align-items-center justify-content-between"
                              role="alert">
-                            <span id="select-all-banner-page">
+                            <span id="select-all-banner-page" data-sa-hook="select-all-banner-page">
                                 {{ _("All %(count)s rows on this page are selected.", count=(rows | length) ) }}
-                                <a href="#" id="select-all-matching-link">{{ _("Select all %(total)s rows matching the current filter.", total=total) }}</a>
+                                <a href="#"
+                                   id="select-all-matching-link"
+                                   data-sa-hook="select-all-matching-link">{{ _("Select all %(total)s rows matching the current filter.", total=total) }}</a>
                             </span>
-                            <span id="select-all-banner-all" class="d-none">
+                            <span id="select-all-banner-all"
+                                  data-sa-hook="select-all-banner-all"
+                                  class="d-none">
                                 {{ _("All %(total)s rows matching the current filter are selected.", total=total) }}
-                                <a href="#" id="clear-select-all-link">{{ _("Clear selection") }}</a>
+                                <a href="#"
+                                   id="clear-select-all-link"
+                                   data-sa-hook="clear-select-all-link">{{ _("Clear selection") }}</a>
                             </span>
                         </div>
                     {% endif %}
                     <div class="table-responsive">
-                        <table class="table table-vcenter card-table">
+                        <table class="{{ cls('list.table') }}">
                             <thead>
                                 {% block list_header %}
                                     <tr>
-                                        <th scope="col" class="w-1 checkbox-cell">
+                                        <th scope="col" class="w-1 checkbox-cell" data-sa-hook="checkbox-cell">
                                             <input class="form-check-input"
                                                    type="checkbox"
                                                    id="select-all-rows"
+                                                   data-sa-hook="select-all"
                                                    aria-label="{{ _('Select all rows') }}" />
                                         </th>
                                         {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}<th scope="col" class="w-1"></th>{% endif %}
@@ -207,71 +217,6 @@
                 --tblr-table-color-state: var(--tblr-table-hover-color);
                 --tblr-table-bg-state: var(--tblr-table-hover-bg);
             }
-
-            .wizard-steps {
-                counter-reset: step;
-                list-style: none;
-                padding: 0;
-                display: flex;
-                justify-content: space-between;
-                position: relative;
-            }
-
-            .wizard-steps::before {
-                content: '';
-                position: absolute;
-                top: 1rem;
-                left: 0;
-                right: 0;
-                height: 2px;
-                background: var(--bs-border-color);
-                z-index: 0;
-            }
-
-            .wizard-steps li {
-                position: relative;
-                z-index: 1;
-                background: var(--bs-body-bg);
-                padding: 0 0.75rem;
-                text-align: center;
-                color: var(--bs-secondary-color);
-                font-size: 0.875rem;
-            }
-
-            .wizard-steps li::before {
-                counter-increment: step;
-                content: counter(step);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 2rem;
-                height: 2rem;
-                margin: 0 auto 0.5rem;
-                border-radius: 50%;
-                background: var(--bs-body-tertiary-bg);
-                border: 2px solid var(--bs-border-color);
-                color: var(--bs-secondary-color);
-                font-weight: 600;
-            }
-
-            .wizard-steps li.active {
-                color: var(--bs-primary);
-                font-weight: 600;
-            }
-
-            .wizard-steps li.active::before {
-                background: var(--bs-primary);
-                border-color: var(--bs-primary);
-                color: #fff;
-            }
-
-            .wizard-steps li.completed::before {
-                background: var(--bs-success);
-                border-color: var(--bs-success);
-                color: #fff;
-                content: '\f633';
-                font-family: 'bootstrap-icons';
-            }
         </style>
     {% endif %}
     {% for link in view._additional_css_links(request) %}<link rel="stylesheet" href="{{ link }}">{% endfor %}
@@ -285,7 +230,7 @@
     <script type="text/javascript"
             src="{{ static_url(request, 'js/utils.js', v=1) }}"></script>
     <script type="text/javascript"
-            src="{{ static_url(request, 'js/alerts.js', v=2) }}"></script>
+            src="{{ static_url(request, 'js/alerts.js', v=3) }}"></script>
     <script type="text/javascript"
             src="{{ static_url(request, 'js/actions.js', v=2) }}"></script>
     {% if inline_edit_enabled %}
@@ -296,14 +241,14 @@
         <script type="text/javascript" src="{{ link }}"></script>
     {% endfor %}
     <script type="text/javascript"
-            src="{{ static_url(request, 'js/list.js', v=9) }}"></script>
+            src="{{ static_url(request, 'js/list.js', v=10) }}"></script>
     {% if filter_builder_fields %}
         <script type="text/javascript"
                 src="{{ static_url(request, 'js/filter-builder.js', v=1) }}"></script>
     {% endif %}
     {% if view.can_import(request) and view.importers %}
         <script type="text/javascript"
-                src="{{ static_url(request, 'js/import.js', v=2) }}"></script>
+                src="{{ static_url(request, 'js/import.js', v=3) }}"></script>
     {% endif %}
     {# djlint:off #}
     <script>
@@ -327,34 +272,7 @@
             });
         {% endif %}
         {% if view.can_import(request) and view.importers %}
-            initImportModal(
-                "{{ import_url(request, view.key) | safe }}",
-                {
-                    btnPreview: {{ _("Preview") | tojson }},
-                    btnDone: {{ _("Done") | tojson }},
-                    loadingPreview: {{ _("Loading preview...") | tojson }},
-                    loadingImport: {{ _("Importing...") | tojson }},
-                    btnImport: {{ _("Import {count} row(s)") | tojson }},
-                    networkError: {{ _("Network error: {status}") | tojson }},
-                    columns: {{ _("Columns") | tojson }},
-                    ignored: {{ _("Ignored: {headers}") | tojson }},
-                    previewHeading: {{ _("Preview (first {count} row(s))") | tojson }},
-                    colStatus: {{ _("Status") | tojson }},
-                    colErrors: {{ _("Errors") | tojson }},
-                    allErrors: {{ _("All errors") | tojson }},
-                    colRow: {{ _("Row") | tojson }},
-                    colField: {{ _("Field") | tojson }},
-                    colError: {{ _("Error") | tojson }},
-                    statusNew: {{ _("new") | tojson }},
-                    statusUpdate: {{ _("update") | tojson }},
-                    statusError: {{ _("error") | tojson }},
-                    previewSummary: {{ _("{total} row(s): {new} new") | tojson }},
-                    resultSummary: {{ _("{total} row(s) scanned, {created} created") | tojson }},
-                    clauseUpdated: {{ _(", {count} updated") | tojson }},
-                    clauseErrors: {{ _(", {count} error(s)") | tojson }},
-                    clauseSkipped: {{ _(", {count} skipped") | tojson }}
-                }
-            );
+            initImportModal("{{ import_url(request, view.key) | safe }}");
         {% endif %}
     </script>{# djlint:on #}
 {% endblock %}

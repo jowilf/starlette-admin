@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ get_locale() }}"
-      {% if theme_settings %} {% for attr, val in theme_settings.html_attrs().items() %}{{ attr }}="{{ val }}"{% endfor %}
-      {% endif %}>
+      {% for attr, val in theme_html_attrs(request).items() %}{{ attr }}="{{ val }}"{% endfor %}>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport"
@@ -45,6 +44,8 @@
         {% block head_css %}
         {% endblock %}
         {% block core_inline_css %}
+            <link rel="stylesheet"
+                  href="{{ static_url(request, 'css/select2-tabler.css', v=1) }}">
             <style>
                 .navbar-logo {
                     width: auto;
@@ -54,132 +55,6 @@
                 .mark,
                 mark {
                     padding: 0em;
-                }
-
-                .is-invalid .select2-selection {
-                    border-color: var(--tblr-danger) !important;
-                }
-
-                .select2-container {
-                    width: 100% !important;
-                }
-
-                .select2-container--default .select2-selection--single,
-                .select2-container--default .select2-selection--multiple {
-                    background-color: var(--tblr-bg-forms);
-                    border: var(--tblr-border-width) solid var(--tblr-border-color);
-                    border-radius: var(--tblr-border-radius);
-                    box-shadow: var(--tblr-shadow-input);
-                    min-height: calc(1.25rem + 1.125rem + calc(var(--tblr-border-width) * 2));
-                }
-
-                .select2-container--default .select2-selection--single {
-                    height: calc(1.25rem + 1.125rem + calc(var(--tblr-border-width) * 2));
-                }
-
-                .select2-container--default .select2-selection--single .select2-selection__rendered {
-                    color: var(--tblr-body-color);
-                    line-height: calc(1.25rem + 1.125rem + calc(var(--tblr-border-width) * 2) - .125rem);
-                    padding-left: 1rem;
-                }
-
-                .select2-container--default .select2-selection--single .select2-selection__arrow {
-                    height: calc(1.25rem + 1.125rem + calc(var(--tblr-border-width) * 2) - .125rem);
-                }
-
-                .select2-container--default .select2-selection--multiple {
-                    align-items: center;
-                    display: flex;
-                    flex-wrap: wrap;
-                    padding-bottom: 0;
-                }
-
-                .select2-container--default .select2-selection--multiple .select2-selection__rendered {
-                    margin-bottom: 0;
-                    padding-left: .5rem;
-                }
-
-                .select2-container--default .select2-selection--multiple .select2-search--inline {
-                    flex: 1 1 4rem;
-                }
-
-                .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
-                    margin-top: 0;
-                }
-
-                select.form-select-sm+.select2-container.select2-container--default .select2-selection--single,
-                select.form-select-sm+.select2-container.select2-container--default .select2-selection--multiple {
-                    min-height: calc(1.25rem + .625rem + calc(var(--tblr-border-width) * 2));
-                }
-
-                select.form-select-sm+.select2-container.select2-container--default .select2-selection--single {
-                    height: calc(1.25rem + .625rem + calc(var(--tblr-border-width) * 2));
-                }
-
-                select.form-select-sm+.select2-container.select2-container--default .select2-selection--single .select2-selection__rendered {
-                    font-size: .75rem;
-                    line-height: calc(1.25rem + .625rem + calc(var(--tblr-border-width) * 2) - .125rem);
-                    padding-left: .5rem;
-                }
-
-                select.form-select-sm+.select2-container.select2-container--default .select2-selection--single .select2-selection__arrow {
-                    height: calc(1.25rem + .625rem + calc(var(--tblr-border-width) * 2) - .125rem);
-                }
-
-                select.form-select-sm+.select2-container.select2-container--default .select2-selection--multiple .select2-selection__rendered {
-                    font-size: .75rem;
-                    padding-left: .375rem;
-                }
-
-                select.form-select-sm+.select2-container.select2-container--default .select2-selection--multiple .select2-selection__choice {
-                    margin-bottom: .125rem;
-                    margin-top: .125rem;
-                    padding-left: 16px;
-                }
-
-                .select2-container--default.select2-container--focus .select2-selection--multiple,
-                .select2-container--default.select2-container--focus .select2-selection--single {
-                    border-color: rgb(130.5, 183, 232);
-                    box-shadow: var(--tblr-shadow-input), 0 0 0 .25rem rgba(var(--tblr-primary-rgb), .25);
-                    outline: 0;
-                }
-
-                .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-                    border-right: 1px solid var(--tblr-border-color);
-                }
-
-                .select2-container--default .select2-selection--multiple .select2-selection__choice {
-                    background: var(--tblr-bg-surface-secondary);
-                    border: 1px solid var(--tblr-border-color);
-                    border-radius: calc(var(--bs-border-radius) - 1px);
-                    color: var(--tblr-body-color);
-                    margin-bottom: .125rem;
-                    margin-top: .125rem;
-                    padding-left: 20px;
-                }
-
-                .select2-container--default .select2-selection__clear {
-                    color: var(--tblr-secondary);
-                    font-weight: var(--tblr-font-weight-normal);
-                }
-
-                .select2-container--default .select2-selection__clear:hover {
-                    color: var(--tblr-body-color);
-                }
-
-                .select2-container--default .select2-selection--single .select2-selection__clear {
-                    height: 100%;
-                    margin-right: 1.25rem;
-                    padding: 0 .25rem;
-                }
-
-                .select2-container--default .select2-selection--multiple .select2-selection__clear {
-                    height: auto;
-                    margin-right: .75rem;
-                    margin-top: 0;
-                    padding: 0 .25rem;
-                    top: 50%;
-                    transform: translateY(-50%);
                 }
 
                 .json-document {
@@ -205,7 +80,8 @@
         {% endblock %}
     </head>
     <body {% block body_attributes %}{% endblock %}>
-        {% block body %}{% endblock %}
+        {% block body %}
+        {% endblock %}
         {% block modal %}{% endblock %}
         {% block core_js %}
             <script type="text/javascript"
@@ -214,6 +90,8 @@
                     src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
             <script type="text/javascript"
                     src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.4.0') }}"></script>
+            <script type="text/javascript"
+                    src="{{ static_url(request, 'js/sa-dom.js', v=1) }}"></script>
         {% endblock %}
         {% block plugin_js %}
             {% for link in plugin_js_links(request) %}<script type="text/javascript" src="{{ link }}"></script>{% endfor %}
@@ -231,6 +109,15 @@
         return fallback !== undefined ? fallback : name;
     };
 
+    // Expose the active theme's ClassMap so client scripts resolve semantic
+    // component roles to CSS classes without hardcoding a framework's names.
+    window.StarletteAdmin.classes = {{ class_registry | tojson }};
+    window.StarletteAdmin.getClass = function (name, fallback) {
+        var classes = window.StarletteAdmin.classes || {};
+        if (Object.prototype.hasOwnProperty.call(classes, name)) return classes[name];
+        return fallback !== undefined ? fallback : name;
+    };
+
     $(function () {
         // Send CSRF token on every jQuery-initiated mutating request
         $.ajaxSetup({
@@ -241,18 +128,18 @@
             }
         });
 
-        $(".language-switcher-item").each(function () {
+        $('[data-sa-hook="language-switcher-item"]').each(function () {
             let el = $(this);
             el.on("click", function () {
-                Cookies.set(String(el.data("cookie-name")), String(el.data("lang")));
+                Cookies.set(String(el.data("sa-cookie-name")), String(el.data("sa-lang")));
                 window.location.reload();
             });
         });
 
-        $(".timezone-switcher-item").each(function () {
+        $('[data-sa-hook="timezone-switcher-item"]').each(function () {
             let el = $(this);
             el.on("click", function () {
-                Cookies.set(String(el.data("cookie-name")), String(el.data("tz")));
+                Cookies.set(String(el.data("sa-cookie-name")), String(el.data("sa-tz")));
                 window.location.reload();
             });
         });
@@ -266,7 +153,6 @@
     });
 </script>
         {# djlint:on #}
-        {% block tail %}
-        {% endblock %}
+        {% block tail %}{% endblock %}
     </body>
 </html>

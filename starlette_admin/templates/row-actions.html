@@ -6,21 +6,21 @@
         {% if action.confirmation is not none -%}
             data-bs-toggle="modal"
             data-bs-target="#modal-action"
-            data-confirmation="{{ action.confirmation }}"
-            data-header="{{ action.header or '' }}"
-            data-modal-size="{{ action.modal_size or 'sm' }}"
+            data-sa-confirmation="{{ action.confirmation }}"
+            data-sa-header="{{ action.header or '' }}"
+            data-sa-modal-size="{{ action.modal_size or 'sm' }}"
         {% else %}
-            data-no-confirmation-action="true"
+            data-sa-no-confirmation-action="true"
         {% endif %}
         {% if action.custom_response -%}
-            data-custom-response="true"
+            data-sa-custom-response="true"
         {% endif %}
-        data-submit-btn-text="{{ action.submit_btn_text }}"
-        data-submit-btn-class="{{ action.submit_btn_class }}"
-        data-form="{{ action.form |forceescape }}"
+        data-sa-submit-btn-text="{{ action.submit_btn_text }}"
+        data-sa-submit-btn-class="{{ cls(action.submit_btn_class) if action.submit_btn_class else '' }}"
+        data-sa-form="{{ action.form |forceescape }}"
     {% endif %}
-    data-is-row-action="true"
-    data-name="{{ action.name }}"
+    data-sa-is-row-action="true"
+    data-sa-name="{{ action.name }}"
 {% endmacro %}
 {% if display_type == "ICON_LIST" -%}
     <div class="d-flex">
@@ -36,12 +36,13 @@
     <div class="dropdown" id="actions-dropdown">
         {#  The fixed strategy lets the menu escape the table-responsive overflow clipping  #}
         <button type="button"
-                class="btn dropdown-toggle"
+                class="{{ cls('action.row_dropdown_toggle') }}"
                 data-bs-toggle="dropdown"
                 data-bs-config='{"popperConfig": {"strategy": "fixed"}}'>{{ _("Actions") }}</button>
         <div class="dropdown-menu">
             {% for action in _actions -%}
-                <a class="dropdown-item row-action-item"
+                <a class="{{ cls('action.dropdown_item') }} row-action-item"
+                   data-sa-hook="row-action-item"
                    type="button"
                    {{ action_data_attributes(action) }}>
                     {% if action.icon_class -%}
@@ -56,7 +57,7 @@
     <div class="dropdown">
         {#  The fixed strategy lets the menu escape the table-responsive overflow clipping  #}
         <button type="button"
-                class="btn btn-ghost-primary btn-icon btn-sm"
+                class="{{ cls('action.row_kebab_toggle') }}"
                 data-bs-toggle="dropdown"
                 data-bs-config='{"popperConfig": {"strategy": "fixed"}}'
                 aria-label="{{ _('Actions') }}">
@@ -64,7 +65,8 @@
         </button>
         <div class="dropdown-menu dropdown-menu-end">
             {% for action in _actions -%}
-                <a class="dropdown-item row-action-item"
+                <a class="{{ cls('action.dropdown_item') }} row-action-item"
+                   data-sa-hook="row-action-item"
                    {{ action_data_attributes(action) }}>
                     {% if action.icon_class -%}
                         <i class="{{ icon(action.icon_class) }} me-2" aria-hidden="true"></i>
@@ -81,6 +83,7 @@
                 <span class="mx-1 text-muted" aria-hidden="true">&middot;</span>
             {% endif -%}
             <a class="row-action-item small d-inline-flex flex-column align-items-center"
+               data-sa-hook="row-action-item"
                {{ action_data_attributes(action) }}>
                 {% if action.icon_class -%}
                     <i class="{{ icon(action.icon_class) }}" aria-hidden="true"></i>
@@ -93,8 +96,9 @@
     {#  For detail page   #}
     <div class="btn-list">
         {% for action in _actions -%}
-            <a class="row-action-item btn {{ action.action_btn_class or '' }}"
+            <a class="row-action-item {{ cls(action.action_btn_class) if action.action_btn_class else cls('action.row_item') }}"
                role="button"
+               data-sa-hook="row-action-item"
                {{ action_data_attributes(action) }}>
                 {% if action.icon_class -%}
                     <i class="{{ icon(action.icon_class) }} me-2" aria-hidden="true"></i>

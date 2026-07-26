@@ -45,8 +45,9 @@
                                         {% for lang in i18n_config.language_switcher %}
                                             <a href="#"
                                                class="dropdown-item language-switcher-item"
-                                               data-lang="{{ lang }}"
-                                               data-cookie-name="{{ i18n_config.language_cookie_name }}">{{ get_locale_display_name(lang) }}</a>
+                                               data-sa-hook="language-switcher-item"
+                                               data-sa-lang="{{ lang }}"
+                                               data-sa-cookie-name="{{ i18n_config.language_cookie_name }}">{{ get_locale_display_name(lang) }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -64,8 +65,9 @@
                                         {% for tz in timezone_config.timezone_switcher %}
                                             <a href="#"
                                                class="dropdown-item timezone-switcher-item"
-                                               data-tz="{{ tz }}"
-                                               data-cookie-name="{{ timezone_config.timezone_cookie_name }}">{{ get_timezone_display_name(tz, show_offset=True) }}</a>
+                                               data-sa-hook="timezone-switcher-item"
+                                               data-sa-tz="{{ tz }}"
+                                               data-sa-cookie-name="{{ timezone_config.timezone_cookie_name }}">{{ get_timezone_display_name(tz, show_offset=True) }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -160,8 +162,9 @@
                                         {% for lang in i18n_config.language_switcher %}
                                             <a href="#"
                                                class="dropdown-item language-switcher-item"
-                                               data-lang="{{ lang }}"
-                                               data-cookie-name="{{ i18n_config.language_cookie_name }}">{{ get_locale_display_name(lang) }}</a>
+                                               data-sa-hook="language-switcher-item"
+                                               data-sa-lang="{{ lang }}"
+                                               data-sa-cookie-name="{{ i18n_config.language_cookie_name }}">{{ get_locale_display_name(lang) }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -176,8 +179,9 @@
                                         {% for tz in timezone_config.timezone_switcher %}
                                             <a href="#"
                                                class="dropdown-item timezone-switcher-item"
-                                               data-tz="{{ tz }}"
-                                               data-cookie-name="{{ timezone_config.timezone_cookie_name }}">{{ get_timezone_display_name(tz, show_offset=True) }}</a>
+                                               data-sa-hook="timezone-switcher-item"
+                                               data-sa-tz="{{ tz }}"
+                                               data-sa-cookie-name="{{ timezone_config.timezone_cookie_name }}">{{ get_timezone_display_name(tz, show_offset=True) }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -210,12 +214,11 @@
                         <div id="alertContainer">
                             {%- if flashed_messages %}
                                 {%- for msg in flashed_messages %}
-                                    {%- set alert_class = "danger" if msg.category == "error" else msg.category %}
-                                    {%- set flash_icon_name = "flash.success" if msg.category == "success" else ("flash.warning" if msg.category == "warning" else ("flash.error" if msg.category == "error" else "flash.info")) %}
-                                    <div class="alert alert-{{ alert_class }} alert-dismissible mb-2"
+                                    {%- set alert_variant = "error" if msg.category == "error" else msg.category %}
+                                    <div class="alert alert-dismissible mb-2 {{ cls('alert.' ~ alert_variant) }}"
                                          role="alert">
                                         <div class="alert-icon">
-                                            <i class="{{ icon(flash_icon_name) }} icon" aria-hidden="true"></i>
+                                            <i class="{{ icon('flash.' ~ alert_variant) }} icon" aria-hidden="true"></i>
                                         </div>
                                         <div>
                                             <div class="alert-description">{{ msg.message }}</div>
@@ -236,4 +239,5 @@
             {% endblock %}
         </div>
     </div>
+    {% include "_sa_templates.html" %}
 {% endblock %}

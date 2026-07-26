@@ -43,13 +43,13 @@ function initListPage(config) {
  * Shift+click on a sort column header appends/toggles that column in the
  * active sort instead of replacing all existing sorts.
  * The multi-sort URL is pre-computed server-side and stored in
- * data-multi-sort-href so no client-side URL manipulation is needed.
+ * data-sa-multi-sort-href so no client-side URL manipulation is needed.
  */
 function initMultiSort() {
-  document.querySelectorAll(".sort-link").forEach(function (link) {
+  document.querySelectorAll('[data-sa-hook="sort-link"]').forEach(function (link) {
     link.addEventListener("click", function (e) {
       if (e.shiftKey) {
-        var href = this.getAttribute("data-multi-sort-href");
+        var href = this.getAttribute("data-sa-multi-sort-href");
         if (href) {
           e.preventDefault();
           window.location.href = href;
@@ -72,14 +72,14 @@ function initMultiSort() {
 function initRowSelection(config) {
   let selectedPks = [];
   let selectAllMatching = false;
-  let selectAll = $("#select-all-rows");
-  let actionsDropdown = $("#actions-dropdown");
-  let banner = $("#select-all-banner");
-  let bannerPage = $("#select-all-banner-page");
-  let bannerAll = $("#select-all-banner-all");
+  let selectAll = $('[data-sa-hook="select-all"]');
+  let actionsDropdown = $('[data-sa-hook="actions-dropdown"]');
+  let banner = $('[data-sa-hook="select-all-banner"]');
+  let bannerPage = $('[data-sa-hook="select-all-banner-page"]');
+  let bannerAll = $('[data-sa-hook="select-all-banner-all"]');
 
   function rowCheckboxes() {
-    return $(".row-checkbox");
+    return $('[data-sa-hook="row-checkbox"]');
   }
 
   function syncSelectAllState() {
@@ -116,9 +116,15 @@ function initRowSelection(config) {
         return $(this).val();
       })
       .get();
+    // Themable selection state: a theme may highlight `[data-sa-selected]`
+    // rows, core only guarantees the attribute is kept in sync.
+    boxes.each(function () {
+      let row = this.closest("tr");
+      if (row) row.toggleAttribute("data-sa-selected", this.checked);
+    });
     if (selectedPks.length !== boxes.length) selectAllMatching = false;
     actionsDropdown.toggle(selectedPks.length > 0);
-    $(".actions-selected-counter").text(
+    $('[data-sa-hook="actions-selected-counter"]').text(
       selectAllMatching ? config.rowsTotal : selectedPks.length
     );
     syncSelectAllState();
@@ -130,16 +136,16 @@ function initRowSelection(config) {
     if (!$(this).is(":checked")) selectAllMatching = false;
     onSelectionChange();
   });
-  $(document).on("change", ".row-checkbox", onSelectionChange);
+  $(document).on("change", '[data-sa-hook="row-checkbox"]', onSelectionChange);
   onSelectionChange();
 
-  $("#select-all-matching-link").on("click", function (e) {
+  $('[data-sa-hook="select-all-matching-link"]').on("click", function (e) {
     e.preventDefault();
     selectAllMatching = true;
-    $(".actions-selected-counter").text(config.rowsTotal);
+    $('[data-sa-hook="actions-selected-counter"]').text(config.rowsTotal);
     updateBanner();
   });
-  $("#clear-select-all-link").on("click", function (e) {
+  $('[data-sa-hook="clear-select-all-link"]').on("click", function (e) {
     e.preventDefault();
     selectAllMatching = false;
     updateBanner();
@@ -147,7 +153,7 @@ function initRowSelection(config) {
   });
 
   // Clicking anywhere in the checkbox cell toggles its checkbox
-  $(document).on("click", ".checkbox-cell", function (e) {
+  $(document).on("click", '[data-sa-hook="checkbox-cell"]', function (e) {
     if (e.target.type === "checkbox") return;
     $(this).find("input[type=checkbox]").prop("checked", function (_, checked) {
       return !checked;
@@ -159,8 +165,8 @@ function initRowSelection(config) {
     config.rowActionUrl,
     function (query, element) {
       // appendQueryParams
-      if (element.data("is-row-action") === true) {
-        query.append("pk", element.closest("tr").data("pk"));
+      if (element.data("sa-is-row-action") === true) {
+        query.append("pk", element.closest("tr").data("sa-pk"));
       } else if (selectAllMatching) {
         query.append("all", "1");
       } else {
@@ -194,7 +200,7 @@ function initRowSelection(config) {
 /**
  * Fill in the built-in export action's scope radio (selected-rows count,
  * default choice, disabled when nothing is selected) each time the shared
- * action modal opens for a form marked `[data-export-scope]`. The form is
+ * action modal opens for a form marked `[data-sa-export-scope]`. The form is
  * rendered once, server side, when the list page loads, so the selection
  * state living in `initRowSelection`'s closure has to be patched onto it
  * client side right before the modal is shown.
@@ -202,20 +208,20 @@ function initRowSelection(config) {
  * @param {function(): {selectAllMatching: boolean, count: number}} getSelection
  */
 function initExportFormDefaults(getSelection) {
-  $("#modal-action").on("show.bs.modal", function () {
-    const scopeForm = document.querySelector("#modal-form [data-export-scope]");
+  $('[data-sa-hook="modal-action"]').on("show.bs.modal", function () {
+    const scopeForm = document.querySelector('[data-sa-hook="modal-form"] [data-sa-export-scope]');
     if (!scopeForm) return;
     const selection = getSelection();
-    const countEl = scopeForm.querySelector("[data-export-selected-count]");
+    const countEl = scopeForm.querySelector("[data-sa-export-selected-count]");
     if (countEl) countEl.textContent = selection.count;
-    const labelEl = scopeForm.querySelector("[data-export-selected-label]");
+    const labelEl = scopeForm.querySelector("[data-sa-export-selected-label]");
     if (labelEl) {
       labelEl.textContent = selection.selectAllMatching
-        ? scopeForm.dataset.labelAll
-        : scopeForm.dataset.labelSelected;
+        ? scopeForm.dataset.saLabelAll
+        : scopeForm.dataset.saLabelSelected;
     }
-    const selectedRadio = scopeForm.querySelector("[data-export-scope-selected]");
-    const pageRadio = scopeForm.querySelector("[data-export-scope-page]");
+    const selectedRadio = scopeForm.querySelector("[data-sa-export-scope-selected]");
+    const pageRadio = scopeForm.querySelector("[data-sa-export-scope-page]");
     if (selectedRadio) {
       selectedRadio.disabled = selection.count === 0;
       if (selection.count > 0) {
@@ -227,23 +233,27 @@ function initExportFormDefaults(getSelection) {
 }
 
 /**
- * Clicking anywhere on a row with a data-href attribute navigates to the
+ * Clicking anywhere on a row with a data-sa-href attribute navigates to the
  * detail page, unless the click originated on an interactive element
  * (checkbox, link, button, row action) or the user was selecting text.
  * Delegated to the document so rows swapped in by inline edit keep working.
  */
 function initRowClickToDetail() {
   document.addEventListener("click", function (e) {
-    var row = e.target.closest("tr[data-href]");
+    var row = e.target.closest("tr[data-sa-href]");
     if (!row) return;
-    if (e.target.closest("a, button, input, label, .dropdown, .row-action-item, .checkbox-cell, [data-inline-editable]")) {
+    if (
+      e.target.closest(
+        'a, button, input, label, .dropdown, [data-sa-hook="row-action-item"], [data-sa-hook="checkbox-cell"], [data-sa-inline-editable]'
+      )
+    ) {
       return;
     }
     var selection = window.getSelection();
     if (selection && selection.toString().length > 0) {
       return;
     }
-    var href = row.getAttribute("data-href");
+    var href = row.getAttribute("data-sa-href");
     if (!href) return;
     if (e.ctrlKey || e.metaKey) {
       window.open(href, "_blank");
@@ -256,7 +266,7 @@ function initRowClickToDetail() {
 function applyColumnVisibility() {
   let checked = [];
   let all = [];
-  $(".column-visibility-toggle").each(function () {
+  $('[data-sa-hook="column-visibility-toggle"]').each(function () {
     all.push($(this).val());
     if ($(this).is(":checked")) checked.push($(this).val());
   });
@@ -330,7 +340,7 @@ function initTooltips(root) {
 
 /**
  * Wire the list-page inline-edit popover (x-editable style): clicking a
- * `[data-inline-editable]` cell opens a Bootstrap popover anchored to the
+ * `[data-sa-inline-editable]` cell opens a Bootstrap popover anchored to the
  * cell immediately, in a loading state, then fills it with the field's form
  * fragment fetched from the server. Saving POSTs the single field; on
  * success the whole row is re-fetched from the row endpoint and swapped in
@@ -349,16 +359,16 @@ function initInlineEdit(config, selection) {
   const bs = window.bootstrap || (window.tabler && window.tabler.bootstrap);
   if (!bs) return;
 
-  const templateEl = document.getElementById("inline-edit-popover-template");
+  const templateEl = document.querySelector('[data-sa-hook="inline-edit-popover-template"]');
   const popoverTemplate = templateEl ? templateEl.innerHTML : undefined;
-  const bodyTemplateEl = document.getElementById("inline-edit-popover-body-template");
+  const bodyTemplateEl = document.querySelector('[data-sa-hook="inline-edit-popover-body-template"]');
   const popoverBodyHtml = bodyTemplateEl ? bodyTemplateEl.innerHTML : undefined;
 
   // Field widgets that render outside the popover (select2 dropdown,
   // flatpickr calendar, TinyMCE dialogs, JSONEditor modals) must not count
   // as outside clicks, or interacting with them would close the popover.
   const IGNORE_OUTSIDE_CLICK =
-    ".inline-edit-popover, .select2-container, .flatpickr-calendar, .tox, .jsoneditor-modal";
+    '[data-sa-hook="inline-edit-popover"], .select2-container, .flatpickr-calendar, .tox, .jsoneditor-modal';
 
   let current = null; // { popover, cell, tip }
 
@@ -377,7 +387,7 @@ function initInlineEdit(config, selection) {
 
   function closeCurrent() {
     if (!current) return;
-    destroyEditors(current.tip.querySelector(".inline-edit-control"));
+    destroyEditors(current.tip.querySelector('[data-sa-hook="inline-edit-control"]'));
     current.popover.dispose();
     current = null;
   }
@@ -385,7 +395,7 @@ function initInlineEdit(config, selection) {
   // Replace the control slot with a server-rendered fragment (initial load
   // or the 422/500 re-render) and bind the field widgets to it.
   function setControlHtml(tip, html) {
-    const controlEl = tip.querySelector(".inline-edit-control");
+    const controlEl = tip.querySelector('[data-sa-hook="inline-edit-control"]');
     destroyEditors(controlEl);
     controlEl.innerHTML = html;
     initializeFields(controlEl);
@@ -405,7 +415,7 @@ function initInlineEdit(config, selection) {
   }
 
   function clearErrors(tip) {
-    const box = tip.querySelector(".inline-edit-errors");
+    const box = tip.querySelector('[data-sa-hook="inline-edit-errors"]');
     box.hidden = true;
     box.replaceChildren();
   }
@@ -414,7 +424,7 @@ function initInlineEdit(config, selection) {
   // here; save failures come back as a re-rendered fragment instead.
   function showFailure(tip, message) {
     clearErrors(tip);
-    const box = tip.querySelector(".inline-edit-errors");
+    const box = tip.querySelector('[data-sa-hook="inline-edit-errors"]');
     const line = document.createElement("div");
     line.textContent = message || "Something went wrong! The value was not saved.";
     box.appendChild(line);
@@ -423,13 +433,18 @@ function initInlineEdit(config, selection) {
   }
 
   function setSaving(tip, saving) {
-    const saveBtn = tip.querySelector(".inline-edit-save");
-    const cancelBtn = tip.querySelector(".inline-edit-cancel");
+    tip.toggleAttribute("data-sa-saving", saving);
+    const saveBtn = tip.querySelector('[data-sa-action="inline-edit-save"]');
+    const cancelBtn = tip.querySelector('[data-sa-action="inline-edit-cancel"]');
     saveBtn.disabled = saving;
     cancelBtn.disabled = saving;
-    saveBtn.innerHTML = saving
-      ? '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
-      : '<i class="' + StarletteAdmin.getIcon("inline_edit.save", "fa-solid fa-check") + '"></i>';
+    if (saving) {
+      saveBtn.replaceChildren(StarletteAdmin.template("spinner"));
+    } else {
+      const icon = document.createElement("i");
+      icon.className = StarletteAdmin.getIcon("inline_edit.save", "fa-solid fa-check");
+      saveBtn.replaceChildren(icon);
+    }
   }
 
   // Fetch the freshly saved row from the row endpoint (carrying the current
@@ -451,8 +466,8 @@ function initInlineEdit(config, selection) {
         tbody.innerHTML = html.trim();
         const newRow = tbody.querySelector("tr");
         if (!newRow) throw new Error("Malformed row");
-        const oldCheckbox = row.querySelector(".row-checkbox");
-        const newCheckbox = newRow.querySelector(".row-checkbox");
+        const oldCheckbox = row.querySelector('[data-sa-hook="row-checkbox"]');
+        const newCheckbox = newRow.querySelector('[data-sa-hook="row-checkbox"]');
         if (oldCheckbox && newCheckbox) newCheckbox.checked = oldCheckbox.checked;
         row.replaceWith(newRow);
         initTooltips(newRow);
@@ -467,7 +482,7 @@ function initInlineEdit(config, selection) {
   }
 
   function saveCell(cell, tip, pk, field) {
-    const formEl = tip.querySelector("form.inline-edit-form");
+    const formEl = tip.querySelector('[data-sa-hook="inline-edit-form"]');
     if (typeof tinymce !== "undefined") tinymce.triggerSave();
     const formData = new FormData(formEl);
     const url = config.url + "?" + new URLSearchParams({ pk: pk, field: field }).toString();
@@ -517,8 +532,8 @@ function initInlineEdit(config, selection) {
     if (current && current.cell === cell) return;
     closeCurrent();
 
-    const pk = cell.closest("tr").getAttribute("data-pk");
-    const field = cell.getAttribute("data-field");
+    const pk = cell.closest("tr").getAttribute("data-sa-pk");
+    const field = cell.getAttribute("data-sa-field");
     const url = config.url + "?" + new URLSearchParams({ pk: pk, field: field }).toString();
 
     // Show the popover immediately, in a loading state, and fill the
@@ -535,14 +550,14 @@ function initInlineEdit(config, selection) {
     });
     popover.show();
 
-    const tip = popover.tip || document.querySelector(".popover.inline-edit-popover");
+    const tip = popover.tip || document.querySelector('[data-sa-hook="inline-edit-popover"]');
     current = { popover: popover, cell: cell, tip: tip };
 
-    tip.querySelector("form.inline-edit-form").addEventListener("submit", function (e) {
+    tip.querySelector('[data-sa-hook="inline-edit-form"]').addEventListener("submit", function (e) {
       e.preventDefault();
       saveCell(cell, tip, pk, field);
     });
-    tip.querySelector(".inline-edit-cancel").addEventListener("click", function () {
+    tip.querySelector('[data-sa-action="inline-edit-cancel"]').addEventListener("click", function () {
       closeCurrent();
     });
 
@@ -556,7 +571,7 @@ function initInlineEdit(config, selection) {
         // the fragment was in flight.
         if (!current || current.cell !== cell) return;
         setControlHtml(tip, html);
-        tip.querySelector(".inline-edit-save").disabled = false;
+        tip.querySelector('[data-sa-action="inline-edit-save"]').disabled = false;
       })
       .catch(function () {
         if (!current || current.cell !== cell) return;
@@ -577,7 +592,7 @@ function initInlineEdit(config, selection) {
     const startedInside = pressStartedInside;
     pressStartedInside = false;
     if (startedInside || e.target.closest(IGNORE_OUTSIDE_CLICK)) return;
-    const cell = e.target.closest("[data-inline-editable]");
+    const cell = e.target.closest("[data-sa-inline-editable]");
     if (cell) {
       openCell(cell);
       return;

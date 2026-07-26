@@ -1,0 +1,20 @@
+{# Markup for fragments core JS clones into the DOM at runtime (see
+   sa-dom.js). Included once by layout.html; every element here is a plain
+   `<template data-sa-template="...">` a theme may reshape without forking
+   layout.html, since JS resolves it by name instead of hardcoding markup. #}
+<template data-sa-template="alert">
+    <div class="alert alert-dismissible mb-2" role="alert">
+        <div class="alert-icon">
+            <i data-sa-slot="icon" aria-hidden="true"></i>
+        </div>
+        <div>
+            <div class="alert-description" data-sa-slot="message"></div>
+        </div>
+        <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+    </div>
+</template>
+<template data-sa-template="spinner">
+    <span class="spinner-border spinner-border-sm"
+          role="status"
+          aria-hidden="true"></span>
+</template>

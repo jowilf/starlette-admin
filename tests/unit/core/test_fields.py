@@ -1744,7 +1744,6 @@ def test_slug_field_populate_from():
 def test_slug_field_defaults():
     field = SlugField("slug", populate_from="title")
     assert field.populate_from == "title"
-    assert "field-slug" in field.class_
     assert field.form_template == "fields/form/slug.html"
 
 

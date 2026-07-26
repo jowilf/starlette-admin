@@ -136,6 +136,11 @@ def html_params(kwargs: dict[str, Any]) -> str:
     return " ".join(params)
 
 
+def _path_and_query(url: Any) -> str:
+    """Return `url`'s path and query string, dropping scheme and host."""
+    return url.path + (f"?{url.query}" if url.query else "")
+
+
 def _carry_origin(request: Request) -> str | None:
     """Return the `_origin` to carry to the next page, if any.
 
@@ -156,7 +161,7 @@ def _carry_origin(request: Request) -> str | None:
         return override
     action = getattr(request.state, "action", None)
     if action in (RequestAction.LIST, RequestAction.DETAIL):
-        return str(request.url)
+        return _path_and_query(request.url)
     origin = request.query_params.get("_origin")
     if origin:
         return origin
@@ -225,7 +230,7 @@ def view_list_url(request: Request, key: str) -> str:
 
 
 def list_page_origin(request: Request, key: str) -> str:
-    """Build the real list-page URL for `key`, carrying the current request's
+    """Build the real list-page path for `key`, carrying the current request's
     query params (sort, filters, page, ...) but dropping `pk`.
 
     Used by endpoints that render list-page fragments -- like the
@@ -234,7 +239,8 @@ def list_page_origin(request: Request, key: str) -> str:
     """
     items = [(k, v) for k, v in request.query_params.multi_items() if k != "pk"]
     qs = urlencode(items)
-    path = view_list_url(request, key)
+    route_name = request.app.state.ROUTE_NAME
+    path = request.url_for(route_name + ":list", key=key).path
     return f"{path}?{qs}" if qs else path
 
 

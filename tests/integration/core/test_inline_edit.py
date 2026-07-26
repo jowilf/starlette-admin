@@ -376,13 +376,13 @@ class TestInlineEditRow:
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
         assert "<tr" in response.text
-        assert 'data-pk="1"' in response.text
+        assert 'data-sa-pk="1"' in response.text
         assert "Hello world" in response.text
-        assert 'data-inline-editable="1"' in response.text
+        assert 'data-sa-inline-editable="1"' in response.text
         assert "row-checkbox" in response.text
 
     def test_row_href_points_at_list_page_not_row_endpoint(self):
-        """The row's `data-href` (and any row-action edit/detail links) must
+        """The row's `data-sa-href` (and any row-action edit/detail links) must
         point back at the list page the user is actually viewing, not at
         this endpoint's own `/inline-edit/row` URL -- otherwise "back"
         navigation from detail/edit lands on the row-fragment API instead of
@@ -394,11 +394,11 @@ class TestInlineEditRow:
         )
         assert response.status_code == 200
         assert "inline-edit/row" not in response.text
-        match = re.search(r'data-href="([^"]*)"', response.text)
+        match = re.search(r'data-sa-href="([^"]*)"', response.text)
         assert match is not None
         href = html.unescape(match.group(1))
         origin = urllib.parse.parse_qs(urllib.parse.urlsplit(href).query)["_origin"][0]
-        assert origin == "http://testserver/admin/inline-edit-post/list?sort=title__asc"
+        assert origin == "/admin/inline-edit-post/list?sort=title__asc"
 
     def test_row_honors_visible_columns(self):
         _app, _admin, _post_view, _author_view = _make_app()
@@ -539,8 +539,8 @@ class TestInlineEditListPageAssets:
         assert response.status_code == 200
         assert "js/form.js" in response.text
         assert "css/inline-edit.css" in response.text
-        assert 'data-inline-editable="1"' in response.text
-        assert 'data-field="title"' in response.text
+        assert 'data-sa-inline-editable="1"' in response.text
+        assert 'data-sa-field="title"' in response.text
 
     def test_assets_excluded_when_disabled(self):
         class PlainPostView(PostView):
@@ -555,7 +555,7 @@ class TestInlineEditListPageAssets:
         response = client.get("/admin/inline-edit-post/list")
         assert response.status_code == 200
         assert "css/inline-edit.css" not in response.text
-        assert "data-inline-editable" not in response.text
+        assert "data-sa-inline-editable" not in response.text
 
 
 class TestInlineEditFieldAccessibility:

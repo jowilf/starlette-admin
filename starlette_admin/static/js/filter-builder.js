@@ -2,7 +2,7 @@
  * Drive the `_filter_builder.html` panel: build/edit a filter tree of leaf
  * rows and arbitrarily-nested AND/OR groups as plain DOM, pre-fill it from
  * the current `filter` query param when possible, and serialise the tree
- * into the hidden `#filter-json` input as a human-readable filter string
+ * into the hidden `filter-json` input as a human-readable filter string
  * (inspired by Django's field lookup syntax) such as
  * `name__contains=john AND (age__gte=25 OR verified__is_true)` before the
  * form submits — a standard GET navigation.
@@ -27,12 +27,12 @@
 function initFilterBuilder(config) {
   if (!config.fields.length) return;
 
-  let $rows = $("#filter-rows");
-  let $rootLogic = $("#filter-root-logic");
-  let rowTemplate = document.getElementById("filter-row-template");
-  let groupTemplate = document.getElementById("filter-group-template");
-  let $form = $("#filter-form");
-  let $jsonInput = $("#filter-json");
+  let $rows = $('[data-sa-hook="filter-rows"]');
+  let $rootLogic = $('[data-sa-hook="filter-root-logic"]');
+  let rowTemplate = document.querySelector('[data-sa-hook="filter-row-template"]');
+  let groupTemplate = document.querySelector('[data-sa-hook="filter-group-template"]');
+  let $form = $('[data-sa-hook="filter-form"]');
+  let $jsonInput = $('[data-sa-hook="filter-json"]');
 
   function fieldByName(name) {
     return config.fields.find(function (f) {
@@ -123,8 +123,8 @@ function initFilterBuilder(config) {
   // ── Serialization: DOM tree → filter string ──────────────────────────────
 
   function serializeRow($row) {
-    let field = fieldByName($row.find(".filter-row-field").val());
-    let op = filterByName(field, $row.find(".filter-row-op").val());
+    let field = fieldByName($row.find('[data-sa-hook="filter-row-field"]').val());
+    let op = filterByName(field, $row.find('[data-sa-hook="filter-row-op"]').val());
     if (!field || !op) return null;
 
     let base = field.name + "__" + op.name;
@@ -132,24 +132,24 @@ function initFilterBuilder(config) {
 
     let hasChoices = !!choicesFor(field, op);
     if (op.data_type === "array") {
-      let vals = $row.find(".filter-row-value-tags").val() || [];
+      let vals = $row.find('[data-sa-hook="filter-row-value-tags"]').val() || [];
       if (!vals.length) return null;
       return base + "=" + vals.map(quoteValue).join(",");
     } else if (hasChoices) {
       if (op.data_type === "enum") {
-        let selected = $row.find(".filter-row-value-select").val() || [];
+        let selected = $row.find('[data-sa-hook="filter-row-value-select"]').val() || [];
         if (!selected.length) return null;
         return base + "=" + selected.map(quoteValue).join(",");
       } else {
-        let selected = $row.find(".filter-row-value-select").val();
+        let selected = $row.find('[data-sa-hook="filter-row-value-select"]').val();
         if (!selected) return null;
         return base + "=" + quoteValue(selected);
       }
     } else {
-      let raw = $row.find(".filter-row-value").val().trim();
+      let raw = $row.find('[data-sa-hook="filter-row-value"]').val().trim();
       if (!raw) return null;
       if (op.has_value2) {
-        let raw2 = $row.find(".filter-row-value2").val().trim();
+        let raw2 = $row.find('[data-sa-hook="filter-row-value2"]').val().trim();
         if (!raw2) return null;
         return base + "=" + quoteValue(raw) + ".." + quoteValue(raw2);
       }
@@ -167,7 +167,7 @@ function initFilterBuilder(config) {
     let parts = [];
     $children.children().each(function () {
       let $el = $(this);
-      let part = $el.hasClass("filter-group") ? serializeGroup($el) : serializeRow($el);
+      let part = $el.is('[data-sa-hook="filter-group"]') ? serializeGroup($el) : serializeRow($el);
       if (part) parts.push(part);
     });
     return parts;
@@ -313,13 +313,13 @@ function initFilterBuilder(config) {
   // ── DOM creation ──────────────────────────────────────────────────────────
 
   function createRow(initial) {
-    let $row = $(rowTemplate.content.cloneNode(true)).find(".filter-row");
-    let $field = $row.find(".filter-row-field");
-    let $op = $row.find(".filter-row-op");
-    let $value = $row.find(".filter-row-value");
-    let $valueSelect = $row.find(".filter-row-value-select");
-    let $valueTags = $row.find(".filter-row-value-tags");
-    let $value2 = $row.find(".filter-row-value2");
+    let $row = $(rowTemplate.content.cloneNode(true)).find('[data-sa-hook="filter-row"]');
+    let $field = $row.find('[data-sa-hook="filter-row-field"]');
+    let $op = $row.find('[data-sa-hook="filter-row-op"]');
+    let $value = $row.find('[data-sa-hook="filter-row-value"]');
+    let $valueSelect = $row.find('[data-sa-hook="filter-row-value-select"]');
+    let $valueTags = $row.find('[data-sa-hook="filter-row-value-tags"]');
+    let $value2 = $row.find('[data-sa-hook="filter-row-value2"]');
 
     config.fields.forEach(function (f) {
       $field.append($("<option>").val(f.name).text(f.label));
@@ -404,7 +404,7 @@ function initFilterBuilder(config) {
       $value2.val("");
     });
     $op.on("change", syncValueInputs);
-    $row.find(".filter-row-remove").on("click", function () {
+    $row.find('[data-sa-action="filter-row-remove"]').on("click", function () {
       $row.remove();
     });
 
@@ -432,24 +432,24 @@ function initFilterBuilder(config) {
   }
 
   function createGroup(initial) {
-    let $group = $(groupTemplate.content.cloneNode(true)).find(".filter-group");
+    let $group = $(groupTemplate.content.cloneNode(true)).find('[data-sa-hook="filter-group"]');
     // Captured here, before any child group is appended, so these references
     // unambiguously stay this group's own — `.find()` would otherwise also
-    // match nested groups' `.filter-group-logic`/`.filter-group-children`.
-    let $logic = $group.find(".filter-group-logic").first();
-    let $children = $group.find(".filter-group-children").first();
+    // match nested groups' `filter-group-logic`/`filter-group-children` hooks.
+    let $logic = $group.find('[data-sa-hook="filter-group-logic"]').first();
+    let $children = $group.find('[data-sa-hook="filter-group-children"]').first();
     $group.data("filterLogic", $logic);
     $group.data("filterChildren", $children);
 
     $logic.val(initial && initial.logic === "or" ? "or" : "and");
 
-    $group.find(".filter-group-add-row").on("click", function () {
+    $group.find('[data-sa-action="filter-group-add-row"]').on("click", function () {
       $children.append(createRow(null));
     });
-    $group.find(".filter-group-add-group").on("click", function () {
+    $group.find('[data-sa-action="filter-group-add-group"]').on("click", function () {
       $children.append(createGroup(null));
     });
-    $group.find(".filter-group-remove").on("click", function () {
+    $group.find('[data-sa-action="filter-group-remove"]').on("click", function () {
       $group.remove();
     });
 
@@ -492,10 +492,10 @@ function initFilterBuilder(config) {
     return true;
   }
 
-  $("#add-filter-row").on("click", function () {
+  $('[data-sa-action="add-filter-row"]').on("click", function () {
     $rows.append(createRow(null));
   });
-  $("#add-filter-group").on("click", function () {
+  $('[data-sa-action="add-filter-group"]').on("click", function () {
     $rows.append(createGroup(null));
   });
 
@@ -504,7 +504,7 @@ function initFilterBuilder(config) {
   // Init Select2 tags on any array-type rows that were built from the prefill
   // tree (their containers were not live during createRow, so syncValueInputs
   // couldn't init them inline).
-  $rows.find(".filter-row-value-tags:not(.d-none)").each(function () {
+  $rows.find('[data-sa-hook="filter-row-value-tags"]:not(.d-none)').each(function () {
     maybeInitTagsInput($(this));
   });
 

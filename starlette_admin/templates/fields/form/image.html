@@ -1,6 +1,6 @@
-<div class="{% if error %}{{ field.error_class }}{% endif %}">
+<div class="{% if error %}{{ cls(field.error_class) }}{% endif %}">
     <input type="file"
-           class="form-control {% if error %}is-invalid{% endif %}"
+           class="form-control {% if error %}{{ cls(field.error_class) }}{% endif %}"
            id="{{ field.id }}"
            name="{{ field.id }}"
            {{ field.input_params() | safe }} />

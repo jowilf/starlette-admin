@@ -19,13 +19,11 @@ class IconSet:
     library so swapping the library is swapping the `IconSet`, with no
     template changes.
 
-    `library` identifies the library family (its class prefix, e.g.
-    `"fontawesome"`). `icons` maps this set's semantic names to that
-    library's classes. `css_links` supplies the library's stylesheet,
-    injected by `base.html`'s `icon_css` block.
+    `icons` maps this set's semantic names to the library's classes.
+    `css_links` supplies the library's stylesheet, injected by
+    `base.html`'s `icon_css` block.
     """
 
-    library: ClassVar[str]
     icons: ClassVar[dict[str, str]] = {}
 
     def css_links(self, request: Request) -> list[str]:
@@ -39,7 +37,6 @@ class CoreIcons(IconSet):
     unmapped falls through to this default.
     """
 
-    library = "fontawesome"
     icons: ClassVar[dict[str, str]] = {
         # List page toolbar
         "list.new": "fa-solid fa-plus",
@@ -101,6 +98,94 @@ class CoreIcons(IconSet):
 
     def css_links(self, request: Request) -> list[str]:
         return [static_url(request, "css/vendor/fontawesome.min.css", v="7.2.0")]
+
+
+class ClassMap:
+    """Semantic component roles -> CSS class strings.
+
+    Templates render class attributes through `cls('role.name')`. A theme
+    maps the roles it restyles; unmapped roles fall through to
+    `CoreClasses`, so a partial map is always safe.
+    """
+
+    classes: ClassVar[dict[str, str]] = {}
+
+
+class CoreClasses(ClassMap):
+    """Tabler defaults for every role core templates render.
+
+    Three kinds of roles: buttons (one role per site, the value is the
+    button's whole class attribute), Tabler-specific component classes a
+    Bootstrap based theme must swap, and classes core JS applies at
+    runtime. Bootstrap substrate chrome stays literal in templates and has
+    no role here.
+    """
+
+    classes: ClassVar[dict[str, str]] = {
+        # Create/edit form footer buttons
+        "form.cancel_button": "btn btn-danger btn-animate-icon btn-animate-icon-rotate",
+        "form.save_button": "btn btn-primary btn-animate-icon",
+        "form.save_add_button": "btn",
+        "form.save_continue_button": "btn",
+        # List page toolbar buttons
+        "list.search_button": "btn",
+        "list.create_button": "btn btn-primary btn-block ms-2",
+        "list.import_button": "btn",
+        "list.columns_toggle": "btn dropdown-toggle",
+        "list.columns_apply_button": "btn btn-sm btn-primary",
+        "list.columns_reset_button": "btn btn-sm btn-link",
+        "list.goto_page_button": "btn",
+        # Filter bar / builder buttons
+        "filter.toggle_button": "btn dropdown-toggle",
+        "filter.add_condition_button": "btn btn-sm",
+        "filter.add_group_button": "btn btn-sm",
+        "filter.remove_button": "btn btn-sm btn-action",
+        "filter.reset_button": "btn btn-sm text-primary btn-link",
+        "filter.apply_button": "btn btn-sm btn-primary",
+        # Action buttons and modal
+        "action.button": "btn",
+        "action.dropdown_toggle": "btn dropdown-toggle",
+        "action.dropdown_item": "dropdown-item",
+        "action.row_item": "btn",
+        "action.row_item_edit": "btn btn-primary",
+        "action.row_item_delete": "btn btn-danger",
+        "action.row_dropdown_toggle": "btn dropdown-toggle",
+        "action.row_kebab_toggle": "btn btn-icon btn-ghost-primary btn-sm",
+        "action.modal_confirm_button": "btn btn-primary",
+        "action.modal_confirm_button_delete": "btn btn-danger",
+        "action.modal_cancel_button": "btn btn-link link-secondary me-auto",
+        # Row delete modal buttons
+        "delete.confirm_button": "btn btn-danger w-100",
+        "delete.cancel_button": "btn w-100",
+        # Import modal footer buttons
+        "import.back_button": "btn btn-link",
+        "import.submit_button": "btn btn-primary",
+        "import.submit_button_done": "btn btn-secondary",
+        # Inline formset buttons
+        "inline.add_row_button": "btn btn-outline-primary btn-sm mt-2",
+        "inline.delete_button": "btn btn-danger btn-sm",
+        # Inline cell editing buttons (list page popover)
+        "inline_edit.save_button": "btn btn-primary btn-icon",
+        "inline_edit.cancel_button": "btn btn-icon",
+        # Field value buttons
+        "field.copy_button": "btn btn-action btn-sm",
+        # Tabler-specific component classes
+        "list.table": "table table-vcenter card-table",
+        "detail.table": "table table-bordered table-vcenter table-mobile-md",
+        "filter.chip": "badge bg-primary-lt text-decoration-none d-inline-flex align-items-center gap-1",
+        "modal.base": "modal modal-blur fade",
+        "steps.container": "steps steps-counter mb-4",
+        "steps.item": "step-item",
+        # Classes core JS applies at runtime
+        "alert.success": "alert-success",
+        "alert.warning": "alert-warning",
+        "alert.error": "alert-danger",
+        "alert.info": "alert-info",
+        "import.status_badge": "badge",
+        "import.status_new": "text-bg-success",
+        "import.status_update": "text-bg-primary",
+        "import.status_error": "text-bg-danger",
+    }
 
 
 TablerMode = Literal["light", "dark"]
@@ -219,6 +304,15 @@ class BaseTheme:
         a template resolves through `icon()` must be mapped here.
         """
 
+    def get_class_map(self) -> ClassMap:
+        """Visual classes for the roles this theme restyles. Unmapped roles
+        fall through to `CoreClasses`."""
+        return ClassMap()
+
+    def html_attrs(self, request: Request) -> dict[str, str]:
+        """Attributes rendered on the `<html>` element of every page."""
+        return {}
+
     def template_globals(self) -> dict[str, Any]:
         """Jinja globals exposed to every template, unprefixed."""
         return {}
@@ -249,5 +343,5 @@ class DefaultTheme(BaseTheme):
     def get_icon_set(self) -> IconSet:
         return CoreIcons()
 
-    def template_globals(self) -> dict[str, Any]:
-        return {"theme_settings": self.settings}
+    def html_attrs(self, request: Request) -> dict[str, str]:
+        return self.settings.html_attrs()

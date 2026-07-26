@@ -316,17 +316,18 @@ class TestViews:
         return CsrfTestClient(app, base_url="http://testserver")
 
     def test_list_stamps_own_url_as_origin(self):
-        """The list page stamps its own URL as `_origin` on its outbound
+        """The list page stamps its own path as `_origin` on its outbound
         links: both the per-row "detail" link and the "Add new" link."""
         client = self._carry_origin_client()
 
         # Jinja autoescapes `&` to `&amp;` inside href attributes, so the
         # URL embedded in the rendered HTML needs a separate escaped form
         # from the one used to issue requests or match redirect headers.
-        list_url = "http://testserver/admin/user/list?q=John"
-        list_origin = quote_plus(list_url)
+        # `_origin` carries only the path (no scheme/host).
+        list_path = "/admin/user/list?q=John"
+        list_origin = quote_plus(list_path)
 
-        list_response = client.get("/admin/user/list?q=John")
+        list_response = client.get(list_path)
         assert list_response.status_code == 200
 
         detail_url = f"http://testserver/admin/user/detail?pk=1&_origin={list_origin}"
@@ -340,7 +341,7 @@ class TestViews:
         )
 
     def test_detail_carries_own_url_as_origin_for_edit(self):
-        """Detail hands its own URL, origin nested inside, to its edit
+        """Detail hands its own path, origin nested inside, to its edit
         link, so editing from detail returns to detail instead of jumping
         past it back to the list."""
         client = self._carry_origin_client()
@@ -348,15 +349,17 @@ class TestViews:
         list_url = "http://testserver/admin/user/list?q=John"
         list_origin = quote_plus(list_url)
         detail_url = f"http://testserver/admin/user/detail?pk=1&_origin={list_origin}"
+        detail_path = detail_url.removeprefix("http://testserver")
 
-        detail_response = client.get(detail_url.removeprefix("http://testserver"))
+        detail_response = client.get(detail_path)
         assert detail_response.status_code == 200
 
         # The breadcrumb reads `_origin` straight off the request, so it
         # still points at the original filtered list.
         assert f'href="{list_url}">' in detail_response.text
 
-        detail_origin = quote_plus(detail_url)
+        # `_origin` carries only the path (no scheme/host).
+        detail_origin = quote_plus(detail_path)
         edit_url = f"http://testserver/admin/user/edit?pk=1&_origin={detail_origin}"
         assert f'href="{edit_url.replace("&", "&amp;")}"' in detail_response.text
 

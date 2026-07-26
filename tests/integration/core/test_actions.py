@@ -62,7 +62,7 @@ class ArticleView(TinydbModelView):
         text="Mark selected articles as published",
         confirmation="Are you sure you want to mark selected articles as published ?",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
     )
     async def make_published_action(
         self, request: Request, selection: ActionSelection
@@ -78,7 +78,7 @@ class ArticleView(TinydbModelView):
         text="Mark as published",
         confirmation="Are you sure you want to mark this article as published ?",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
     )
     async def make_published_row_action(self, request: Request, pk: Any) -> str:
         article = await self.find_by_pk(request, pk)
@@ -91,7 +91,7 @@ class ArticleView(TinydbModelView):
         text="Always Failed",
         confirmation="This action will fail, do you want to continue ?",
         submit_btn_text="Continue",
-        submit_btn_class="btn-outline-danger",
+        submit_btn_class="btn btn-outline-danger",
     )
     async def always_failed_action(
         self, request: Request, selection: ActionSelection
@@ -103,7 +103,7 @@ class ArticleView(TinydbModelView):
         text="Always Failed",
         confirmation="This action will fail, do you want to continue ?",
         submit_btn_text="Continue",
-        submit_btn_class="btn-outline-danger",
+        submit_btn_class="btn btn-outline-danger",
     )
     async def always_failed_row_action(self, request: Request, pk: Any) -> str:
         raise ActionFailed("Sorry, We can't proceed this action now.")
@@ -239,7 +239,7 @@ def test_actions_are_available_in_ui(client: TestClient, action, expected_count)
     response = client.get("/admin/article/list")
     assert response.status_code == 200
     matches = re.findall(
-        r'(data-is-row-action="true"\s*)?data-name="' + re.escape(action) + r'"',
+        r'(data-sa-is-row-action="true"\s*)?data-sa-name="' + re.escape(action) + r'"',
         response.text,
     )
     assert sum(1 for is_row_action in matches if not is_row_action) == expected_count
@@ -262,16 +262,18 @@ def test_row_actions_are_available_in_ui(
 ):
     response = client.get("/admin/article/list")
     assert response.status_code == 200
-    row_html = re.search(r'<tr data-pk="1"[^>]*>(.*?)</tr>', response.text, re.DOTALL)
+    row_html = re.search(
+        r'<tr data-sa-pk="1"[^>]*>(.*?)</tr>', response.text, re.DOTALL
+    )
     assert row_html is not None
-    assert row_html.group(1).count(f'data-name="{row_action}"') == expected_count
+    assert row_html.group(1).count(f'data-sa-name="{row_action}"') == expected_count
 
 
 def test_action_modal_size_defaults_to_sm(client: TestClient):
     response = client.get("/admin/article/list")
     assert response.status_code == 200
     assert re.search(
-        r'data-modal-size="sm"[^>]*data-name="make_published"', response.text
+        r'data-sa-modal-size="sm"[^>]*data-sa-name="make_published"', response.text
     )
 
 
@@ -299,8 +301,8 @@ def test_action_modal_size_is_configurable():
 
     response = sized_client.get("/admin/article/list")
     assert response.status_code == 200
-    assert 'data-modal-size="lg"' in response.text
-    assert re.search(r'data-modal-size="lg"[^>]*data-name="sized"', response.text)
+    assert 'data-sa-modal-size="lg"' in response.text
+    assert re.search(r'data-sa-modal-size="lg"[^>]*data-sa-name="sized"', response.text)
 
 
 def test_invalid_action_modal_size_raises_at_decoration_time():
@@ -339,12 +341,14 @@ def test_is_row_action_allowed_for_obj(client: TestClient):
 
     response = restricted_client.get("/admin/article/list")
     assert response.status_code == 200
-    draft_row = re.search(r'<tr data-pk="1"[^>]*>(.*?)</tr>', response.text, re.DOTALL)
-    withdrawn_row = re.search(
-        r'<tr data-pk="2"[^>]*>(.*?)</tr>', response.text, re.DOTALL
+    draft_row = re.search(
+        r'<tr data-sa-pk="1"[^>]*>(.*?)</tr>', response.text, re.DOTALL
     )
-    assert draft_row.group(1).count('data-name="make_published"') == 1
-    assert withdrawn_row.group(1).count('data-name="make_published"') == 0
+    withdrawn_row = re.search(
+        r'<tr data-sa-pk="2"[^>]*>(.*?)</tr>', response.text, re.DOTALL
+    )
+    assert draft_row.group(1).count('data-sa-name="make_published"') == 1
+    assert withdrawn_row.group(1).count('data-sa-name="make_published"') == 0
 
     # Server-side enforcement matches the UI: the row action is rejected for
     # the withdrawn article even though `is_row_action_allowed` alone allows it.
@@ -388,8 +392,8 @@ def test_global_actions_dropdown_rendered_separately(client: TestClient):
         re.DOTALL,
     )
     assert global_dropdown is not None
-    assert 'data-name="sync_all"' in global_dropdown.group(1)
-    assert 'data-name="make_published"' not in global_dropdown.group(1)
+    assert 'data-sa-name="sync_all"' in global_dropdown.group(1)
+    assert 'data-sa-name="make_published"' not in global_dropdown.group(1)
 
 
 def test_action_execution(client: TestClient):

@@ -879,7 +879,7 @@ class TagsField(BaseField):
     detail_template: str = "fields/detail/tags.html"
     form_template: str = "fields/form/tags.html"
     form_js: str = "js/field/forms/tags.js"
-    class_: str = "field-tags form-control form-select"
+    class_: str = "form-control form-select"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> list[str]:
         result = form_data.getlist(self.id)
@@ -1121,7 +1121,7 @@ class EnumField(StringField):
         Callable[[Request], Sequence[str] | Sequence[tuple[Any, str]]] | None
     ) = dc_field(default=None, compare=False)
     form_template: str = "fields/form/enum.html"
-    class_: str = "field-enum form-control form-select"
+    class_: str = "form-control form-select"
     coerce: Callable[[Any], Any] = str
     select2: bool | None = None
 
@@ -2615,7 +2615,7 @@ class SlugField(StringField):
     """
 
     populate_from: str | None = None
-    class_: str = "field-slug form-control"
+    class_: str = "form-control"
     form_template: str = "fields/form/slug.html"
 
     def __post_init__(self) -> None:

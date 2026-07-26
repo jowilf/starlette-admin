@@ -130,7 +130,7 @@ class ArticleView(ModelView):
         text="Publish selected",
         confirmation="Publish the selected articles?",
         submit_btn_text="Publish",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
     )
     async def make_published_action(self, request: Request, pks: list[Any]) -> None:
         session: Session = request.state.session
@@ -149,7 +149,7 @@ class ArticleView(ModelView):
         text="Archive selected",
         confirmation="Move the selected articles to the archive?",
         submit_btn_text="Archive",
-        submit_btn_class="btn-warning",
+        submit_btn_class="btn btn-warning",
     )
     async def archive_action(self, request: Request, pks: list[Any]) -> None:
         session: Session = request.state.session
@@ -167,8 +167,8 @@ class ArticleView(ModelView):
         confirmation="Publish this article?",
         icon_class="fas fa-bullhorn",
         submit_btn_text="Publish",
-        submit_btn_class="btn-success",
-        action_btn_class="btn-info",
+        submit_btn_class="btn btn-success",
+        action_btn_class="btn btn-info",
     )
     async def make_published_row_action(self, request: Request, pk: Any) -> None:
         session: Session = request.state.session

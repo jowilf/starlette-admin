@@ -17,7 +17,7 @@ class ArticleView(ModelView):
         text="Mark selected articles as published",
         confirmation="Publish selected articles?",   # optional confirm dialog
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
         form='<form><input type="text" class="form-control" name="note"></form>',
     )
     async def make_published_action(

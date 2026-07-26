@@ -19,8 +19,6 @@
 {% block modal %}
     {{ super() }}
     {% include "modals/loading.html" %}
-    {% include "modals/error.html" %}
-    {% include "modals/delete.html" %}
     {% include "modals/actions.html" %}
 {% endblock %}
 {% block content %}
@@ -79,7 +77,7 @@
                 <div class="card-body">
                     {% block details_table %}
                         <div class="table-responsive">
-                            <table class="table table-bordered table-vcenter table-mobile-md">
+                            <table class="{{ cls('detail.table') }}">
                                 <thead>
                                     <tr>
                                         <th scope="col">{{ _("Attribute") }}</th>
@@ -127,7 +125,7 @@
 {% block script %}
     {{ super() }}
     <script type="text/javascript"
-            src="{{ static_url(request, 'js/alerts.js', v=2) }}"></script>
+            src="{{ static_url(request, 'js/alerts.js', v=3) }}"></script>
     <script type="text/javascript"
             src="{{ static_url(request, 'js/actions.js', v=2) }}"></script>
     <script type="text/javascript"

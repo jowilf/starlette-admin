@@ -1,5 +1,5 @@
 <div id="{{ field.id }}"
-     class="field-list {% if error | is_str %}is-invalid{% endif %}">
+     class="field-list {% if error | is_str %}{{ cls(field.error_class) }}{% endif %}">
     <input id="{{ field.id }}-next-index"
            value="{{ (data or []) | length +1 }}"
            hidden>

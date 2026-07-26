@@ -1,11 +1,11 @@
 {% set describedby = ((field.id ~ '-error') if error else None, (field.id ~ '-help') if field.help_text else None) | select | join(' ') %}
-<div class="{% if error %}{{ field.error_class }}{% endif %}">
+<div class="{% if error %}{{ cls(field.error_class) }}{% endif %}">
     {% if input_group_prepend or input_group_append %}
         <div class="input-group {% if input_group_flat %}input-group-flat{% endif %} {% if error %}has-validation{% endif %}">
             {% if input_group_prepend %}<span class="input-group-text">{{ input_group_prepend }}</span>{% endif %}
             <input id="{{ field.id }}"
                    name="{{ field.id }}"
-                   class="{{ field.class_ }} {% if error %}{{ field.error_class }}{% endif %}"
+                   class="{{ cls(field.class_) }} {% if error %}{{ cls(field.error_class) }}{% endif %}"
                    value="{{ '' if data is none else data }}"
                    {% if error %}aria-invalid="true"{% endif %}
                    {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}
@@ -15,7 +15,7 @@
     {% else %}
         <input id="{{ field.id }}"
                name="{{ field.id }}"
-               class="{{ field.class_ }} {% if error %}{{ field.error_class }}{% endif %}"
+               class="{{ cls(field.class_) }} {% if error %}{{ cls(field.error_class) }}{% endif %}"
                value="{{ '' if data is none else data }}"
                {% if error %}aria-invalid="true"{% endif %}
                {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}

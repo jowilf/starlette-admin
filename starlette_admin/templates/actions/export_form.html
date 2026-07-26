@@ -1,6 +1,6 @@
-<form data-export-scope
-      data-label-selected="{{ _('Selected rows') }}"
-      data-label-all="{{ _('All matching rows') }}">
+<form data-sa-export-scope
+      data-sa-label-selected="{{ _('Selected rows') }}"
+      data-sa-label-all="{{ _('All matching rows') }}">
     <div class="mb-3">
         <label class="form-label">{{ _("Scope") }}</label>
         <div class="px-2">
@@ -9,11 +9,11 @@
                        name="scope"
                        value="selected"
                        class="form-check-input"
-                       data-export-scope-selected
+                       data-sa-export-scope-selected
                        disabled>
                 <span class="form-check-label">
-                    <span data-export-selected-label>{{ _("Selected rows") }}</span>
-                    (<span data-export-selected-count>0</span>)
+                    <span data-sa-export-selected-label>{{ _("Selected rows") }}</span>
+                    (<span data-sa-export-selected-count>0</span>)
                 </span>
             </label>
             <label class="form-check">
@@ -21,7 +21,7 @@
                        name="scope"
                        value="page"
                        class="form-check-input"
-                       data-export-scope-page
+                       data-sa-export-scope-page
                        checked>
                 <span class="form-check-label">{{ _("Current page") }}</span>
             </label>

@@ -55,7 +55,7 @@ class ArticleView(ModelView):
         text="Mark selected articles as published",
         confirmation="Are you sure you want to mark selected articles as published?",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
         form="""
         <form>
             <div class="mt-3">
@@ -129,7 +129,7 @@ class ArticleView(ModelView):
         text="Purge drafts",
         confirmation="Delete every draft article? This cannot be undone.",
         submit_btn_text="Yes, delete them",
-        submit_btn_class="btn-danger",
+        submit_btn_class="btn btn-danger",
         allow_empty_selection=True,
     )
     async def purge_drafts_action(
@@ -200,8 +200,8 @@ class ArticleView(ModelView):
         confirmation="Are you sure you want to mark this article as published?",
         icon_class="fas fa-check-circle",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
-        action_btn_class="btn-info",
+        submit_btn_class="btn btn-success",
+        action_btn_class="btn btn-info",
         form="""
         <form>
             <div class="mt-3">

@@ -5,7 +5,7 @@
             {{ data | string | escape }}
         {%- endcall %}
         <button type="button"
-                class="btn btn-action btn-sm copy-to-clipboard"
+                class="{{ cls('field.copy_button') }} copy-to-clipboard"
                 data-copy-value="{{ data }}"
                 title="{{ _('Copy to clipboard') }}"
                 aria-label="{{ _('Copy to clipboard') }}">

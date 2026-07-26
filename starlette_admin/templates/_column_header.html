@@ -30,8 +30,9 @@
             {% set ns2.new_sorts = ns2.new_sorts + [field.name ~ '__asc'] %}
         {% endif %}
         <a class="text-reset text-decoration-none d-inline-flex align-items-center sort-link"
+           data-sa-hook="sort-link"
            href="{{ list_url(request, sort=field.name ~ '__' ~ single_dir, page=None) }}"
-           data-multi-sort-href="{{ list_url(request, sort=ns2.new_sorts, page=None) }}">
+           data-sa-multi-sort-href="{{ list_url(request, sort=ns2.new_sorts, page=None) }}">
             {{ field.label }}
             {% if ns.current_dir is not none -%}
                 {% if list_params.sorts | length > 1 %}

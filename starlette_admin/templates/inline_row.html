@@ -14,7 +14,8 @@
                name="{{ inline._prefix() }}.{{ row.index }}.DELETE"
                value="{% if row.delete %}1{% endif %}">
         <div class="text-end mb-3">
-            <button type="button" class="btn btn-sm btn-danger inline-delete-btn">
+            <button type="button"
+                    class="inline-delete-btn {{ cls('inline.delete_button') }}">
                 <i class="{{ icon('inline.delete_row') }} me-1"></i>{{ _("Delete") }}
             </button>
         </div>

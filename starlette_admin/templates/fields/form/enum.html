@@ -1,10 +1,10 @@
 {% set describedby = ((field.id ~ '-error') if error else None, (field.id ~ '-help') if field.help_text else None) | select | join(' ') %}
-<div class="{% if error %}{{ field.error_class }}{% endif %}">
+<div class="{% if error %}{{ cls(field.error_class) }}{% endif %}">
     <select id="{{ field.id }}"
             name="{{ field.id }}"
             data-allow-clear="true"
             data-placeholder="{{ _('Select a %(label)s', label=field.label) }}"
-            class="{{ field.class_ }} {% if error %}{{ field.error_class }}{% endif %}"
+            class="field-enum {{ cls(field.class_) }} {% if error %}{{ cls(field.error_class) }}{% endif %}"
             {% if error %}aria-invalid="true"{% endif %}
             {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}
             {% if field.multiple %}multiple{% endif %}

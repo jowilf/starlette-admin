@@ -1276,7 +1276,7 @@ class BaseModelView(BaseView):
         text=_("Delete"),
         confirmation=_("Are you sure you want to delete selected items?"),
         submit_btn_text=_("Yes, delete all"),
-        submit_btn_class="btn-danger",
+        submit_btn_class="action.modal_confirm_button_delete",
     )
     async def delete_action(self, request: Request, selection: ActionSelection) -> None:
         pks = await selection.pks()
@@ -1448,7 +1448,7 @@ class BaseModelView(BaseView):
         name="edit",
         text=_("Edit"),
         icon_class="default_actions.edit",
-        action_btn_class="btn-primary",
+        action_btn_class="action.row_item_edit",
     )
     def row_action_2_edit(self, request: Request, pk: Any) -> str:
         return _edit_url(request, not_none(self.key), pk)
@@ -1459,8 +1459,8 @@ class BaseModelView(BaseView):
         confirmation=_("Are you sure you want to delete this item?"),
         icon_class="default_actions.delete",
         submit_btn_text=_("Yes, delete"),
-        submit_btn_class="btn-danger",
-        action_btn_class="btn-danger",
+        submit_btn_class="action.modal_confirm_button_delete",
+        action_btn_class="action.row_item_delete",
     )
     async def row_action_3_delete(self, request: Request, pk: Any) -> None:
         obj = await self.find_by_pk(request, pk)

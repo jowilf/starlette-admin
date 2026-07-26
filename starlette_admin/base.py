@@ -95,7 +95,13 @@ from starlette_admin.storage.base import (
     get_storage,
     secure_filename,
 )
-from starlette_admin.theme import BaseTheme, DefaultTheme, IconSet
+from starlette_admin.theme import (
+    BaseTheme,
+    ClassMap,
+    CoreClasses,
+    DefaultTheme,
+    IconSet,
+)
 from starlette_admin.types import RequestAction
 from starlette_admin.views import (
     BaseModelView,
@@ -506,6 +512,11 @@ class BaseAdmin:
         )
         self._theme_icon_set: IconSet = self.theme.get_icon_set()
         self._icon_registry: dict[str, str] = dict(self._theme_icon_set.icons)
+        self._theme_class_map: ClassMap = self.theme.get_class_map()
+        self._class_registry: dict[str, str] = {
+            **CoreClasses.classes,
+            **self._theme_class_map.classes,
+        }
         _log.info(
             "_register_theme: %r registered (package=%r)", self.theme.name, package
         )
@@ -675,15 +686,14 @@ class BaseAdmin:
             for plugin in self.plugins.values()
             for link in plugin.js_links(request)
         ]
-        # Icon abstraction. `icon(name)` resolves a semantic name through the
-        # merged registry, passing an unregistered value (a user's free-form
-        # `view.icon`) through unchanged. `icon_css_links` gathers every
-        # active library's stylesheet for base.html's `icon_css` block.
         env_globals["icon"] = self._resolve_icon
         env_globals["icon_css_links"] = self._icon_css_links
-        # Full semantic-name -> markup-class map, serialized to client JS so
-        # scripts resolve theme icons through `StarletteAdmin.getIcon`.
         env_globals["icon_registry"] = self._icon_registry
+        env_globals["cls"] = self._resolve_class
+        env_globals["class_registry"] = self._class_registry
+        # `<html>` attributes for the active theme, e.g. Tabler's
+        # `data-bs-theme-*` palette or AdminLTE's `data-bs-theme` skin.
+        env_globals["theme_html_attrs"] = self._theme_html_attrs
         env_globals.update(self.theme.template_globals())
         env_globals.update(self._plugin_template_globals)
         # Template filters, registered for use with the Jinja2 `|` syntax.
@@ -715,6 +725,19 @@ class BaseAdmin:
         `view.icon` or `action.icon_class`, is returned unchanged.
         """
         return self._icon_registry.get(name, name)
+
+    def _resolve_class(self, name: str) -> str:
+        """Resolve a semantic component role to its active CSS class string.
+
+        A registered role resolves through `self._class_registry` (core
+        defaults merged with the active theme's `ClassMap`). Anything else,
+        such as a user's free-form `field.class_`, is returned unchanged.
+        """
+        return self._class_registry.get(name, name)
+
+    def _theme_html_attrs(self, request: Request) -> dict[str, str]:
+        """Attributes for the `<html>` element from the active theme."""
+        return self.theme.html_attrs(request)
 
     def _icon_css_links(self, request: Request) -> list[str]:
         """Stylesheets for the active theme's icon library."""

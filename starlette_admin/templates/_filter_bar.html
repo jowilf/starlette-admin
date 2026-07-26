@@ -6,7 +6,7 @@
                 <span class="text-muted small fw-medium">{{ filter_logic | upper }}</span>
             {% endif %}
             <a href="{{ chip.remove_url }}"
-               class="badge bg-primary-lt text-decoration-none d-inline-flex align-items-center gap-1"
+               class="{{ cls('filter.chip') }}"
                data-bs-toggle="tooltip"
                title="{{ _('Remove this filter') }}"
                aria-label="{{ _('Remove this filter') }}: {{ chip.label }}">

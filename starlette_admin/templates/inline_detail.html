@@ -7,7 +7,7 @@
                 <h3 class="card-title">{{ inline.menu_label or inline.display_name }}</h3>
             </div>
             <div class="table-responsive">
-                <table class="table table-vcenter card-table">
+                <table class="{{ cls('list.table') }}">
                     <thead>
                         <tr>
                             {% for field in inline.get_fields_list(request) %}

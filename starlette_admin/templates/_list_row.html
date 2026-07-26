@@ -6,11 +6,12 @@
 {% set inline_edit_enabled = view.inline_editable_fields and view.can_edit(request) %}
 {% set row_pk = row[view.pk_attr] %}
 {% set row_clickable = view.row_click_navigate and view.can_view_detail(request) %}
-<tr data-pk="{{ row_pk }}"
-    {% if row_clickable %}data-href="{{ detail_url(request, view.key, row_pk) }}" class="row-clickable" tabindex="0"{% endif %}>
-    <td class="checkbox-cell">
+<tr data-sa-pk="{{ row_pk }}"
+    {% if row_clickable %}data-sa-href="{{ detail_url(request, view.key, row_pk) }}" class="row-clickable" tabindex="0"{% endif %}>
+    <td class="checkbox-cell" data-sa-hook="checkbox-cell">
         <input class="form-check-input row-checkbox"
                type="checkbox"
+               data-sa-hook="row-checkbox"
                value="{{ row_pk }}"
                aria-label="{{ _('Select row') }}" />
     </td>
@@ -25,9 +26,9 @@
         {% set editable = inline_edit_enabled and field.name in view.inline_editable_fields %}
         {# The dashed inline-edit underline is opt-in: templates mark the
            element to underline with the `inline-edit-value` class, which the
-           CSS activates only inside `td[data-inline-editable]`. #}
+           CSS activates only inside `td[data-sa-inline-editable]`. #}
         <td data-column="{{ field.name }}"
-            {% if editable %}data-inline-editable="1" data-field="{{ field.name }}"{% endif %}>
+            {% if editable %}data-sa-inline-editable="1" data-sa-field="{{ field.name }}"{% endif %}>
             {% with data=row[field.name] %}
                 {% if data == None %}
                     {% include field.null_template %}

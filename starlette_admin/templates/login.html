@@ -25,7 +25,7 @@
                     <h2 class="card-title text-center mb-4">{{ _("Login to your account") }}</h2>
                 {% endblock %}
                 {% if error %}
-                    <div class="alert alert-important alert-danger alert-dismissible"
+                    <div class="alert alert-dismissible mb-2 alert-important {{ cls('alert.error') }}"
                          role="alert">
                         <div class="alert-icon">
                             <i class="{{ icon('flash.error') }}" aria-hidden="true"></i>

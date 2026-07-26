@@ -6,10 +6,11 @@
    is wrapped in `inline_edit_cancel_button` so a theme can restyle it (e.g.
    give it a visible Bootstrap button variant) without duplicating the rest
    of this fragment. The `.inline-edit-cancel` class is required by list.js. #}
-<template id="inline-edit-popover-body-template">
-    <form class="inline-edit-form" novalidate>
+<template id="inline-edit-popover-body-template"
+          data-sa-hook="inline-edit-popover-body-template">
+    <form class="inline-edit-form" data-sa-hook="inline-edit-form" novalidate>
         <div class="inline-edit-main">
-            <div class="inline-edit-control">
+            <div class="inline-edit-control" data-sa-hook="inline-edit-control">
                 <div class="inline-edit-loading-state">
                     <span class="spinner-border spinner-border-sm"
                           role="status"
@@ -18,20 +19,25 @@
             </div>
             <div class="inline-edit-actions">
                 <button type="submit"
-                        class="btn btn-primary btn-icon inline-edit-save"
+                        class="{{ cls('inline_edit.save_button') }} inline-edit-save"
+                        data-sa-action="inline-edit-save"
                         aria-label="{{ _('Save') }}"
                         disabled>
                     <i class="{{ icon('inline_edit.save') }}" aria-hidden="true"></i>
                 </button>
                 {% block inline_edit_cancel_button %}
                     <button type="button"
-                            class="btn btn-icon inline-edit-cancel"
+                            class="{{ cls('inline_edit.cancel_button') }} inline-edit-cancel"
+                            data-sa-action="inline-edit-cancel"
                             aria-label="{{ _('Cancel') }}">
                         <i class="{{ icon('inline_edit.cancel') }}" aria-hidden="true"></i>
                     </button>
                 {% endblock %}
             </div>
         </div>
-        <div class="inline-edit-errors" role="alert" hidden></div>
+        <div class="inline-edit-errors"
+             data-sa-hook="inline-edit-errors"
+             role="alert"
+             hidden></div>
     </form>
 </template>

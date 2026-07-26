@@ -1,7 +1,8 @@
 """`{{ cookiecutter.class_prefix }}Theme`: the active theme passed to `Admin(theme=...)`.
 
 A theme owns the admin layout and styling. Its surface is intentionally small:
-replacement templates at bare paths, an `IconSet`, and template globals. Exactly
+replacement templates at bare paths, an `IconSet`, a `ClassMap`, and template
+globals. Exactly
 one theme is active per `Admin` instance. See the theme module docstring in
 starlette-admin for the full contract.
 """
@@ -11,8 +12,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from starlette_admin.theme import BaseTheme, IconSet, TablerSettings
+from starlette_admin.theme import BaseTheme, ClassMap, IconSet, TablerSettings
 
+from .classes import {{ cookiecutter.class_prefix }}Classes
 from .icons import {{ cookiecutter.class_prefix }}Icons
 
 
@@ -43,6 +45,9 @@ class {{ cookiecutter.class_prefix }}Theme(BaseTheme):
 
     def get_icon_set(self) -> IconSet:
         return {{ cookiecutter.class_prefix }}Icons()
+
+    def get_class_map(self) -> ClassMap:
+        return {{ cookiecutter.class_prefix }}Classes()
 
     def template_globals(self) -> dict[str, Any]:
         # Theme globals are exposed unprefixed (unlike plugin globals).

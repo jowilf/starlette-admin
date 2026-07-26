@@ -120,7 +120,7 @@ class TrashView(ModelView):
         text="Restore",
         confirmation="Restore the selected posts?",
         submit_btn_text="Yes, restore",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
     )
     async def restore_action(self, request: Request, pks: list[Any]) -> None:
         session: Session = request.state.session

@@ -1,13 +1,14 @@
 {% macro action_item(action, dedicated=False) %}
-    <a class="{{ 'btn' if dedicated else 'dropdown-item' }} action-item"
+    <a class="{{ cls('action.button') if dedicated else cls('action.dropdown_item') }} action-item"
+       data-sa-hook="action-item"
        type="button"
        href="#"
-       {% if action.confirmation is not none %} data-bs-toggle="modal" data-bs-target="#modal-action" data-confirmation="{{ action.confirmation }}" data-header="{{ action.header or '' }}" data-modal-size="{{ action.modal_size or 'sm' }}" {% else %} data-no-confirmation-action="true" {% endif %}
-       {% if action.custom_response %}data-custom-response="true"{% endif %}
-       data-name="{{ action.name }}"
-       data-submit-btn-text="{{ action.submit_btn_text }}"
-       data-submit-btn-class="{{ action.submit_btn_class }}"
-       data-form="{{ action.form |forceescape }}">
+       {% if action.confirmation is not none %} data-bs-toggle="modal" data-bs-target="#modal-action" data-sa-confirmation="{{ action.confirmation }}" data-sa-header="{{ action.header or '' }}" data-sa-modal-size="{{ action.modal_size or 'sm' }}" {% else %} data-sa-no-confirmation-action="true" {% endif %}
+       {% if action.custom_response %}data-sa-custom-response="true"{% endif %}
+       data-sa-name="{{ action.name }}"
+       data-sa-submit-btn-text="{{ action.submit_btn_text }}"
+       data-sa-submit-btn-class="{{ cls(action.submit_btn_class) if action.submit_btn_class else '' }}"
+       data-sa-form="{{ action.form |forceescape }}">
         {% if action.icon_class %}
             <i class="{{ icon(action.icon_class) }} me-2" aria-hidden="true"></i>
         {% endif %}
@@ -20,13 +21,21 @@
 {% set selection_actions = _actions | rejectattr("allow_empty_selection") | list %}
 {% if global_actions %}
     <div class="dropdown" id="actions-dropdown-global">
-        <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown">{{ _("Actions") }}</button>
+        <button type="button"
+                class="{{ cls('action.dropdown_toggle') }}"
+                data-bs-toggle="dropdown">{{ _("Actions") }}</button>
         <div class="dropdown-menu">{% for action in global_actions %}{{ action_item(action) }}{% endfor %}</div>
     </div>
 {% endif %}
-<div class="dropdown" id="actions-dropdown" style="display: none">
-    <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown">
-        {{ _("With selected") }} (<span class="actions-selected-counter">0</span>)
+<div class="dropdown"
+     id="actions-dropdown"
+     data-sa-hook="actions-dropdown"
+     style="display: none">
+    <button type="button"
+            class="{{ cls('action.dropdown_toggle') }}"
+            data-bs-toggle="dropdown">
+        {{ _("With selected") }} (<span class="actions-selected-counter"
+      data-sa-hook="actions-selected-counter">0</span>)
     </button>
     <div class="dropdown-menu">{% for action in selection_actions %}{{ action_item(action) }}{% endfor %}</div>
 </div>

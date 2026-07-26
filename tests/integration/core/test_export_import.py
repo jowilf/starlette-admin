@@ -923,7 +923,7 @@ class TestListPageUI:
         r = client_with_data.get("/admin/product/list")
         assert r.status_code == 200
         assert "Export" in r.text
-        assert 'data-name="export"' in r.text
+        assert 'data-sa-name="export"' in r.text
 
     def test_import_button_present_when_can_import(self, client_with_data):
         r = client_with_data.get("/admin/product/list")
@@ -941,7 +941,7 @@ class TestListPageUI:
         r = no_export_client.get("/admin/no-export/list")
         assert r.status_code == 200
         # Neither the export button nor the import modal should appear
-        assert 'data-name="export"' not in r.text
+        assert 'data-sa-name="export"' not in r.text
         assert "modal-import" not in r.text
 
 

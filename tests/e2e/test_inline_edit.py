@@ -12,7 +12,7 @@ def test_inline_edit_updates_price(page: Page):
     row = page.locator("tbody tr").first
     expect(row).to_contain_text("Foundation", timeout=3000)
 
-    row.locator('td[data-field="price"]').click()
+    row.locator('td[data-sa-field="price"]').click()
     popover = page.locator(".popover.inline-edit-popover")
     popover.locator("#price").fill("15.99")
     popover.locator(".inline-edit-save").click()
@@ -31,7 +31,7 @@ def test_inline_edit_updates_rating(page: Page):
     row = page.locator("tbody tr").first
     expect(row).to_contain_text("I, Robot", timeout=3000)
 
-    row.locator('td[data-field="rating"]').click()
+    row.locator('td[data-sa-field="rating"]').click()
     popover = page.locator(".popover.inline-edit-popover")
     popover.locator("#rating").fill("2")
     popover.locator(".inline-edit-save").click()

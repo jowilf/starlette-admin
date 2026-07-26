@@ -82,7 +82,7 @@ class ArticleView(ModelView):
         text="Mark selected articles as published",
         confirmation="Are you sure you want to mark selected articles as published?",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
     )
     async def make_published_action(
         self, request: Request, selection: ActionSelection
@@ -140,7 +140,7 @@ class ArticleView(ModelView):
         text="Always Failed",
         confirmation="This action will always fail. Continue?",
         submit_btn_text="Continue",
-        submit_btn_class="btn-outline-danger",
+        submit_btn_class="btn btn-outline-danger",
     )
     async def always_failed_action(
         self, request: Request, selection: ActionSelection
@@ -208,7 +208,7 @@ class ArticleView(ModelView):
         text="Purge drafts",
         confirmation="Delete every draft article? This cannot be undone.",
         submit_btn_text="Yes, delete them",
-        submit_btn_class="btn-danger",
+        submit_btn_class="btn btn-danger",
         allow_empty_selection=True,
     )
     async def purge_drafts_action(
@@ -234,7 +234,7 @@ class ArticleView(ModelView):
         text="Publish all matching",
         confirmation="Mark every article matching the current filter/search as published?",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
         allow_empty_selection=True,
     )
     async def publish_matching_action(
@@ -270,8 +270,8 @@ class ArticleView(ModelView):
         confirmation="Are you sure you want to mark this article as published?",
         icon_class="fas fa-bullhorn",
         submit_btn_text="Yes, proceed",
-        submit_btn_class="btn-success",
-        action_btn_class="btn-info",
+        submit_btn_class="btn btn-success",
+        action_btn_class="btn btn-info",
     )
     async def make_published_row_action(self, request: Request, pk: Any) -> None:
         session: Session = request.state.session

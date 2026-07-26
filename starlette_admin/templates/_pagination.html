@@ -20,12 +20,12 @@
         <ul class="pagination mb-0">
             {% set on_first = list_params.page <= 1 %}
             {% set on_last = list_params.page >= total_pages %}
-            <li class="page-item {{ 'disabled' if on_first }}">
+            <li class="page-item{{ ' disabled' if on_first else '' }}">
                 <a class="page-link"
                    href="{{ list_url(request, page=None) }}"
                    {% if on_first %}tabindex="-1" aria-disabled="true"{% endif %}>{{ _("First") }}</a>
             </li>
-            <li class="page-item {{ 'disabled' if on_first }}">
+            <li class="page-item{{ ' disabled' if on_first else '' }}">
                 {% set prev_page = [1, list_params.page - 1] | max %}
                 <a class="page-link"
                    href="{{ list_url(request, page=(None if prev_page == 1 else prev_page) ) }}"
@@ -37,13 +37,13 @@
             {% set window_start = [1, list_params.page - 2] | max %}
             {% set window_end = [total_pages, list_params.page + 2] | min %}
             {% for p in range(window_start, window_end + 1) %}
-                <li class="page-item {{ 'active' if p == list_params.page }}">
+                <li class="page-item{{ ' active' if p == list_params.page else '' }}">
                     <a class="page-link"
                        href="{{ list_url(request, page=(None if p == 1 else p) ) }}"
                        {% if p == list_params.page %}aria-current="page"{% endif %}>{{ p }}</a>
                 </li>
             {% endfor %}
-            <li class="page-item {{ 'disabled' if on_last }}">
+            <li class="page-item{{ ' disabled' if on_last else '' }}">
                 {% set next_page = [total_pages, list_params.page + 1] | min %}
                 <a class="page-link"
                    href="{{ list_url(request, page=next_page) }}"
@@ -52,7 +52,7 @@
                     <i class="{{ icon('pagination.next') }}" aria-hidden="true"></i>
                 </a>
             </li>
-            <li class="page-item {{ 'disabled' if on_last }}">
+            <li class="page-item{{ ' disabled' if on_last else '' }}">
                 <a class="page-link"
                    href="{{ list_url(request, page=total_pages) }}"
                    {% if on_last %}tabindex="-1" aria-disabled="true"{% endif %}>{{ _("Last") }}</a>
@@ -70,7 +70,7 @@
                            class="form-control"
                            style="width: 4.5rem"
                            aria-label="{{ _('Go to page') }}" />
-                    <button class="btn" type="submit">{{ _("Go to page") }}</button>
+                    <button class="{{ cls('list.goto_page_button') }}" type="submit">{{ _("Go to page") }}</button>
                 </div>
                 {% if list_params.q %}<input type="hidden" name="q" value="{{ list_params.q }}" />{% endif %}
                 {% for s_name, s_dir in list_params.sorts %}

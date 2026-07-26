@@ -52,7 +52,7 @@ def test_import_deselect_field_excludes_column(page: Page, tmp_path: Path):
     page.locator("#import-file").set_input_files(str(csv_path))
     page.locator("#import-submit").click()  # upload -> preview
 
-    bio_checkbox = page.locator('#import-preview-mapping input[data-field="bio"]')
+    bio_checkbox = page.locator('#import-preview-mapping input[data-sa-field="bio"]')
     expect(bio_checkbox).to_be_checked()
     bio_checkbox.uncheck()
     page.wait_for_timeout(300)  # field-toggle re-preview round trip

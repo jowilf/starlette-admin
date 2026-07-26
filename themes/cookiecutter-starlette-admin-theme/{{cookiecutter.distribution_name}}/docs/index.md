@@ -32,6 +32,7 @@ That is the only integration point. Options are passed straight to the construct
 ## What this theme ships
 
 - **Icon set**: swaps the default FontAwesome for [Tabler Icons](https://tabler.io/icons). See `src/{{ cookiecutter.package_slug }}/icons.py`.
+- **Class map**: overrides the CSS classes of the component roles this theme restyles (buttons, tables, badges, ...). Unmapped roles keep the core defaults. See `src/{{ cookiecutter.package_slug }}/classes.py`.
 - **Templates**: `templates/base.html` extends the core base and appends this theme's stylesheet. Add `layout.html`, `index.html`, `login.html`, ... at the same bare paths to override more of the shell.
 - **Static assets**: `static/css/theme.css` holds the example visual overrides.
 

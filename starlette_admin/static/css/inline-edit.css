@@ -1,25 +1,16 @@
-/* Hover affordance for inline-editable list cells: a dashed underline under
-   the value, matching x-editable. Gray at rest, primary on hover.
-   Opt-in per template: the underline appears on elements carrying the
-   `inline-edit-value` class, which list templates (built-in or custom) place
-   on the exact element to underline. The class is inert outside
-   `td[data-inline-editable]`. */
-td[data-inline-editable] {
+td[data-sa-inline-editable] {
     cursor: pointer;
 }
 
-td[data-inline-editable] .inline-edit-value {
+td[data-sa-inline-editable] .inline-edit-value {
     border-bottom: 1px dashed var(--tblr-secondary-color);
     padding-bottom: 1px;
 }
 
-td[data-inline-editable]:hover .inline-edit-value {
+td[data-sa-inline-editable]:hover .inline-edit-value {
     border-bottom-color: var(--tblr-primary);
 }
 
-/* Popover container: x-editable's compact layout, no title bar, no footer.
-   Row one holds the control and the save/cancel buttons; row two holds the
-   error area, spanning the full width. */
 .popover.inline-edit-popover {
     /* Single knob keeping the control and both action buttons the same
        height, so the row lines up. */
@@ -47,8 +38,6 @@ td[data-inline-editable]:hover .inline-edit-value {
 .inline-edit-popover .inline-edit-control {
     width: 230px;
 }
-
-/* Shown in the control slot while the form fragment is being fetched. */
 .inline-edit-popover .inline-edit-loading-state {
     display: flex;
     align-items: center;
@@ -62,8 +51,6 @@ td[data-inline-editable]:hover .inline-edit-value {
     width: 320px;
 }
 
-/* The fragment is the edit-page form control: strip page-form spacing and
-   hide the label, since the clicked cell already identifies the field. */
 .inline-edit-popover .inline-edit-control .mb-3 {
     margin-bottom: 0 !important;
 }

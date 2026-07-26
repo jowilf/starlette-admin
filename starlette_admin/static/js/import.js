@@ -6,26 +6,28 @@
  * confirm request, so each request is independent and stateless.
  *
  * @param {string} importUrl  - POST endpoint for the import route
- * @param {object} i18n       - translated strings/templates, rendered server side
  */
-function initImportModal(importUrl, i18n) {
-  const modal = document.getElementById("modal-import");
+function initImportModal(importUrl) {
+  const modal = document.querySelector('[data-sa-hook="modal-import"]');
   if (!modal) return;
 
-  const form = document.getElementById("import-form");
-  const stepUpload = document.getElementById("import-step-upload");
-  const stepPreview = document.getElementById("import-step-preview");
-  const stepResult = document.getElementById("import-step-result");
-  const previewLoading = document.getElementById("import-preview-loading");
-  const previewContent = document.getElementById("import-preview-content");
+  const i18n = JSON.parse(
+    document.querySelector('[data-sa-hook="import-i18n"]').textContent
+  );
+  const form = document.querySelector('[data-sa-hook="import-form"]');
+  const stepUpload = document.querySelector('[data-sa-hook="import-step-upload"]');
+  const stepPreview = document.querySelector('[data-sa-hook="import-step-preview"]');
+  const stepResult = document.querySelector('[data-sa-hook="import-step-result"]');
+  const previewLoading = document.querySelector('[data-sa-hook="import-preview-loading"]');
+  const previewContent = document.querySelector('[data-sa-hook="import-preview-content"]');
   const stepIndicators = {
-    upload: document.getElementById("import-step-indicator-upload"),
-    preview: document.getElementById("import-step-indicator-preview"),
-    result: document.getElementById("import-step-indicator-result"),
+    upload: document.querySelector('[data-sa-hook="import-step-indicator-upload"]'),
+    preview: document.querySelector('[data-sa-hook="import-step-indicator-preview"]'),
+    result: document.querySelector('[data-sa-hook="import-step-indicator-result"]'),
   };
-  const errorEl = document.getElementById("import-error");
-  const submitBtn = document.getElementById("import-submit");
-  const backBtn = document.getElementById("import-back");
+  const errorEl = document.querySelector('[data-sa-hook="import-error"]');
+  const submitBtn = document.querySelector('[data-sa-action="import-submit"]');
+  const backBtn = document.querySelector('[data-sa-action="import-back"]');
 
   let step = "upload";
   let loadingLabel = null;
@@ -67,31 +69,52 @@ function initImportModal(importUrl, i18n) {
     _updateSubmitButton();
   }
 
+  // Swaps the submit button between its active and done-state variant,
+  // resolving both roles through the class registry so switching never
+  // leaves a stale variant class behind.
+  function _setButtonVariant(role) {
+    StarletteAdmin.removeClass(submitBtn, StarletteAdmin.getClass("import.submit_button"));
+    StarletteAdmin.removeClass(submitBtn, StarletteAdmin.getClass("import.submit_button_done"));
+    StarletteAdmin.addClass(submitBtn, StarletteAdmin.getClass(role));
+  }
+
+  // Fills the submit button with an icon+label fragment, resolving iconName
+  // through the icon registry.
+  function _setButtonIconLabel(iconName, label) {
+    const el = StarletteAdmin.template("import-button-icon-label");
+    StarletteAdmin.fillSlot(el, "icon", function (n) {
+      n.className = StarletteAdmin.getIcon(iconName) + " me-2";
+    });
+    StarletteAdmin.fillSlot(el, "label", function (n) {
+      n.textContent = label;
+    });
+    submitBtn.replaceChildren(el);
+  }
+
+  function _setButtonSpinnerLabel(label) {
+    const el = StarletteAdmin.template("import-button-spinner-label");
+    StarletteAdmin.fillSlot(el, "label", function (n) {
+      n.textContent = label;
+    });
+    submitBtn.replaceChildren(el);
+  }
+
   function _updateSubmitButton() {
     submitBtn.disabled = !!loadingLabel;
     backBtn.disabled = !!loadingLabel;
     if (loadingLabel) {
-      submitBtn.innerHTML =
-        '<span class="spinner-border spinner-border-sm me-2" role="status"></span>' + loadingLabel;
-      submitBtn.classList.remove("btn-secondary");
-      submitBtn.classList.add("btn-primary");
+      _setButtonVariant("import.submit_button");
+      _setButtonSpinnerLabel(loadingLabel);
     } else if (step === "upload") {
-      submitBtn.innerHTML =
-        '<i class="' + StarletteAdmin.getIcon("import.preview") + ' me-2"></i>' + i18n.btnPreview;
-      submitBtn.classList.remove("btn-secondary");
-      submitBtn.classList.add("btn-primary");
+      _setButtonVariant("import.submit_button");
+      _setButtonIconLabel("import.preview", i18n.btnPreview);
     } else if (step === "preview") {
+      _setButtonVariant("import.submit_button");
       const total = lastPreview ? lastPreview.rows_total : 0;
-      submitBtn.innerHTML =
-        '<i class="' + StarletteAdmin.getIcon("list.import") + ' me-2"></i>' +
-        _fmt(i18n.btnImport, { count: total });
-      submitBtn.classList.remove("btn-secondary");
-      submitBtn.classList.add("btn-primary");
+      _setButtonIconLabel("list.import", _fmt(i18n.btnImport, { count: total }));
     } else {
-      submitBtn.innerHTML =
-        '<i class="' + StarletteAdmin.getIcon("flash.success") + ' me-2"></i>' + i18n.btnDone;
-      submitBtn.classList.remove("btn-primary");
-      submitBtn.classList.add("btn-secondary");
+      _setButtonVariant("import.submit_button_done");
+      _setButtonIconLabel("flash.success", i18n.btnDone);
     }
   }
 
@@ -111,7 +134,7 @@ function initImportModal(importUrl, i18n) {
       return null;
     }
     const formData = new FormData(form);
-    const updateExisting = document.getElementById("import-update-existing").checked;
+    const updateExisting = document.querySelector('[data-sa-hook="import-update-existing"]').checked;
     if (updateExisting) formData.append("update_existing", "1");
     if (includeFields && lastPreview) {
       lastPreview.mapping
@@ -186,148 +209,160 @@ function initImportModal(importUrl, i18n) {
     errorEl.textContent = "";
   }
 
-  function _renderPreview(data) {
-    const summaryEl = document.getElementById("import-preview-summary");
-    const mappingEl = document.getElementById("import-preview-mapping");
-    const sampleEl = document.getElementById("import-preview-sample");
-    const errorsEl = document.getElementById("import-preview-errors");
+  // Renders an icon+message alert into container, replacing any previous
+  // content. Used for both the preview and the result summary.
+  function _renderSummaryAlert(container, hasErrors, text) {
+    const el = StarletteAdmin.template("import-summary-alert");
+    StarletteAdmin.addClass(el, StarletteAdmin.getClass(hasErrors ? "alert.warning" : "alert.success"));
+    StarletteAdmin.fillSlot(el, "icon", function (n) {
+      n.className = StarletteAdmin.getIcon(hasErrors ? "flash.warning" : "flash.success") + " me-2";
+    });
+    StarletteAdmin.fillSlot(el, "message", function (n) {
+      n.textContent = text + ".";
+    });
+    container.replaceChildren(el);
+  }
 
-    const alertClass = data.has_errors ? "alert-warning" : "alert-success";
-    const icon =
-      '<i class="' +
-      StarletteAdmin.getIcon(data.has_errors ? "flash.warning" : "flash.success") +
-      ' me-2"></i>';
-    let summaryText = _fmt(i18n.previewSummary, { total: data.rows_total, new: data.rows_new });
-    if (data.rows_updated) summaryText += _fmt(i18n.clauseUpdated, { count: data.rows_updated });
-    if (data.errors.length) summaryText += _fmt(i18n.clauseErrors, { count: data.errors.length });
-    summaryEl.innerHTML =
-      '<div class="alert ' + alertClass + '">' + icon + summaryText + ".</div>";
-
-    let mappingHtml = '<div class="mb-2 fw-bold">' + i18n.columns + "</div>";
-    data.mapping.forEach((m) => {
-      const checked = excludedFields.has(m.field) ? "" : "checked";
-      mappingHtml +=
-        '<label class="form-check">' +
-        '<input type="checkbox" class="form-check-input import-field-toggle" data-field="' +
-        _escapeHtml(m.field) +
-        '" ' +
-        checked +
-        ">" +
-        '<span class="form-check-label">' +
-        _escapeHtml(m.header) +
-        " &rarr; " +
-        _escapeHtml(m.field) +
-        "</span>" +
-        "</label>";
+  // Renders the column-mapping checkboxes and binds their re-preview
+  // handler; each toggle excludes/includes its field from the import.
+  function _renderMapping(mappingEl, data) {
+    const shell = StarletteAdmin.template("import-mapping-shell");
+    StarletteAdmin.fillSlot(shell, "heading", function (n) {
+      n.textContent = i18n.columns;
+    });
+    const rows = shell.querySelector('[data-sa-slot="rows"]');
+    data.mapping.forEach(function (m) {
+      const row = StarletteAdmin.template("import-mapping-row");
+      const input = row.querySelector('[data-sa-hook="import-field-toggle"]');
+      input.dataset.saField = m.field;
+      input.checked = !excludedFields.has(m.field);
+      StarletteAdmin.fillSlot(row, "label", function (n) {
+        n.textContent = m.header + " → " + m.field;
+      });
+      rows.appendChild(row);
     });
     if (data.unmatched_headers.length) {
-      mappingHtml +=
-        '<div class="text-muted mt-2">' +
-        _fmt(i18n.ignored, { headers: data.unmatched_headers.map(_escapeHtml).join(", ") }) +
-        "</div>";
+      StarletteAdmin.fillSlot(shell, "ignored", function (n) {
+        n.textContent = _fmt(i18n.ignored, { headers: data.unmatched_headers.join(", ") });
+      });
+    } else {
+      const ignored = shell.querySelector('[data-sa-slot="ignored"]');
+      if (ignored) ignored.remove();
     }
-    mappingEl.innerHTML = mappingHtml;
-    mappingEl.querySelectorAll(".import-field-toggle").forEach((el) => {
+    mappingEl.replaceChildren(shell);
+    mappingEl.querySelectorAll('[data-sa-hook="import-field-toggle"]').forEach((el) => {
       el.addEventListener("change", function () {
-        const field = this.getAttribute("data-field");
+        const field = this.dataset.saField;
         if (this.checked) excludedFields.delete(field);
         else excludedFields.add(field);
         _submitPreview();
       });
     });
+  }
 
-    const columns = data.mapping
-      .filter((m) => !excludedFields.has(m.field))
-      .map((m) => m.field);
-    if (data.sample.length) {
-      const statusLabels = {
-        error: i18n.statusError,
-        update: i18n.statusUpdate,
-        new: i18n.statusNew,
-      };
-      let rows = data.sample
-        .map((row) => {
-          const badgeClass =
-            row.status === "error"
-              ? "text-bg-danger"
-              : row.status === "update"
-                ? "text-bg-primary"
-                : "text-bg-success";
-          const cells = columns
-            .map((c) => "<td>" + _escapeHtml(String(row.cells[c] ?? "")) + "</td>")
-            .join("");
-          const rowErrors = row.errors.map((e) => _escapeHtml(e.message)).join("; ");
-          return (
-            "<tr><td><span class=\"badge " +
-            badgeClass +
-            '">' +
-            _escapeHtml(statusLabels[row.status] || row.status) +
-            "</span></td>" +
-            cells +
-            "<td>" +
-            rowErrors +
-            "</td></tr>"
-          );
-        })
-        .join("");
-      sampleEl.innerHTML =
-        '<div class="mb-2 fw-bold">' +
-        _fmt(i18n.previewHeading, { count: data.sample.length }) +
-        "</div>" +
-        '<div class="table-responsive"><table class="table table-sm table-bordered">' +
-        "<thead><tr><th>" +
-        i18n.colStatus +
-        "</th>" +
-        columns.map((c) => "<th>" + _escapeHtml(c) + "</th>").join("") +
-        "<th>" +
-        i18n.colErrors +
-        "</th></tr></thead><tbody>" +
-        rows +
-        "</tbody></table></div>";
-    } else {
-      sampleEl.innerHTML = "";
+  // Renders the sample-rows preview table for the given (post-exclusion)
+  // columns, or clears the container when there is no sample.
+  function _renderSampleTable(sampleEl, data, columns) {
+    if (!data.sample.length) {
+      sampleEl.replaceChildren();
+      return;
     }
+    const statusLabels = { error: i18n.statusError, update: i18n.statusUpdate, new: i18n.statusNew };
+    const statusVariant = {
+      error: "import.status_error",
+      update: "import.status_update",
+      new: "import.status_new",
+    };
 
-    if (data.errors.length) {
-      let rows = data.errors
-        .map(
-          (e) =>
-            "<tr><td>" +
-            e.row +
-            "</td><td>" +
-            (e.field || "") +
-            "</td><td>" +
-            _escapeHtml(e.message) +
-            "</td></tr>"
-        )
-        .join("");
-      errorsEl.innerHTML =
-        '<div class="mb-2 fw-bold">' + i18n.allErrors + "</div>" +
-        '<div class="table-responsive"><table class="table table-sm table-bordered">' +
-        "<thead><tr><th>" +
-        i18n.colRow +
-        "</th><th>" +
-        i18n.colField +
-        "</th><th>" +
-        i18n.colError +
-        "</th></tr></thead>" +
-        "<tbody>" +
-        rows +
-        "</tbody></table></div>";
-    } else {
-      errorsEl.innerHTML = "";
+    const shell = StarletteAdmin.template("import-sample-table");
+    StarletteAdmin.fillSlot(shell, "heading", function (n) {
+      n.textContent = _fmt(i18n.previewHeading, { count: data.sample.length });
+    });
+    const headerRow = shell.querySelector('[data-sa-slot="header-row"]');
+    headerRow.appendChild(_th(i18n.colStatus));
+    columns.forEach((c) => headerRow.appendChild(_th(c)));
+    headerRow.appendChild(_th(i18n.colErrors));
+
+    const body = shell.querySelector('[data-sa-slot="body"]');
+    data.sample.forEach(function (row) {
+      const tr = StarletteAdmin.template("import-sample-row");
+      StarletteAdmin.fillSlot(tr, "status", function (n) {
+        n.textContent = statusLabels[row.status] || row.status;
+        StarletteAdmin.addClass(n, StarletteAdmin.getClass(statusVariant[row.status] || statusVariant.new));
+      });
+      columns.forEach((c) => {
+        const td = document.createElement("td");
+        td.textContent = String(row.cells[c] ?? "");
+        tr.appendChild(td);
+      });
+      const errorsTd = document.createElement("td");
+      errorsTd.textContent = row.errors.map((e) => e.message).join("; ");
+      tr.appendChild(errorsTd);
+      body.appendChild(tr);
+    });
+    sampleEl.replaceChildren(shell);
+  }
+
+  // Renders an error table (optionally headed) into container, or clears it
+  // when there are no errors. Shared by the preview "all errors" table and
+  // the result table.
+  function _renderErrorsTable(errorsEl, errors, heading) {
+    if (!errors.length) {
+      errorsEl.replaceChildren();
+      return;
     }
+    const shell = StarletteAdmin.template("import-errors-table");
+    if (heading) {
+      StarletteAdmin.fillSlot(shell, "heading", function (n) {
+        n.textContent = heading;
+      });
+    } else {
+      const h = shell.querySelector('[data-sa-slot="heading"]');
+      if (h) h.remove();
+    }
+    StarletteAdmin.fillSlot(shell, "col-row", (n) => (n.textContent = i18n.colRow));
+    StarletteAdmin.fillSlot(shell, "col-field", (n) => (n.textContent = i18n.colField));
+    StarletteAdmin.fillSlot(shell, "col-error", (n) => (n.textContent = i18n.colError));
+    const body = shell.querySelector('[data-sa-slot="body"]');
+    errors.forEach(function (e) {
+      const tr = StarletteAdmin.template("import-error-row");
+      StarletteAdmin.fillSlot(tr, "row", (n) => (n.textContent = e.row));
+      StarletteAdmin.fillSlot(tr, "field", (n) => (n.textContent = e.field || ""));
+      StarletteAdmin.fillSlot(tr, "message", (n) => (n.textContent = e.message));
+      body.appendChild(tr);
+    });
+    errorsEl.replaceChildren(shell);
+  }
+
+  function _th(text) {
+    const th = document.createElement("th");
+    th.textContent = text;
+    return th;
+  }
+
+  function _renderPreview(data) {
+    const summaryEl = document.querySelector('[data-sa-hook="import-preview-summary"]');
+    const mappingEl = document.querySelector('[data-sa-hook="import-preview-mapping"]');
+    const sampleEl = document.querySelector('[data-sa-hook="import-preview-sample"]');
+    const errorsEl = document.querySelector('[data-sa-hook="import-preview-errors"]');
+
+    let summaryText = _fmt(i18n.previewSummary, { total: data.rows_total, new: data.rows_new });
+    if (data.rows_updated) summaryText += _fmt(i18n.clauseUpdated, { count: data.rows_updated });
+    if (data.errors.length) summaryText += _fmt(i18n.clauseErrors, { count: data.errors.length });
+    _renderSummaryAlert(summaryEl, data.has_errors, summaryText);
+
+    _renderMapping(mappingEl, data);
+
+    const columns = data.mapping.filter((m) => !excludedFields.has(m.field)).map((m) => m.field);
+    _renderSampleTable(sampleEl, data, columns);
+
+    _renderErrorsTable(errorsEl, data.errors, data.errors.length ? i18n.allErrors : null);
   }
 
   function _renderResult(data) {
-    const summaryEl = document.getElementById("import-result-summary");
-    const errorsEl = document.getElementById("import-result-errors");
+    const summaryEl = document.querySelector('[data-sa-hook="import-result-summary"]');
+    const errorsEl = document.querySelector('[data-sa-hook="import-result-errors"]');
 
-    const alertClass = data.has_errors ? "alert-warning" : "alert-success";
-    const icon =
-      '<i class="' +
-      StarletteAdmin.getIcon(data.has_errors ? "flash.warning" : "flash.success") +
-      ' me-2"></i>';
     let summaryText = _fmt(i18n.resultSummary, {
       total: data.rows_total,
       created: data.rows_created,
@@ -335,45 +370,10 @@ function initImportModal(importUrl, i18n) {
     if (data.rows_updated) summaryText += _fmt(i18n.clauseUpdated, { count: data.rows_updated });
     if (data.rows_skipped) summaryText += _fmt(i18n.clauseSkipped, { count: data.rows_skipped });
     if (data.errors.length) summaryText += _fmt(i18n.clauseErrors, { count: data.errors.length });
-    summaryEl.innerHTML =
-      '<div class="alert ' + alertClass + '">' + icon + summaryText + ".</div>";
+    _renderSummaryAlert(summaryEl, data.has_errors, summaryText);
 
-    if (data.errors.length) {
-      let rows = data.errors
-        .map(
-          (e) =>
-            "<tr><td>" +
-            e.row +
-            "</td><td>" +
-            (e.field || "") +
-            "</td><td>" +
-            _escapeHtml(e.message) +
-            "</td></tr>"
-        )
-        .join("");
-      errorsEl.innerHTML =
-        '<div class="table-responsive"><table class="table table-sm table-bordered">' +
-        "<thead><tr><th>" +
-        i18n.colRow +
-        "</th><th>" +
-        i18n.colField +
-        "</th><th>" +
-        i18n.colError +
-        "</th></tr></thead>" +
-        "<tbody>" +
-        rows +
-        "</tbody></table></div>";
-    } else {
-      errorsEl.innerHTML = "";
-    }
+    _renderErrorsTable(errorsEl, data.errors, null);
+
     if (!data.has_errors) successAlert(summaryText, 4000);
-  }
-
-  function _escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
   }
 }

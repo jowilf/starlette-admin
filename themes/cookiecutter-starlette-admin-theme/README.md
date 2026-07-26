@@ -32,7 +32,7 @@ Cookiecutter prompts for each variable in `cookiecutter.json`:
 | `theme_slug` | `corporate` | Kebab-case. Used for logging and the entry-point key. Unlike a plugin, it does not namespace templates or static files: a theme owns the global template tree. |
 | `package_slug` | `starlette_admin_corporate` | The importable Python package, under `src/`. |
 | `distribution_name` | `starlette-admin-corporate` | The PyPI name. |
-| `class_prefix` | `Corporate` | Produces `CorporateTheme`, `CorporateConfig`, and `CorporateIcons`. |
+| `class_prefix` | `Corporate` | Produces `CorporateTheme`, `CorporateConfig`, `CorporateIcons`, and `CorporateClasses`. |
 | `description` | free text | One-line package description. |
 | `author_name` / `author_email` | free text | Used in `pyproject.toml` and `LICENSE`. |
 | `github_username` | free text | Used to build the repo URL. |
@@ -59,9 +59,10 @@ starlette_admin_corporate/
 ├── README.md / LICENSE / .gitignore / babel.cfg / Makefile
 ├── .github/workflows/ci.yml  # pytest + ruff across supported Python versions
 ├── src/starlette_admin_corporate/
-│   ├── __init__.py           # exports the Theme, Config, and Icons
+│   ├── __init__.py           # exports the Theme, Config, Icons, and Classes
 │   ├── theme.py              # BaseTheme subclass + frozen Config dataclass
 │   ├── icons.py              # IconSet subclass mapping the core vocabulary to Tabler Icons
+│   ├── classes.py            # ClassMap subclass overriding the component roles the theme restyles
 │   ├── templates/base.html   # extends @core/base.html, appends the theme stylesheet
 │   └── static/css/theme.css  # example visual overrides
 ├── tests/
@@ -71,9 +72,10 @@ starlette_admin_corporate/
 └── docs/index.md             # usage doc: install, options, overriding templates/assets
 ```
 
-The generated theme ships two things out of the box:
+The generated theme ships three things out of the box:
 
 - **A custom `IconSet`** (`icons.py`) that remaps the full core icon vocabulary to [Tabler Icons](https://tabler.io/icons), swapping the default FontAwesome. `get_icon_set()` returns it, and `base.html`'s `icon_css` block pulls its stylesheet in automatically.
+- **A `ClassMap`** (`classes.py`) returned by `get_class_map()`. Core templates render class attributes through `cls('role.name')`; map a role (a button, the list table, a filter chip, ...) to restyle that component everywhere, without forking a template. It starts empty with commented examples, since unmapped roles fall through to the core defaults in `starlette_admin.theme.CoreClasses`.
 - **A `base.html` override** that extends `@core/base.html` and appends the theme's own stylesheet to the `core_css` block. Edit `static/css/theme.css` to restyle the admin.
 
 Because a theme sits above plugins in Jinja's loader chain (precedence: user > theme > plugins > core), it can restyle both core and plugin templates.

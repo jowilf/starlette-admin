@@ -146,7 +146,7 @@ class EpisodeView(ModelView):
         text="Publish episodes",
         confirmation="Mark the selected episodes as published?",
         submit_btn_text="Publish",
-        submit_btn_class="btn-success",
+        submit_btn_class="btn btn-success",
     )
     async def publish_action(self, request: Request, pks: list[Any]) -> None:
         now = datetime.now(UTC)
@@ -165,7 +165,7 @@ class EpisodeView(ModelView):
         text="Archive episodes",
         confirmation="Archive the selected episodes?",
         submit_btn_text="Archive",
-        submit_btn_class="btn-warning",
+        submit_btn_class="btn btn-warning",
     )
     async def archive_action(self, request: Request, pks: list[Any]) -> None:
         count = 0
@@ -184,8 +184,8 @@ class EpisodeView(ModelView):
         confirmation="Publish this episode?",
         icon_class="fas fa-broadcast-tower",
         submit_btn_text="Publish",
-        submit_btn_class="btn-success",
-        action_btn_class="btn-info",
+        submit_btn_class="btn btn-success",
+        action_btn_class="btn btn-info",
     )
     async def publish_row_action(self, request: Request, pk: Any) -> None:
         ep = await self.find_by_pk(request, pk)

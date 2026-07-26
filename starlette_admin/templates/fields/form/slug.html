@@ -1,10 +1,10 @@
-<div class="{% if error %}{{ field.error_class }}{% endif %}">
+<div class="{% if error %}{{ cls(field.error_class) }}{% endif %}">
     {% if input_group_prepend or input_group_append %}
         <div class="input-group {% if input_group_flat %}input-group-flat{% endif %} {% if error %}has-validation{% endif %}">
             {% if input_group_prepend %}<span class="input-group-text">{{ input_group_prepend }}</span>{% endif %}
             <input id="{{ field.id }}"
                    name="{{ field.id }}"
-                   class="{{ field.class_ }} {% if error %}{{ field.error_class }}{% endif %}"
+                   class="field-slug {{ cls(field.class_) }} {% if error %}{{ cls(field.error_class) }}{% endif %}"
                    value="{{ '' if data is none else data }}"
                    {% if field.populate_from %}data-populate-from="{{ field.populate_from }}"{% endif %}
                    {{ field.input_params() | safe }} />
@@ -13,7 +13,7 @@
     {% else %}
         <input id="{{ field.id }}"
                name="{{ field.id }}"
-               class="{{ field.class_ }} {% if error %}{{ field.error_class }}{% endif %}"
+               class="field-slug {{ cls(field.class_) }} {% if error %}{{ cls(field.error_class) }}{% endif %}"
                value="{{ '' if data is none else data }}"
                {% if field.populate_from %}data-populate-from="{{ field.populate_from }}"{% endif %}
                {{ field.input_params() | safe }} />

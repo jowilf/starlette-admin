@@ -104,7 +104,7 @@ def action(
     text: str,
     confirmation: str | None = None,
     header: str | None = None,
-    submit_btn_class: str | None = "btn-primary",
+    submit_btn_class: str | None = None,
     submit_btn_text: str | None = _("Yes, Proceed"),
     icon_class: str | None = None,
     form: str | Callable[..., str | Awaitable[str]] | None = None,
@@ -124,8 +124,9 @@ def action(
         header: Title shown in the confirmation modal header. If not provided,
             the modal renders without a header.
         submit_btn_text: Submit button text.
-        submit_btn_class: Submit button variant (e.g. `btn-primary`, `btn-ghost-info`,
-            `btn-outline-danger`).
+        submit_btn_class: Complete class string for the submit button
+            (e.g. `btn btn-outline-danger`), or a class role the active theme
+            maps. Defaults to the theme's `action.modal_confirm_button` role.
         icon_class: Icon class (e.g. `fa-lite fa-folder`, `fa-duotone fa-circle-right`).
         form: Custom form to collect data from the user. Either a static HTML
             string, or a callable that builds the form HTML per request —
@@ -157,7 +158,7 @@ def action(
                 text="Mark selected articles as published",
                 confirmation="Are you sure you want to mark selected articles as published ?",
                 submit_btn_text="Yes, proceed",
-                submit_btn_class="btn-success",
+                submit_btn_class="btn btn-success",
                 form='''
                 <form>
                     <div class="mt-3">
@@ -262,7 +263,7 @@ def row_action(
     confirmation: str | None = None,
     header: str | None = None,
     action_btn_class: str | None = None,
-    submit_btn_class: str | None = "btn-primary",
+    submit_btn_class: str | None = None,
     submit_btn_text: str | None = _("Yes, Proceed"),
     icon_class: str | None = None,
     form: str | Callable[[Request, Any], str | Awaitable[str]] | None = None,
@@ -280,10 +281,12 @@ def row_action(
         confirmation: Confirmation text. If provided, the action requires confirmation.
         header: Title shown in the confirmation modal header. If not provided,
             the modal renders without a header.
-        action_btn_class: Action button variant for the detail page (e.g. `btn-success`,
-            `btn-outline`).
-        submit_btn_class: Submit button variant (e.g. `btn-primary`, `btn-ghost-info`,
-            `btn-outline-danger`).
+        action_btn_class: Complete class string for the action button on the
+            detail page (e.g. `btn btn-info`), or a class role the active
+            theme maps. Defaults to the theme's `action.row_item` role.
+        submit_btn_class: Complete class string for the submit button
+            (e.g. `btn btn-outline-danger`), or a class role the active theme
+            maps. Defaults to the theme's `action.modal_confirm_button` role.
         submit_btn_text: Text for the submit button.
         icon_class: Icon class (e.g. `fa-lite fa-folder`, `fa-duotone fa-circle-right`).
         form: Custom HTML to collect data from the user. Either a static HTML
@@ -305,8 +308,8 @@ def row_action(
             confirmation="Are you sure you want to mark this article as published ?",
             icon_class="fas fa-check-circle",
             submit_btn_text="Yes, proceed",
-            submit_btn_class="btn-success",
-            action_btn_class="btn-info",
+            submit_btn_class="btn btn-success",
+            action_btn_class="btn btn-info",
         )
         async def make_published_row_action(self, request: Request, pk: Any) -> None:
             session: Session = request.state.session
@@ -386,8 +389,9 @@ def link_row_action(
     Args:
         name: Unique row action name for the ModelView.
         text: Action text displayed to users.
-        action_btn_class: Action button variant for the detail page (e.g. `btn-success`,
-            `btn-outline`).
+        action_btn_class: Complete class string for the action button on the
+            detail page (e.g. `btn btn-info`), or a class role the active
+            theme maps. Defaults to the theme's `action.row_item` role.
         icon_class: Icon class (e.g. `fa-lite fa-folder`, `fa-duotone fa-circle-right`).
         exclude_from_list: Set to True to exclude the action from the list view.
         exclude_from_detail: Set to True to exclude the action from the detail view.

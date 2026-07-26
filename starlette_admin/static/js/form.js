@@ -57,7 +57,7 @@ $(function () {
 // Show the loading modal on submit so large file uploads give visible feedback.
 $(function () {
   $('form[enctype="multipart/form-data"]').on("submit", function () {
-    $("#modal-loading").modal("show");
+    $('[data-sa-hook="modal-loading"]').modal("show");
   });
 });
 
