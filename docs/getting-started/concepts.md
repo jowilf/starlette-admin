@@ -289,7 +289,7 @@ admin.events.on(AdminEvent.AFTER_CREATE, log_create)
 
 **What's next**
 
-* [Views](../user-guide/views.md): Every `ModelView` configuration option
-* [Fields](../user-guide/fields.md): The full field type catalog
-* [Form Layouts](../advanced/form-layout.md): Arrange create and edit forms with rows, panels, and tabs
-* [Actions](../user-guide/actions.md): Batch and row actions in depth
+* **[Views](../user-guide/views.md):** Every `ModelView` configuration option.
+* **[Fields](../user-guide/fields.md):** The full field type catalog.
+* **[Form Layouts](../advanced/form-layout.md):** Arrange create and edit forms with rows, panels, and tabs.
+* **[Actions](../user-guide/actions.md):** Batch and row actions in depth.

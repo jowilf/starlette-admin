@@ -76,6 +76,6 @@ Uploaded files are different: `LocalStorage` serves them through the app too (`/
 
 ## What's next
 
-* [Security](../user-guide/security.md): the `secret_key` multi-worker footgun in full, plus everything else the built-in protections do and don't cover
-* [Authentication](../user-guide/auth.md): gate access to the admin before it's reachable in production
-* [File Storage](../user-guide/file-storage.md): configuring `S3Storage` and other remote backends
+* **[Security](../user-guide/security.md):** The `secret_key` multi-worker footgun in full, plus everything else the built-in protections do and don't cover.
+* **[Authentication](../user-guide/auth.md):** Gate access to the admin before it's reachable in production.
+* **[File Storage](../user-guide/file-storage.md):** Configuring `S3Storage` and other remote backends.

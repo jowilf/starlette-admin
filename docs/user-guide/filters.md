@@ -140,6 +140,6 @@ If you need a filter for a data type the built-ins do not cover, like a JSON fie
 
 **What's next**
 
-* [Custom Filters](../advanced/custom-filters.md): Write and register a `BaseFilter` subclass.
-* [Actions](actions.md): Add bulk and row actions to your list pages.
-* [Views](views.md): Learn more about `searchable_fields` and the rest of the list-page configuration.
+* **[Custom Filters](../advanced/custom-filters.md):** Write and register a `BaseFilter` subclass.
+* **[Actions](actions.md):** Add bulk and row actions to your list pages.
+* **[Views](views.md):** Learn more about `searchable_fields` and the rest of the list-page configuration.

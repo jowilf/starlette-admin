@@ -503,36 +503,47 @@
   line-height: 1.55;
   background: none;
 }
-.md-typeset .home-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+/* Extension points: each row pairs a concern with the interface to subclass */
+.md-typeset .home-hooks {
   margin: 0 0 0.9rem;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
 }
-.md-typeset .home-chips li {
+.md-typeset .home-hooks li {
   margin: 0;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
 }
-.md-typeset .home-chips a {
-  display: inline-block;
-  padding: 0.25rem 0.65rem;
-  border: 1px solid var(--md-default-fg-color--lightest);
-  border-radius: 100px;
-  font-size: 0.68rem;
+.md-typeset .home-hooks a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.42rem 0.45rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--md-default-fg-color);
-  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+  transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
     background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    padding-left 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.md-typeset .home-chips a:hover,
-.md-typeset .home-chips a:focus-visible {
-  border-color: var(--md-primary-fg-color);
+.md-typeset .home-hooks code {
+  margin-left: auto;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.65rem;
+  white-space: nowrap;
+  color: var(--md-default-fg-color--light);
+  background: color-mix(in srgb, var(--md-default-fg-color--lightest) 30%, transparent);
+}
+.md-typeset .home-hooks a:hover,
+.md-typeset .home-hooks a:focus-visible {
+  padding-left: 0.7rem;
   color: var(--md-primary-fg-color);
-  background: color-mix(in srgb, var(--md-primary-fg-color) 8%, transparent);
-  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--md-primary-fg-color) 6%, transparent);
+}
+.md-typeset .home-hooks a:hover code,
+.md-typeset .home-hooks a:focus-visible code {
+  color: var(--md-primary-fg-color);
+  background: color-mix(in srgb, var(--md-primary-fg-color) 12%, transparent);
 }
 
 /* Cookiecutter callout */
@@ -853,11 +864,13 @@
   .md-typeset .home-plugin-panel:focus-within,
   .md-typeset .home-cookie:hover,
   .md-typeset .home-cookie:focus-visible,
-  .md-typeset .home-chips a:hover,
-  .md-typeset .home-chips a:focus-visible,
   .md-typeset .home-btn:hover,
   .md-typeset .home-btn:focus-visible {
     transform: none;
+  }
+  .md-typeset .home-hooks a:hover,
+  .md-typeset .home-hooks a:focus-visible {
+    padding-left: 0.45rem;
   }
   .md-typeset .home-card:hover .home-card-icon,
   .md-typeset .home-card:focus-visible .home-card-icon,

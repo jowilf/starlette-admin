@@ -77,36 +77,6 @@ hide:
   </a>
 </div>
 
-<h2 class="home-section-title">Bring your own database</h2>
-<p class="home-lede">Leverage first-class adapters for the most popular Python ORMs and ODMs. Switch storage layers without rewriting a single view, field, or filter.</p>
-
-<div class="home-backends">
-  <a class="home-backend" href="integrations/sqlalchemy/">
-    <h3>SQLAlchemy</h3>
-    <p>The industry-standard SQL toolkit and ORM. Supports both synchronous and asynchronous engines.</p>
-  </a>
-  <a class="home-backend" href="integrations/sqlmodel/">
-    <h3>SQLModel</h3>
-    <p>Pydantic-powered SQL databases from the author of FastAPI. Includes built-in validation.</p>
-  </a>
-  <a class="home-backend" href="integrations/beanie/">
-    <h3>Beanie</h3>
-    <p>An asynchronous ODM for MongoDB built on Motor, featuring native Pydantic models.</p>
-  </a>
-  <a class="home-backend" href="integrations/mongoengine/">
-    <h3>MongoEngine</h3>
-    <p>A mature document-object mapper for MongoDB that offers rich field types.</p>
-  </a>
-  <a class="home-backend" href="integrations/tortoise/">
-    <h3>Tortoise ORM</h3>
-    <p>An asynchronous ORM inspired by Django. Provides clean and intuitive model definitions.</p>
-  </a>
-  <a class="home-backend" href="integrations/custom-backend/">
-    <h3>Custom backend</h3>
-    <p>Cannot find a match for your stack? Implement the BaseAdmin interface to create your own solution.</p>
-  </a>
-</div>
-
 <div class="home-code-head">
   <svg class="home-code-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l-4 4 4 4"/><path d="M17 8l4 4-4 4"/><path d="M14 4l-4 16"/></svg>
   <h2 class="home-section-title">Everything is Python</h2>
@@ -306,16 +276,17 @@ hide:
   <div class="home-plugin-panel">
     <span class="home-eyebrow hc-emerald">Extension points</span>
     <h3>Hook into any component</h3>
-    <p>Predefined interfaces allow you to swap or augment each concern independently. You can customize everything from the authentication flow to the export formats.</p>
-    <ul class="home-chips">
-      <li><a href="advanced/custom-fields/">Custom fields</a></li>
-      <li><a href="advanced/custom-filters/">Custom filters</a></li>
-      <li><a href="user-guide/export-import/">Exporters &amp; importers</a></li>
-      <li><a href="advanced/custom-themes/">Custom themes</a></li>
-      <li><a href="user-guide/auth/">Auth providers</a></li>
-      <li><a href="user-guide/file-storage/">Storage backends</a></li>
-      <li><a href="user-guide/custom-views/">Widgets &amp; views</a></li>
-      <li><a href="advanced/templates/">Templates</a></li>
+    <p>Predefined interfaces allow you to swap or augment each concern independently. Subclass the base you need and register it. You can customize everything from the authentication flow to the export formats.</p>
+    <ul class="home-hooks">
+      <li><a href="advanced/custom-fields/"><span>Custom fields</span><code>BaseField</code></a></li>
+      <li><a href="advanced/custom-filters/"><span>Custom filters</span><code>BaseFilter</code></a></li>
+      <li><a href="user-guide/export-import/"><span>Exporters</span><code>BaseExporter</code></a></li>
+      <li><a href="user-guide/export-import/"><span>Importers</span><code>BaseImporter</code></a></li>
+      <li><a href="advanced/custom-themes/"><span>Themes</span><code>BaseTheme</code></a></li>
+      <li><a href="user-guide/auth/"><span>Auth providers</span><code>BaseAuthProvider</code></a></li>
+      <li><a href="user-guide/file-storage/"><span>Storage backends</span><code>BaseStorage</code></a></li>
+      <li><a href="user-guide/custom-views/"><span>Dashboard widgets</span><code>BaseWidget</code></a></li>
+      <li><a href="advanced/templates/"><span>Templates</span><code>templates_dir</code></a></li>
     </ul>
     <a class="home-more" href="advanced/extension-points/">Explore all extension points</a>
   </div>

@@ -285,6 +285,6 @@ Instead of relying on the `storage=` parameter on the field, you can use [sqlalc
 
 ## What's next
 
-* [Fields](fields.md): `FileField` and `ImageField` reference
-* [Export & Import](export-import.md): how files are included in export bundles
-* [Security](security.md): automatic sanitization and validation behavior
+* **[Fields](fields.md):** `FileField` and `ImageField` reference.
+* **[Export & Import](export-import.md):** How files are included in export bundles.
+* **[Security](security.md):** Automatic sanitization and validation behavior.

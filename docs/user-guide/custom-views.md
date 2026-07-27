@@ -386,6 +386,6 @@ class ReportsView(CustomView):
 
 **What's next**
 
-- [Templates](../advanced/templates.md): customize the base layout your custom-view templates extend
-- [Flash Messages](flash-messages.md): surface feedback from your `@route` handlers
-- [Actions](actions.md): add bulk and row actions to your model views
+* **[Templates](../advanced/templates.md):** Customize the base layout your custom-view templates extend.
+* **[Flash Messages](flash-messages.md):** Surface feedback from your `@route` handlers.
+* **[Actions](actions.md):** Add bulk and row actions to your model views.

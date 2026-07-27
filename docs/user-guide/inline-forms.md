@@ -216,6 +216,6 @@ Each submitted row validates independently through the same `create` and `edit` 
 
 ## What's next
 
-* [SQLAlchemy](../integrations/sqlalchemy.md) explains how relationship introspection enables automatic foreign key detection.
-* [Custom Views](custom-views.md) covers building pages beyond the standard create, edit, and list workflow.
-* [Events](../advanced/events.md) shows how to react to inline changes after records are saved.
+* **[SQLAlchemy](../integrations/sqlalchemy.md):** Explains how relationship introspection enables automatic foreign key detection.
+* **[Custom Views](custom-views.md):** Covers building pages beyond the standard create, edit, and list workflow.
+* **[Events](../advanced/events.md):** Shows how to react to inline changes after records are saved.

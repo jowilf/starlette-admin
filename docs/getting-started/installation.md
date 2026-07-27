@@ -82,5 +82,5 @@ To use the latest unreleased changes, install directly from the GitHub repositor
 
 ## What's next
 
-- [Quickstart](quickstart.md): Build your first admin interface with real data.
-- [Concepts](concepts.md): Learn the core architecture and design principles behind starlette-admin.
+- **[Quickstart](quickstart.md):** Build your first admin interface with real data.
+- **[Concepts](concepts.md):** Learn the core architecture and design principles behind starlette-admin.

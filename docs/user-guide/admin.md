@@ -169,6 +169,6 @@ admin.add_view(ModelView(Comment))  # Raises RuntimeError: already mounted
 
 **What's next**
 
-* [Security](security.md): The `secret_key`, CSRF, and complete export/import limits.
-* [Authentication](auth.md): Wiring up the `auth_provider`.
-* [Multiple Admin Instances](../advanced/multiple-admin.md): Running more than one `Admin` in the same application.
+* **[Security](security.md):** The `secret_key`, CSRF, and complete export/import limits.
+* **[Authentication](auth.md):** Wiring up the `auth_provider`.
+* **[Multiple Admin Instances](../advanced/multiple-admin.md):** Running more than one `Admin` in the same application.
