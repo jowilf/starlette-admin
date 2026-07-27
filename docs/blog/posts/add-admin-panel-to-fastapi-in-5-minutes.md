@@ -283,4 +283,4 @@ Everything above utilizes two models, but these exact `ModelView` mechanics can 
 
 - **[Concepts](../../getting-started/concepts.md):** The vocabulary behind what you just built, ensuring the rest of the documentation reads fluently.
 - **[Views](../../user-guide/views.md):** A deep dive into every `ModelView` option including and permission hooks.
-- **[Soft Deletes and a Trash View in FastAPI](soft-deletes-trash-view.md):** The first advanced recipe, built directly on the override hooks introduced here.
+- **[Soft Deletes and a Trash View for FastAPI](soft-deletes-trash-view.md):** The first advanced recipe, built directly on the override hooks introduced here.

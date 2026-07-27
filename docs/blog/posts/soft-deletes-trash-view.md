@@ -1,4 +1,4 @@
-# Building Soft Deletes and a Trash View in FastAPI Using Starlette Admin
+# Soft Deletes and a Trash View with FastAPI & starlette-admin
 
 _2026-07-10_
 

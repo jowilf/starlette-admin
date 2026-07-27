@@ -15,4 +15,4 @@ The Zensical platform currently relies on a manually maintained static index for
 | Date | Article Title |
 | --- | --- |
 | 2026-07-13 | [Add an Admin Panel to FastAPI in 5 Minutes with starlette-admin](posts/add-admin-panel-to-fastapi-in-5-minutes.md) |
-| 2026-07-10 | [Soft Deletes and a Trash View in FastAPI with starlette-admin](posts/soft-deletes-trash-view.md) |
+| 2026-07-10 | [Soft Deletes and a Trash View with FastAPI & starlette-admin](posts/soft-deletes-trash-view.md) |
