@@ -311,7 +311,7 @@ class BaseTheme:
 
     def html_attrs(self, request: Request) -> dict[str, str]:
         """Attributes rendered on the `<html>` element of every page."""
-        return {}
+        return {}  # pragma: no cover
 
     def template_globals(self) -> dict[str, Any]:
         """Jinja globals exposed to every template, unprefixed."""
