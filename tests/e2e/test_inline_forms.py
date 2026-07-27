@@ -61,7 +61,7 @@ def test_edit_author_adds_second_inline_book_via_add_row(page: Page):
     search.press("Enter")
     row = page.locator("tbody tr").first
     expect(row).to_contain_text("Octavia Butler", timeout=3000)
-    pk = row.get_attribute("data-pk")
+    pk = row.get_attribute("data-sa-pk")
 
     page.goto(f"/admin/author/edit?pk={pk}")
     formset = page.locator(".inline-formset").filter(has_text="Books")
@@ -93,7 +93,7 @@ def test_edit_author_removes_inline_book_row(page: Page):
     search.press("Enter")
     row = page.locator("tbody tr").first
     expect(row).to_contain_text("Isaac Asimov", timeout=3000)
-    pk = row.get_attribute("data-pk")
+    pk = row.get_attribute("data-sa-pk")
 
     page.goto(f"/admin/author/edit?pk={pk}")
     formset = page.locator(".inline-formset").filter(has_text="Books")
@@ -111,4 +111,4 @@ def test_edit_author_removes_inline_book_row(page: Page):
 
     page.goto("/admin/book/list")
     page.get_by_placeholder("Search...").fill("Foundation")
-    expect(page.locator("tbody tr[data-pk]")).to_have_count(0, timeout=3000)
+    expect(page.locator("tbody tr[data-sa-pk]")).to_have_count(0, timeout=3000)

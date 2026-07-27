@@ -109,7 +109,7 @@ def test_edit_book_updates_price(page: Page):
     page.get_by_placeholder("Search...").fill("Foundation")
     row = page.locator("tbody tr").first
     expect(row).to_contain_text("Foundation", timeout=3000)
-    pk = row.get_attribute("data-pk")
+    pk = row.get_attribute("data-sa-pk")
 
     page.goto(f"/admin/book/edit?pk={pk}")
     page.locator(".nav-tabs .nav-link", has_text="Pricing").click()
@@ -184,7 +184,7 @@ def test_edit_book_updates_relation(page: Page):
     page.get_by_placeholder("Search...").fill("I, Robot")
     row = page.locator("tbody tr").first
     expect(row).to_contain_text("I, Robot", timeout=3000)
-    pk = row.get_attribute("data-pk")
+    pk = row.get_attribute("data-sa-pk")
 
     page.goto(f"/admin/book/edit?pk={pk}")
     expect(
@@ -235,4 +235,4 @@ def test_delete_book(page: Page):
         page.get_by_text('The item "Disposable Book" was successfully deleted.')
     ).to_be_visible()
     # Delete reloads the same search-filtered URL, hence the empty result set.
-    expect(page.locator("tbody tr[data-pk]")).to_have_count(0)
+    expect(page.locator("tbody tr[data-sa-pk]")).to_have_count(0)

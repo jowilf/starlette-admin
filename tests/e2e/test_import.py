@@ -69,7 +69,7 @@ def test_import_deselect_field_excludes_column(page: Page, tmp_path: Path):
     search.press("Enter")
     row = page.locator("tbody tr").first
     expect(row).to_contain_text("Skip Bio", timeout=3000)
-    pk = row.get_attribute("data-pk")
+    pk = row.get_attribute("data-sa-pk")
 
     page.goto(f"/admin/author/detail?pk={pk}")
     expect(page.get_by_text("Should be dropped.")).to_have_count(0)
@@ -98,7 +98,7 @@ def test_import_upsert_updates_existing_author(page: Page, tmp_path: Path):
     search.press("Enter")
     row = page.locator("tbody tr").first
     expect(row).to_contain_text("UpsertMe", timeout=3000)
-    pk = row.get_attribute("data-pk")
+    pk = row.get_attribute("data-sa-pk")
 
     update_csv = tmp_path / "authors_update.csv"
     update_csv.write_text(

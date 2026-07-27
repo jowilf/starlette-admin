@@ -130,7 +130,7 @@ def test_removing_one_active_filter_chip_keeps_the_other(page: Page):
     chips = page.locator("#active-filters a.badge")
     expect(chips).to_have_count(2)
     # 10 in-stock books, 5 of which are priced above 10 (both filters applied).
-    expect(page.locator("tbody tr[data-pk]")).to_have_count(5)
+    expect(page.locator("tbody tr[data-sa-pk]")).to_have_count(5)
 
     chips.filter(has_text="In stock").click()
 
@@ -139,4 +139,4 @@ def test_removing_one_active_filter_chip_keeps_the_other(page: Page):
     expect(page.locator("#active-filters")).to_contain_text("Price")
     expect(page.locator("#active-filters")).not_to_contain_text("In stock")
     # Price > 10 alone (in-stock or not) matches 8 books in the seed data.
-    expect(page.locator("tbody tr[data-pk]")).to_have_count(8)
+    expect(page.locator("tbody tr[data-sa-pk]")).to_have_count(8)
