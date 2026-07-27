@@ -1327,6 +1327,76 @@ async def test_list_field_parse_import_value_fallback():
     assert await field.parse_import_value(request, 123) == []
 
 
+# ── ListField.getter / .formatter / .parser ─────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_list_field_getter_overrides_attribute_lookup():
+    obj = MagicMock(values=["a", "b"])
+    field = ListField(
+        StringField("values"),
+        getter=lambda request, obj: [v.upper() for v in obj.values],
+    )
+    result = await field.parse_obj(MagicMock(), obj)
+    assert result == ["A", "B"]
+
+
+@pytest.mark.asyncio
+async def test_list_field_formatter_overrides_serialize_value():
+    field = ListField(
+        StringField("values"),
+        formatter={
+            RequestAction.LIST: lambda request, value: [v.upper() for v in value]
+        },
+    )
+    request = make_request(RequestAction.LIST)
+    result = await BaseModelView.serialize_field_value(
+        MagicMock(), ["a", "b"], field, request
+    )
+    assert result == ["A", "B"]
+
+
+@pytest.mark.asyncio
+async def test_list_field_parser_receives_full_form_data():
+    """A ListField parser receives the whole FormData, since its items are keyed
+    by index (`id.0`, `id.1`, ...) rather than living under a single `id` key."""
+    seen = {}
+
+    def parser(request, raw):
+        seen["raw"] = raw
+        return ["parsed"]
+
+    field = ListField(StringField("values"), parser={RequestAction.CREATE: parser})
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("values.0", "a"), ("values.1", "b")])
+    result = await field.parse_input(request, form_data)
+    assert seen["raw"] is form_data
+    assert result == ["parsed"]
+
+
+@pytest.mark.asyncio
+async def test_list_field_parser_for_other_action_falls_back_to_parse_form_data():
+    field = ListField(
+        StringField("values"),
+        parser={RequestAction.EDIT: lambda request, raw: ["overridden"]},
+    )
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("values.0", "a"), ("values.1", "b")])
+    result = await field.parse_input(request, form_data)
+    assert result == ["a", "b"]
+
+
+@pytest.mark.asyncio
+async def test_list_field_import_parser_overrides_parse_import_value():
+    field = ListField(
+        StringField("values"),
+        parser={RequestAction.IMPORT: lambda request, raw: [f"imported:{raw}"]},
+    )
+    request = make_request(RequestAction.IMPORT)
+    result = await field.parse_input(request, "a\nb")
+    assert result == ["imported:a\nb"]
+
+
 # ── BaseField.parse_import_value ───────────────────────────────────────────────
 
 
@@ -1655,6 +1725,89 @@ async def test_collection_field_serialize_value_missing_subfield():
     request = make_request(RequestAction.LIST)
     result = await field.serialize_value(request, {"key": "k"})
     assert result == {"key": "k", "value": None}
+
+
+# ── CollectionField.getter / .formatter / .parser ───────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_collection_field_getter_overrides_attribute_lookup():
+    obj = MagicMock(key="k", value=5)
+    field = CollectionField(
+        "config",
+        fields=[StringField("key"), IntegerField("value")],
+        getter=lambda request, obj: {"key": obj.key.upper(), "value": obj.value * 2},
+    )
+    result = await field.parse_obj(MagicMock(), obj)
+    assert result == {"key": "K", "value": 10}
+
+
+@pytest.mark.asyncio
+async def test_collection_field_formatter_overrides_serialize_value():
+    field = CollectionField(
+        "config",
+        fields=[StringField("key"), IntegerField("value")],
+        formatter={
+            RequestAction.LIST: lambda request, value: {
+                k: str(v).upper() for k, v in value.items()
+            }
+        },
+    )
+    request = make_request(RequestAction.LIST)
+    result = await BaseModelView.serialize_field_value(
+        MagicMock(), {"key": "k", "value": 5}, field, request
+    )
+    assert result == {"key": "K", "value": "5"}
+
+
+@pytest.mark.asyncio
+async def test_collection_field_parser_receives_full_form_data():
+    """A CollectionField parser receives the whole FormData, since its
+    sub-fields are keyed by dotted id (`id.key`, `id.value`), not a single
+    `id` key."""
+    seen = {}
+
+    def parser(request, raw):
+        seen["raw"] = raw
+        return {"key": "parsed"}
+
+    field = CollectionField(
+        "config",
+        fields=[StringField("key"), IntegerField("value")],
+        parser={RequestAction.CREATE: parser},
+    )
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("config.key", "k"), ("config.value", "5")])
+    result = await field.parse_input(request, form_data)
+    assert seen["raw"] is form_data
+    assert result == {"key": "parsed"}
+
+
+@pytest.mark.asyncio
+async def test_collection_field_parser_for_other_action_falls_back_to_parse_form_data():
+    field = CollectionField(
+        "config",
+        fields=[StringField("key"), IntegerField("value")],
+        parser={RequestAction.EDIT: lambda request, raw: {"key": "overridden"}},
+    )
+    field._view = MagicMock()
+    field._view.can_access_field.return_value = True
+    request = make_request(RequestAction.CREATE)
+    form_data = FormData([("config.key", "k"), ("config.value", "5")])
+    result = await field.parse_input(request, form_data)
+    assert result == {"key": "k", "value": 5}
+
+
+@pytest.mark.asyncio
+async def test_collection_field_import_parser_overrides_default_import_parsing():
+    field = CollectionField(
+        "config",
+        fields=[StringField("key"), IntegerField("value")],
+        parser={RequestAction.IMPORT: lambda request, raw: {"key": f"imported:{raw}"}},
+    )
+    request = make_request(RequestAction.IMPORT)
+    result = await field.parse_input(request, "k")
+    assert result == {"key": "imported:k"}
 
 
 # ── ComputedField ──────────────────────────────────────────────────────────────

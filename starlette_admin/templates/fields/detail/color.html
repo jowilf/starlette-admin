@@ -1,11 +1,9 @@
-{% if data | is_iter %}
-    <ul>
-        {% for value in data %}
-            <li>
-                <span class="badge me-1" style="background-color:{{ value }}">&nbsp;</span>{{ value }}
-            </li>
-        {% endfor %}
-    </ul>
+{% from "fields/_copy_button.html" import copy_button %}
+{% if field.copy_to_clipboard %}
+    <span class="d-inline-flex align-items-center gap-2">
+        <span class="badge me-1" style="background-color:{{ data }}">&nbsp;</span>{{ data }}
+        {{ copy_button(data) }}
+    </span>
 {% else %}
     <span class="badge me-1" style="background-color:{{ data }}">&nbsp;</span>{{ data }}
 {% endif %}

@@ -1,9 +1,9 @@
-{% if data | is_iter %}
-    <ul>
-        {% for value in data %}
-            <li><a href="{{ value }}" target="_blank">{{ value }}</a></li>
-        {% endfor %}
-    </ul>
+{% from "fields/_copy_button.html" import copy_button %}
+{% if field.copy_to_clipboard %}
+    <span class="d-inline-flex align-items-center gap-2">
+        <a href="{{ data }}" target="_blank">{{ data }}</a>
+        {{ copy_button(data) }}
+    </span>
 {% else %}
     <a href="{{ data }}" target="_blank">{{ data }}</a>
 {% endif %}

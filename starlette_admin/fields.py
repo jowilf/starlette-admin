@@ -2288,6 +2288,21 @@ class CollectionField(BaseField):
     ```python
      CollectionField("config", fields=[StringField("key"), IntegerField("value", help_text="multiple of 5")]),
     ```
+
+    Parameters:
+        name: See [BaseField.name][starlette_admin.fields.BaseField].
+        fields: The sub-fields that make up this collection.
+        required: If `True`, at least one sub-field value is required.
+        validators: Validators run against the parsed collection value (a `dict`).
+        getter: See [BaseField.getter][starlette_admin.fields.BaseField].
+        formatter: See [BaseField.formatter][starlette_admin.fields.BaseField].
+        parser: See [BaseField.parser][starlette_admin.fields.BaseField]. Its
+            callable receives the full `FormData` (for CREATE, EDIT,
+            INLINE_EDIT) or the raw import cell value (for IMPORT), matching
+            what [parse_form_data][starlette_admin.fields.CollectionField.parse_form_data]
+            itself receives, since a collection's sub-fields are keyed by
+            dotted id (`self.id.<subfield>`) rather than living under a
+            single `self.id` key.
     """
 
     fields: Sequence[BaseField] = dc_field(default_factory=list)
@@ -2301,11 +2316,17 @@ class CollectionField(BaseField):
         fields: Sequence[BaseField],
         required: bool = False,
         validators: list[Validator] | None = None,
+        getter: Getter | None = None,
+        formatter: dict[RequestAction, Formatter] | None = None,
+        parser: dict[RequestAction, Parser] | None = None,
     ) -> None:
         self.name = name
         self.fields = fields
         self.required = required
         self.validators = validators or []
+        self.getter = getter
+        self.formatter = formatter
+        self.parser = parser
         super().__post_init__()
         self._propagate_id()
         _log.debug(
@@ -2314,6 +2335,27 @@ class CollectionField(BaseField):
             len(self.fields),
             [f.name for f in self.fields],
         )
+
+    async def parse_input(self, request: Request, raw: Any) -> Any:
+        """Overrides [BaseField.parse_input][starlette_admin.fields.BaseField.parse_input]
+        because a collection's sub-fields are keyed by dotted id
+        (`self.id.<subfield>`) rather than living under a single `self.id`
+        key, so the base implementation's `raw.get(self.id)` extraction does
+        not apply. For CREATE, EDIT, and INLINE_EDIT, when `self.parser` has
+        an entry for the current action, the full `FormData` is passed to it
+        unchanged, mirroring what
+        [parse_form_data][starlette_admin.fields.CollectionField.parse_form_data]
+        itself receives.
+        """
+        action = request.state.action
+        parser = (self.parser or {}).get(action)
+        if action == RequestAction.IMPORT:
+            if parser is not None:
+                return await maybe_async(parser(request, raw))
+            return await self.parse_import_value(request, raw)
+        if parser is not None:
+            return await maybe_async(parser(request, raw))
+        return await self.parse_form_data(request, raw)
 
     def get_fields_list(
         self, request: Request, *, action: RequestAction | None = None
@@ -2415,9 +2457,23 @@ class ListField(BaseField):
         class ModelView(BaseModelView):
             fields = [IntegerField("id"), ListField(StringField("values")]
         ```
+
+    Parameters:
+        field: The field type repeated for each item in the list.
+        required: If `True`, at least one item is required.
+        validators: Validators run against the parsed list value.
+        getter: See [BaseField.getter][starlette_admin.fields.BaseField].
+        formatter: See [BaseField.formatter][starlette_admin.fields.BaseField].
+        parser: See [BaseField.parser][starlette_admin.fields.BaseField]. Its
+            callable receives the full `FormData` (for CREATE, EDIT,
+            INLINE_EDIT) or the raw import cell value (for IMPORT), matching
+            what [parse_form_data][starlette_admin.fields.ListField.parse_form_data]
+            and [parse_import_value][starlette_admin.fields.BaseField.parse_import_value]
+            themselves receive.
     """
 
     form_template: str = "fields/form/list.html"
+    list_template: str = "fields/list/list.html"
     detail_template: str = "fields/detail/list.html"
     field: BaseField = dc_field(default_factory=lambda: BaseField(""))
 
@@ -2426,11 +2482,17 @@ class ListField(BaseField):
         field: BaseField,
         required: bool = False,
         validators: list[Validator] | None = None,
+        getter: Getter | None = None,
+        formatter: dict[RequestAction, Formatter] | None = None,
+        parser: dict[RequestAction, Parser] | None = None,
     ) -> None:
         self.field = field
         self.name = field.name
         self.required = required
         self.validators = validators or []
+        self.getter = getter
+        self.formatter = formatter
+        self.parser = parser
         self.__post_init__()
 
     def __post_init__(self) -> None:
@@ -2438,6 +2500,26 @@ class ListField(BaseField):
         self.field.id = ""
         if isinstance(self.field, CollectionField):
             self.field._propagate_id()
+
+    async def parse_input(self, request: Request, raw: Any) -> Any:
+        """Overrides [BaseField.parse_input][starlette_admin.fields.BaseField.parse_input]
+        because a list's items are keyed by index (`self.id.0`, `self.id.1`, ...)
+        rather than living under a single `self.id` key, so the base
+        implementation's `raw.get(self.id)` / `raw.getlist(self.id)` extraction
+        does not apply. For CREATE, EDIT, and INLINE_EDIT, when `self.parser`
+        has an entry for the current action, the full `FormData` is passed to
+        it unchanged, mirroring what [parse_form_data][starlette_admin.fields.ListField.parse_form_data]
+        itself receives.
+        """
+        action = request.state.action
+        parser = (self.parser or {}).get(action)
+        if action == RequestAction.IMPORT:
+            if parser is not None:
+                return await maybe_async(parser(request, raw))
+            return await self.parse_import_value(request, raw)
+        if parser is not None:
+            return await maybe_async(parser(request, raw))
+        return await self.parse_form_data(request, raw)
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
         indices = self._extra_indices(form_data)
