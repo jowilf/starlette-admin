@@ -257,7 +257,7 @@ hide:
   <div class="home-plugin-panel">
     <span class="home-eyebrow hc-violet">Drop-in plugins</span>
     <h3>Zero-boilerplate plugins</h3>
-<p>Install a plugin package and pass it directly to your <code>Admin</code> instance. Fields, converters, templates, and assets wire themselves together automatically, delivering complex features instantly without any manual configuration.</p>
+<p>Install a plugin package and pass it directly to your <code>Admin</code> instance. Fields, converters, templates, and assets wire themselves together automatically, delivering complex features instantly.</p>
     <div class="home-snippet">
 
     ```python
