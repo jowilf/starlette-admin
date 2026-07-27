@@ -219,6 +219,16 @@ class TestViews:
             },
         }
 
+    def test_relation_lookup_invalid_skip_limit_falls_back_to_defaults(self):
+        admin = BaseAdmin()
+        app = Starlette()
+        admin.add_view(PostView(Post))
+        admin.mount_to(app)
+        client = TestClient(app)
+        response = client.get("/admin/_api/post/relation-lookup?skip=abc&limit=xyz")
+        assert response.status_code == 200
+        assert len(response.json()["items"]) > 0
+
     def test_model_view_create_new(self):
         admin = BaseAdmin()
         app = Starlette()

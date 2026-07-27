@@ -893,8 +893,14 @@ class BaseAdmin:
             items = await view.find_by_pks(request, pks)
             total = len(items)
         else:
-            skip = max(0, int(request.query_params.get("skip") or "0"))
-            limit = min(100, max(0, int(request.query_params.get("limit") or "20")))
+            try:
+                skip = max(0, int(request.query_params.get("skip") or "0"))
+            except ValueError:
+                skip = 0
+            try:
+                limit = min(100, max(0, int(request.query_params.get("limit") or "20")))
+            except ValueError:
+                limit = 20
             q = request.query_params.get("q") or None
             items = await view.find_all(
                 request=request,

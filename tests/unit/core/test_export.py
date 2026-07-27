@@ -259,6 +259,30 @@ async def test_build_response_with_file_field_returns_zip(storage):
         assert zf.read(asset_path) == b"file content"
 
 
+@pytest.mark.asyncio
+async def test_build_response_zip_entry_name_is_sanitized():
+    """A path-traversal filename must not leak into the main ZIP entry name."""
+    ff = _make_file_field("avatar", storage_name="mock-store")
+    fields = [_plain_field("name"), ff]
+    file_value = {
+        "storage": "mock-store",
+        "key": "avatars/alice.jpg",
+        "filename": "alice.jpg",
+    }
+    ctx = _make_ctx(
+        fields, [{"name": "Alice", "avatar": file_value}], filename="../../evil"
+    )
+
+    resp = await CsvExporter().build_response(ctx)
+
+    assert resp.media_type == "application/zip"
+    body = b"".join(resp.body_iterator) if hasattr(resp, "body_iterator") else resp.body
+    with zipfile.ZipFile(io.BytesIO(body)) as zf:
+        names = zf.namelist()
+        assert "evil.csv" in names
+        assert all(".." not in name.split("/") for name in names)
+
+
 # ── CsvExporter ───────────────────────────────────────────────────────────────
 
 

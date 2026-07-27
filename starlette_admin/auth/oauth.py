@@ -21,19 +21,41 @@ class OAuthProvider(BaseAuthProvider):
     The callback is automatically added to `allow_routes` so the middleware
     never blocks it.
 
+    Requires `SessionMiddleware`: the OAuth client stores the state nonce in the
+    session between the redirect and the callback.
+
     Examples:
         ```python
-        class MyOAuth(OAuthProvider):
+        from authlib.integrations.starlette_client import OAuth
+
+        oauth = OAuth()
+        oauth.register(
+            "provider",
+            client_id=CLIENT_ID,
+            client_secret=CLIENT_SECRET,
+            client_kwargs={"scope": "openid profile email"},
+            server_metadata_url=SERVER_METADATA_URL,
+        )
+
+
+        class OIDCAuthProvider(OAuthProvider):
             async def redirect_to_provider(self, request: Request, callback_url: str) -> Response:
-                return await auth0.authorize_redirect(request, callback_url)
+                client = oauth.create_client("provider")
+                return await client.authorize_redirect(request, callback_url)
 
             async def handle_callback(self, request: Request) -> None:
-                token = await auth0.authorize_access_token(request)
-                request.state._oauth_user = token["userinfo"]
+                client = oauth.create_client("provider")
+                token = await client.authorize_access_token(request)
+                # Persist userinfo in the encrypted session cookie.
+                request.session["user"] = dict(token["userinfo"])
 
             async def authenticate(self, request: Request) -> AdminUser | None:
-                if user := getattr(request.state, "_oauth_user", None):
-                    return AdminUser(username=user["name"])
+                user = request.session.get("user")
+                if user:
+                    return AdminUser(
+                        username=user.get("name") or user.get("email"),
+                        photo_url=user.get("picture"),
+                    )
                 return None
 
             async def logout(self, request: Request) -> Response | None:

@@ -366,9 +366,9 @@ def on_commit(request: Request, callback: Callable[[], Any]) -> None:
 async def run_on_commit_callbacks(request: Request) -> None:
     """Run the callbacks registered with [on_commit][starlette_admin.helpers.on_commit].
 
-    Called by the session middleware after a successful commit. The response
-    is already determined and the data committed, so a failing callback is
-    logged and skipped rather than raised.
+    Called by the session middleware after a successful commit. Callbacks are
+    not wrapped in error handling: if one raises, the exception propagates
+    and aborts the response even though the data is already committed.
     """
     for callback in getattr(request.state, "on_commit_callbacks", []):
         await maybe_async(callback())

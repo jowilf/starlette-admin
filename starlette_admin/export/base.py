@@ -452,7 +452,7 @@ class BaseExporter(ABC):
             )
             zip_bytes = self._build_zip(
                 format_bytes,
-                f"{ctx.filename}.{self.extension}",
+                f"{safe_zip_name(ctx.filename, 'filename')}.{self.extension}",
                 {**asset_files, **url_files},
             )
             _log.debug(
