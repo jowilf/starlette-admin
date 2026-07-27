@@ -1,8 +1,8 @@
 # starlette-admin
 
 > [!IMPORTANT]
-> **The 1.0.0 Release Candidate is here!** For this release, I dropped DataTables in favor of pure server-side rendering, added a new theming system, and reworked the API to make things much more extensible. I also managed to pack in a lot of features that have been highly requested for a long time. </br>
-> You can test the new API now with `pip install starlette-admin==1.0.0rc2`.</br>
+> **The 1.0.0 Release Candidate is here!** For this release, I dropped DataTables in favor of pure server-side rendering, added a new theming system, and refactor the code to make things much more extensible. I also managed to pack in a lot of features that have been highly requested for a long time. </br>
+> You can test it now with `pip install starlette-admin==1.0.0rc2`.</br>
 > [Live demo](https://starlette-admin-next-demo.s2.jowilf.com) (`admin` / `password`) · [Preview docs](https://docs-preview-798--starlette-admin-docs-preview.netlify.app/) · [Migration guide](https://docs-preview-798--starlette-admin-docs-preview.netlify.app/migration/#from-017x-to-100)</br>
 > I would love to hear your feedback on the upgrade process. Please drop your thoughts in [this discussion](https://github.com/jowilf/starlette-admin/discussions/800#discussion-10501533).</br>
 Everything below covers the current stable release.
