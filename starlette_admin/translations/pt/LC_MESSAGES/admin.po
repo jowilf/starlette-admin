@@ -1,16 +1,16 @@
 # Portuguese translations for starlette-admin.
-# Copyright (C) 2023 ORGANIZATION
+# Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the starlette-admin
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: starlette-admin VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-07-24 17:46-0700\n"
-"PO-Revision-Date: 2024-01-18 22:30-0300\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2026-07-28 11:38-0700\n"
+"Last-Translator: Jocelin Hounon <EMAIL@ADDRESS>\n"
 "Language: pt\n"
 "Language-Team: pt <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -25,11 +25,13 @@ msgid ""
 "Too many rows match the current filter (%(count)s); refine your filter "
 "(limit: %(limit)s)"
 msgstr ""
+"Demasiadas linhas correspondem ao filtro atual (%(count)s); refine o seu "
+"filtro (limite: %(limit)s)"
 
 #: starlette_admin/actions.py:108 starlette_admin/actions.py:266
 #: starlette_admin/templates/modals/actions.html:25
 msgid "Yes, Proceed"
-msgstr "Sim, Prosseguir"
+msgstr "Sim, continuar"
 
 #: starlette_admin/base.py:125 starlette_admin/contrib/sqla/admin.py:40
 #: starlette_admin/templates/create.html:8
@@ -41,11 +43,11 @@ msgstr "Admin"
 #: starlette_admin/base.py:797
 #, python-format
 msgid "Model with key %(key)s not found"
-msgstr "Modelo com chave %(key)s não encontrado"
+msgstr "Modelo com a chave %(key)s não encontrado"
 
 #: starlette_admin/base.py:970
 msgid "Something went wrong!"
-msgstr ""
+msgstr "Algo correu mal!"
 
 #: starlette_admin/base.py:980
 #, python-format
@@ -54,13 +56,15 @@ msgstr "O campo \"%(label)s\" de \"%(repr)s\" foi atualizado com sucesso."
 
 #: starlette_admin/base.py:1165
 msgid "An unexpected error occurred while processing this row."
-msgstr ""
+msgstr "Ocorreu um erro inesperado ao processar esta linha."
 
 #: starlette_admin/base.py:1301 starlette_admin/base.py:1478
 msgid ""
 "An error occurred while importing the file. Please check the file format "
 "and try again."
 msgstr ""
+"Ocorreu um erro ao importar o ficheiro. Verifique o formato do ficheiro e "
+"tente novamente."
 
 #: starlette_admin/base.py:1315
 #, python-format
@@ -68,239 +72,243 @@ msgid ""
 "Import file exceeds the configured maximum of %(max)d rows. Split the "
 "file into smaller batches and try again."
 msgstr ""
+"O ficheiro de importação excede o máximo configurado de %(max)d linhas. "
+"Divida o ficheiro em lotes mais pequenos e tente novamente."
 
 #: starlette_admin/base.py:1390
 #, python-format
 msgid "Unknown import format %(fmt)s"
-msgstr ""
+msgstr "Formato de importação desconhecido: %(fmt)s"
 
 #: starlette_admin/base.py:1398
 msgid "No file uploaded"
-msgstr ""
+msgstr "Nenhum ficheiro carregado"
 
 #: starlette_admin/base.py:1411
 #, python-format
 msgid "Upload too large (%(size)s bytes; maximum %(max)s bytes)."
-msgstr ""
+msgstr "Carregamento demasiado grande (%(size)s bytes; máximo %(max)s bytes)."
 
 #: starlette_admin/base.py:1556 starlette_admin/base.py:1615
 #: starlette_admin/views.py:1177 starlette_admin/views.py:1235
 #: starlette_admin/views.py:1246
 msgid "Forbidden"
-msgstr ""
+msgstr "Proibido"
 
 #: starlette_admin/base.py:1600
 msgid "Missing 'name' parameter"
-msgstr ""
+msgstr "Parâmetro 'name' em falta"
 
 #: starlette_admin/base.py:1867 starlette_admin/base.py:2270
 #, python-format
 msgid "The item \"%(repr)s\" was added successfully."
-msgstr ""
+msgstr "O item \"%(repr)s\" foi adicionado com sucesso."
 
 #: starlette_admin/base.py:1974 starlette_admin/base.py:2277
 #, python-format
 msgid "The item \"%(repr)s\" was changed successfully."
-msgstr ""
+msgstr "O item \"%(repr)s\" foi alterado com sucesso."
 
 #: starlette_admin/fields.py:270
 msgid "This field is required."
-msgstr ""
+msgstr "Este campo é obrigatório."
 
 #: starlette_admin/fields.py:718
 #, python-format
 msgid "Invalid integer value for %(field)s"
-msgstr ""
+msgstr "Valor inteiro inválido para %(field)s"
 
 #: starlette_admin/fields.py:789
 #, python-format
 msgid "Invalid decimal value for %(field)s"
-msgstr ""
+msgstr "Valor decimal inválido para %(field)s"
 
 #: starlette_admin/fields.py:857
 #, python-format
 msgid "Invalid float value for %(field)s"
-msgstr ""
+msgstr "Valor de vírgula flutuante inválido para %(field)s"
 
 #: starlette_admin/validators.py:72
 #, python-format
 msgid "Ensure this value has at least %(min)d characters"
-msgstr ""
+msgstr "Garanta que este valor tem pelo menos %(min)d caracteres"
 
 #: starlette_admin/validators.py:77
 #, python-format
 msgid "Ensure this value has at most %(max)d characters"
-msgstr ""
+msgstr "Garanta que este valor tem no máximo %(max)d caracteres"
 
 #: starlette_admin/validators.py:80
 #, python-format
 msgid "Ensure this value has between %(min)d and %(max)d characters"
-msgstr ""
+msgstr "Garanta que este valor tem entre %(min)d e %(max)d caracteres"
 
 #: starlette_admin/validators.py:112
 #, python-format
 msgid "Ensure this value is at least %(min)s"
-msgstr ""
+msgstr "Garanta que este valor é, no mínimo, %(min)s"
 
 #: starlette_admin/validators.py:116
 #, python-format
 msgid "Ensure this value is at most %(max)s"
-msgstr ""
+msgstr "Garanta que este valor é, no máximo, %(max)s"
 
 #: starlette_admin/validators.py:119 starlette_admin/validators.py:210
 #, python-format
 msgid "Ensure this value is between %(min)s and %(max)s"
-msgstr ""
+msgstr "Garanta que este valor está entre %(min)s e %(max)s"
 
 #: starlette_admin/validators.py:141
 #, python-format
 msgid "Ensure this value is greater than %(min)s"
-msgstr ""
+msgstr "Garanta que este valor é maior que %(min)s"
 
 #: starlette_admin/validators.py:162
 #, python-format
 msgid "Ensure this value is less than %(max)s"
-msgstr ""
+msgstr "Garanta que este valor é menor que %(max)s"
 
 #: starlette_admin/validators.py:203
 #, python-format
 msgid "Ensure this value is not before %(min)s"
-msgstr ""
+msgstr "Garanta que este valor não é anterior a %(min)s"
 
 #: starlette_admin/validators.py:207
 #, python-format
 msgid "Ensure this value is not after %(max)s"
-msgstr ""
+msgstr "Garanta que este valor não é posterior a %(max)s"
 
 #: starlette_admin/validators.py:235 starlette_admin/validators.py:260
 msgid "Invalid input"
-msgstr ""
+msgstr "Entrada inválida"
 
 #: starlette_admin/validators.py:279
 msgid "Invalid MAC address"
-msgstr ""
+msgstr "Endereço MAC inválido"
 
 #: starlette_admin/validators.py:298
 msgid "Invalid slug"
-msgstr ""
+msgstr "Slug inválido"
 
 #: starlette_admin/validators.py:341
 msgid "Invalid color"
-msgstr ""
+msgstr "Cor inválida"
 
 #: starlette_admin/validators.py:371
 msgid "Invalid email address"
-msgstr ""
+msgstr "Endereço de e-mail inválido"
 
 #: starlette_admin/validators.py:438 starlette_admin/validators.py:445
 #: starlette_admin/validators.py:460
 msgid "Invalid URL"
-msgstr ""
+msgstr "URL inválido"
 
 #: starlette_admin/validators.py:477
 msgid "Invalid UUID"
-msgstr ""
+msgstr "UUID inválido"
 
 #: starlette_admin/validators.py:487
 #, python-format
 msgid "Invalid UUID, expected version %(version)d"
-msgstr ""
+msgstr "UUID inválido, era esperada a versão %(version)d"
 
 #: starlette_admin/validators.py:508
 msgid "Invalid IP address"
-msgstr ""
+msgstr "Endereço IP inválido"
 
 #: starlette_admin/validators.py:519
 #, python-format
 msgid "Invalid IPv%(version)d address"
-msgstr ""
+msgstr "Endereço IPv%(version)d inválido"
 
 #: starlette_admin/validators.py:539
 #, python-format
 msgid "Invalid value, must be one of: %(values)s"
-msgstr ""
+msgstr "Valor inválido, tem de ser um de: %(values)s"
 
 #: starlette_admin/validators.py:560
 #, python-format
 msgid "Invalid value, can't be any of: %(values)s"
-msgstr ""
+msgstr "Valor inválido, não pode ser nenhum de: %(values)s"
 
 #: starlette_admin/validators.py:602
 #, python-format
 msgid "File is too large (%(size)d bytes; maximum is %(max)d bytes)"
-msgstr ""
+msgstr "O ficheiro é demasiado grande (%(size)d bytes; o máximo é %(max)d bytes)"
 
 #: starlette_admin/validators.py:639
 #, python-format
 msgid "File type is not allowed (accepted: %(accept)s)"
-msgstr ""
+msgstr "Tipo de ficheiro não permitido (aceites: %(accept)s)"
 
 #: starlette_admin/validators.py:663 starlette_admin/validators.py:699
 msgid "Upload a valid image file."
-msgstr ""
+msgstr "Carregue um ficheiro de imagem válido."
 
 #: starlette_admin/validators.py:705
 #, python-format
 msgid "Image width must be at least %(min)d pixels"
-msgstr ""
+msgstr "A largura da imagem deve ser de, pelo menos, %(min)d píxeis"
 
 #: starlette_admin/validators.py:709
 #, python-format
 msgid "Image width must be at most %(max)d pixels"
-msgstr ""
+msgstr "A largura da imagem deve ser de, no máximo, %(max)d píxeis"
 
 #: starlette_admin/validators.py:711
 #, python-format
 msgid "Image height must be at least %(min)d pixels"
-msgstr ""
+msgstr "A altura da imagem deve ser de, pelo menos, %(min)d píxeis"
 
 #: starlette_admin/validators.py:715
 #, python-format
 msgid "Image height must be at most %(max)d pixels"
-msgstr ""
+msgstr "A altura da imagem deve ser de, no máximo, %(max)d píxeis"
 
 #: starlette_admin/views.py:1170
 msgid "Invalid action"
-msgstr ""
+msgstr "Ação inválida"
 
 #: starlette_admin/views.py:1187
 msgid "Please select at least one item"
-msgstr ""
+msgstr "Selecione pelo menos um item"
 
 #: starlette_admin/views.py:1208 starlette_admin/views.py:1270
 msgid "Set custom_response=True on this action to return a custom response"
 msgstr ""
+"Defina custom_response=True nesta ação para devolver uma resposta "
+"personalizada"
 
 #: starlette_admin/views.py:1227
 msgid "Invalid row action"
-msgstr ""
+msgstr "Ação de linha inválida"
 
 #: starlette_admin/templates/fields/form/_delete.html:8
 #: starlette_admin/templates/inline_row.html:18
 #: starlette_admin/templates/modals/delete.html:36
 #: starlette_admin/views.py:1276 starlette_admin/views.py:1458
 msgid "Delete"
-msgstr "Excluir"
+msgstr "Eliminar"
 
 #: starlette_admin/views.py:1277
 msgid "Are you sure you want to delete selected items?"
-msgstr "Tem certeza de que deseja excluir os itens selecionados?"
+msgstr "Tem a certeza de que pretende eliminar os itens selecionados?"
 
 #: starlette_admin/views.py:1278
 msgid "Yes, delete all"
-msgstr "Sim, exclua tudo"
+msgstr "Sim, eliminar todos"
 
 #: starlette_admin/views.py:1294 starlette_admin/views.py:1471
 #, python-format
 msgid "The item \"%(repr)s\" was successfully deleted."
-msgstr "O item foi excluído com sucesso"
+msgstr "O item \"%(repr)s\" foi eliminado com sucesso."
 
 #: starlette_admin/views.py:1299
 #, python-format
 msgid "1 item was successfully deleted."
 msgid_plural "%(count)d items were successfully deleted."
-msgstr[0] "O item foi excluído com sucesso"
-msgstr[1] "%(count)d itens foram excluídos com sucesso"
+msgstr[0] "1 item foi eliminado com sucesso."
+msgstr[1] "%(count)d itens foram eliminados com sucesso."
 
 #: starlette_admin/views.py:1310
 #, python-format
@@ -308,23 +316,25 @@ msgid ""
 "Export would return %(count)d rows, which exceeds the configured maximum "
 "of %(max)d. Apply a filter to narrow the result set."
 msgstr ""
+"A exportação devolveria %(count)d linhas, o que excede o máximo "
+"configurado de %(max)d. Aplique um filtro para restringir os resultados."
 
 #: starlette_admin/views.py:1368 starlette_admin/views.py:1372
 msgid "Export"
-msgstr ""
+msgstr "Exportar"
 
 #: starlette_admin/views.py:1370
 msgid "Configure your export"
-msgstr ""
+msgstr "Configure a sua exportação"
 
 #: starlette_admin/views.py:1398
 #, python-format
 msgid "Unknown export format %(format)s"
-msgstr ""
+msgstr "Formato de exportação desconhecido: %(format)s"
 
 #: starlette_admin/views.py:1440
 msgid "View"
-msgstr "Visualizar"
+msgstr "Ver"
 
 #: starlette_admin/templates/edit.html:13 starlette_admin/views.py:1449
 msgid "Edit"
@@ -333,47 +343,47 @@ msgstr "Editar"
 #: starlette_admin/templates/modals/delete.html:27
 #: starlette_admin/views.py:1459
 msgid "Are you sure you want to delete this item?"
-msgstr "Tem certeza de que deseja excluir este item?"
+msgstr "Tem a certeza de que pretende eliminar este item?"
 
 #: starlette_admin/views.py:1461
 msgid "Yes, delete"
-msgstr "Sim, exclua tudo"
+msgstr "Sim, eliminar"
 
 #: starlette_admin/views.py:2999
 msgid " AND "
-msgstr ""
+msgstr " E "
 
 #: starlette_admin/views.py:2999
 msgid " OR "
-msgstr ""
+msgstr " OU "
 
 #: starlette_admin/views.py:3159
 msgid "No data views are available."
-msgstr ""
+msgstr "Não existem vistas de dados disponíveis."
 
 #: starlette_admin/views.py:3163
 msgid "Welcome to"
-msgstr ""
+msgstr "Bem-vindo a"
 
 #: starlette_admin/views.py:3193
 msgid "total records"
-msgstr ""
+msgstr "registos no total"
 
 #: starlette_admin/views.py:3194
 msgid "Browse"
-msgstr ""
+msgstr "Navegue por"
 
 #: starlette_admin/views.py:3194
 msgid "all records"
-msgstr ""
+msgstr "todos os registos"
 
 #: starlette_admin/views.py:3195
 msgid "or add a"
-msgstr ""
+msgstr "ou adicione um"
 
 #: starlette_admin/views.py:3195
 msgid "new one"
-msgstr "Novo(a) %(name)s"
+msgstr "novo"
 
 #: starlette_admin/auth/base.py:36
 msgid "Administrator"
@@ -383,187 +393,187 @@ msgstr "Administrador"
 #: starlette_admin/contrib/mongoengine/filters.py:262
 #, python-format
 msgid "Invalid ObjectId: %(value)s"
-msgstr ""
+msgstr "ObjectId inválido: %(value)s"
 
 #: starlette_admin/contrib/beanie/filters.py:308
 #: starlette_admin/contrib/mongoengine/filters.py:282
 #: starlette_admin/filters/array.py:44 starlette_admin/filters/enum.py:24
 msgid "At least one value is required"
-msgstr ""
+msgstr "É necessário pelo menos um valor"
 
 #: starlette_admin/contrib/beanie/filters.py:313
 #: starlette_admin/contrib/mongoengine/filters.py:287
 #, python-format
 msgid "Invalid ObjectId in list: %(value)s"
-msgstr ""
+msgstr "ObjectId inválido na lista: %(value)s"
 
 #: starlette_admin/contrib/beanie/filters.py:319
 #: starlette_admin/contrib/mongoengine/filters.py:295
 #: starlette_admin/filters/generic.py:13
 msgid "Equal"
-msgstr ""
+msgstr "Igual a"
 
 #: starlette_admin/contrib/beanie/filters.py:331
 #: starlette_admin/contrib/mongoengine/filters.py:309
 #: starlette_admin/filters/generic.py:23 starlette_admin/filters/numeric.py:46
 msgid "Not equal"
-msgstr ""
+msgstr "Diferente de"
 
 #: starlette_admin/filters/array.py:52 starlette_admin/filters/enum.py:32
 msgid "Is one of"
-msgstr ""
+msgstr "É um de"
 
 #: starlette_admin/filters/array.py:63 starlette_admin/filters/enum.py:45
 msgid "Is not one of"
-msgstr ""
+msgstr "Não é nenhum de"
 
 #: starlette_admin/filters/boolean.py:11
 msgid "Is true"
-msgstr ""
+msgstr "É verdadeiro"
 
 #: starlette_admin/filters/boolean.py:21
 msgid "Is false"
-msgstr ""
+msgstr "É falso"
 
 #: starlette_admin/filters/date.py:38
 #, python-format
 msgid "%(raw)s is not a valid ISO-8601 %(type)s"
-msgstr ""
+msgstr "%(raw)s não é um valor %(type)s ISO-8601 válido"
 
 #: starlette_admin/filters/date.py:78
 msgid "Is on"
-msgstr ""
+msgstr "É em"
 
 #: starlette_admin/filters/date.py:86 starlette_admin/filters/date.py:91
 msgid "Is at"
-msgstr ""
+msgstr "É às"
 
 #: starlette_admin/filters/date.py:105 starlette_admin/filters/numeric.py:101
 msgid "Between"
-msgstr ""
+msgstr "Entre"
 
 #: starlette_admin/filters/date.py:125
 msgid "Is in the past"
-msgstr ""
+msgstr "Está no passado"
 
 #: starlette_admin/filters/date.py:135
 msgid "Is in the future"
-msgstr ""
+msgstr "Está no futuro"
 
 #: starlette_admin/filters/generic.py:31
 msgid "Is null"
-msgstr ""
+msgstr "É nulo"
 
 #: starlette_admin/filters/generic.py:41
 msgid "Is not null"
-msgstr ""
+msgstr "Não é nulo"
 
 #: starlette_admin/filters/numeric.py:27
 #, python-format
 msgid "%(raw)s is not a valid number"
-msgstr ""
+msgstr "%(raw)s não é um número válido"
 
 #: starlette_admin/filters/numeric.py:35
 msgid "Equals"
-msgstr ""
+msgstr "Igual a"
 
 #: starlette_admin/filters/numeric.py:57
 msgid "Greater than"
-msgstr ""
+msgstr "Maior que"
 
 #: starlette_admin/filters/numeric.py:68
 msgid "Less than"
-msgstr ""
+msgstr "Menor que"
 
 #: starlette_admin/filters/numeric.py:79
 msgid "Greater than or equal"
-msgstr ""
+msgstr "Maior ou igual a"
 
 #: starlette_admin/filters/numeric.py:90
 msgid "Less than or equal"
-msgstr ""
+msgstr "Menor ou igual a"
 
 #: starlette_admin/filters/string.py:9
 msgid "Contains"
-msgstr ""
+msgstr "Contém"
 
 #: starlette_admin/filters/string.py:19
 msgid "Does not contain"
-msgstr ""
+msgstr "Não contém"
 
 #: starlette_admin/filters/string.py:27
 msgid "Starts with"
-msgstr ""
+msgstr "Começa por"
 
 #: starlette_admin/filters/string.py:35
 msgid "Ends with"
-msgstr "Editar"
+msgstr "Termina em"
 
 #: starlette_admin/templates/_filter_bar.html:3
 msgid "Filters:"
-msgstr ""
+msgstr "Filtros:"
 
 #: starlette_admin/templates/_filter_bar.html:11
 msgid "Remove this filter"
-msgstr ""
+msgstr "Remover este filtro"
 
 #: starlette_admin/templates/_filter_bar.html:17
 msgid "Clear all"
-msgstr ""
+msgstr "Limpar tudo"
 
 #: starlette_admin/templates/_filter_builder.html:8
 msgid "Filters"
-msgstr ""
+msgstr "Filtros"
 
 #: starlette_admin/templates/_filter_builder.html:33
 #: starlette_admin/templates/_filter_builder.html:89
 msgid "Match"
-msgstr ""
+msgstr "Corresponder a"
 
 #: starlette_admin/templates/_filter_builder.html:36
 msgid "Filter logic"
-msgstr ""
+msgstr "Lógica do filtro"
 
 #: starlette_admin/templates/_filter_builder.html:38
 #: starlette_admin/templates/_filter_builder.html:93
 msgid "all"
-msgstr "Todos"
+msgstr "todas"
 
 #: starlette_admin/templates/_filter_builder.html:39
 #: starlette_admin/templates/_filter_builder.html:94
 msgid "any"
-msgstr ""
+msgstr "qualquer uma"
 
 #: starlette_admin/templates/_filter_builder.html:41
 msgid "of the following:"
-msgstr ""
+msgstr "das seguintes condições:"
 
 #: starlette_admin/templates/_filter_builder.html:47
 msgid "Add filter"
-msgstr "Adicionar Item"
+msgstr "Adicionar filtro"
 
 #: starlette_admin/templates/_filter_builder.html:50
 msgid "Add group"
-msgstr ""
+msgstr "Adicionar grupo"
 
 #: starlette_admin/templates/_filter_builder.html:55
 #: starlette_admin/templates/list.html:96
 msgid "Reset"
-msgstr ""
+msgstr "Repor"
 
 #: starlette_admin/templates/_filter_builder.html:56
 msgid "Apply filters"
-msgstr ""
+msgstr "Aplicar filtros"
 
 #: starlette_admin/templates/_filter_builder.html:65
 #: starlette_admin/templates/list.html:346
 msgid "Field"
-msgstr ""
+msgstr "Campo"
 
 #: starlette_admin/templates/_filter_builder.html:67
 #: starlette_admin/templates/_filter_builder.html:99
 msgid "Filter"
-msgstr ""
+msgstr "Filtro"
 
 #: starlette_admin/templates/_filter_builder.html:70
 #: starlette_admin/templates/_filter_builder.html:72
@@ -573,31 +583,31 @@ msgstr "Valor"
 
 #: starlette_admin/templates/_filter_builder.html:75
 msgid "Values"
-msgstr "Valor"
+msgstr "Valores"
 
 #: starlette_admin/templates/_filter_builder.html:78
 msgid "Second value"
-msgstr ""
+msgstr "Segundo valor"
 
 #: starlette_admin/templates/_filter_builder.html:81
 msgid "Remove filter"
-msgstr ""
+msgstr "Remover filtro"
 
 #: starlette_admin/templates/_filter_builder.html:91
 msgid "Group logic"
-msgstr ""
+msgstr "Lógica do grupo"
 
 #: starlette_admin/templates/_filter_builder.html:96
 msgid "of:"
-msgstr ""
+msgstr "de:"
 
 #: starlette_admin/templates/_filter_builder.html:102
 msgid "Group"
-msgstr ""
+msgstr "Grupo"
 
 #: starlette_admin/templates/_filter_builder.html:106
 msgid "Remove group"
-msgstr ""
+msgstr "Remover grupo"
 
 #: starlette_admin/templates/_form_footer.html:5
 #: starlette_admin/templates/inline-edit/popover_body.html:29
@@ -609,54 +619,54 @@ msgstr "Cancelar"
 
 #: starlette_admin/templates/_form_footer.html:7
 msgid "Save and add another"
-msgstr "Salvar e adicione outro"
+msgstr "Guardar e adicionar outro"
 
 #: starlette_admin/templates/_form_footer.html:8
 msgid "Save and continue editing"
-msgstr "Salvar e continue editando"
+msgstr "Guardar e continuar a editar"
 
 #: starlette_admin/templates/_form_footer.html:10
 #: starlette_admin/templates/inline-edit/popover_body.html:22
 msgid "Save"
-msgstr "Salvar"
+msgstr "Guardar"
 
 #: starlette_admin/templates/_list_row.html:15
 msgid "Select row"
-msgstr ""
+msgstr "Selecionar linha"
 
 #: starlette_admin/templates/_pagination.html:3
 #, python-format
 msgid "Showing %(start)s to %(end)s of %(total)s entries"
-msgstr ""
+msgstr "A mostrar %(start)s a %(end)s de %(total)s entradas"
 
 #: starlette_admin/templates/_pagination.html:7
 msgid "Show"
-msgstr ""
+msgstr "Mostrar"
 
 #: starlette_admin/templates/_pagination.html:9
 msgid "Page size"
-msgstr ""
+msgstr "Tamanho da página"
 
 #: starlette_admin/templates/_pagination.html:14
 msgid "All"
-msgstr "Todos"
+msgstr "Todas"
 
 #: starlette_admin/templates/_pagination.html:18
 msgid "entries"
-msgstr ""
+msgstr "entradas"
 
 #: starlette_admin/templates/_pagination.html:22
 msgid "First"
-msgstr ""
+msgstr "Primeira"
 
 #: starlette_admin/templates/_pagination.html:46
 msgid "Last"
-msgstr ""
+msgstr "Última"
 
 #: starlette_admin/templates/_pagination.html:60
 #: starlette_admin/templates/_pagination.html:61
 msgid "Go to page"
-msgstr ""
+msgstr "Ir para a página"
 
 #: starlette_admin/templates/actions.html:23
 #: starlette_admin/templates/row-actions.html:39
@@ -666,7 +676,7 @@ msgstr "Ações"
 
 #: starlette_admin/templates/actions.html:29
 msgid "With selected"
-msgstr "Com selecionado(s)"
+msgstr "Com os selecionados"
 
 #: starlette_admin/templates/create.html:13
 msgid "Create"
@@ -676,7 +686,7 @@ msgstr "Criar"
 #: starlette_admin/templates/list.html:120
 #, python-format
 msgid "New %(name)s"
-msgstr "Novo(a) %(name)s"
+msgstr "Novo %(name)s"
 
 #: starlette_admin/templates/detail.html:14
 msgid "Detail"
@@ -685,7 +695,7 @@ msgstr "Detalhe"
 #: starlette_admin/templates/detail.html:72
 #: starlette_admin/templates/list.html:46
 msgid "Search"
-msgstr "Procurar"
+msgstr "Pesquisar"
 
 #: starlette_admin/templates/detail.html:85
 msgid "Attribute"
@@ -698,62 +708,65 @@ msgstr "Editar %(name)s"
 
 #: starlette_admin/templates/error.html:7
 msgid "Oops… You just found an error page"
-msgstr "Ops… Você acabou de encontrar uma página de erro"
+msgstr "Ups… Acabou de encontrar uma página de erro"
 
 #: starlette_admin/templates/error.html:30
 msgid "Take me home"
-msgstr "Me leve ao início"
+msgstr "Voltar ao início"
 
 #: starlette_admin/templates/inline.html:34
 #, python-format
 msgid "Add %(name)s"
-msgstr "Editar %(name)s"
+msgstr "Adicionar %(name)s"
 
 #: starlette_admin/templates/inline_detail.html:39
 msgid "No items"
-msgstr "Adicionar Item"
+msgstr "Sem itens"
 
 #: starlette_admin/templates/layout.html:87
 #: starlette_admin/templates/layout.html:116
 msgid "Logout"
-msgstr "Sair"
+msgstr "Terminar sessão"
 
 #: starlette_admin/templates/list.html:47
 msgid "Search in list"
-msgstr "Procurar"
+msgstr "Pesquisar na lista"
 
 #: starlette_admin/templates/list.html:81
 #: starlette_admin/templates/list.html:339
 msgid "Columns"
-msgstr ""
+msgstr "Colunas"
 
 #: starlette_admin/templates/list.html:99
 msgid "Apply"
-msgstr ""
+msgstr "Aplicar"
 
 #: starlette_admin/templates/list.html:112
 #: starlette_admin/templates/modals/import.html:9
 msgid "Import"
-msgstr ""
+msgstr "Importar"
 
 #: starlette_admin/templates/list.html:138
 #, python-format
 msgid "All %(count)s rows on this page are selected."
-msgstr ""
+msgstr "Todas as %(count)s linhas desta página estão selecionadas."
 
 #: starlette_admin/templates/list.html:139
 #, python-format
 msgid "Select all %(total)s rows matching the current filter."
 msgstr ""
+"Selecionar todas as %(total)s linhas que correspondem ao filtro atual."
 
 #: starlette_admin/templates/list.html:142
 #, python-format
 msgid "All %(total)s rows matching the current filter are selected."
 msgstr ""
+"Todas as %(total)s linhas que correspondem ao filtro atual estão "
+"selecionadas."
 
 #: starlette_admin/templates/list.html:143
 msgid "Clear selection"
-msgstr ""
+msgstr "Limpar seleção"
 
 #: starlette_admin/templates/list.html:156
 msgid "Select all rows"
@@ -762,178 +775,175 @@ msgstr "Selecionar todas as linhas"
 #: starlette_admin/templates/list.html:175
 #: starlette_admin/templates/widgets/table_widget.html:25
 msgid "No data"
-msgstr ""
+msgstr "Sem dados"
 
 #: starlette_admin/templates/list.html:333
 #: starlette_admin/templates/modals/import.html:20
 #: starlette_admin/templates/modals/import.html:83
-#, fuzzy
 msgid "Preview"
-msgstr "Visualizar"
+msgstr "Pré-visualizar"
 
 #: starlette_admin/templates/list.html:334
 msgid "Done"
-msgstr ""
+msgstr "Concluído"
 
 #: starlette_admin/templates/list.html:335
 #: starlette_admin/templates/modals/import.html:56
 msgid "Loading preview..."
-msgstr ""
+msgstr "A carregar a pré-visualização..."
 
 #: starlette_admin/templates/list.html:336
 msgid "Importing..."
-msgstr ""
+msgstr "A importar..."
 
 #: starlette_admin/templates/list.html:337
 #, python-brace-format
 msgid "Import {count} row(s)"
-msgstr ""
+msgstr "Importar {count} linha(s)"
 
 #: starlette_admin/templates/list.html:338
 #, python-brace-format
 msgid "Network error: {status}"
-msgstr ""
+msgstr "Erro de rede: {status}"
 
 #: starlette_admin/templates/list.html:340
 #, python-brace-format
 msgid "Ignored: {headers}"
-msgstr ""
+msgstr "Ignorados: {headers}"
 
 #: starlette_admin/templates/list.html:341
 #, python-brace-format
 msgid "Preview (first {count} row(s))"
-msgstr ""
+msgstr "Pré-visualização (primeiras {count} linha(s))"
 
 #: starlette_admin/templates/list.html:342
 msgid "Status"
-msgstr ""
+msgstr "Estado"
 
 #: starlette_admin/templates/list.html:343
 msgid "Errors"
-msgstr ""
+msgstr "Erros"
 
 #: starlette_admin/templates/list.html:344
 msgid "All errors"
-msgstr ""
+msgstr "Todos os erros"
 
 #: starlette_admin/templates/list.html:345
 msgid "Row"
-msgstr ""
+msgstr "Linha"
 
 #: starlette_admin/templates/list.html:347
 msgid "Error"
-msgstr ""
+msgstr "Erro"
 
 #: starlette_admin/templates/list.html:348
 msgid "new"
-msgstr "novo"
+msgstr "nova"
 
 #: starlette_admin/templates/list.html:349
 msgid "update"
-msgstr ""
+msgstr "atualização"
 
 #: starlette_admin/templates/list.html:350
 msgid "error"
-msgstr ""
+msgstr "erro"
 
 #: starlette_admin/templates/list.html:351
 #, python-brace-format
 msgid "{total} row(s): {new} new"
-msgstr ""
+msgstr "{total} linha(s): {new} nova(s)"
 
 #: starlette_admin/templates/list.html:352
 #, python-brace-format
 msgid "{total} row(s) scanned, {created} created"
-msgstr ""
+msgstr "{total} linha(s) analisada(s), {created} criada(s)"
 
 #: starlette_admin/templates/list.html:353
 #, python-brace-format
 msgid ", {count} updated"
-msgstr ""
+msgstr ", {count} atualizada(s)"
 
 #: starlette_admin/templates/list.html:354
 #, python-brace-format
 msgid ", {count} error(s)"
-msgstr ""
+msgstr ", {count} erro(s)"
 
 #: starlette_admin/templates/list.html:355
 #, python-brace-format
 msgid ", {count} skipped"
-msgstr ""
+msgstr ", {count} ignorada(s)"
 
 #: starlette_admin/templates/login.html:25
 msgid "Login to your account"
-msgstr "Faça login na sua conta"
+msgstr "Inicie sessão na sua conta"
 
 #: starlette_admin/templates/login.html:45
 #: starlette_admin/templates/login.html:49
 msgid "Username"
-msgstr "Usuário"
+msgstr "Nome de utilizador"
 
 #: starlette_admin/templates/login.html:56
 #: starlette_admin/templates/login.html:62
 msgid "Password"
-msgstr "Senha"
+msgstr "Palavra-passe"
 
 #: starlette_admin/templates/login.html:68
 msgid "Show password"
-msgstr "Senha"
+msgstr "Mostrar palavra-passe"
 
 #: starlette_admin/templates/login.html:112
 msgid "Remember me"
-msgstr "Lembre de mim"
+msgstr "Lembrar-me"
 
 #: starlette_admin/templates/login.html:118
 msgid "Sign in"
-msgstr "Entrar"
+msgstr "Iniciar sessão"
 
 #: starlette_admin/templates/actions/export_form.html:2
 #: starlette_admin/templates/actions/export_form.html:15
-#, fuzzy
 msgid "Selected rows"
-msgstr "Selecionar todas as linhas"
+msgstr "Linhas selecionadas"
 
 #: starlette_admin/templates/actions/export_form.html:3
 msgid "All matching rows"
-msgstr ""
+msgstr "Todas as linhas correspondentes"
 
 #: starlette_admin/templates/actions/export_form.html:5
 msgid "Scope"
-msgstr ""
+msgstr "Âmbito"
 
 #: starlette_admin/templates/actions/export_form.html:26
 msgid "Current page"
-msgstr ""
+msgstr "Página atual"
 
 #: starlette_admin/templates/actions/export_form.html:31
 msgid "Fields"
-msgstr ""
+msgstr "Campos"
 
 #: starlette_admin/templates/actions/export_form.html:46
 #: starlette_admin/templates/modals/import.html:28
 msgid "Format"
-msgstr ""
+msgstr "Formato"
 
 #: starlette_admin/templates/actions/export_form.html:54
-#, fuzzy
 msgid "Filename"
-msgstr "Usuário"
+msgstr "Nome do ficheiro"
 
 #: starlette_admin/templates/actions/export_form.html:61
 #, python-format
 msgid "Defaults to \"%(filename)s\" if left empty."
-msgstr ""
+msgstr "Se ficar vazio, é usado \"%(filename)s\" por predefinição."
 
 #: starlette_admin/templates/fields/detail/text.html:13
 #: starlette_admin/templates/fields/detail/text.html:14
 #: starlette_admin/templates/fields/list/text.html:10
 #: starlette_admin/templates/fields/list/text.html:11
 msgid "Copy to clipboard"
-msgstr ""
+msgstr "Copiar para a área de transferência"
 
 #: starlette_admin/templates/fields/form/_delete.html:13
 msgid "Check this to delete the current content of this field"
-msgstr "Marquei isto para excluir o conteúdo atual deste campo"
+msgstr "Marque esta opção para eliminar o conteúdo atual deste campo"
 
 #: starlette_admin/templates/fields/form/enum.html:5
 #, python-format
@@ -942,71 +952,33 @@ msgstr "Selecione um %(label)s"
 
 #: starlette_admin/templates/fields/form/list.html:43
 msgid "Add item"
-msgstr "Adicionar Item"
+msgstr "Adicionar item"
 
 #: starlette_admin/templates/modals/actions.html:12
 #: starlette_admin/templates/modals/import.html:13
 msgid "Close"
-msgstr ""
+msgstr "Fechar"
 
 #: starlette_admin/templates/modals/import.html:19
-#, fuzzy
 msgid "Upload"
-msgstr "Carregando"
+msgstr "Carregar"
 
 #: starlette_admin/templates/modals/import.html:21
 msgid "Result"
-msgstr ""
+msgstr "Resultado"
 
 #: starlette_admin/templates/modals/import.html:36
 msgid "File"
-msgstr ""
+msgstr "Ficheiro"
 
 #: starlette_admin/templates/modals/import.html:46
 msgid "Update existing records by primary key"
-msgstr ""
+msgstr "Atualizar registos existentes pela chave primária"
 
 #: starlette_admin/templates/modals/import.html:81
 msgid "Back"
-msgstr ""
+msgstr "Voltar"
 
 #: starlette_admin/templates/modals/loading.html:10
 msgid "Loading"
-msgstr "Carregando"
-
-#~ msgid "Export format %(format)s not enabled"
-#~ msgstr ""
-
-#~ msgid "Import format %(fmt)s not enabled"
-#~ msgstr ""
-
-#~ msgid "Browse and manage your data."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Browse [all records](%(list_href)s) or add "
-#~ "a [new one](%(create_href)s)."
-#~ msgstr ""
-
-#~ msgid "Is not empty"
-#~ msgstr ""
-
-#~ msgid "This Page"
-#~ msgstr ""
-
-#~ msgid "All Matching Rows"
-#~ msgstr ""
-
-#~ msgid "Dry run (validate without saving)"
-#~ msgstr ""
-
-#~ msgid "Skip primary key column"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Use this when your file contains a"
-#~ " primary key column but your backend"
-#~ " auto-generates keys. The column will"
-#~ " be ignored and a new key will"
-#~ " be assigned."
-#~ msgstr ""
+msgstr "A carregar"
