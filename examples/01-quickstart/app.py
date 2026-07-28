@@ -175,4 +175,4 @@ admin.mount_to(app)
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", reload=True, reload_dirs=["../.."], port=8088)
+    uvicorn.run("app:app", reload=True, reload_dirs=["../.."])
