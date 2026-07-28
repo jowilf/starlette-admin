@@ -171,6 +171,9 @@ class ModelView(BaseModelView):
         """Return the documents whose primary key is in `pks`."""
         return self.document.objects(id__in=pks)  # ty: ignore[unresolved-attribute]
 
+    async def get_serialized_pk_value(self, request: Request, obj: Any) -> Any:
+        return str(await self.get_pk_value(request, obj))
+
     async def create(self, request: Request, data: dict[str, Any]) -> Any:
         """Create and save a new document from converted form data.
 
