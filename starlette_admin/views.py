@@ -84,6 +84,7 @@ from starlette_admin.helpers import (
     edit_url as _edit_url,
 )
 from starlette_admin.helpers import (
+    field_error_payload,
     list_url,
     maybe_async,
     not_none,
@@ -1571,7 +1572,7 @@ class BaseModelView(BaseView):
             try:
                 await field.validate(request, data.get(field.name), data)
             except ValueError as exc:
-                errors[field.name] = str(exc)
+                errors[field.name] = field_error_payload(exc)
         if errors:
             raise FormValidationError(errors)
 

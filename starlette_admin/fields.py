@@ -19,6 +19,7 @@ from starlette.datastructures import FormData, Headers, UploadFile
 from starlette.requests import Request
 from starlette_admin.helpers import (
     _URL_ALLOWED_SCHEMES,
+    field_error_payload,
     html_params,
     is_empty_file,
     is_empty_value,
@@ -2428,6 +2429,36 @@ class CollectionField(BaseField):
                 )
         return serialized_value
 
+    async def validate(
+        self, request: Request, value: Any, form_values: dict[str, Any]
+    ) -> None:
+        """Extends [BaseField.validate][starlette_admin.fields.BaseField.validate]
+        by also running each sub-field's own `validate` (its `required` check
+        and `validators`) against its corresponding entry in `value`, after
+        this field's own `validators` have passed. Sub-field failures are
+        collected into a single `ValueError` carrying a `dict` keyed by
+        sub-field name, matching the shape the form templates already know
+        how to render.
+        """
+        await super().validate(request, value, form_values)
+        if is_empty_value(value):
+            return
+        errors: dict[str, Any] = {}
+        for field in self.get_fields_list(request):
+            if field.read_only:
+                continue
+            name = field.name
+            if isinstance(value, dict):
+                field_value = value.get(name)
+            else:
+                field_value = getattr(value, name, None)
+            try:
+                await field.validate(request, field_value, form_values)
+            except ValueError as exc:
+                errors[field.name] = field_error_payload(exc)
+        if errors:
+            raise ValueError(errors)
+
     def additional_css_links(self, request: Request) -> list[str]:
         _links = []
         for f in self.get_fields_list(request):
@@ -2611,6 +2642,29 @@ class ListField(BaseField):
         for item in raw_items:
             result.append(await self.field.parse_import_value(request, item))
         return result
+
+    async def validate(
+        self, request: Request, value: Any, form_values: dict[str, Any]
+    ) -> None:
+        """Extends [BaseField.validate][starlette_admin.fields.BaseField.validate]
+        by also running the inner `field`'s own `validate` (its `required`
+        check and `validators`) against each item in `value`, after this
+        field's own `validators` have passed. Item failures are collected
+        into a single `ValueError` carrying a `dict` keyed by item index,
+        matching the shape the form templates already know how to render.
+        """
+        await super().validate(request, value, form_values)
+        if is_empty_value(value):
+            return
+        errors: dict[int, Any] = {}
+        for index, item in enumerate(value):
+            self._field_at(index)
+            try:
+                await self.field.validate(request, item, form_values)
+            except ValueError as exc:
+                errors[index] = field_error_payload(exc)
+        if errors:
+            raise ValueError(errors)
 
     def _extra_indices(self, form_data: FormData) -> list[int]:
         """

@@ -48,6 +48,7 @@ from starlette_admin.helpers import (
     create_url,
     detail_url,
     edit_url,
+    field_error_payload,
     get_file_icon,
     html_safe_json,
     import_url,
@@ -2136,7 +2137,7 @@ class BaseAdmin:
                 try:
                     await field.validate(request, data.get(field.name), data)
                 except Exception as exc:
-                    field_err[field.name] = str(exc)
+                    field_err[field.name] = field_error_payload(exc)
         return data, field_err
 
     async def _parse_inline_formset(

@@ -281,3 +281,22 @@ def test_register_catalog_replaces_null_translations():
         assert result.gettext("test_plugin_greeting") == "Hello from test plugin"
     finally:
         translations["en"] = saved
+
+
+def test_register_catalog_noop_when_files_raises_type_error(monkeypatch):
+    """Some loaders raise TypeError from importlib.resources.files() for a
+    plain module with no ``translations/`` to ship; register_translation_catalog
+    treats that as a no-op rather than propagating the error."""
+    import importlib.resources
+
+    from starlette_admin.i18n import register_translation_catalog, translations
+
+    def _raise(*args, **kwargs):
+        raise TypeError("not a package")
+
+    monkeypatch.setattr(importlib.resources, "files", _raise)
+    snapshot = dict(translations.items())
+    register_translation_catalog("os")
+    assert {loc: type(t).__name__ for loc, t in translations.items()} == {
+        loc: type(t).__name__ for loc, t in snapshot.items()
+    }

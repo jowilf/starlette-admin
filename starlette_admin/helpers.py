@@ -28,6 +28,18 @@ HTTP_422 = (
 )
 
 
+def field_error_payload(exc: Exception) -> Any:
+    """Extracts the error payload carried by a field validation exception.
+
+    `ListField`/`CollectionField` raise `ValueError` with a `dict` (keyed by
+    index or sub-field name) as the sole argument so the form can render
+    nested errors; plain field validators raise `ValueError` with a plain
+    message. Using `exc.args[0]` instead of `str(exc)` preserves the dict
+    in the former case while remaining identical to `str(exc)` in the latter.
+    """
+    return exc.args[0] if exc.args else str(exc)
+
+
 def safe_redirect_url(next_url: str, request: Request, fallback: str) -> str:
     """Return `next_url` only if it is a safe redirect target, otherwise return `fallback`.
 

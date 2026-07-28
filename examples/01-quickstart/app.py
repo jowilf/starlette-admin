@@ -6,6 +6,7 @@ starlette-admin with SQLAlchemy, including ModelView, SlugField, ComputedField,
 and basic form validation.
 """
 
+import random
 from contextlib import asynccontextmanager
 from datetime import datetime
 from enum import StrEnum
@@ -20,6 +21,7 @@ from starlette.responses import HTMLResponse
 from starlette.routing import Route
 from starlette_admin import (
     ComputedField,
+    ListField,
     SlugField,
     StringField,
     TextAreaField,
@@ -137,6 +139,10 @@ class PostView(ModelView):
         TextAreaField(
             "content", required=True, validators=[validators.length(min=10, max=600)]
         ),
+        ListField(
+            StringField("test", read_only=True, copy_to_clipboard=True),
+            getter=lambda r, obj: "t" * random.randrange(1, 10),
+        ),
         "status",
         "views",
         "published_at",
@@ -169,4 +175,4 @@ admin.mount_to(app)
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", reload=True, reload_dirs=["../.."])
+    uvicorn.run("app:app", reload=True, reload_dirs=["../.."], port=8088)

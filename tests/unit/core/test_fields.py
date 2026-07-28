@@ -1327,6 +1327,39 @@ async def test_list_field_parse_import_value_fallback():
     assert await field.parse_import_value(request, 123) == []
 
 
+# ── ListField.validate ───────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_list_field_validate_runs_inner_field_validators_per_item():
+    """ListField.validate runs the inner field's validators against every item,
+    collecting failures into a dict keyed by item index."""
+    field = ListField(StringField("values", required=True))
+    with pytest.raises(ValueError) as exc_info:
+        await field.validate(MagicMock(), ["ok", "", "also ok", ""], {})
+    errors = exc_info.value.args[0]
+    assert isinstance(errors, dict)
+    assert set(errors.keys()) == {1, 3}
+
+
+@pytest.mark.asyncio
+async def test_list_field_validate_passes_when_all_items_valid():
+    field = ListField(StringField("values", required=True))
+    await field.validate(MagicMock(), ["a", "b"], {})
+
+
+@pytest.mark.asyncio
+async def test_list_field_validate_skips_inner_validation_on_empty_value():
+    calls = []
+
+    def _record(request, field, value, form_values):
+        calls.append(value)
+
+    field = ListField(StringField("values", validators=[_record]))
+    await field.validate(MagicMock(), [], {})
+    assert calls == []
+
+
 # ── ListField.getter / .formatter / .parser ─────────────────────────────────
 
 
@@ -1395,6 +1428,15 @@ async def test_list_field_import_parser_overrides_parse_import_value():
     request = make_request(RequestAction.IMPORT)
     result = await field.parse_input(request, "a\nb")
     assert result == ["imported:a\nb"]
+
+
+@pytest.mark.asyncio
+async def test_list_field_import_no_parser_falls_back_to_parse_import_value():
+    """No parser set: parse_input routes IMPORT to parse_import_value."""
+    field = ListField(StringField("values"))
+    request = make_request(RequestAction.IMPORT)
+    result = await field.parse_input(request, "a\nb")
+    assert result == ["a", "b"]
 
 
 # ── BaseField.parse_import_value ───────────────────────────────────────────────
@@ -1727,6 +1769,72 @@ async def test_collection_field_serialize_value_missing_subfield():
     assert result == {"key": "k", "value": None}
 
 
+# ── CollectionField.validate ─────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_collection_field_validate_runs_subfield_validators():
+    """CollectionField.validate runs each sub-field's validators against its
+    entry in the collection value, collecting failures into a dict keyed by
+    sub-field name."""
+    field = CollectionField(
+        "config",
+        fields=[StringField("key", required=True), IntegerField("value")],
+    )
+    field._view = MagicMock()
+    field._view.can_access_field.return_value = True
+    with pytest.raises(ValueError) as exc_info:
+        await field.validate(MagicMock(), {"key": "", "value": 5}, {})
+    errors = exc_info.value.args[0]
+    assert isinstance(errors, dict)
+    assert set(errors.keys()) == {"key"}
+
+
+@pytest.mark.asyncio
+async def test_collection_field_validate_passes_when_all_subfields_valid():
+    field = CollectionField(
+        "config",
+        fields=[StringField("key", required=True), IntegerField("value")],
+    )
+    field._view = MagicMock()
+    field._view.can_access_field.return_value = True
+    await field.validate(MagicMock(), {"key": "k", "value": 5}, {})
+
+
+@pytest.mark.asyncio
+async def test_collection_field_validate_runs_subfield_validators_for_object_value():
+    """When `value` is not a dict (e.g. an ORM model instance), sub-field
+    values are read via `getattr` instead of `dict.get`."""
+    import types
+
+    field = CollectionField(
+        "config",
+        fields=[StringField("key", required=True), IntegerField("value")],
+    )
+    field._view = MagicMock()
+    field._view.can_access_field.return_value = True
+    obj = types.SimpleNamespace(key="", value=5)
+    with pytest.raises(ValueError) as exc_info:
+        await field.validate(MagicMock(), obj, {})
+    errors = exc_info.value.args[0]
+    assert isinstance(errors, dict)
+    assert set(errors.keys()) == {"key"}
+
+
+@pytest.mark.asyncio
+async def test_collection_field_validate_skips_subfield_validation_on_empty_value():
+    calls = []
+
+    def _record(request, field, value, form_values):
+        calls.append(value)
+
+    field = CollectionField("config", fields=[StringField("key", validators=[_record])])
+    field._view = MagicMock()
+    field._view.can_access_field.return_value = True
+    await field.validate(MagicMock(), {}, {})
+    assert calls == []
+
+
 # ── CollectionField.getter / .formatter / .parser ───────────────────────────
 
 
@@ -1808,6 +1916,20 @@ async def test_collection_field_import_parser_overrides_default_import_parsing()
     request = make_request(RequestAction.IMPORT)
     result = await field.parse_input(request, "k")
     assert result == {"key": "imported:k"}
+
+
+@pytest.mark.asyncio
+async def test_collection_field_import_no_parser_falls_back_to_parse_import_value():
+    """No parser set: parse_input routes IMPORT to parse_import_value."""
+    field = CollectionField(
+        "config",
+        fields=[StringField("key"), IntegerField("value")],
+    )
+    field._view = MagicMock()
+    field._view.can_access_field.return_value = True
+    request = make_request(RequestAction.IMPORT)
+    result = await field.parse_input(request, "k")
+    assert result == await field.parse_import_value(request, "k")
 
 
 # ── ComputedField ──────────────────────────────────────────────────────────────
