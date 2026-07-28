@@ -1,19 +1,19 @@
 # Turkish translations for starlette-admin.
-# Copyright (C) 2023 ORGANIZATION
+# Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the starlette-admin
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: starlette-admin VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-07-24 17:46-0700\n"
-"PO-Revision-Date: 2023-10-13 04:50+0300\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2026-07-28 11:50-0700\n"
+"Last-Translator: Jocelin Hounon <EMAIL@ADDRESS>\n"
 "Language: tr\n"
 "Language-Team: tr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=0;\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -25,6 +25,8 @@ msgid ""
 "Too many rows match the current filter (%(count)s); refine your filter "
 "(limit: %(limit)s)"
 msgstr ""
+"Geçerli filtreyle eşleşen satır sayısı çok fazla (%(count)s); filtrenizi "
+"daraltın (sınır: %(limit)s)"
 
 #: starlette_admin/actions.py:108 starlette_admin/actions.py:266
 #: starlette_admin/templates/modals/actions.html:25
@@ -36,7 +38,7 @@ msgstr "Evet, Devam Et"
 #: starlette_admin/templates/detail.html:9
 #: starlette_admin/templates/edit.html:8 starlette_admin/templates/list.html:14
 msgid "Admin"
-msgstr "Yönetici"
+msgstr "Yönetim"
 
 #: starlette_admin/base.py:797
 #, python-format
@@ -45,22 +47,24 @@ msgstr "%(key)s anahtarına sahip model bulunamadı"
 
 #: starlette_admin/base.py:970
 msgid "Something went wrong!"
-msgstr ""
+msgstr "Bir şeyler ters gitti!"
 
 #: starlette_admin/base.py:980
 #, python-format
 msgid "The field \"%(label)s\" of \"%(repr)s\" was updated successfully."
-msgstr "\"%(repr)s\" öğesinin \"%(label)s\" alanı başarıyla güncellendi."
+msgstr "\"%(repr)s\" ögesinin \"%(label)s\" alanı başarıyla güncellendi."
 
 #: starlette_admin/base.py:1165
 msgid "An unexpected error occurred while processing this row."
-msgstr ""
+msgstr "Bu satır işlenirken beklenmeyen bir hata oluştu."
 
 #: starlette_admin/base.py:1301 starlette_admin/base.py:1478
 msgid ""
 "An error occurred while importing the file. Please check the file format "
 "and try again."
 msgstr ""
+"Dosya içe aktarılırken bir hata oluştu. Lütfen dosya biçimini kontrol edip"
+" tekrar deneyin."
 
 #: starlette_admin/base.py:1315
 #, python-format
@@ -68,212 +72,214 @@ msgid ""
 "Import file exceeds the configured maximum of %(max)d rows. Split the "
 "file into smaller batches and try again."
 msgstr ""
+"İçe aktarma dosyası, yapılandırılan en fazla %(max)d satır sınırını "
+"aşıyor. Dosyayı daha küçük parçalara bölüp tekrar deneyin."
 
 #: starlette_admin/base.py:1390
 #, python-format
 msgid "Unknown import format %(fmt)s"
-msgstr ""
+msgstr "Bilinmeyen içe aktarma biçimi %(fmt)s"
 
 #: starlette_admin/base.py:1398
 msgid "No file uploaded"
-msgstr ""
+msgstr "Dosya yüklenmedi"
 
 #: starlette_admin/base.py:1411
 #, python-format
 msgid "Upload too large (%(size)s bytes; maximum %(max)s bytes)."
-msgstr ""
+msgstr "Yükleme çok büyük (%(size)s bayt; en fazla %(max)s bayt)."
 
 #: starlette_admin/base.py:1556 starlette_admin/base.py:1615
 #: starlette_admin/views.py:1177 starlette_admin/views.py:1235
 #: starlette_admin/views.py:1246
 msgid "Forbidden"
-msgstr ""
+msgstr "Yasak"
 
 #: starlette_admin/base.py:1600
 msgid "Missing 'name' parameter"
-msgstr ""
+msgstr "'name' parametresi eksik"
 
 #: starlette_admin/base.py:1867 starlette_admin/base.py:2270
 #, python-format
 msgid "The item \"%(repr)s\" was added successfully."
-msgstr ""
+msgstr "\"%(repr)s\" ögesi başarıyla eklendi."
 
 #: starlette_admin/base.py:1974 starlette_admin/base.py:2277
 #, python-format
 msgid "The item \"%(repr)s\" was changed successfully."
-msgstr ""
+msgstr "\"%(repr)s\" ögesi başarıyla değiştirildi."
 
 #: starlette_admin/fields.py:270
 msgid "This field is required."
-msgstr ""
+msgstr "Bu alan zorunludur."
 
 #: starlette_admin/fields.py:718
 #, python-format
 msgid "Invalid integer value for %(field)s"
-msgstr ""
+msgstr "%(field)s için geçersiz tam sayı değeri"
 
 #: starlette_admin/fields.py:789
 #, python-format
 msgid "Invalid decimal value for %(field)s"
-msgstr ""
+msgstr "%(field)s için geçersiz ondalık değer"
 
 #: starlette_admin/fields.py:857
 #, python-format
 msgid "Invalid float value for %(field)s"
-msgstr ""
+msgstr "%(field)s için geçersiz kayan noktalı değer"
 
 #: starlette_admin/validators.py:72
 #, python-format
 msgid "Ensure this value has at least %(min)d characters"
-msgstr ""
+msgstr "Bu değerin en az %(min)d karakter içerdiğinden emin olun"
 
 #: starlette_admin/validators.py:77
 #, python-format
 msgid "Ensure this value has at most %(max)d characters"
-msgstr ""
+msgstr "Bu değerin en fazla %(max)d karakter içerdiğinden emin olun"
 
 #: starlette_admin/validators.py:80
 #, python-format
 msgid "Ensure this value has between %(min)d and %(max)d characters"
-msgstr ""
+msgstr "Bu değerin %(min)d ile %(max)d karakter arasında olduğundan emin olun"
 
 #: starlette_admin/validators.py:112
 #, python-format
 msgid "Ensure this value is at least %(min)s"
-msgstr ""
+msgstr "Bu değerin en az %(min)s olduğundan emin olun"
 
 #: starlette_admin/validators.py:116
 #, python-format
 msgid "Ensure this value is at most %(max)s"
-msgstr ""
+msgstr "Bu değerin en fazla %(max)s olduğundan emin olun"
 
 #: starlette_admin/validators.py:119 starlette_admin/validators.py:210
 #, python-format
 msgid "Ensure this value is between %(min)s and %(max)s"
-msgstr ""
+msgstr "Bu değerin %(min)s ile %(max)s arasında olduğundan emin olun"
 
 #: starlette_admin/validators.py:141
 #, python-format
 msgid "Ensure this value is greater than %(min)s"
-msgstr ""
+msgstr "Bu değerin %(min)s değerinden büyük olduğundan emin olun"
 
 #: starlette_admin/validators.py:162
 #, python-format
 msgid "Ensure this value is less than %(max)s"
-msgstr ""
+msgstr "Bu değerin %(max)s değerinden küçük olduğundan emin olun"
 
 #: starlette_admin/validators.py:203
 #, python-format
 msgid "Ensure this value is not before %(min)s"
-msgstr ""
+msgstr "Bu değerin %(min)s tarihinden önce olmadığından emin olun"
 
 #: starlette_admin/validators.py:207
 #, python-format
 msgid "Ensure this value is not after %(max)s"
-msgstr ""
+msgstr "Bu değerin %(max)s tarihinden sonra olmadığından emin olun"
 
 #: starlette_admin/validators.py:235 starlette_admin/validators.py:260
 msgid "Invalid input"
-msgstr ""
+msgstr "Geçersiz giriş"
 
 #: starlette_admin/validators.py:279
 msgid "Invalid MAC address"
-msgstr ""
+msgstr "Geçersiz MAC adresi"
 
 #: starlette_admin/validators.py:298
 msgid "Invalid slug"
-msgstr ""
+msgstr "Geçersiz slug"
 
 #: starlette_admin/validators.py:341
 msgid "Invalid color"
-msgstr ""
+msgstr "Geçersiz renk"
 
 #: starlette_admin/validators.py:371
 msgid "Invalid email address"
-msgstr ""
+msgstr "Geçersiz e-posta adresi"
 
 #: starlette_admin/validators.py:438 starlette_admin/validators.py:445
 #: starlette_admin/validators.py:460
 msgid "Invalid URL"
-msgstr ""
+msgstr "Geçersiz URL"
 
 #: starlette_admin/validators.py:477
 msgid "Invalid UUID"
-msgstr ""
+msgstr "Geçersiz UUID"
 
 #: starlette_admin/validators.py:487
 #, python-format
 msgid "Invalid UUID, expected version %(version)d"
-msgstr ""
+msgstr "Geçersiz UUID, beklenen sürüm %(version)d"
 
 #: starlette_admin/validators.py:508
 msgid "Invalid IP address"
-msgstr ""
+msgstr "Geçersiz IP adresi"
 
 #: starlette_admin/validators.py:519
 #, python-format
 msgid "Invalid IPv%(version)d address"
-msgstr ""
+msgstr "Geçersiz IPv%(version)d adresi"
 
 #: starlette_admin/validators.py:539
 #, python-format
 msgid "Invalid value, must be one of: %(values)s"
-msgstr ""
+msgstr "Geçersiz değer, şunlardan biri olmalıdır: %(values)s"
 
 #: starlette_admin/validators.py:560
 #, python-format
 msgid "Invalid value, can't be any of: %(values)s"
-msgstr ""
+msgstr "Geçersiz değer, şunlardan biri olamaz: %(values)s"
 
 #: starlette_admin/validators.py:602
 #, python-format
 msgid "File is too large (%(size)d bytes; maximum is %(max)d bytes)"
-msgstr ""
+msgstr "Dosya çok büyük (%(size)d bayt; en fazla %(max)d bayt)"
 
 #: starlette_admin/validators.py:639
 #, python-format
 msgid "File type is not allowed (accepted: %(accept)s)"
-msgstr ""
+msgstr "Dosya türüne izin verilmiyor (kabul edilenler: %(accept)s)"
 
 #: starlette_admin/validators.py:663 starlette_admin/validators.py:699
 msgid "Upload a valid image file."
-msgstr ""
+msgstr "Geçerli bir resim dosyası yükleyin."
 
 #: starlette_admin/validators.py:705
 #, python-format
 msgid "Image width must be at least %(min)d pixels"
-msgstr ""
+msgstr "Resim genişliği en az %(min)d piksel olmalıdır"
 
 #: starlette_admin/validators.py:709
 #, python-format
 msgid "Image width must be at most %(max)d pixels"
-msgstr ""
+msgstr "Resim genişliği en fazla %(max)d piksel olmalıdır"
 
 #: starlette_admin/validators.py:711
 #, python-format
 msgid "Image height must be at least %(min)d pixels"
-msgstr ""
+msgstr "Resim yüksekliği en az %(min)d piksel olmalıdır"
 
 #: starlette_admin/validators.py:715
 #, python-format
 msgid "Image height must be at most %(max)d pixels"
-msgstr ""
+msgstr "Resim yüksekliği en fazla %(max)d piksel olmalıdır"
 
 #: starlette_admin/views.py:1170
 msgid "Invalid action"
-msgstr ""
+msgstr "Geçersiz eylem"
 
 #: starlette_admin/views.py:1187
 msgid "Please select at least one item"
-msgstr ""
+msgstr "Lütfen en az bir öge seçin"
 
 #: starlette_admin/views.py:1208 starlette_admin/views.py:1270
 msgid "Set custom_response=True on this action to return a custom response"
-msgstr ""
+msgstr "Özel bir yanıt döndürmek için bu eylemde custom_response=True olarak ayarlayın"
 
 #: starlette_admin/views.py:1227
 msgid "Invalid row action"
-msgstr ""
+msgstr "Geçersiz satır eylemi"
 
 #: starlette_admin/templates/fields/form/_delete.html:8
 #: starlette_admin/templates/inline_row.html:18
@@ -284,7 +290,7 @@ msgstr "Sil"
 
 #: starlette_admin/views.py:1277
 msgid "Are you sure you want to delete selected items?"
-msgstr "Seçili öğeleri silmek istediğinizden emin misiniz?"
+msgstr "Seçili ögeleri silmek istediğinizden emin misiniz?"
 
 #: starlette_admin/views.py:1278
 msgid "Yes, delete all"
@@ -293,14 +299,13 @@ msgstr "Evet, tümünü sil"
 #: starlette_admin/views.py:1294 starlette_admin/views.py:1471
 #, python-format
 msgid "The item \"%(repr)s\" was successfully deleted."
-msgstr "Öğe başarıyla silindi"
+msgstr "\"%(repr)s\" ögesi başarıyla silindi."
 
 #: starlette_admin/views.py:1299
 #, python-format
 msgid "1 item was successfully deleted."
 msgid_plural "%(count)d items were successfully deleted."
-msgstr[0] "Öğe başarıyla silindi"
-msgstr[1] "%(count)d öğe başarıyla silindi"
+msgstr[0] "%(count)d öge başarıyla silindi."
 
 #: starlette_admin/views.py:1310
 #, python-format
@@ -308,19 +313,22 @@ msgid ""
 "Export would return %(count)d rows, which exceeds the configured maximum "
 "of %(max)d. Apply a filter to narrow the result set."
 msgstr ""
+"Dışa aktarma %(count)d satır döndürecek; bu, yapılandırılan en fazla "
+"%(max)d sınırını aşıyor. Sonuç kümesini daraltmak için bir filtre "
+"uygulayın."
 
 #: starlette_admin/views.py:1368 starlette_admin/views.py:1372
 msgid "Export"
-msgstr ""
+msgstr "Dışa Aktar"
 
 #: starlette_admin/views.py:1370
 msgid "Configure your export"
-msgstr ""
+msgstr "Dışa aktarmayı yapılandırın"
 
 #: starlette_admin/views.py:1398
 #, python-format
 msgid "Unknown export format %(format)s"
-msgstr ""
+msgstr "Bilinmeyen dışa aktarma biçimi %(format)s"
 
 #: starlette_admin/views.py:1440
 msgid "View"
@@ -333,47 +341,47 @@ msgstr "Düzenle"
 #: starlette_admin/templates/modals/delete.html:27
 #: starlette_admin/views.py:1459
 msgid "Are you sure you want to delete this item?"
-msgstr "Bu öğeyi silmek istediğinizden emin misiniz?"
+msgstr "Bu ögeyi silmek istediğinizden emin misiniz?"
 
 #: starlette_admin/views.py:1461
 msgid "Yes, delete"
-msgstr "Evet, tümünü sil"
+msgstr "Evet, sil"
 
 #: starlette_admin/views.py:2999
 msgid " AND "
-msgstr ""
+msgstr " VE "
 
 #: starlette_admin/views.py:2999
 msgid " OR "
-msgstr ""
+msgstr " VEYA "
 
 #: starlette_admin/views.py:3159
 msgid "No data views are available."
-msgstr ""
+msgstr "Kullanılabilir veri görünümü yok."
 
 #: starlette_admin/views.py:3163
 msgid "Welcome to"
-msgstr ""
+msgstr "Hoş geldiniz:"
 
 #: starlette_admin/views.py:3193
 msgid "total records"
-msgstr ""
+msgstr "toplam kayıt"
 
 #: starlette_admin/views.py:3194
 msgid "Browse"
-msgstr ""
+msgstr "Göz atın:"
 
 #: starlette_admin/views.py:3194
 msgid "all records"
-msgstr ""
+msgstr "tüm kayıtlar"
 
 #: starlette_admin/views.py:3195
 msgid "or add a"
-msgstr ""
+msgstr "ya da"
 
 #: starlette_admin/views.py:3195
 msgid "new one"
-msgstr "Yeni %(name)s"
+msgstr "yeni bir kayıt ekleyin"
 
 #: starlette_admin/auth/base.py:36
 msgid "Administrator"
@@ -383,187 +391,187 @@ msgstr "Yönetici"
 #: starlette_admin/contrib/mongoengine/filters.py:262
 #, python-format
 msgid "Invalid ObjectId: %(value)s"
-msgstr ""
+msgstr "Geçersiz ObjectId: %(value)s"
 
 #: starlette_admin/contrib/beanie/filters.py:308
 #: starlette_admin/contrib/mongoengine/filters.py:282
 #: starlette_admin/filters/array.py:44 starlette_admin/filters/enum.py:24
 msgid "At least one value is required"
-msgstr ""
+msgstr "En az bir değer gereklidir"
 
 #: starlette_admin/contrib/beanie/filters.py:313
 #: starlette_admin/contrib/mongoengine/filters.py:287
 #, python-format
 msgid "Invalid ObjectId in list: %(value)s"
-msgstr ""
+msgstr "Listede geçersiz ObjectId: %(value)s"
 
 #: starlette_admin/contrib/beanie/filters.py:319
 #: starlette_admin/contrib/mongoengine/filters.py:295
 #: starlette_admin/filters/generic.py:13
 msgid "Equal"
-msgstr ""
+msgstr "Eşit"
 
 #: starlette_admin/contrib/beanie/filters.py:331
 #: starlette_admin/contrib/mongoengine/filters.py:309
 #: starlette_admin/filters/generic.py:23 starlette_admin/filters/numeric.py:46
 msgid "Not equal"
-msgstr ""
+msgstr "Eşit değil"
 
 #: starlette_admin/filters/array.py:52 starlette_admin/filters/enum.py:32
 msgid "Is one of"
-msgstr ""
+msgstr "Şunlardan biri"
 
 #: starlette_admin/filters/array.py:63 starlette_admin/filters/enum.py:45
 msgid "Is not one of"
-msgstr ""
+msgstr "Şunlardan biri değil"
 
 #: starlette_admin/filters/boolean.py:11
 msgid "Is true"
-msgstr ""
+msgstr "Doğru"
 
 #: starlette_admin/filters/boolean.py:21
 msgid "Is false"
-msgstr ""
+msgstr "Yanlış"
 
 #: starlette_admin/filters/date.py:38
 #, python-format
 msgid "%(raw)s is not a valid ISO-8601 %(type)s"
-msgstr ""
+msgstr "%(raw)s geçerli bir ISO-8601 %(type)s değeri değil"
 
 #: starlette_admin/filters/date.py:78
 msgid "Is on"
-msgstr ""
+msgstr "Şu tarihte"
 
 #: starlette_admin/filters/date.py:86 starlette_admin/filters/date.py:91
 msgid "Is at"
-msgstr ""
+msgstr "Şu anda"
 
 #: starlette_admin/filters/date.py:105 starlette_admin/filters/numeric.py:101
 msgid "Between"
-msgstr ""
+msgstr "Arasında"
 
 #: starlette_admin/filters/date.py:125
 msgid "Is in the past"
-msgstr ""
+msgstr "Geçmişte"
 
 #: starlette_admin/filters/date.py:135
 msgid "Is in the future"
-msgstr ""
+msgstr "Gelecekte"
 
 #: starlette_admin/filters/generic.py:31
 msgid "Is null"
-msgstr ""
+msgstr "Boş"
 
 #: starlette_admin/filters/generic.py:41
 msgid "Is not null"
-msgstr ""
+msgstr "Boş değil"
 
 #: starlette_admin/filters/numeric.py:27
 #, python-format
 msgid "%(raw)s is not a valid number"
-msgstr ""
+msgstr "%(raw)s geçerli bir sayı değil"
 
 #: starlette_admin/filters/numeric.py:35
 msgid "Equals"
-msgstr ""
+msgstr "Eşittir"
 
 #: starlette_admin/filters/numeric.py:57
 msgid "Greater than"
-msgstr ""
+msgstr "Büyüktür"
 
 #: starlette_admin/filters/numeric.py:68
 msgid "Less than"
-msgstr ""
+msgstr "Küçüktür"
 
 #: starlette_admin/filters/numeric.py:79
 msgid "Greater than or equal"
-msgstr ""
+msgstr "Büyük veya eşittir"
 
 #: starlette_admin/filters/numeric.py:90
 msgid "Less than or equal"
-msgstr ""
+msgstr "Küçük veya eşittir"
 
 #: starlette_admin/filters/string.py:9
 msgid "Contains"
-msgstr ""
+msgstr "İçerir"
 
 #: starlette_admin/filters/string.py:19
 msgid "Does not contain"
-msgstr ""
+msgstr "İçermez"
 
 #: starlette_admin/filters/string.py:27
 msgid "Starts with"
-msgstr ""
+msgstr "İle başlar"
 
 #: starlette_admin/filters/string.py:35
 msgid "Ends with"
-msgstr "Düzenle"
+msgstr "İle biter"
 
 #: starlette_admin/templates/_filter_bar.html:3
 msgid "Filters:"
-msgstr ""
+msgstr "Filtreler:"
 
 #: starlette_admin/templates/_filter_bar.html:11
 msgid "Remove this filter"
-msgstr ""
+msgstr "Bu filtreyi kaldır"
 
 #: starlette_admin/templates/_filter_bar.html:17
 msgid "Clear all"
-msgstr ""
+msgstr "Tümünü temizle"
 
 #: starlette_admin/templates/_filter_builder.html:8
 msgid "Filters"
-msgstr ""
+msgstr "Filtreler"
 
 #: starlette_admin/templates/_filter_builder.html:33
 #: starlette_admin/templates/_filter_builder.html:89
 msgid "Match"
-msgstr ""
+msgstr "Aşağıdaki koşulların"
 
 #: starlette_admin/templates/_filter_builder.html:36
 msgid "Filter logic"
-msgstr ""
+msgstr "Filtre mantığı"
 
 #: starlette_admin/templates/_filter_builder.html:38
 #: starlette_admin/templates/_filter_builder.html:93
 msgid "all"
-msgstr "Hepsi"
+msgstr "tümü"
 
 #: starlette_admin/templates/_filter_builder.html:39
 #: starlette_admin/templates/_filter_builder.html:94
 msgid "any"
-msgstr ""
+msgstr "herhangi biri"
 
 #: starlette_admin/templates/_filter_builder.html:41
 msgid "of the following:"
-msgstr ""
+msgstr "ile eşleşsin:"
 
 #: starlette_admin/templates/_filter_builder.html:47
 msgid "Add filter"
-msgstr "Öğe ekle"
+msgstr "Filtre ekle"
 
 #: starlette_admin/templates/_filter_builder.html:50
 msgid "Add group"
-msgstr ""
+msgstr "Grup ekle"
 
 #: starlette_admin/templates/_filter_builder.html:55
 #: starlette_admin/templates/list.html:96
 msgid "Reset"
-msgstr ""
+msgstr "Sıfırla"
 
 #: starlette_admin/templates/_filter_builder.html:56
 msgid "Apply filters"
-msgstr ""
+msgstr "Filtreleri uygula"
 
 #: starlette_admin/templates/_filter_builder.html:65
 #: starlette_admin/templates/list.html:346
 msgid "Field"
-msgstr ""
+msgstr "Alan"
 
 #: starlette_admin/templates/_filter_builder.html:67
 #: starlette_admin/templates/_filter_builder.html:99
 msgid "Filter"
-msgstr ""
+msgstr "Filtre"
 
 #: starlette_admin/templates/_filter_builder.html:70
 #: starlette_admin/templates/_filter_builder.html:72
@@ -573,31 +581,31 @@ msgstr "Değer"
 
 #: starlette_admin/templates/_filter_builder.html:75
 msgid "Values"
-msgstr "Değer"
+msgstr "Değerler"
 
 #: starlette_admin/templates/_filter_builder.html:78
 msgid "Second value"
-msgstr ""
+msgstr "İkinci değer"
 
 #: starlette_admin/templates/_filter_builder.html:81
 msgid "Remove filter"
-msgstr ""
+msgstr "Filtreyi kaldır"
 
 #: starlette_admin/templates/_filter_builder.html:91
 msgid "Group logic"
-msgstr ""
+msgstr "Grup mantığı"
 
 #: starlette_admin/templates/_filter_builder.html:96
 msgid "of:"
-msgstr ""
+msgstr "ile eşleşsin:"
 
 #: starlette_admin/templates/_filter_builder.html:102
 msgid "Group"
-msgstr ""
+msgstr "Grup"
 
 #: starlette_admin/templates/_filter_builder.html:106
 msgid "Remove group"
-msgstr ""
+msgstr "Grubu kaldır"
 
 #: starlette_admin/templates/_form_footer.html:5
 #: starlette_admin/templates/inline-edit/popover_body.html:29
@@ -609,7 +617,7 @@ msgstr "İptal"
 
 #: starlette_admin/templates/_form_footer.html:7
 msgid "Save and add another"
-msgstr "Kaydet ve başka bir tane ekle"
+msgstr "Kaydet ve yeni ekle"
 
 #: starlette_admin/templates/_form_footer.html:8
 msgid "Save and continue editing"
@@ -622,51 +630,51 @@ msgstr "Kaydet"
 
 #: starlette_admin/templates/_list_row.html:15
 msgid "Select row"
-msgstr ""
+msgstr "Satırı seç"
 
 #: starlette_admin/templates/_pagination.html:3
 #, python-format
 msgid "Showing %(start)s to %(end)s of %(total)s entries"
-msgstr ""
+msgstr "%(total)s kayıttan %(start)s - %(end)s arası gösteriliyor"
 
 #: starlette_admin/templates/_pagination.html:7
 msgid "Show"
-msgstr ""
+msgstr "Göster"
 
 #: starlette_admin/templates/_pagination.html:9
 msgid "Page size"
-msgstr ""
+msgstr "Sayfa boyutu"
 
 #: starlette_admin/templates/_pagination.html:14
 msgid "All"
-msgstr "Hepsi"
+msgstr "Tümü"
 
 #: starlette_admin/templates/_pagination.html:18
 msgid "entries"
-msgstr ""
+msgstr "kayıt"
 
 #: starlette_admin/templates/_pagination.html:22
 msgid "First"
-msgstr ""
+msgstr "İlk"
 
 #: starlette_admin/templates/_pagination.html:46
 msgid "Last"
-msgstr ""
+msgstr "Son"
 
 #: starlette_admin/templates/_pagination.html:60
 #: starlette_admin/templates/_pagination.html:61
 msgid "Go to page"
-msgstr ""
+msgstr "Sayfaya git"
 
 #: starlette_admin/templates/actions.html:23
 #: starlette_admin/templates/row-actions.html:39
 #: starlette_admin/templates/row-actions.html:60
 msgid "Actions"
-msgstr "İşlemler"
+msgstr "Eylemler"
 
 #: starlette_admin/templates/actions.html:29
 msgid "With selected"
-msgstr "Seçili öğeleri"
+msgstr "Seçilenlerle"
 
 #: starlette_admin/templates/create.html:13
 msgid "Create"
@@ -680,7 +688,7 @@ msgstr "Yeni %(name)s"
 
 #: starlette_admin/templates/detail.html:14
 msgid "Detail"
-msgstr "Detay"
+msgstr "Ayrıntı"
 
 #: starlette_admin/templates/detail.html:72
 #: starlette_admin/templates/list.html:46
@@ -689,140 +697,139 @@ msgstr "Ara"
 
 #: starlette_admin/templates/detail.html:85
 msgid "Attribute"
-msgstr "Özellik"
+msgstr "Öznitelik"
 
 #: starlette_admin/templates/edit.html:32
 #, python-format
 msgid "Edit %(name)s"
-msgstr "%(name)s düzenle"
+msgstr "%(name)s Düzenle"
 
 #: starlette_admin/templates/error.html:7
 msgid "Oops… You just found an error page"
-msgstr "Oops... Bir hata sayfası buldunuz"
+msgstr "Hay aksi… Bir hata sayfası buldunuz"
 
 #: starlette_admin/templates/error.html:30
 msgid "Take me home"
-msgstr "Beni ana sayfaya götür"
+msgstr "Ana sayfaya dön"
 
 #: starlette_admin/templates/inline.html:34
 #, python-format
 msgid "Add %(name)s"
-msgstr "%(name)s düzenle"
+msgstr "%(name)s Ekle"
 
 #: starlette_admin/templates/inline_detail.html:39
 msgid "No items"
-msgstr "Öğe ekle"
+msgstr "Öge yok"
 
 #: starlette_admin/templates/layout.html:87
 #: starlette_admin/templates/layout.html:116
 msgid "Logout"
-msgstr "Çıkış"
+msgstr "Çıkış yap"
 
 #: starlette_admin/templates/list.html:47
 msgid "Search in list"
-msgstr "Ara"
+msgstr "Listede ara"
 
 #: starlette_admin/templates/list.html:81
 #: starlette_admin/templates/list.html:339
 msgid "Columns"
-msgstr ""
+msgstr "Sütunlar"
 
 #: starlette_admin/templates/list.html:99
 msgid "Apply"
-msgstr ""
+msgstr "Uygula"
 
 #: starlette_admin/templates/list.html:112
 #: starlette_admin/templates/modals/import.html:9
 msgid "Import"
-msgstr ""
+msgstr "İçe Aktar"
 
 #: starlette_admin/templates/list.html:138
 #, python-format
 msgid "All %(count)s rows on this page are selected."
-msgstr ""
+msgstr "Bu sayfadaki %(count)s satırın tümü seçildi."
 
 #: starlette_admin/templates/list.html:139
 #, python-format
 msgid "Select all %(total)s rows matching the current filter."
-msgstr ""
+msgstr "Geçerli filtreyle eşleşen %(total)s satırın tümünü seç."
 
 #: starlette_admin/templates/list.html:142
 #, python-format
 msgid "All %(total)s rows matching the current filter are selected."
-msgstr ""
+msgstr "Geçerli filtreyle eşleşen %(total)s satırın tümü seçildi."
 
 #: starlette_admin/templates/list.html:143
 msgid "Clear selection"
-msgstr ""
+msgstr "Seçimi temizle"
 
 #: starlette_admin/templates/list.html:156
 msgid "Select all rows"
-msgstr "Tüm satırları seçin"
+msgstr "Tüm satırları seç"
 
 #: starlette_admin/templates/list.html:175
 #: starlette_admin/templates/widgets/table_widget.html:25
 msgid "No data"
-msgstr ""
+msgstr "Veri yok"
 
 #: starlette_admin/templates/list.html:333
 #: starlette_admin/templates/modals/import.html:20
 #: starlette_admin/templates/modals/import.html:83
-#, fuzzy
 msgid "Preview"
-msgstr "Görüntüle"
+msgstr "Önizleme"
 
 #: starlette_admin/templates/list.html:334
 msgid "Done"
-msgstr ""
+msgstr "Bitti"
 
 #: starlette_admin/templates/list.html:335
 #: starlette_admin/templates/modals/import.html:56
 msgid "Loading preview..."
-msgstr ""
+msgstr "Önizleme yükleniyor..."
 
 #: starlette_admin/templates/list.html:336
 msgid "Importing..."
-msgstr ""
+msgstr "İçe aktarılıyor..."
 
 #: starlette_admin/templates/list.html:337
 #, python-brace-format
 msgid "Import {count} row(s)"
-msgstr ""
+msgstr "{count} satırı içe aktar"
 
 #: starlette_admin/templates/list.html:338
 #, python-brace-format
 msgid "Network error: {status}"
-msgstr ""
+msgstr "Ağ hatası: {status}"
 
 #: starlette_admin/templates/list.html:340
 #, python-brace-format
 msgid "Ignored: {headers}"
-msgstr ""
+msgstr "Yok sayıldı: {headers}"
 
 #: starlette_admin/templates/list.html:341
 #, python-brace-format
 msgid "Preview (first {count} row(s))"
-msgstr ""
+msgstr "Önizleme (ilk {count} satır)"
 
 #: starlette_admin/templates/list.html:342
 msgid "Status"
-msgstr ""
+msgstr "Durum"
 
 #: starlette_admin/templates/list.html:343
 msgid "Errors"
-msgstr ""
+msgstr "Hatalar"
 
 #: starlette_admin/templates/list.html:344
 msgid "All errors"
-msgstr ""
+msgstr "Tüm hatalar"
 
 #: starlette_admin/templates/list.html:345
 msgid "Row"
-msgstr ""
+msgstr "Satır"
 
 #: starlette_admin/templates/list.html:347
 msgid "Error"
-msgstr ""
+msgstr "Hata"
 
 #: starlette_admin/templates/list.html:348
 msgid "new"
@@ -830,36 +837,36 @@ msgstr "yeni"
 
 #: starlette_admin/templates/list.html:349
 msgid "update"
-msgstr ""
+msgstr "güncelleme"
 
 #: starlette_admin/templates/list.html:350
 msgid "error"
-msgstr ""
+msgstr "hata"
 
 #: starlette_admin/templates/list.html:351
 #, python-brace-format
 msgid "{total} row(s): {new} new"
-msgstr ""
+msgstr "{total} satır: {new} yeni"
 
 #: starlette_admin/templates/list.html:352
 #, python-brace-format
 msgid "{total} row(s) scanned, {created} created"
-msgstr ""
+msgstr "{total} satır tarandı, {created} oluşturuldu"
 
 #: starlette_admin/templates/list.html:353
 #, python-brace-format
 msgid ", {count} updated"
-msgstr ""
+msgstr ", {count} güncellendi"
 
 #: starlette_admin/templates/list.html:354
 #, python-brace-format
 msgid ", {count} error(s)"
-msgstr ""
+msgstr ", {count} hata"
 
 #: starlette_admin/templates/list.html:355
 #, python-brace-format
 msgid ", {count} skipped"
-msgstr ""
+msgstr ", {count} atlandı"
 
 #: starlette_admin/templates/login.html:25
 msgid "Login to your account"
@@ -873,11 +880,11 @@ msgstr "Kullanıcı adı"
 #: starlette_admin/templates/login.html:56
 #: starlette_admin/templates/login.html:62
 msgid "Password"
-msgstr "Şifre"
+msgstr "Parola"
 
 #: starlette_admin/templates/login.html:68
 msgid "Show password"
-msgstr "Şifre"
+msgstr "Parolayı göster"
 
 #: starlette_admin/templates/login.html:112
 msgid "Remember me"
@@ -889,47 +896,45 @@ msgstr "Giriş yap"
 
 #: starlette_admin/templates/actions/export_form.html:2
 #: starlette_admin/templates/actions/export_form.html:15
-#, fuzzy
 msgid "Selected rows"
-msgstr "Tüm satırları seçin"
+msgstr "Seçili satırlar"
 
 #: starlette_admin/templates/actions/export_form.html:3
 msgid "All matching rows"
-msgstr ""
+msgstr "Eşleşen tüm satırlar"
 
 #: starlette_admin/templates/actions/export_form.html:5
 msgid "Scope"
-msgstr ""
+msgstr "Kapsam"
 
 #: starlette_admin/templates/actions/export_form.html:26
 msgid "Current page"
-msgstr ""
+msgstr "Geçerli sayfa"
 
 #: starlette_admin/templates/actions/export_form.html:31
 msgid "Fields"
-msgstr ""
+msgstr "Alanlar"
 
 #: starlette_admin/templates/actions/export_form.html:46
 #: starlette_admin/templates/modals/import.html:28
 msgid "Format"
-msgstr ""
+msgstr "Biçim"
 
 #: starlette_admin/templates/actions/export_form.html:54
-#, fuzzy
 msgid "Filename"
-msgstr "Kullanıcı adı"
+msgstr "Dosya adı"
 
 #: starlette_admin/templates/actions/export_form.html:61
 #, python-format
 msgid "Defaults to \"%(filename)s\" if left empty."
-msgstr ""
+msgstr "Boş bırakılırsa varsayılan olarak \"%(filename)s\" kullanılır."
 
 #: starlette_admin/templates/fields/detail/text.html:13
 #: starlette_admin/templates/fields/detail/text.html:14
 #: starlette_admin/templates/fields/list/text.html:10
 #: starlette_admin/templates/fields/list/text.html:11
 msgid "Copy to clipboard"
-msgstr ""
+msgstr "Panoya kopyala"
 
 #: starlette_admin/templates/fields/form/_delete.html:13
 msgid "Check this to delete the current content of this field"
@@ -938,75 +943,37 @@ msgstr "Bu alanın mevcut içeriğini silmek için bunu işaretleyin"
 #: starlette_admin/templates/fields/form/enum.html:5
 #, python-format
 msgid "Select a %(label)s"
-msgstr "%(label)s seçin"
+msgstr "Bir %(label)s seçin"
 
 #: starlette_admin/templates/fields/form/list.html:43
 msgid "Add item"
-msgstr "Öğe ekle"
+msgstr "Öge ekle"
 
 #: starlette_admin/templates/modals/actions.html:12
 #: starlette_admin/templates/modals/import.html:13
 msgid "Close"
-msgstr ""
+msgstr "Kapat"
 
 #: starlette_admin/templates/modals/import.html:19
-#, fuzzy
 msgid "Upload"
-msgstr "Yükleniyor"
+msgstr "Yükle"
 
 #: starlette_admin/templates/modals/import.html:21
 msgid "Result"
-msgstr ""
+msgstr "Sonuç"
 
 #: starlette_admin/templates/modals/import.html:36
 msgid "File"
-msgstr ""
+msgstr "Dosya"
 
 #: starlette_admin/templates/modals/import.html:46
 msgid "Update existing records by primary key"
-msgstr ""
+msgstr "Mevcut kayıtları birincil anahtara göre güncelle"
 
 #: starlette_admin/templates/modals/import.html:81
 msgid "Back"
-msgstr ""
+msgstr "Geri"
 
 #: starlette_admin/templates/modals/loading.html:10
 msgid "Loading"
 msgstr "Yükleniyor"
-
-#~ msgid "Export format %(format)s not enabled"
-#~ msgstr ""
-
-#~ msgid "Import format %(fmt)s not enabled"
-#~ msgstr ""
-
-#~ msgid "Browse and manage your data."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Browse [all records](%(list_href)s) or add "
-#~ "a [new one](%(create_href)s)."
-#~ msgstr ""
-
-#~ msgid "Is not empty"
-#~ msgstr ""
-
-#~ msgid "This Page"
-#~ msgstr ""
-
-#~ msgid "All Matching Rows"
-#~ msgstr ""
-
-#~ msgid "Dry run (validate without saving)"
-#~ msgstr ""
-
-#~ msgid "Skip primary key column"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Use this when your file contains a"
-#~ " primary key column but your backend"
-#~ " auto-generates keys. The column will"
-#~ " be ignored and a new key will"
-#~ " be assigned."
-#~ msgstr ""
