@@ -4,13 +4,19 @@
 # project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
+# NOTE: This translation was generated with AI assistance under human
+# supervision. It may misinterpret the original meaning, sound unnatural, or
+# use terminology inconsistent with common usage in this language. If you are
+# a native speaker and spot anything wrong, contributions and corrections are
+# very welcome: https://github.com/jowilf/starlette-admin
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: starlette-admin VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-07-24 17:46-0700\n"
 "PO-Revision-Date: 2026-07-28 11:50-0700\n"
-"Last-Translator: Jocelin Hounon <EMAIL@ADDRESS>\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: tr\n"
 "Language-Team: tr <LL@li.org>\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
