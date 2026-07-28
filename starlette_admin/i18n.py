@@ -160,8 +160,9 @@ try:
         return _current_translation.get().ngettext(msgid1, msgid2, n)
 
     def lazy_gettext(message: str) -> str:
-        # `LazyProxy` duck-types as `str`, resolving lazily on first use so
-        # translations pick up the locale active at render time, not call time.
+        # Returns a `LazyProxy`, which behaves like a `str` but defers
+        # translation until the value is used, so the locale in effect at
+        # render time is applied rather than the one active at call time.
         return LazyProxy(  # ty: ignore[invalid-return-type]
             gettext, message, enable_cache=False
         )
