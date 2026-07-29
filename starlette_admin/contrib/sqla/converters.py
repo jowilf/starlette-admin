@@ -182,7 +182,12 @@ class BaseSQLAModelConverter(BaseModelConverter):
         return None  # pragma: no cover
 
     def convert_fields_list(
-        self, *, fields: Sequence[Any], model: type[Any], **kwargs: Any
+        self,
+        *,
+        fields: Sequence[Any],
+        model: type[Any],
+        explicit_fields: bool = False,
+        **kwargs: Any,
     ) -> Sequence[BaseField]:
         mapper: Mapper = kwargs["mapper"]
         _log.debug(
@@ -242,7 +247,7 @@ class BaseSQLAModelConverter(BaseModelConverter):
                             "Multiple-column properties are not supported"
                         )
                         column = attr.columns[0]
-                        if not column.foreign_keys:
+                        if not column.foreign_keys or explicit_fields:
                             converted_field = self.convert(
                                 name=attr.key, type=column.type, column=column
                             )

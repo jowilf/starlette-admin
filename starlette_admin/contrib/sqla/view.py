@@ -111,14 +111,18 @@ class ModelView(BaseModelView):
             or prettify_class_name(self.model.__name__)
         )
         self.icon = icon or self.icon
-        if self.fields is None or len(self.fields) == 0:
+        explicit_fields = self.fields is not None and len(self.fields) > 0
+        if not explicit_fields:
             self.fields = [
                 self.model.__dict__[f].key
                 for f in list(self.model.__dict__.keys())
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
         self.fields = (converter or ModelConverter()).convert_fields_list(
-            fields=self.fields, model=self.model, mapper=mapper
+            fields=self.fields,
+            model=self.model,
+            mapper=mapper,
+            explicit_fields=explicit_fields,
         )
         self._columns: set[str] = {attr.key for attr in mapper.column_attrs}
         self._setup_primary_key()
