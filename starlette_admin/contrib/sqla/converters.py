@@ -220,7 +220,18 @@ class BaseSQLAModelConverter(BaseModelConverter):
                     if attr.direction.name == "MANYTOONE" or (
                         attr.direction.name == "ONETOMANY" and not attr.uselist
                     ):
-                        converted_fields.append(HasOne(attr.key, key=key))
+                        # The FK column(s) backing a MANYTOONE relation live on
+                        # this model; mirror their nullability onto the
+                        # relation field so it shows as required in the form.
+                        # A reverse ONETOMANY (uselist=False) has its FK on the
+                        # other model, so it can't be derived here.
+                        required = attr.direction.name == "MANYTOONE" and all(
+                            not local_col.nullable
+                            for local_col, _ in attr.local_remote_pairs
+                        )
+                        converted_fields.append(
+                            HasOne(attr.key, key=key, required=required)
+                        )
                     else:
                         converted_fields.append(
                             HasMany(

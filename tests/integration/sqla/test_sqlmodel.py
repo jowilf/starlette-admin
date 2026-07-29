@@ -286,17 +286,16 @@ async def test_create_with_required_has_one_relationship(
 async def test_create_with_required_has_one_relationship_missing(
     client: AsyncClient, session: Session
 ):
+    # Regression test for https://github.com/jowilf/starlette-admin/issues/486
+    # `Facility.company` is derived from the non-nullable `company_id` FK
+    # column, so the field itself is marked required and rejects the empty
+    # submission before it ever reaches pydantic.
     response = await client.post(
         "/admin/facility/create",
         data={"name": "Main Plant"},
     )
     assert response.status_code == 422
-    assert has_invalid_feedback(
-        response.text, "value is not a valid integer"
-    ) or has_invalid_feedback(
-        response.text,
-        "Input should be a valid integer",  # pydantic v2
-    )
+    assert has_invalid_feedback(response.text, "This field is required.")
 
 
 async def test_create_user_validation_error_with_reverse_one_to_one_relationship(

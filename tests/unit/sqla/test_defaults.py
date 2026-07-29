@@ -10,6 +10,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     Float,
+    ForeignKey,
     Integer,
     String,
     Text,
@@ -17,7 +18,7 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from starlette_admin import (
     BooleanField,
     DateField,
@@ -170,6 +171,46 @@ def test_decimal_default_is_detected():
         ),
         DecimalField("amount", default=Decimal("9.99")),
     ]
+
+
+def test_many_to_one_relation_required_mirrors_fk_nullability():
+    # Regression test for https://github.com/jowilf/starlette-admin/issues/486
+    # A `HasOne` field backed by a non-nullable FK column must be marked
+    # `required` so the form shows it as such, matching the plain-column case.
+    class Company(Base):
+        __tablename__ = "relation_required_company"
+
+        id: Mapped[int] = mapped_column(Integer, primary_key=True)
+        facilities: Mapped[list["Facility"]] = relationship(
+            back_populates="company", foreign_keys="Facility.company_id"
+        )
+
+    class Facility(Base):
+        __tablename__ = "relation_required_facility"
+
+        id: Mapped[int] = mapped_column(Integer, primary_key=True)
+        company_id: Mapped[int] = mapped_column(
+            ForeignKey("relation_required_company.id"), nullable=False
+        )
+        company: Mapped["Company"] = relationship(
+            back_populates="facilities", foreign_keys=[company_id]
+        )
+
+        optional_reviewer_id: Mapped[int | None] = mapped_column(
+            ForeignKey("relation_required_company.id"), nullable=True
+        )
+        optional_reviewer: Mapped["Company"] = relationship(
+            foreign_keys=[optional_reviewer_id]
+        )
+
+    company_view = ModelView(Company)
+    facility_view = ModelView(Facility)
+    fields_by_name = {f.name: f for f in facility_view.fields}
+
+    assert fields_by_name["company"].required is True
+    assert fields_by_name["optional_reviewer"].required is False
+    # The reverse HasMany side has no local FK column to inspect.
+    assert {f.name: f for f in company_view.fields}["facilities"].required is False
 
 
 def test_register_converter_plugin_api():
