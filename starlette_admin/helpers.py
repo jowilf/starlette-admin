@@ -309,11 +309,17 @@ def list_url(request: Request, **overrides: Any) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, qs, ""))
 
 
-def pydantic_error_to_form_validation_errors(exc: Any) -> FormValidationError:
+def pydantic_error_to_form_validation_errors(
+    exc: Any, key_map: dict[str, str] | None = None
+) -> FormValidationError:
     """Convert a Pydantic `ValidationError` into a `FormValidationError`.
 
     Each error's `loc` tuple becomes a nested path of dict keys, so an error at
     `loc=("address", "zip_code")` ends up as `errors["address"]["zip_code"]`.
+
+    `key_map` renames the first path segment (e.g. a model column that has no
+    matching form field) to the name of the form field the error should be
+    attached to (e.g. `{"company_id": "company"}`).
     """
     from pydantic import ValidationError
 
@@ -321,6 +327,8 @@ def pydantic_error_to_form_validation_errors(exc: Any) -> FormValidationError:
     errors: dict[str | int, Any] = {}
     for pydantic_error in exc.errors():
         loc: tuple[int | str, ...] = pydantic_error["loc"]
+        if key_map and loc and loc[0] in key_map:
+            loc = (key_map[loc[0]], *loc[1:])
         _d = errors
         for i in range(len(loc)):
             if i == len(loc) - 1:

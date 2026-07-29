@@ -16,8 +16,11 @@ pytestmark = pytest.mark.asyncio
 
 class User(SQLModel, table=True):
     id: int | None = Field(None, primary_key=True)
-    name: str
+    name: str = Field(min_length=3)
     todos: list["Todo"] = Relationship(back_populates="user")
+    profile: "Profile" = Relationship(
+        back_populates="user", sa_relationship_kwargs={"uselist": False}
+    )
 
 
 class Todo(SQLModel, table=True):
@@ -30,6 +33,28 @@ class Todo(SQLModel, table=True):
 
     user_id: int | None = Field(default=None, foreign_key="user.id")
     user: User | None = Relationship(back_populates="todos")
+
+
+class Profile(SQLModel, table=True):
+    id: int | None = Field(None, primary_key=True)
+    bio: str
+
+    user_id: int | None = Field(default=None, foreign_key="user.id")
+    user: User | None = Relationship(back_populates="profile")
+
+
+class Company(SQLModel, table=True):
+    id: int | None = Field(None, primary_key=True)
+    name: str
+    facilities: list["Facility"] = Relationship(back_populates="company")
+
+
+class Facility(SQLModel, table=True):
+    id: int | None = Field(None, primary_key=True)
+    name: str
+
+    company_id: int = Field(foreign_key="company.id")
+    company: Company = Relationship(back_populates="facilities")
 
 
 @pytest.fixture
@@ -51,6 +76,9 @@ def admin(engine: Engine):
     admin = Admin(engine)
     admin.add_view(ModelView(User))
     admin.add_view(ModelView(Todo))
+    admin.add_view(ModelView(Profile))
+    admin.add_view(ModelView(Company))
+    admin.add_view(ModelView(Facility))
     return admin
 
 
@@ -232,6 +260,65 @@ async def test_edit_with_has_one_relationships(client: AsyncClient, session: Ses
     stmt = select(Todo).where(Todo.todo == "Do some magic")
     todo = session.exec(stmt).one()
     assert todo.user.name == "Tommy Sharp"
+
+
+async def test_create_with_required_has_one_relationship(
+    client: AsyncClient, session: Session
+):
+    # Regression test for https://github.com/jowilf/starlette-admin/issues/485
+    # `Facility.company_id` is a required (non-nullable) FK column, hidden
+    # from the form in favor of the `company` relation field. It must not be
+    # rejected as missing by pydantic validation.
+    session.add(Company(name="Acme Corp"))
+    session.commit()
+
+    response = await client.post(
+        "/admin/facility/create",
+        data={"name": "Main Plant", "company": 1},
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    stmt = select(Facility).where(Facility.name == "Main Plant")
+    facility = session.exec(stmt).one()
+    assert facility.company.name == "Acme Corp"
+
+
+async def test_create_with_required_has_one_relationship_missing(
+    client: AsyncClient, session: Session
+):
+    response = await client.post(
+        "/admin/facility/create",
+        data={"name": "Main Plant"},
+    )
+    assert response.status_code == 422
+    assert has_invalid_feedback(
+        response.text, "value is not a valid integer"
+    ) or has_invalid_feedback(
+        response.text,
+        "Input should be a valid integer",  # pydantic v2
+    )
+
+
+async def test_create_user_validation_error_with_reverse_one_to_one_relationship(
+    client: AsyncClient, session: Session
+):
+    # `User.profile` is the reverse side of a one-to-one relationship: the FK
+    # column (`Profile.user_id`) lives on the other model, so it is exposed as
+    # a `HasOne` field whose relationship direction is `ONETOMANY`, not
+    # `MANYTOONE`. It must be skipped (not treated as a FK-bearing relation)
+    # both while deriving FK values and while building the pydantic
+    # error-key map.
+    response = await client.post(
+        "/admin/user/create",
+        data={"name": "Jo"},
+    )
+    assert response.status_code == 422
+    assert has_invalid_feedback(
+        response.text, "ensure this value has at least 3 characters"
+    ) or has_invalid_feedback(
+        response.text,
+        "String should have at least 3 characters",  # pydantic v2
+    )
 
 
 async def test_create_with_has_many_relationships(
