@@ -1087,6 +1087,7 @@ class BaseAdmin:
                 "fields": self._list_display_fields(request, view, list_params),
                 "row": row,
                 "row_actions": row_actions,
+                "_actions": await view.get_all_actions(request),
             },
             request=request,
         )

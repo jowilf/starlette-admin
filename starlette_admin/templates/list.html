@@ -158,13 +158,15 @@
                             <thead>
                                 {% block list_header %}
                                     <tr>
-                                        <th scope="col" class="w-1 checkbox-cell" data-sa-hook="checkbox-cell">
-                                            <input class="form-check-input"
-                                                   type="checkbox"
-                                                   id="select-all-rows"
-                                                   data-sa-hook="select-all"
-                                                   aria-label="{{ _('Select all rows') }}" />
-                                        </th>
+                                        {% if _actions %}
+                                            <th scope="col" class="w-1 checkbox-cell" data-sa-hook="checkbox-cell">
+                                                <input class="form-check-input"
+                                                       type="checkbox"
+                                                       id="select-all-rows"
+                                                       data-sa-hook="select-all"
+                                                       aria-label="{{ _('Select all rows') }}" />
+                                            </th>
+                                        {% endif %}
                                         {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}<th scope="col" class="w-1"></th>{% endif %}
                                         {% for field in fields %}<th scope="col" data-column="{{ field.name }}">{{ column_header(field, list_params) }}</th>{% endfor %}
                                         {% if view.row_actions_position.value == "AFTER_COLUMNS" %}<th scope="col" class="w-1"></th>{% endif %}
@@ -180,7 +182,7 @@
                                     {% endblock %}
                                 {% else %}
                                     <tr>
-                                        <td colspan="{{ (fields | length) + 2 }}"
+                                        <td colspan="{{ (fields | length) + (2 if _actions else 1) }}"
                                             class="text-center text-muted py-4">
                                             {% block list_empty scoped %}{{ _("No data") }}{% endblock %}
                                         </td>

@@ -27,15 +27,17 @@
         <div class="dropdown-menu">{% for action in global_actions %}{{ action_item(action) }}{% endfor %}</div>
     </div>
 {% endif %}
-<div class="dropdown"
-     id="actions-dropdown"
-     data-sa-hook="actions-dropdown"
-     style="display: none">
-    <button type="button"
-            class="{{ cls('action.dropdown_toggle') }}"
-            data-bs-toggle="dropdown">
-        {{ _("With selected") }} (<span class="actions-selected-counter"
-      data-sa-hook="actions-selected-counter">0</span>)
-    </button>
-    <div class="dropdown-menu">{% for action in selection_actions %}{{ action_item(action) }}{% endfor %}</div>
-</div>
+{% if selection_actions %}
+    <div class="dropdown"
+         id="actions-dropdown"
+         data-sa-hook="actions-dropdown"
+         style="display: none">
+        <button type="button"
+                class="{{ cls('action.dropdown_toggle') }}"
+                data-bs-toggle="dropdown">
+            {{ _("With selected") }} (<span class="actions-selected-counter"
+          data-sa-hook="actions-selected-counter">0</span>)
+        </button>
+        <div class="dropdown-menu">{% for action in selection_actions %}{{ action_item(action) }}{% endfor %}</div>
+    </div>
+{% endif %}
