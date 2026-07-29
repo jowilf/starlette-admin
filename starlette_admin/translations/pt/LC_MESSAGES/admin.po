@@ -692,7 +692,7 @@ msgstr "Criar"
 #: starlette_admin/templates/list.html:120
 #, python-format
 msgid "New %(name)s"
-msgstr "Novo %(name)s"
+msgstr "Novo(a) %(name)s"
 
 #: starlette_admin/templates/detail.html:14
 msgid "Detail"
