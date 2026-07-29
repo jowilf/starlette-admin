@@ -327,7 +327,7 @@ def pydantic_error_to_form_validation_errors(
     errors: dict[str | int, Any] = {}
     for pydantic_error in exc.errors():
         loc: tuple[int | str, ...] = pydantic_error["loc"]
-        if key_map and loc and loc[0] in key_map:
+        if key_map and loc and isinstance(loc[0], str) and loc[0] in key_map:
             loc = (key_map[loc[0]], *loc[1:])
         _d = errors
         for i in range(len(loc)):
