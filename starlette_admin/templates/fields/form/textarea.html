@@ -6,7 +6,8 @@
               class="{{ cls(field.class_) }}{% if error %} {{ cls(field.error_class) }}{% endif %}"
               {% if error %}aria-invalid="true"{% endif %}
               {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}
-              {{ field.input_params() | safe }}>{% if data -%}{{ data }}{% endif %}</textarea>
+              {{ field.input_params() | safe }}>
+{% if data -%}{{ data }}{% endif %}</textarea>
     {% if field.help_text -%}
         <small class="form-hint" id="{{ field.id }}-help">{{ field.help_text }}</small>
     {% endif -%}
