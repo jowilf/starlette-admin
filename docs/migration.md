@@ -31,6 +31,7 @@ Beyond the breaking changes outlined below, this release includes:
 * **Other Enhancements:** [Flash messages](user-guide/flash-messages.md), [OAuth login](user-guide/auth.md), a [Tortoise ORM backend](integrations/tortoise.md), new fields (`ComputedField`, `SlugField`, `UUIDField`, `IPAddressField`), field-level `validators`, and clipboard copy functionality on any field.
 * **[Logging](user-guide/admin.md#debugging):** The package now logs internally under the `starlette_admin` namespace, silent by default. Pass `Admin(debug=True)` or call `starlette_admin.logging.configure_logging()` to see request routing, middleware, and permission decisions in the console, which is especially handy while migrating.
 * **Expanded Test Coverage:** The test suite is now substantially larger, featuring Playwright end-to-end tests that validate critical workflows across the admin interface.
+* **Lighter Package**: The published package size on PyPI has been reduced by ~50%
 
 ### Requirements
 
