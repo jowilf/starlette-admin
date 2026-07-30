@@ -162,6 +162,42 @@ hide:
         ]
     ```
 
+=== "Filters"
+
+    <span class="home-tour-title" role="heading" aria-level="3">Filters</span>
+
+    Extend the built-in query builder with custom filters to support specific business requirements. You can apply complex operations directly to the underlying database model.
+
+    <a class="home-tour-btn" href="user-guide/filters/">View the documentation</a>
+
+    ```python title="filters.py"
+    from datetime import datetime
+    from typing import Any
+
+    from starlette_admin.contrib.sqla import ModelView
+    from starlette_admin.filters.base import BaseFilter, FilterApplyContext, FilterDataType
+
+
+    class ActiveThisMonthFilter(BaseFilter):
+        name = "this_month"
+        label = "Created this month"
+        data_type = FilterDataType.NONE  # no value input: the range is derived from now()
+
+        def apply(self, ctx: FilterApplyContext) -> Any:
+            now = datetime.utcnow()
+            start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            col = getattr(ctx.view.model, ctx.field_name)
+            return col.between(start, now)
+
+    class ProductView(ModelView):
+        fields = [
+            DateTimeField(
+                "created_at",
+                filters=[ActiveThisMonthFilter, ...],
+            ),
+        ]
+    ```
+
 === "Actions"
 
     <span class="home-tour-title" role="heading" aria-level="3">Actions</span>

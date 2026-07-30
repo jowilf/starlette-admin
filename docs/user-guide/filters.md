@@ -4,7 +4,6 @@ Every field on a list page can have its own set of filter operators, like `conta
 
 The set of available filters is automatically derived from the field's underlying type. You can easily narrow, extend, or fully replace that set for any specific field.
 
-![Filters example](../../assets/images/filters.png)
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
