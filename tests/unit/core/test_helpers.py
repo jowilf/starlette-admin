@@ -164,6 +164,35 @@ def test_pydantic_error_to_form_validation_errors_nested():
     assert "inner" in result.errors
 
 
+def test_pydantic_error_to_form_validation_errors_with_key_map():
+    class Model(BaseModel):
+        company_id: int
+
+    with pytest.raises(ValidationError) as exc_info:
+        Model(company_id="not-an-int")  # type: ignore
+
+    result = pydantic_error_to_form_validation_errors(
+        exc_info.value, key_map={"company_id": "company"}
+    )
+    assert isinstance(result, FormValidationError)
+    assert "company" in result.errors
+    assert "company_id" not in result.errors
+
+
+def test_pydantic_error_to_form_validation_errors_key_map_no_match():
+    class Model(BaseModel):
+        age: int
+
+    with pytest.raises(ValidationError) as exc_info:
+        Model(age="not-an-int")  # type: ignore
+
+    result = pydantic_error_to_form_validation_errors(
+        exc_info.value, key_map={"company_id": "company"}
+    )
+    assert isinstance(result, FormValidationError)
+    assert "age" in result.errors
+
+
 # ── html_safe_json ────────────────────────────────────────────────────────────
 
 
