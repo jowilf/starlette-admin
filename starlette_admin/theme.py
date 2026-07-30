@@ -246,7 +246,7 @@ class TablerSettings:
     """
 
     base: TablerBase | None = "stone"
-    primary: TablerPrimary | None = "azure"
+    primary: TablerPrimary | None = "blue"
     radius: TablerRadius | None = 1
     mode: TablerMode = "light"
 
