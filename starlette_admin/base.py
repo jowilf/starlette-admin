@@ -1759,6 +1759,23 @@ class BaseAdmin:
             },
         )
 
+    async def _find_object_or_404(
+        self,
+        request: Request,
+        view: "BaseModelView",
+        key: str | None,
+        pk: str | None,
+        action: str,
+    ) -> Any:
+        if not pk:
+            _log.warning("%s missing pk: key=%s", action, key)
+            raise HTTPException(HTTP_404_NOT_FOUND)
+        obj = await view.find_by_pk(request, pk)
+        if obj is None:
+            _log.warning("%s not found: key=%s pk=%s", action, key, pk)
+            raise HTTPException(HTTP_404_NOT_FOUND)
+        return obj
+
     @route("/{key}/detail", methods=["GET"], name="detail")
     async def _render_detail(self, request: Request) -> Response:
         request.state.action = RequestAction.DETAIL
@@ -1773,10 +1790,7 @@ class BaseAdmin:
                 pk,
             )
             raise HTTPException(HTTP_403_FORBIDDEN)
-        obj = await view.find_by_pk(request, pk)
-        if obj is None:
-            _log.warning("detail not found: key=%s pk=%s", key, pk)
-            raise HTTPException(HTTP_404_NOT_FOUND)
+        obj = await self._find_object_or_404(request, view, key, pk, "detail")
         _log.info("detail rendered: key=%s pk=%s", key, pk)
         return self._template_response(
             request=request,
@@ -1921,10 +1935,7 @@ class BaseAdmin:
         if not view.is_accessible(request) or not view.can_edit(request):
             _log.warning("edit denied: key=%s pk=%s (permission check failed)", key, pk)
             raise HTTPException(HTTP_403_FORBIDDEN)
-        obj = await view.find_by_pk(request, pk)
-        if obj is None:
-            _log.warning("edit not found: key=%s pk=%s", key, pk)
-            raise HTTPException(HTTP_404_NOT_FOUND)
+        obj = await self._find_object_or_404(request, view, key, pk, "edit")
         config = {
             "title": view.title(request),
             "view": view,
