@@ -75,23 +75,27 @@
                                 {{ filter_builder(view,list_params, filter_chips, filter_builder_fields) }}
                                 {% if view.column_visibility %}
                                     <div class="dropdown" id="column-visibility-dropdown">
+                                        {#  The fixed strategy lets the menu escape the table-responsive overflow clipping  #}
                                         <button type="button"
                                                 class="{{ cls('list.columns_toggle') }}"
                                                 data-bs-toggle="dropdown"
-                                                data-bs-auto-close="outside">
+                                                data-bs-auto-close="outside"
+                                                data-bs-config='{"popperConfig": {"strategy": "fixed"}}'>
                                             <i class="{{ icon('list.columns') }} me-2"></i>{{ _("Columns") }}
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-end p-2">
-                                            {% for field in all_fields %}
-                                                <label class="dropdown-item">
-                                                    <input type="checkbox"
-                                                           class="form-check-input me-2 column-visibility-toggle"
-                                                           data-sa-hook="column-visibility-toggle"
-                                                           value="{{ field.name }}"
-                                                           {% if list_params.visible_cols is none or field.name in list_params.visible_cols %}checked{% endif %}>
-                                                    {{ field.label }}
-                                                </label>
-                                            {% endfor %}
+                                            <div style="max-height: 50vh; overflow-y: auto">
+                                                {% for field in all_fields %}
+                                                    <label class="dropdown-item">
+                                                        <input type="checkbox"
+                                                               class="form-check-input me-2 column-visibility-toggle"
+                                                               data-sa-hook="column-visibility-toggle"
+                                                               value="{{ field.name }}"
+                                                               {% if list_params.visible_cols is none or field.name in list_params.visible_cols %}checked{% endif %}>
+                                                        {{ field.label }}
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
                                             <div class="dropdown-divider"></div>
                                             <div class="d-flex justify-content-between align-items-center px-2 pt-1">
                                                 <a href="{{ list_url(request, cols=None, page=None) }}"

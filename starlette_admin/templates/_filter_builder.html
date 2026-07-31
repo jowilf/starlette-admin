@@ -1,10 +1,12 @@
 {% macro render(view, list_params, filter_chips, filter_builder_fields) -%}
     {% if filter_builder_fields %}
         <div class="dropdown" id="filter-builder-dropdown">
+            {#  The fixed strategy lets the menu escape the table-responsive overflow clipping  #}
             <button type="button"
                     class="{{ cls('filter.toggle_button') }}"
                     data-bs-toggle="dropdown"
-                    data-bs-auto-close="outside">
+                    data-bs-auto-close="outside"
+                    data-bs-config='{"popperConfig": {"strategy": "fixed"}}'>
                 <i class="{{ icon('list.filter') }} me-2"></i>{{ _("Filters") }}
                 {% if filter_chips %}
                     <span class="badge bg-primary text-white ms-1">{{ filter_chips | length }}</span>
@@ -12,7 +14,7 @@
             </button>
             <div class="dropdown-menu dropdown-menu-end p-3"
                  style="min-width: min(38rem, calc(100vw - 1rem));
-                        max-height: 80vh;
+                        max-height: 50vh;
                         overflow-y: auto;
                         z-index: 1031">
                 <form method="GET" id="filter-form" data-sa-hook="filter-form">
