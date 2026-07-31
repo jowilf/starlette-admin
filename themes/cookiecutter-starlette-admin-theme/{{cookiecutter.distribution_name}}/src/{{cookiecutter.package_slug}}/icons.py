@@ -54,7 +54,6 @@ class {{ cookiecutter.class_prefix }}Icons(IconSet):
         "action.copy": "ti ti-copy",
         "action.copy_done": "ti ti-check",
         # Fields
-        "field.file": "ti ti-file",
         "field.boolean_true": "ti ti-circle-check",
         "field.boolean_false": "ti ti-circle-x",
         "list_field.add": "ti ti-plus",

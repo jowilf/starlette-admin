@@ -394,7 +394,7 @@ These filters are registered automatically on every admin instance during `_setu
 | `is_model_view` | `view | is_model_view` | Returns `True` if the resource is a `BaseModelView` |
 | `is_dropdown` | `view | is_dropdown` | Returns `True` if the resource is a `DropDown` |
 | `tojson` | `value | tojson` | HTML-safe JSON serialization (replaces Jinja2's default `tojson`) |
-| `file_icon` | `mime_type | file_icon` | Returns a Font Awesome icon class for a MIME type (e.g., `application/pdf` → `fa-file-pdf`) |
+| `file_icon` | `mime_type | file_icon` | Returns a full icon class for a MIME type (e.g., `application/pdf` → `fa-solid fa-fw fa-file-pdf`); override `self.templates.env.filters["file_icon"]` to use your own icon set |
 | `to_view` | `key | to_view` | Looks up a registered `BaseModelView` by its key string; raises a 404 `HTTPException` if not found |
 | `is_iter` | `value | is_iter` | Returns `True` if value is a `list` or `tuple` |
 | `is_str` | `value | is_str` | Returns `True` if value is a `str` |

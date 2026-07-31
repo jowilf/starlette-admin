@@ -128,11 +128,13 @@ def get_file_icon(mime_type: str) -> str:
         "application/gzip": "fa-file-archive",
         "application/zip": "fa-file-archive",
     }
+    icon = "fa-file"
     if mime_type:
         for key, _ in mapping.items():
             if key in mime_type:
-                return mapping[key]
-    return "fa-file"
+                icon = mapping[key]
+                break
+    return f"fa-solid fa-fw {icon}"
 
 
 def html_params(kwargs: dict[str, Any]) -> str:

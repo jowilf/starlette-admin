@@ -72,7 +72,6 @@ class CoreIcons(IconSet):
         "action.copy": "fa-solid fa-copy",
         "action.copy_done": "fa-solid fa-check",
         # Fields
-        "field.file": "fa-solid fa-fw",
         "field.boolean_true": "fa-solid fa-check-circle",
         "field.boolean_false": "fa-solid fa-times-circle",
         "list_field.add": "fa fa-add",

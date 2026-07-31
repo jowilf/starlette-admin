@@ -4,7 +4,7 @@
         <a href="{{ v.url | safe_url }}"
            target="_blank"
            class="btn-link d-inline-flex align-items-center gap-1">
-            <i class="{{ icon('field.file') }} {{ v.content_type | file_icon }}"></i>
+            <i class="{{ v.content_type | file_icon }}"></i>
             {% call truncated() -%}
                 {{- v.filename | escape -}}{%- endcall %}
         </a>
