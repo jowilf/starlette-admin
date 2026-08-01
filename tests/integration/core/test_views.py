@@ -171,11 +171,13 @@ class TestViews:
         assert app.url_path_for("admin:detail", key=key) == "/admin/post/detail"
         assert client.get("/admin/post/detail?pk=1").status_code == 200
         assert client.get("/admin/post/detail?pk=6").status_code == 404
+        assert client.get("/admin/post/detail").status_code == 404
         assert app.url_path_for("admin:create", key=key) == "/admin/post/create"
         assert client.get("/admin/post/create").status_code == 200
         assert app.url_path_for("admin:edit", key=key) == "/admin/post/edit"
         assert client.get("/admin/post/edit?pk=1").status_code == 200
         assert client.get("/admin/post/edit?pk=6").status_code == 404
+        assert client.get("/admin/post/edit").status_code == 404
 
     def test_sync_object_representation(self):
         admin = BaseAdmin()
