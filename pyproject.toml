@@ -80,7 +80,7 @@ doc = [
     "mkdocstrings[python] >=0.27.0",
 ]
 dev = [
-    "pre-commit >=2.20.0, <4.4.0",
+    "pre-commit >=2.20.0, <4.7.0",
     "uvicorn >=0.20.0, <0.40.0",
 ]
 
