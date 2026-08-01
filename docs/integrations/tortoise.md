@@ -1,3 +1,8 @@
+---
+title: Tortoise ORM Integration
+description: Easily create an admin interface for your Tortoise ORM models in FastAPI using starlette-admin.
+---
+
 # Tortoise ORM Integration
 
 Tortoise ORM is an asyncio-native object-relational mapper inspired by Django. The `starlette_admin.contrib.tortoise` module provides specialized `Admin`, `ModelView`, and `InlineModelView` classes that are pre-configured to integrate directly with your Tortoise models.

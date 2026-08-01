@@ -1,3 +1,8 @@
+---
+title: Flash Messages
+description: Send ephemeral success, warning, or error alerts to users after completing actions in starlette-admin.
+---
+
 # Flash Messages
 
 Flash messages provide temporary, one-time feedback to users after they perform an action (e.g., "Post created successfully" or "Invalid file type"). These messages persist across a single HTTP redirect and are automatically discarded once displayed.

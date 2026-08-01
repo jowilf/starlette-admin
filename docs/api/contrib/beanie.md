@@ -1,3 +1,8 @@
+---
+title: Beanie Contrib API Reference
+description: API reference documentation for the Beanie backend integration in starlette-admin.
+---
+
 # Contrib: Beanie
 
 Full attribute and method reference for the Beanie backend (`starlette_admin.contrib.beanie`),

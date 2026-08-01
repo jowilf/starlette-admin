@@ -1,3 +1,8 @@
+---
+title: Inline Forms
+description: Manage related models inline directly within a parent model's create and edit forms using InlineModelView.
+---
+
 # Inline Forms
 
 Inline forms allow users to manage related records directly from a parent model's create or edit page. This approach is ideal for child models that only make sense in the context of their parent, such as comments on an article or tasks within a project. Inlines eliminate the need for a separate administrative view for the child model.

@@ -1,3 +1,8 @@
+---
+title: Custom Themes
+description: Override Tabler CSS variables, inject custom stylesheets, and modify the overall aesthetic of your starlette-admin dashboard.
+---
+
 # Custom Themes
 
 You can customize the appearance of your admin interface using the theme abstractions, custom templates, and static files. The `DefaultTheme` class controls the default styling by applying specific data attributes to the `<html>` tag through `TablerSettings`. For more advanced customizations, you can subclass `BaseTheme` to bundle your own templates, static assets, and icon sets, or simply pass custom template and static directories to the `Admin` application.

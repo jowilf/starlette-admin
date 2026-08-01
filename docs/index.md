@@ -1,5 +1,12 @@
 ---
 title: Extensible admin interfaces for FastAPI & Starlette
+description: Instantly generate a comprehensive administrative UI from your SQLAlchemy, SQLModel, Beanie, MongoEngine, or Tortoise ORM models.
+keywords:
+  - fastapi admin
+  - starlette admin
+  - python admin panel
+  - crud dashboard
+  - admin framework
 hide:
   - navigation
   - toc

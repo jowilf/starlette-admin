@@ -1,3 +1,8 @@
+---
+title: Auth API Reference
+description: API reference documentation for AuthProvider and authentication features in starlette-admin.
+---
+
 # Auth
 
 Full attribute and method reference for the auth providers, generated from their docstrings.

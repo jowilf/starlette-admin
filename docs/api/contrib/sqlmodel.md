@@ -1,3 +1,8 @@
+---
+title: SQLModel Contrib API Reference
+description: API reference documentation for the SQLModel backend integration in starlette-admin.
+---
+
 # Contrib: SQLModel
 
 Full attribute and method reference for the SQLModel backend (`starlette_admin.contrib.sqlmodel`),

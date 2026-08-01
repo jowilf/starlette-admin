@@ -1,3 +1,8 @@
+---
+title: MongoEngine Integration
+description: Learn how to connect MongoEngine models with starlette-admin to manage your MongoDB data via an admin panel.
+---
+
 # MongoEngine Integration
 
 MongoEngine models MongoDB documents as synchronous Python classes using a Django-style field API. The `starlette_admin.contrib.mongoengine` module provides specialized `Admin` and `ModelView` classes that build administrative views directly from your `mongoengine.Document` definitions.

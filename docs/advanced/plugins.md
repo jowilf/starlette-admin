@@ -1,3 +1,8 @@
+---
+title: Plugins
+description: Package reusable admin features and extensions as drop-in plugins for starlette-admin.
+---
+
 # Plugins
 
 A plugin is a Python package that extends `starlette-admin` through a single constructor argument. A plugin can bundle any combination of fields, templates, static assets, model converters, filters, import/export formats, storage backends, event subscribers, views, routes, middlewares, theme assets, and translation catalogs.

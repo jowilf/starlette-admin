@@ -1,3 +1,8 @@
+---
+title: Storage API Reference
+description: API reference documentation for file and object storage in starlette-admin.
+---
+
 # Storage
 
 Full attribute and method reference for the file storage backends, generated from docstrings.

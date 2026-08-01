@@ -1,3 +1,8 @@
+---
+title: File Storage
+description: Manage file and image uploads in starlette-admin using LocalStorage or S3-compatible backend storage.
+---
+
 # File Storage
 
 `FileField` and `ImageField` store uploaded files through a storage backend configured via the field's `storage` parameter.

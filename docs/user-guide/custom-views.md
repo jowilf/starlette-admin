@@ -1,3 +1,8 @@
+---
+title: Custom Views & Widgets
+description: Build custom dashboard widgets, static pages, and standalone views inside your starlette-admin panel.
+---
+
 # Custom Views
 
 Not every admin page maps to a database model. A `CustomView` creates a standalone page in the sidebar that you compose yourself using built-in widgets, custom templates, or custom routes.

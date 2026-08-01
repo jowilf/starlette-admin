@@ -1,3 +1,8 @@
+---
+title: Coming from Flask-Admin
+description: A direct migration guide from Flask-Admin to starlette-admin, showing how to transition your ModelView configurations to the ASGI ecosystem.
+---
+
 # Coming from Flask-Admin
 
 Because starlette-admin began as a port of Flask-Admin's concepts to the ASGI ecosystem, the migration process is highly direct. You still subclass a `ModelView`, configure it using class attributes, and register it on an `Admin` instance. Most of the transition involves renaming attributes and shifting from Flask's implicit request context to Starlette's explicit `request` object.

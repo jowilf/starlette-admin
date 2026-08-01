@@ -1,3 +1,8 @@
+---
+title: Fields
+description: Comprehensive reference for all built-in fields in starlette-admin to map your database columns to UI components.
+---
+
 # Fields
 
 Fields are the core building blocks of your models. Under the hood, they are plain Python dataclasses. Every attribute you pass to a field constructor becomes a dataclass field, and every field type is a subclass of `BaseField` that you can inspect, subclass, or instantiate directly.

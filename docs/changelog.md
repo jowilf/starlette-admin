@@ -1,3 +1,8 @@
+---
+title: Changelog
+description: Release notes and version history for starlette-admin, detailing new features, bug fixes, and deprecations.
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

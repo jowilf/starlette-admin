@@ -1,3 +1,8 @@
+---
+title: Admin Configuration
+description: Configure your starlette-admin instance, customize theming, routing, and overarching security settings.
+---
+
 # Admin
 
 Every admin-wide setting (such as the navbar title, the mount location, CSRF and authentication configurations, and the rendered theme) is passed as a keyword argument to the `Admin` class.

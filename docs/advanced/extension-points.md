@@ -1,3 +1,8 @@
+---
+title: Extension Points
+description: An overview of all customizable hook methods, base classes, and configuration points available in starlette-admin.
+---
+
 # Extension Points
 
 This page provides a centralized reference for all pluggable surfaces in `starlette-admin`. Use the table below to identify the appropriate class, hook, or decorator for your use case and navigate to the in-depth documentation.

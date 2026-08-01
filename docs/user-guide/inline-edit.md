@@ -1,3 +1,8 @@
+---
+title: Inline Edit
+description: Enable users to edit field values directly within the list view table for faster data entry.
+---
+
 # Inline Edit
 
 Inline editing allows users to modify a single field directly from the list page. Clicking a cell opens a small popover, eliminating the need to navigate to the full edit form. Use this feature for quick, single-field updates like fixing a title, toggling a status, or adjusting a date. The interaction mirrors the familiar [x-editable](https://vitalets.github.io/x-editable/) pattern.

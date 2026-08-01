@@ -1,3 +1,8 @@
+---
+title: Filters API Reference
+description: API reference documentation for database query filters in starlette-admin.
+---
+
 # Filters
 
 Full attribute and method reference for the filter system, generated from docstrings. For a

@@ -1,3 +1,8 @@
+---
+title: Admin API Reference
+description: API reference documentation for the Admin class in starlette-admin.
+---
+
 # Admin
 
 Full attribute and method reference for `BaseAdmin`, generated from its docstrings. For a

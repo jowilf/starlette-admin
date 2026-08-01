@@ -1,3 +1,8 @@
+---
+title: SQLAlchemy Contrib API Reference
+description: API reference documentation for the SQLAlchemy backend integration in starlette-admin.
+---
+
 # Contrib: SQLAlchemy
 
 Full attribute and method reference for the SQLAlchemy backend (`starlette_admin.contrib.sqla`),

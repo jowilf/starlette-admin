@@ -1,3 +1,8 @@
+---
+title: Filters
+description: Add complex nested AND/OR filtering capabilities to your admin views using type-aware query builders.
+---
+
 # Filters
 
 Every field on a list page can have its own set of filter operators, like `contains`, `between`, `is null`, and more. Your users can combine these into a nested `AND`/`OR` tree without you having to write a single complex database query.

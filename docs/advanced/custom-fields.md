@@ -1,3 +1,8 @@
+---
+title: Custom Fields
+description: Learn how to create custom field types in starlette-admin to handle specialized data types and custom UI widgets.
+---
+
 # Custom Fields
 
 While the built-in fields cover most columns you will encounter, you can create custom fields by subclassing [`BaseField`](../api/fields.md#starlette_admin.fields.BaseField). A field type primarily consists of three methods that transfer data between your model and the browser, alongside three template paths that handle rendering. You can subclass `BaseField` directly or extend an existing field that closely matches your requirements (such as `StringField` or `EnumField`), overriding only the necessary components.

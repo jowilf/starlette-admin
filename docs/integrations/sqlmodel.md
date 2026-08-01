@@ -1,3 +1,8 @@
+---
+title: SQLModel Integration
+description: Build a comprehensive admin dashboard for your FastAPI SQLModel applications using starlette-admin.
+---
+
 # SQLModel Integration
 
 [SQLModel](https://sqlmodel.tiangolo.com/) combines SQLAlchemy tables with Pydantic validation in a single model class. Because SQLModel models are SQLAlchemy models under the hood, the `starlette_admin.contrib.sqlmodel` module serves as a thin wrapper around the existing [SQLAlchemy backend](sqlalchemy.md).

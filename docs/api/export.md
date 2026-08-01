@@ -1,3 +1,8 @@
+---
+title: Export API Reference
+description: API reference documentation for data exporters in starlette-admin.
+---
+
 # Export
 
 Full attribute and method reference for the export system, generated from docstrings. For a

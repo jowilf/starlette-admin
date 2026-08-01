@@ -373,9 +373,10 @@ class TestViews:
         edit_url = f"http://testserver/admin/user/edit?pk=1&_origin={detail_origin}"
         assert f'href="{edit_url.replace("&", "&amp;")}"' in detail_response.text
 
-    def test_edit_breadcrumb_and_cancel_resolve_nested_origin_to_detail(self):
-        """Both the breadcrumb and the Cancel button on an edit page
-        resolve a nested `_origin` back to the detail page it came from."""
+    def test_edit_cancel_resolves_nested_origin_to_detail(self):
+        """The Cancel button on an edit page resolves a nested `_origin`
+        back to the detail page it came from, while the breadcrumb keeps
+        naming the view it labels and links to that view's own list."""
         client = self._carry_origin_client()
 
         list_origin = quote_plus("http://testserver/admin/user/list?q=John")
@@ -386,8 +387,30 @@ class TestViews:
         edit_response = client.get(edit_url.removeprefix("http://testserver"))
         assert edit_response.status_code == 200
         assert (
-            edit_response.text.count(f'href="{detail_url.replace("&", "&amp;")}"') == 2
+            edit_response.text.count(f'href="{detail_url.replace("&", "&amp;")}"') == 1
         )
+        # A detail-page origin is not a "Users" list, so the breadcrumb
+        # falls back to the plain list rather than mislabelling the link.
+        assert _breadcrumb_href(edit_response.text) == (
+            "http://testserver/admin/user/list"
+        )
+
+    def test_cross_view_origin_does_not_mislabel_breadcrumb(self):
+        """Following a relation off a Posts list onto a User detail page
+        must not leave a "Users" breadcrumb pointing at the Posts list.
+
+        The breadcrumb names the view it belongs to, so its link has to
+        stay inside that view; the Cancel/back button is what honors the
+        cross-view `_origin`.
+        """
+        client = self._carry_origin_client()
+
+        post_list_origin = quote_plus("/admin/post/list?q=Dolor")
+        user_detail_path = f"/admin/user/detail?pk=1&_origin={post_list_origin}"
+
+        response = client.get(user_detail_path)
+        assert response.status_code == 200
+        assert _breadcrumb_href(response.text) == "http://testserver/admin/user/list"
 
     def test_edit_save_redirects_back_to_origin(self):
         """Saving an edit closes the loop: the redirect lands back on the

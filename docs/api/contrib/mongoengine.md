@@ -1,3 +1,8 @@
+---
+title: MongoEngine Contrib API Reference
+description: API reference documentation for the MongoEngine backend integration in starlette-admin.
+---
+
 # Contrib: MongoEngine
 
 Full attribute and method reference for the MongoEngine backend

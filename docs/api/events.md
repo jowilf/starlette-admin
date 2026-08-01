@@ -1,3 +1,8 @@
+---
+title: Events API Reference
+description: API reference documentation for the event system and hooks in starlette-admin.
+---
+
 # Events
 
 Full attribute and method reference for the event system, generated from docstrings. For a

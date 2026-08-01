@@ -1,3 +1,8 @@
+---
+title: Installation
+description: Learn how to install starlette-admin and its optional dependencies to build an admin interface for your FastAPI or Starlette application.
+---
+
 # Installation
 
 Install **starlette-admin** using your preferred package manager.

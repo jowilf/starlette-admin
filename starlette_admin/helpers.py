@@ -243,6 +243,27 @@ def view_list_url(request: Request, key: str) -> str:
     return str(request.url_for(route_name + ":list", key=key))
 
 
+def breadcrumb_list_url(request: Request, key: str) -> str:
+    """Build the URL for the view-level crumb of a breadcrumb trail.
+
+    Unlike [`back_url`][starlette_admin.helpers.back_url], this never points at
+    another view's page: a breadcrumb labelled with `key`'s menu label must link
+    to `key`'s own list page. It reuses `_origin` only when that origin *is*
+    `key`'s list page, so a detail page reached from a sorted/filtered list
+    still links back to that exact list state; when the origin belongs to a
+    different view (e.g. a related object's detail page reached from another
+    view's list), it falls back to the plain list URL.
+    """
+    fallback = view_list_url(request, key)
+    origin = request.query_params.get("_origin")
+    if not origin:
+        return fallback
+    candidate = safe_redirect_url(origin, request, fallback)
+    route_name = request.app.state.ROUTE_NAME
+    list_path = request.url_for(route_name + ":list", key=key).path
+    return candidate if urlparse(candidate).path == list_path else fallback
+
+
 def list_page_origin(request: Request, key: str) -> str:
     """Build the real list-page path for `key`, carrying the current request's
     query params (sort, filters, page, ...) but dropping `pk`.

@@ -1,3 +1,8 @@
+---
+title: Beanie Integration
+description: Integrate Beanie ODM with starlette-admin to create an extensible admin interface for your MongoDB collections in FastAPI.
+---
+
 # Beanie Integration
 
 Beanie models MongoDB documents as asynchronous Pydantic models. The `starlette_admin.contrib.beanie` module provides specialized `Admin` and `ModelView` classes configured to interact with these documents directly.

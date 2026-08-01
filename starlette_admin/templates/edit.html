@@ -8,7 +8,7 @@
                     <a href="{{ url_for(__name__ ~ ':index') }}">{{ _("Admin") }}</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="{{ back_url(request, view.key) }}">{{ view.menu_label }}</a>
+                    <a href="{{ breadcrumb_list_url(request, view.key) }}">{{ view.menu_label }}</a>
                 </li>
                 <li class="breadcrumb-item active">{{ _("Edit") }}</li>
             </ol>

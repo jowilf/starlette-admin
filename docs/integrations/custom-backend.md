@@ -1,3 +1,8 @@
+---
+title: Custom Backend Integration
+description: Learn how to build a custom backend adapter for starlette-admin to connect your own ORM or API datastore to the admin UI.
+---
+
 # Custom Backends
 
 `starlette-admin` provides built-in backends for SQLAlchemy, SQLModel, Beanie, MongoEngine, and Tortoise ORM, but the admin panel is entirely storage-agnostic. Every backend is simply a subclass of `BaseModelView`. This class translates standard CRUD operations into commands your specific data source understands. Whether you are using a REST API, Redis, a legacy database without an ORM, or a lightweight document store like TinyDB, the implementation process remains identical.

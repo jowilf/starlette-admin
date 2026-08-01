@@ -1,3 +1,8 @@
+---
+title: Deployment
+description: Best practices for deploying your FastAPI and starlette-admin application to production safely and efficiently.
+---
+
 # Deployment
 
 Running the admin behind a reverse proxy changes two things you can otherwise ignore in local development: the secret key must be stable across worker processes, and generated URLs must reflect HTTPS even though your app only ever sees plain HTTP from the proxy.

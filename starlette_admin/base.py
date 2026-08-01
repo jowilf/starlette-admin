@@ -45,6 +45,7 @@ from starlette_admin.helpers import (
     JSONResponse,
     _as_url_callable,
     back_url,
+    breadcrumb_list_url,
     create_url,
     detail_url,
     edit_url,
@@ -667,6 +668,7 @@ class BaseAdmin:
         env_globals["edit_url"] = edit_url
         env_globals["create_url"] = create_url
         env_globals["back_url"] = back_url
+        env_globals["breadcrumb_list_url"] = breadcrumb_list_url
         env_globals["import_url"] = import_url
         env_globals["get_locale"] = get_locale
         env_globals["get_locale_display_name"] = get_locale_display_name

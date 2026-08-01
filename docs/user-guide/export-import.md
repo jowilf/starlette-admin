@@ -1,4 +1,9 @@
-## Export and Import
+---
+title: Export and Import
+description: Enable CSV, JSON, and PDF export functionality and bulk data imports with validation in starlette-admin.
+---
+
+# Export and Import
 
 Every list page lets users export data to a file and import data from a file directly, eliminating the need to write custom routes.
 

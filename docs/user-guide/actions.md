@@ -1,3 +1,8 @@
+---
+title: Actions
+description: Execute batch and row-level operations with custom confirmations and forms directly from the list view.
+---
+
 # Actions
 
 In `starlette-admin`, actions provide an intuitive way to interact with your database records and perform operations like mass deletions, bulk updates, and sending emails.

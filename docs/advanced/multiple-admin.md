@@ -1,3 +1,8 @@
+---
+title: Multiple Admin Instances
+description: Mount multiple isolated admin dashboards on a single FastAPI application for different user roles or domains.
+---
+
 # Multiple Admin Instances
 
 Every `Admin` instance you construct acts as a self-contained Starlette sub-application. You can mount as many instances as you need, and each can maintain its own `base_url`, `route_name`, authentication provider, and views.

@@ -1,3 +1,8 @@
+---
+title: Security
+description: Discover built-in security features in starlette-admin including CSRF protection, file upload safety, and access control.
+---
+
 # Security
 
 Starlette-admin includes built-in safeguards to mitigate the specific risks associated with running an administration panel. Protections against Cross-Site Request Forgery (CSRF) and strict limits on export and import payload sizes are active as soon as you instantiate the `Admin` class.

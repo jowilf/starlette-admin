@@ -1,3 +1,8 @@
+---
+title: Fields API Reference
+description: API reference documentation for all field types available in starlette-admin.
+---
+
 # Fields
 
 Full attribute and method reference for `BaseField` and every built-in field type, generated

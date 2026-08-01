@@ -1,3 +1,8 @@
+---
+title: Views API Reference
+description: API reference documentation for ModelView, CustomView, and Link in starlette-admin.
+---
+
 # Views
 
 Full attribute and method reference for the view classes, generated from their docstrings. For a

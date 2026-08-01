@@ -1,3 +1,8 @@
+---
+title: Core Concepts
+description: Understand the architectural design principles of starlette-admin, including declarative views, URL-based state, and backend-agnostic models.
+---
+
 # Core Concepts
 
 After completing the Quickstart by writing a `PostView` and mounting an admin instance, the next step is understanding the framework's architectural design principles. Grasping these core concepts provides the foundation for the rest of the documentation.

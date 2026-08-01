@@ -1,3 +1,8 @@
+---
+title: Coming from Django Admin
+description: A comprehensive migration guide mapping Django Admin concepts to starlette-admin equivalents for building declarative administrative interfaces.
+---
+
 # Coming from Django Admin
 
 If you are coming from Django Admin, you will feel at home in starlette-admin. Both frameworks generate administrative interfaces using declarative, per-model configurations. Both support inline editing, batch actions, and per-request permissions.

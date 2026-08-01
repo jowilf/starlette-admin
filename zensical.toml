@@ -1,6 +1,7 @@
 [project]
 site_name = "Starlette Admin"
 site_description = "Fast, beautiful and extensible administrative interface framework for FastAPI & Starlette applications"
+site_author = "Jocelin Hounon"
 site_url = "https://jowilf.github.io/starlette-admin"
 repo_name = "jowilf/starlette-admin"
 repo_url = "https://github.com/jowilf/starlette-admin"
@@ -132,6 +133,8 @@ anchor_linenums = true
 alternate_style = true
 
 [project.markdown_extensions.attr_list]
+
+[project.plugins.social]
 
 [project.plugins.search]
 

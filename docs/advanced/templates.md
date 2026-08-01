@@ -1,3 +1,8 @@
+---
+title: Templates
+description: Override Jinja2 templates in starlette-admin to completely customize the HTML structure of specific views or fields.
+---
+
 # Templates
 
 Every page in the admin interface is a Jinja2 template you can override. Whether you need to customize a single list page, a specific field's table cell, or a dashboard widget, you can apply your changes without forking the built-in template tree.

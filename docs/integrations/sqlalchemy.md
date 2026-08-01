@@ -1,3 +1,8 @@
+---
+title: SQLAlchemy Integration
+description: Learn how to integrate starlette-admin with SQLAlchemy. Create an admin dashboard for your relational database models in FastAPI.
+---
+
 # SQLAlchemy
 
 The SQLAlchemy backend serves as the reference implementation for `BaseModelView`. It has only been tested against SQLAlchemy 2 `DeclarativeBase` models. Other backends (such as Beanie, MongoEngine, Tortoise ORM, or your custom implementation) fulfill this identical contract against their respective data stores.

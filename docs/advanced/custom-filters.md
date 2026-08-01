@@ -1,3 +1,8 @@
+---
+title: Custom Filters
+description: Extend the built-in query builder by creating custom database filters and operators in starlette-admin.
+---
+
 # Custom filters
 
 Subclassing `BaseFilter` allows you to introduce custom operators beyond the built-in set. You can implement domain-specific checks like "_is divisible by_", create computed conditions like "_created this month_", or add support for field types the default registry omits. This guide explains the internal mechanics of custom filters and details the two methods for registering them: subclassing your backend's `FilterRegistry` to apply a filter across all matching field types, or passing the filter directly to a specific field's `filters=` list. For standard implementation details, including default filters per field type, manual overrides, and URL formatting, refer to the [Filters guide](../user-guide/filters.md).

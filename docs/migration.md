@@ -1,3 +1,8 @@
+---
+title: Migration Guide
+description: Upgrade guide for migrating from older versions of starlette-admin to the latest release, including breaking changes and new features.
+---
+
 # Migration Guide
 
 This page collects the upgrade instructions between `starlette-admin` releases. Jump to the section matching the version you are upgrading from.

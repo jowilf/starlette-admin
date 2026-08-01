@@ -1,3 +1,8 @@
+---
+title: Events
+description: Subscribe to global lifecycle events like AFTER_CREATE to build audit logs, webhooks, and asynchronous workflows.
+---
+
 # Events
 
 A method hook like `before_create` only runs for the view that defines it. The event system lets code outside that view react to what happens inside it, meaning an audit log, a webhook, or a cache invalidation can live in one place instead of being copy-pasted into every `ModelView` you write.

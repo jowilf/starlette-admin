@@ -1,3 +1,8 @@
+---
+title: Form Layouts
+description: Design complex, responsive form layouts using TabsWidget, FieldsetWidget, and grid columns in starlette-admin.
+---
+
 # Form Layouts
 
 By default, the create and edit forms render every property defined in `fields` as a single, flat list. The `form_layout` attribute allows you to arrange these inputs using the same composable widgets available for [dashboards][starlette_admin.views.CustomView.widget]. You can create side-by-side rows, titled or collapsible panels, tabs, and static content. You can even integrate your own custom widgets.

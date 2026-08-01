@@ -1,3 +1,8 @@
+---
+title: Quickstart
+description: Build a fully functional CRUD admin interface for FastAPI and Starlette in minutes with our comprehensive quickstart guide.
+---
+
 # Quickstart
 
 Build a fully functional CRUD admin interface for a blog in minutes, with automatically generated forms, lists, search, import, and export powered directly from your data models.

@@ -1,3 +1,8 @@
+---
+title: Views
+description: Learn how to configure list and detail views in starlette-admin, including search, sorting, and pagination.
+---
+
 # Views
 
 Starlette Admin builds its sidebar using three types of views: `ModelView` to expose database models, `CustomView` to render standalone pages, and `Link` to add simple hyperlinks.

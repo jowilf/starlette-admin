@@ -1,3 +1,8 @@
+---
+title: Authentication
+description: Implement authentication in starlette-admin using AuthProvider or integrate with OAuth to secure your dashboard.
+---
+
 # Authentication
 
 You protect the admin interface by implementing a single method:
