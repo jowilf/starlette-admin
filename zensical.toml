@@ -68,6 +68,7 @@ nav = [
     { "Admin" = "api/admin.md" },
     { "Views" = "api/views.md" },
     { "Fields" = "api/fields.md" },
+    { "Widgets" = "api/widgets.md" },
     { "Validators" = "api/validators.md" },
     { "Filters" = "api/filters.md" },
     { "Auth" = "api/auth.md" },

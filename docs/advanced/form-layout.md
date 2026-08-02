@@ -5,7 +5,7 @@ description: Design complex, responsive form layouts using TabsWidget, FieldsetW
 
 # Form Layouts
 
-By default, the create and edit forms render every property defined in `fields` as a single, flat list. The `form_layout` attribute allows you to arrange these inputs using the same composable widgets available for [dashboards][starlette_admin.views.CustomView.widget]. You can create side-by-side rows, titled or collapsible panels, tabs, and static content. You can even integrate your own custom widgets.
+By default, the create and edit forms render every property defined in `fields` as a single, flat list. The `form_layout` attribute allows you to arrange these inputs using the same composable widgets available for [dashboards](../user-guide/custom-views.md). You can create side-by-side rows, titled or collapsible panels, tabs, and static content. You can even integrate your own custom widgets.
 
 ## Basic Usage
 
@@ -32,7 +32,7 @@ In the layout defined above:
 
 You can place any number of fields into a single row and freely mix single-column and multi-column rows throughout your list.
 
-This shorthand expansion is a built-in property of container widgets like `RowWidget`, `ColumnWidget`, `GridWidget`, `PanelWidget`, `FieldsetWidget`, `TabsWidget`, and `Col`. When constructed, these widgets automatically expand tuples into rows and lists into stacked columns. This means the shorthand works natively within nested `children` attributes or inside a [`CustomView.widget`][starlette_admin.views.CustomView.widget] dashboard.
+This shorthand expansion is a built-in property of container widgets like `RowWidget`, `ColumnWidget`, `GridWidget`, `PanelWidget`, `FieldsetWidget`, `TabsWidget`, and `Col`. When constructed, these widgets automatically expand tuples into rows and lists into stacked columns. This means the shorthand works natively within nested `children` attributes or inside a [`CustomView.widget`](../user-guide/custom-views.md) dashboard.
 
 ## Grouping Fields
 
@@ -178,7 +178,7 @@ form_layout = [
 
 Because `form_layout` shares the `BaseWidget` hierarchy with dashboards, you can subclass `BaseWidget` to create custom elements. This provides an escape hatch for features not covered by built-in widgets, such as read-only previews, embedded charts, or custom macros.
 
-Refer to [CustomView.widget][starlette_admin.views.CustomView.widget] for the general pattern. Note that custom widgets placed in `form_layout` always render, regardless of field visibility rules.
+Refer to [Custom Views & Widgets](../user-guide/custom-views.md) for the general pattern, and to the [Widgets API reference](../api/widgets.md) for the methods a subclass can override. Note that custom widgets placed in `form_layout` always render, regardless of field visibility rules.
 
 ## Access Control and Visibility
 

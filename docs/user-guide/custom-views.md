@@ -45,6 +45,8 @@ Subclassing `CustomView` is only necessary when you need to add custom endpoints
 
 Content widgets render the actual data. Their `*_callback` parameters accept async callables that receive the current `Request`, allowing every widget to fetch live data.
 
+For the complete constructor signature of every widget shown below, see the [Widgets API reference](../api/widgets.md).
+
 ### StatWidget
 
 A KPI card showing a single metric, an optional description, and a sparkline.
