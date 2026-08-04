@@ -1,0 +1,7 @@
+{% if data %}
+    <div class="badges-list">
+        {% for tag in data %}
+            <span class="badge">{{ tag | escape }}</span>
+        {% endfor %}
+    </div>
+{% endif %}

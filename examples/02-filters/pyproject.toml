@@ -1,0 +1,10 @@
+[project]
+name = "02-filters"
+version = "0.1.0"
+description = "Filter builder demo: inventory catalogue"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["starlette-admin", "uvicorn[standard]", "sqlalchemy>=2.0"]
+
+[tool.uv.sources]
+starlette-admin = { workspace = true, editable = true }

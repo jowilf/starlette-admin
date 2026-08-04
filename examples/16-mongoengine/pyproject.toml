@@ -1,0 +1,16 @@
+[project]
+name = "16-mongoengine"
+version = "0.1.0"
+description = "Comprehensive MongoEngine + MongoDB example for starlette-admin"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mongoengine>=0.27.0",
+    "pillow>=12.2.0",
+    "starlette-admin",
+    "tablib[xlsx]",
+    "uvicorn[standard]>=0.39.0",
+]
+
+[tool.uv.sources]
+starlette-admin = { workspace = true, editable = true }

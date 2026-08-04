@@ -1,14 +1,35 @@
-<div class="modal modal-blur fade" id="modal-action" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+<div class="{{ cls('modal.base') }}"
+     id="modal-action"
+     data-sa-hook="modal-action"
+     tabindex="-1"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-action-title">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
+            <div class="modal-header d-none"
+                 id="modal-action-header"
+                 data-sa-hook="modal-action-header">
+                <h5 class="modal-title"
+                    id="modal-action-title"
+                    data-sa-hook="modal-action-title"></h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="{{ _('Close') }}"></button>
+            </div>
             <div class="modal-body">
-                <div id="actionConfirmation"></div>
-                <div id="modal-form"></div>
+                <div id="actionConfirmation" data-sa-hook="action-confirmation"></div>
+                <div id="modal-form" data-sa-hook="modal-form"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-link link-secondary me-auto"
+                <button type="button"
+                        class="{{ cls('action.modal_cancel_button') }}"
                         data-bs-dismiss="modal">{{ _("Cancel") }}</button>
-                <button id="actionSubmit" type="button" class="btn btn-primary"
+                <button id="actionSubmit"
+                        data-sa-action="action-submit"
+                        type="button"
+                        class="{{ cls('action.modal_confirm_button') }}"
                         data-bs-dismiss="modal">{{ _("Yes, Proceed") }}</button>
             </div>
         </div>

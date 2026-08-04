@@ -1,0 +1,4 @@
+<fieldset class="form-fieldset"{% if disabled %} disabled{% endif %}>
+    <legend class="form-fieldset-legend">{{ legend }}</legend>
+    {% for child_html in children_html %}{{ child_html }}{% endfor %}
+</fieldset>

@@ -1,0 +1,8 @@
+{% if data %}
+    {# inline-edit-value marks the underline target for inline-editable cells. #}
+    <div class="badges-list">
+        {% for tag in data %}
+            <span class="badge inline-edit-value">{{ tag | escape }}</span>
+        {% endfor %}
+    </div>
+{% endif %}

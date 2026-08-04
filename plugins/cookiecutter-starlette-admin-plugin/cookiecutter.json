@@ -1,0 +1,24 @@
+{
+    "plugin_name": "My Plugin",
+    "plugin_slug": "{{ cookiecutter.plugin_name.lower().replace(' ', '-').replace('_', '-') }}",
+    "package_slug": "starlette_admin_{{ cookiecutter.plugin_slug.replace('-', '_') }}",
+    "distribution_name": "starlette-admin-{{ cookiecutter.plugin_slug }}",
+    "class_prefix": "{{ cookiecutter.plugin_name.title().replace(' ', '').replace('-', '').replace('_', '') }}",
+    "description": "A starlette-admin plugin",
+    "author_name": "Your Name",
+    "author_email": "you@example.com",
+    "github_username": "yourusername",
+    "version": "0.1.0",
+    "year": "2026",
+    "python_requires": ">=3.11",
+    "starlette_admin_version_spec": ">=0.16,<1.0",
+    "license": ["MIT", "Apache-2.0", "BSD-3-Clause", "Proprietary"],
+    "include_example_field": ["yes", "no"],
+    "_jinja2_env_vars": {
+        "trim_blocks": true,
+        "lstrip_blocks": true
+    },
+    "_copy_without_render": [
+        "*.html"
+    ]
+}

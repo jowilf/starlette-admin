@@ -1,57 +1,145 @@
 <!DOCTYPE html>
-<html lang="{{ get_locale() }}">
+<html lang="{{ get_locale() }}"
+      {% for attr, val in theme_html_attrs(request).items() %}{{ attr }}="{{ val }}"{% endfor %}>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        {% block favicon %}
+            {% if favicon_url(request) %}
+                <link rel="icon" type="image/x-icon" href="{{ favicon_url(request) }}" />
+            {% endif %}
+        {% endblock %}
+        {% block head_meta %}{% endblock %}
+        {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
+        {% block core_css %}
+            <link rel="stylesheet"
+                  href="{{ static_url(request, 'css/vendor/tabler.min.css', v='1.4.0') }}">
+            <link rel="stylesheet"
+                  href="{{ static_url(request, 'css/vendor/tabler-theme.min.css', v='1.4.0') }}">
+        {% endblock %}
+        {% block icon_css %}
+            {% for link in icon_css_links(request) %}
+                <link rel="stylesheet" href="{{ link }}">
+            {% endfor %}
+        {% endblock %}
+        {% block fonts %}
+            <style>
+                @import url('https://rsms.me/inter/inter.css');
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-    {% if favicon_url %}
-        <link rel="icon" type="image/x-icon" href="{{ favicon_url }}"/>
-    {% endif %}
-    {% block head_meta %}{% endblock %}
-    {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
-    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/tabler.min-1.1.0.css') }}">
-    <link rel="stylesheet" href="{{ url_for(__name__ ~ ':statics', path='css/fontawesome.min.css') }}">
-    <style>
-        @import url('https://rsms.me/inter/inter.css');
+                :root {
+                    --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+                }
 
-        :root {
-            --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-        }
+                body {
+                    font-feature-settings: "cv03", "cv04", "cv11";
+                }
+            </style>
+        {% endblock %}
+        {% block plugin_css %}
+            {% for link in plugin_css_links(request) %}
+                <link rel="stylesheet" href="{{ link }}">
+            {% endfor %}
+        {% endblock %}
+        {% block head_css %}
+        {% endblock %}
+        {% block core_inline_css %}
+            <link rel="stylesheet"
+                  href="{{ static_url(request, 'css/select2-tabler.css', v=1) }}">
+            <style>
+                .navbar-logo {
+                    width: auto;
+                    height: 2rem;
+                }
 
-        body {
-            font-feature-settings: "cv03", "cv04", "cv11";
-        }
+                .mark,
+                mark {
+                    padding: 0em;
+                }
 
-        .navbar-logo {
-            width: auto;
-            height: 2rem;
-        }
-    </style>
-    {% block head_css %}{% endblock %}
-</head>
+                .json-document {
+                    padding: 0px;
+                }
 
-<body>
-{% block body %}{% endblock %}
-{% block modal %}{% endblock %}
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/jquery.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for(__name__ ~ ':statics', path='js/vendor/js.cookie.min.js') }}"></script>
-<script type="text/javascript"
-        src="{{ url_for(__name__ ~ ':statics', path='js/vendor/tabler.min-1.1.0.js') }}"></script>
-{% block script %}{% endblock %}
+                .btn-animate-icon .sa-animate-icon {
+                    transition: transform .3s ease;
+                }
+
+                .btn-animate-icon:focus-visible .sa-animate-icon,
+                .btn-animate-icon:hover .sa-animate-icon {
+                    transform: translateX(4px);
+                }
+
+                .btn-animate-icon.btn-animate-icon-rotate:focus-visible .sa-animate-icon,
+                .btn-animate-icon.btn-animate-icon-rotate:hover .sa-animate-icon {
+                    transform: rotate(90deg);
+                }
+            </style>
+        {% endblock %}
+        {% block head %}
+        {% endblock %}
+    </head>
+    <body {% block body_attributes %}{% endblock %}>
+        {% block body %}
+        {% endblock %}
+        {% block modal %}{% endblock %}
+        {% block core_js %}
+            <script type="text/javascript"
+                    src="{{ static_url(request, 'js/vendor/jquery.min.js', v='v4.0.0') }}"></script>
+            <script type="text/javascript"
+                    src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
+            <script type="text/javascript"
+                    src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.4.0') }}"></script>
+            <script type="text/javascript"
+                    src="{{ static_url(request, 'js/sa-dom.js', v=1) }}"></script>
+        {% endblock %}
+        {% block plugin_js %}
+            {% for link in plugin_js_links(request) %}<script type="text/javascript" src="{{ link }}"></script>{% endfor %}
+        {% endblock %}
+        {% block script %}{% endblock %}
+        {# djlint:off #}
 <script>
+    // Expose the active theme's IconSet so client scripts resolve semantic
+    // icon names to markup classes without hardcoding a library.
+    window.StarletteAdmin = window.StarletteAdmin || {};
+    window.StarletteAdmin.icons = {{ icon_registry | tojson }};
+    window.StarletteAdmin.getIcon = function (name, fallback) {
+        var icons = window.StarletteAdmin.icons || {};
+        if (Object.prototype.hasOwnProperty.call(icons, name)) return icons[name];
+        return fallback !== undefined ? fallback : name;
+    };
+
+    // Expose the active theme's ClassMap so client scripts resolve semantic
+    // component roles to CSS classes without hardcoding a framework's names.
+    window.StarletteAdmin.classes = {{ class_registry | tojson }};
+    window.StarletteAdmin.getClass = function (name, fallback) {
+        var classes = window.StarletteAdmin.classes || {};
+        if (Object.prototype.hasOwnProperty.call(classes, name)) return classes[name];
+        return fallback !== undefined ? fallback : name;
+    };
+
     $(function () {
-        $(".language-switcher-item").each(function () {
+        // Send CSRF token on every jQuery-initiated mutating request
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    xhr.setRequestHeader("X-CSRFToken", Cookies.get("starlette_admin_csrftoken") || "");
+                }
+            }
+        });
+
+        $('[data-sa-hook="language-switcher-item"]').each(function () {
             let el = $(this);
             el.on("click", function () {
-                Cookies.set(String(el.data("cookie-name")), String(el.data("lang")));
+                Cookies.set(String(el.data("sa-cookie-name")), String(el.data("sa-lang")));
                 window.location.reload();
             });
         });
 
-        $(".timezone-switcher-item").each(function () {
+        $('[data-sa-hook="timezone-switcher-item"]').each(function () {
             let el = $(this);
             el.on("click", function () {
-                Cookies.set(String(el.data("cookie-name")), String(el.data("tz")));
+                Cookies.set(String(el.data("sa-cookie-name")), String(el.data("sa-tz")));
                 window.location.reload();
             });
         });
@@ -64,6 +152,7 @@
         {% endif %}
     });
 </script>
-</body>
-
+        {# djlint:on #}
+        {% block tail %}{% endblock %}
+    </body>
 </html>

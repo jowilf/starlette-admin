@@ -1,0 +1,34 @@
+<fieldset class="form-fieldset inline-row {% if row.delete %}d-none{% endif %}"
+          data-inline-index="{{ row.index }}">
+    {% if row.pk is not none %}
+        <input type="hidden"
+               name="{{ inline._prefix() }}.{{ row.index }}.pk"
+               value="{{ row.pk }}">
+        <div class="mb-2">
+            <span class="text-muted fw-semibold">#{{ row.pk }}</span>
+        </div>
+    {% endif %}
+    {% if inline.allow_delete %}
+        <input type="hidden"
+               class="inline-delete-value"
+               name="{{ inline._prefix() }}.{{ row.index }}.DELETE"
+               value="{% if row.delete %}1{% endif %}">
+        <div class="text-end mb-3">
+            <button type="button"
+                    class="inline-delete-btn {{ cls('inline.delete_button') }}">
+                <i class="{{ icon('inline.delete_row') }} me-1"></i>{{ _("Delete") }}
+            </button>
+        </div>
+    {% endif %}
+    {% for field in inline.get_fields_list(request) %}
+        <div class="form-group row mb-3">
+            <label class="col-3 col-form-label {% if field.required %}required{% endif %}"
+                   for="{{ field.id }}">{{ field.label }}</label>
+            <div class="col">
+                {% with action=(request.state.action), data=(row.obj[field.name] if row.obj is not none else None), error=(row.errors.get(field.name) if row.errors else None) %}
+                    {% include field.form_template %}
+                {% endwith %}
+            </div>
+        </div>
+    {% endfor %}
+</fieldset>

@@ -1,0 +1,9 @@
+{% from "fields/_copy_button.html" import copy_button %}
+{% if field.copy_to_clipboard %}
+    <span class="d-inline-flex align-items-center gap-2">
+        <span>{{ data }}</span>
+        {{ copy_button(data) }}
+    </span>
+{% else %}
+    {{ data }}
+{% endif %}

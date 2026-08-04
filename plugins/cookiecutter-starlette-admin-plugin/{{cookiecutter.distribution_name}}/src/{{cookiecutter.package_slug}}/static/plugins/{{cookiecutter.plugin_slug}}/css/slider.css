@@ -1,0 +1,15 @@
+.sa-slider {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sa-slider-output {
+  min-width: 2.5em;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.sa-slider-static {
+  font-variant-numeric: tabular-nums;
+}

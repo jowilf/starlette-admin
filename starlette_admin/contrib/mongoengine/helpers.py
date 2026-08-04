@@ -1,98 +1,79 @@
-import functools
-from typing import Any, Callable, Dict, List, Optional, Sequence, Type
+from collections.abc import Sequence
+from typing import Any, Literal, overload
 
-import mongoengine.fields as me
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.queryset import Q as BaseQ
-from mongoengine.queryset import QNode
 
 
 class Q(BaseQ):
-    """
-    Override mongoengine.Q class to support expression like this:
-    >>> Q('name', 'Jo', 'istartswith') # same as Q(name__istartswith = 'Jo')
-    or
-    >>> Q('name', 'John') # same as Q(name = 'John')
+    """A `mongoengine.Q` that also accepts positional `(field, value, op)` arguments.
+
+    ``Q('name', 'Jo', 'istartswith')`` is equivalent to ``Q(name__istartswith='Jo')``.
+    ``Q('name', 'John')`` is equivalent to ``Q(name='John')``.
     """
 
-    def __init__(self, field: str, value: Any, op: Optional[str] = None) -> None:
-        field = f'{field.replace(".", "__")}__'
+    def __init__(self, field: str, value: Any, op: str | None = None) -> None:
+        field = f"{field.replace('.', '__')}__"
         if op is not None:
             field = f"{field}{op}"
         super().__init__(**{field: value})
 
     @classmethod
     def empty(cls) -> BaseQ:
+        """Return an empty `Q` that matches every document.
+
+        Used as the identity value when combining query fragments with `&`.
+        """
         return BaseQ()
 
 
-OPERATORS: Dict[str, Callable[[str, Any], Q]] = {
-    "eq": Q,
-    "neq": lambda f, v: Q(f, v, "ne"),
-    "lt": lambda f, v: Q(f, v, "lt"),
-    "gt": lambda f, v: Q(f, v, "gt"),
-    "le": lambda f, v: Q(f, v, "lte"),
-    "ge": lambda f, v: Q(f, v, "gte"),
-    "in": lambda f, v: Q(f, v, "in"),
-    "not_in": lambda f, v: Q(f, v, "nin"),
-    "startswith": lambda f, v: Q(f, v, "istartswith"),
-    "not_startswith": lambda f, v: Q(f, v, "not__istartswith"),
-    "endswith": lambda f, v: Q(f, v, "iendswith"),
-    "not_endswith": lambda f, v: Q(f, v, "not__iendswith"),
-    "contains": lambda f, v: Q(f, v, "icontains"),
-    "not_contains": lambda f, v: Q(f, v, "not__icontains"),
-    "is_false": lambda f, v: Q(f, False),
-    "is_true": lambda f, v: Q(f, True),
-    "is_null": lambda f, v: Q(f, None),
-    "is_not_null": lambda f, v: Q(f, None, "ne"),
-    "between": lambda f, v: Q(f, v[0], "gte") & Q(f, v[1], "lte"),
-    "not_between": lambda f, v: Q(f, v[0], "lt") | Q(f, v[1], "gt"),
-}
+def build_order_clauses(sorts: Sequence[tuple[str, str]]) -> list[str]:
+    """Convert `(field, direction)` sort pairs to MongoEngine order-by strings.
 
+    Parameters:
+        sorts: Pairs of field name and direction (`"asc"` or `"desc"`, case-insensitive).
 
-def isvalid_field(document: Type[me.Document], field: str) -> bool:
+    Returns:
+        Field names prefixed with `+` (ascending) or `-` (descending), in the
+        format `QuerySet.order_by` expects.
     """
-    Check if field is valid field for document. nested field is separate with '.'
-    """
-    try:
-        document._lookup_field(field.split("."))
-    except Exception:  # pragma: no cover
-        return False
-    return True
-
-
-def resolve_deep_query(
-    where: Dict[str, Any],
-    document: Type[me.Document],
-    latest_field: Optional[str] = None,
-) -> QNode:
-    _all_queries = []
-    for key, _ in where.items():
-        if key in ["or", "and"]:
-            _arr = [(resolve_deep_query(q, document, latest_field)) for q in where[key]]
-            if len(_arr) > 0:
-                funcs = {"or": lambda q1, q2: q1 | q2, "and": lambda q1, q2: q1 & q2}
-                _all_queries.append(functools.reduce(funcs[key], _arr))
-        elif key in OPERATORS:
-            _all_queries.append(OPERATORS[key](latest_field, where[key]))  # type: ignore
-        elif isvalid_field(document, key):
-            _all_queries.append(resolve_deep_query(where[key], document, key))
-    if _all_queries:
-        return functools.reduce(lambda q1, q2: q1 & q2, _all_queries)
-    return Q.empty()
-
-
-def build_order_clauses(order_list: List[str]) -> List[str]:
     clauses = []
-    for value in order_list:
-        key, order = value.strip().split(maxsplit=1)
-        clauses.append("{}{}".format("-" if order.lower() == "desc" else "+", key))
+    for field_name, direction in sorts:
+        prefix = "-" if direction.lower() == "desc" else "+"
+        clauses.append(f"{prefix}{field_name}")
     return clauses
 
 
+@overload
 def normalize_list(
-    arr: Optional[Sequence[Any]], is_default_sort_list: bool = False
-) -> Optional[Sequence[str]]:
+    arr: Sequence[Any] | None, is_default_sort_list: Literal[False] = False
+) -> Sequence[str] | None: ...
+@overload
+def normalize_list(
+    arr: Sequence[Any] | None, is_default_sort_list: Literal[True]
+) -> Sequence[str | tuple[str, bool]] | None: ...
+def normalize_list(
+    arr: Sequence[Any] | None, is_default_sort_list: bool = False
+) -> Sequence[str | tuple[str, bool]] | None:
+    """Normalize a list of field references into a list of field-name strings.
+
+    Lets view configuration attributes (e.g. `searchable_fields`, `sortable_fields`,
+    `fields_default_sort`) accept mongoengine field objects (e.g. `Document.name`)
+    in addition to plain strings.
+
+    Parameters:
+        arr: The list to normalize, or `None`.
+        is_default_sort_list: If `True`, also accepts `(field, ascending)` tuples,
+            matching the shape expected by `fields_default_sort`.
+
+    Returns:
+        `None` if `arr` is `None`; otherwise the normalized list, with each
+        mongoengine field replaced by its name.
+
+    Raises:
+        ValueError: If an element of `arr` is not a recognized type, or (for
+            `is_default_sort_list`) a tuple does not match `(str | BaseField, bool)`.
+    """
     if arr is None:
         return None
     _new_list = []
@@ -101,9 +82,7 @@ def normalize_list(
             _new_list.append(v.name)
         elif isinstance(v, str):
             _new_list.append(v)
-        elif (
-            isinstance(v, tuple) and is_default_sort_list
-        ):  # Support for fields_default_sort:
+        elif isinstance(v, tuple) and is_default_sort_list:
             if (
                 len(v) == 2
                 and isinstance(v[0], (str, MongoBaseField))
@@ -119,7 +98,6 @@ def normalize_list(
                 raise ValueError(
                     "Invalid argument, Expected Tuple[str | monogoengine.BaseField, bool]"
                 )
-
         else:
             raise ValueError(
                 f"Expected str or monogoengine.BaseField, got {type(v).__name__}"

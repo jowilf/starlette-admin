@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Type
+from typing import Any
 
 from pydantic import BaseModel, ValidationError
 from starlette.requests import Request
@@ -8,7 +8,7 @@ from starlette_admin.helpers import pydantic_error_to_form_validation_errors
 
 
 class ModelView(BaseModelView):
-    """Auto validate your data with pydantic
+    """A SQLAlchemy `ModelView` that validates form data with a Pydantic model.
 
     Example:
 
@@ -38,7 +38,6 @@ class ModelView(BaseModelView):
                 return v.title()
 
 
-        # Add view
         admin.add_view(ModelView(Post, pydantic_model=PostIn))
 
         ```
@@ -46,18 +45,18 @@ class ModelView(BaseModelView):
 
     def __init__(
         self,
-        model: Type[Any],
-        pydantic_model: Type[BaseModel],
-        icon: Optional[str] = None,
-        name: Optional[str] = None,
-        label: Optional[str] = None,
-        identity: Optional[str] = None,
-        converter: Optional[BaseSQLAModelConverter] = None,
+        model: type[Any],
+        pydantic_model: type[BaseModel],
+        icon: str | None = None,
+        display_name: str | None = None,
+        menu_label: str | None = None,
+        key: str | None = None,
+        converter: BaseSQLAModelConverter | None = None,
     ):
         self.pydantic_model = pydantic_model
-        super().__init__(model, icon, name, label, identity, converter)
+        super().__init__(model, icon, display_name, menu_label, key, converter)
 
-    async def validate(self, request: Request, data: Dict[str, Any]) -> None:
+    async def validate(self, request: Request, data: dict[str, Any]) -> None:
         try:
             self.pydantic_model(**data)
         except ValidationError as error:

@@ -1,0 +1,168 @@
+{# Project detail page: extends the stock detail.html but drops the generic
+   Attribute/Value table entirely.
+
+   Two blocks are overridden. `detail_before` injects a row of stat cards
+   (budget burn, task breakdown, timeline), each fed by a helper method on
+   ProjectView so the aggregation logic stays in Python next to the view.
+   `details_table`, which normally renders the generic table, is replaced
+   with a hand-built body: the description, a facts datagrid (department,
+   priority, dates, budget, hours, progress), and the plan JSON when one is
+   set, rendered through the stock JSONField viewer partial. The card header with row actions, the modals, and the TaskInline
+   table below all come from the parent template untouched.
+
+   As on the employee page, `obj` holds display-ready values (dollar
+   amounts, badge dicts, the progress dict), `raw_obj` is the SQLAlchemy
+   instance for plain attributes and relationships, and `view` is the
+   ProjectView instance for the stat card helpers. #}
+{% extends "detail.html" %}
+{% block detail_before %}
+    <div class="col-sm-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="subheader">Budget burn</div>
+                <div class="h1 mb-2">
+                    {{ obj.spent }}
+                    <span class="text-secondary fs-4 fw-normal">of {{ obj.budget }}</span>
+                </div>
+                {% with burn = view.budget_burn(raw_obj) %}
+                    <div class="progress mb-2">
+                        <div class="progress-bar {{ burn.bar_class }}"
+                             style="width: {{ burn.width }}%"></div>
+                    </div>
+                    <div class="text-secondary">{{ burn.label }}</div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="subheader">Tasks</div>
+                <div class="h1 mb-2">{{ raw_obj.tasks | length }}</div>
+                {% for stat in view.task_stats(raw_obj) %}
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        {% with data=stat %}
+                            {% include "fields/badge.html" %}
+                        {% endwith %}
+                        <span class="text-secondary">{{ stat.count }}</span>
+                    </div>
+                {% else %}
+                    <div class="text-secondary">No tasks yet</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="subheader">Timeline</div>
+                {% with tl = view.timeline(raw_obj) %}
+                    <div class="h1 mb-2">{{ tl.headline }}</div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar {{ tl.bar_class }}"
+                             style="width: {{ tl.width }}%"></div>
+                    </div>
+                    <div class="text-secondary">
+                        {{ raw_obj.start_date.strftime("%b %d, %Y") }}
+                        →
+                        {% if raw_obj.end_date %}
+                            {{ raw_obj.end_date.strftime("%b %d, %Y") }}
+                        {% else %}
+                            no end date
+                        {% endif %}
+                    </div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+{% endblock detail_before %}
+{% block detail_title %}
+    <h3 class="card-title">
+        <strong>{{ obj.name }}</strong>
+        {% with data=obj.status %}
+            {% include "fields/badge.html" %}
+        {% endwith %}
+    </h3>
+{% endblock detail_title %}
+{% block details_table %}
+    {% if raw_obj.description %}<p class="text-secondary">{{ raw_obj.description }}</p>{% endif %}
+    <div class="datagrid">
+        <div class="datagrid-item">
+            <div class="datagrid-title">Department</div>
+            <div class="datagrid-content">
+                {% if raw_obj.department %}
+                    <a href="{{ detail_url(request, 'department', raw_obj.department.id) }}">{{ raw_obj.department.name }}</a>
+                {% else %}
+                    <span class="text-secondary">Unassigned</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Priority</div>
+            <div class="datagrid-content">
+                {% with data=obj.priority %}
+                    {% include "fields/badge.html" %}
+                {% endwith %}
+            </div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Start date</div>
+            <div class="datagrid-content">{{ raw_obj.start_date.strftime("%b %d, %Y") }}</div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">End date</div>
+            <div class="datagrid-content">
+                {% if raw_obj.end_date %}
+                    {{ raw_obj.end_date.strftime("%b %d, %Y") }}
+                {% else %}
+                    <span class="text-secondary">Open-ended</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Budget</div>
+            <div class="datagrid-content">{{ obj.budget }}</div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Spent</div>
+            <div class="datagrid-content">{{ obj.spent }}</div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Estimated hours</div>
+            <div class="datagrid-content">{{ raw_obj.estimated_hours }}</div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Actual hours</div>
+            <div class="datagrid-content">{{ raw_obj.actual_hours }}</div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Progress</div>
+            <div class="datagrid-content">
+                {% with data=obj.progress %}
+                    {% include "fields/progress.html" %}
+                {% endwith %}
+            </div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Slug</div>
+            <div class="datagrid-content">
+                <code>{{ raw_obj.slug }}</code>
+            </div>
+        </div>
+    </div>
+    {% if raw_obj.plan %}
+        <div class="mt-4">
+            <div class="subheader mb-2">Plan</div>
+            {# Reuse the stock JSONField detail partial so the plan renders
+               through the interactive JSON viewer. The jquery.json-viewer
+               assets are already on the page: the plan column maps to a
+               JSONField, so the view's asset aggregation pulls them from
+               static, and detail.js initializes every div.field-json. #}
+            {% for field in view.get_fields_list(request) if field.name == "plan" %}
+                {% with data=obj[field.name] %}
+                    {% include field.detail_template %}
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock details_table %}

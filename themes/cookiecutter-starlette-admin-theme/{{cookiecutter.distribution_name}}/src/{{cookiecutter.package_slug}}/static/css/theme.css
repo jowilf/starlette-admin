@@ -1,0 +1,16 @@
+/*
+ * {{ cookiecutter.theme_name }} theme stylesheet.
+ * Loaded after core Tabler CSS (see templates/base.html), so these rules
+ * win on equal specificity. Add your visual overrides here.
+ */
+
+/* Example: tighten the sidebar brand wordmark. */
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* Example: round card corners a touch more. */
+.card {
+    border-radius: calc(var(--tblr-border-radius) + 2px);
+}

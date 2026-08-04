@@ -1,147 +1,132 @@
 # starlette-admin
 
-> [!IMPORTANT]
-> **The 1.0.0 Release Candidate is here!** For this release, I dropped DataTables in favor of pure server-side rendering, added a new theming system, and refactor the code to make things much more extensible. I also managed to pack in a lot of features that have been highly requested for a long time. </br>
-> You can test it now with `pip install starlette-admin==1.0.0rc2`.</br>
-> [Live demo](https://starlette-admin-next-demo.s2.jowilf.com) (`admin` / `password`) · [Preview docs](https://d6f47bf1.starlette-admin.pages.dev/) · [Migration guide](https://d6f47bf1.starlette-admin.pages.dev/#from-017x-to-100)</br>
-> I would love to hear your feedback on the upgrade process. Please drop your thoughts in [this discussion](https://github.com/jowilf/starlette-admin/discussions/800#discussion-10501533).</br>
-Everything below covers the current stable release.
-
-*Fast, beautiful, and extensible administrative interface framework for Starlette & FastApi applications*
-
+*An extensible administrative interface framework for FastAPI and Starlette applications.*
 
 <p align="center">
 <a href="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml">
-    <img src="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml/badge.svg" alt="Test suite">
-</a>
-<a href="https://github.com/jowilf/starlette-admin/actions">
-    <img src="https://github.com/jowilf/starlette-admin/actions/workflows/publish.yml/badge.svg" alt="Publish">
+    <img src="https://github.com/jowilf/starlette-admin/actions/workflows/test.yml/badge.svg" alt="Tests">
 </a>
 <a href="https://codecov.io/gh/jowilf/starlette-admin">
-    <img src="https://codecov.io/gh/jowilf/starlette-admin/branch/main/graph/badge.svg" alt="Codecov">
+    <img src="https://codecov.io/gh/jowilf/starlette-admin/branch/main/graph/badge.svg" alt="Coverage">
 </a>
 <a href="https://pypi.org/project/starlette-admin/">
-    <img src="https://badge.fury.io/py/starlette-admin.svg" alt="Package version">
+    <img src="https://badge.fury.io/py/starlette-admin.svg" alt="PyPI version">
 </a>
 <a href="https://pypi.org/project/starlette-admin/">
-    <img src="https://img.shields.io/pypi/pyversions/starlette-admin?color=2334D058" alt="Supported Python versions">
+    <img src="https://img.shields.io/pypi/pyversions/starlette-admin?color=2334D058" alt="Python versions">
 </a>
 </p>
 
-![Preview image](https://raw.githubusercontent.com/jowilf/starlette-admin/main/docs/images/preview.jpg)
-
-## why starlette-admin?
-
-FastAPI has emerged as a popular web framework for building APIs in Python. However, it lacks a mature admin interface
-solution like Flask-Admin to quickly manage your data through a user-friendly interface. Although
-solutions like Sqladmin and Fastapi-Admin exist, they only work with specific ORMs such as SQLAlchemy and Tortoise ORM.
-
-Starlette-admin was born from the need for a FastAPI admin interface that works with various data layer. It aims
-to provide a complete solution for CRUD interfaces regardless of the database backend. Starlette-admin works out of the
-box with multiple ORM/ODMs and can also be used with a custom data layer.
-
-## Getting started
-
-* Check out [the documentation](https://jowilf.github.io/starlette-admin).
-* Try
-  the [live demo](https://starlette-admin-demo.jowilf.com/). ([Source code](https://github.com/jowilf/starlette-admin-demo))
-* Follow the [tutorials](https://jowilf.github.io/starlette-admin/tutorials/)
-* Try the several usage examples included in
-  the [/examples](https://github.com/jowilf/starlette-admin/tree/main/examples) folder
-* If you find this project helpful or interesting, please consider giving it a star ⭐️
-
-## Features
-
-- CRUD any data with ease
-- Automatic form validation
-- Advanced table widget with [Datatables](https://datatables.net/)
-- Search and filtering
-- Search highlighting
-- Multi-column ordering
-- Export data to CSV/EXCEL/PDF and Browser Print
-- Authentication
-- Authorization
-- Manage Files
-- Custom views
-- Custom batch actions
-- Supported ORMs
-    * [SQLAlchemy](https://www.sqlalchemy.org/)
-    * [SQLModel](https://sqlmodel.tiangolo.com/)
-    * [MongoEngine](http://mongoengine.org/)
-    * [ODMantic](https://github.com/art049/odmantic/)
-    * Custom
-      backend ([doc](https://jowilf.github.io/starlette-admin/advanced/base-model-view/), [example](https://github.com/jowilf/starlette-admin/tree/main/examples/custom-backend))
-- Internationalization
+![Admin panel](./docs/assets/images/list-preview.png)
 
 ## Installation
+```sh
+# Using uv
+uv add starlette-admin
 
-### PIP
-
-```shell
-$ pip install starlette-admin
+# Using pip
+pip install starlette-admin
 ```
 
-### Poetry
+## Quickstart
 
-```shell
-$ poetry add starlette-admin
-```
-
-## Example
-
-This is a simple example with SQLAlchemy model
+Get a fully functional administrative dashboard up and running in minutes. This example demonstrates an integration with FastAPI and SQLAlchemy.
 
 ```python
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, mapped_column
-from starlette.applications import Starlette
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
+from fastapi import FastAPI
+from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-Base = declarative_base()
-engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
-# Define your model
+class Base(DeclarativeBase):
+    pass
+
+
 class Post(Base):
     __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
+    content: Mapped[str]
+    published: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = mapped_column(
+        default=lambda: datetime.now(timezone.utc)
+    )
 
 
-Base.metadata.create_all(engine)
+class PostView(ModelView):
+    fields = ["id", "title", "content", "published", "created_at"]
+    searchable_fields = ("title", "content")
 
-app = Starlette()  # FastAPI()
 
-# Create admin
-admin = Admin(engine, title="Example: SQLAlchemy")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(engine)
+    yield
 
-# Add view
-admin.add_view(ModelView(Post))
 
-# Mount admin to your app
+app = FastAPI(lifespan=lifespan)
+admin = Admin(engine, title="Blog Admin", secret_key="change-me")
+admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.mount_to(app)
 ```
 
-Access your admin interface in your browser at [http://localhost:8000/admin](http://localhost:8000/admin)
+Run with `fastapi dev` and open [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin).
 
-## Third party
+## Features
 
-*starlette-admin* is built with other open source projects:
+- Generated CRUD pages for your models
+- Pagination, sorting, search, and shareable URLs
+- Nested AND/OR filter builder
+- Inline editing for related models
+- Bulk actions and custom row actions
+- CSV, Excel, JSON, and PDF export
+- CSV, JSON and Excel import with dry-run validation
+- Local and S3-compatible file storage (Amazon S3, MinIO, ...)
+- Event hooks before and after CRUD operations
+- Pluggable authentication, storage, fields, actions, and model views
+- Theme customization, dark mode, internationalization, and timezone support
 
-- [Tabler](https://tabler.io/)
-- [Datatables](https://datatables.net/)
-- [jquery](https://jquery.com/)
-- [Select2](https://select2.org/)
-- [flatpickr](https://flatpickr.js.org/)
-- [moment](http://momentjs.com/)
-- [jsoneditor](https://github.com/josdejong/jsoneditor)
-- [fontawesome](https://fontawesome.com/)
-- [TinyMCE](https://www.tiny.cloud/)
+
+
+## Supported ORMs & Backends
+
+`starlette-admin` is built to be agnostic. It ships with built-in support for popular ORMs and databases:
+
+| Backend | Package Path |
+| --- | --- |
+| **SQLAlchemy** | `starlette_admin.contrib.sqla` |
+| **SQLModel** | `starlette_admin.contrib.sqlmodel` |
+| **Tortoise ORM** | `starlette_admin.contrib.tortoise` |
+| **Beanie (MongoDB)** | `starlette_admin.contrib.beanie` |
+| **MongoEngine** | `starlette_admin.contrib.mongoengine` |
+| **Custom Data Sources** | Subclass `BaseModelView` |
+
+---
+
+## Documentation & Resources
+
+* **[Full Documentation](https://jowilf.github.io/starlette-admin)**
+* **[Quickstart Guide](https://jowilf.github.io/starlette-admin/getting-started/quickstart/)**
+* **[User Guide](https://jowilf.github.io/starlette-admin/user-guide/views/)** (Covers views, fields, filters, actions, and auth)
+* **[API Reference](https://jowilf.github.io/starlette-admin/api/admin/)**
+
+## Live Demo
+
+Explore the interface in action: **[starlette-admin-demo.jowilf.com](https://starlette-admin-demo.jowilf.com/)**
 
 ## Contributing
 
-Contributions are welcome and greatly appreciated! Before getting started, please read
-[our contribution guidelines](https://github.com/jowilf/starlette-admin/blob/main/CONTRIBUTING.md)
+Contributions are always welcome! Whether it is reporting a bug, discussing improvements, or submitting a pull request, your input helps make this project better.
+
+Please review our **[CONTRIBUTING.md](https://github.com/jowilf/starlette-admin/blob/main/CONTRIBUTING.md)** guidelines before opening a pull request.
+
+## License
+
+This project is licensed under the **MIT License**.

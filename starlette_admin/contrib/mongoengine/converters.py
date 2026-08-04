@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, Sequence, Type
+from collections.abc import Callable, Sequence
+from typing import Any, cast
 
 import mongoengine.fields as me
 import starlette_admin.contrib.mongoengine.fields as internal_fields
@@ -7,9 +8,46 @@ from starlette_admin.contrib.mongoengine.exceptions import NotSupportedField
 from starlette_admin.converters import BaseModelConverter, converts
 from starlette_admin.helpers import slugify_class_name
 
+# Converters registered by plugins for mongoengine field types, merged into
+# every BaseMongoEngineModelConverter instance (see
+# BaseModelConverter._external_converters).
+_EXTERNAL_CONVERTERS: dict[Any, Callable[..., sa.BaseField]] = {}
+
+
+def register_converter(
+    *types: Any,
+) -> Callable[[Callable[..., sa.BaseField]], Callable[..., sa.BaseField]]:
+    """Register an external converter for mongoengine field types.
+    Decorator form mirrors `@converts`. Used by plugins."""
+
+    def wrap(func: Callable[..., sa.BaseField]) -> Callable[..., sa.BaseField]:
+        for field_type in types:
+            _EXTERNAL_CONVERTERS[field_type] = func
+        return func
+
+    return wrap
+
 
 class BaseMongoEngineModelConverter(BaseModelConverter):
+    """Base class for converting mongoengine document fields to admin fields.
+
+    Subclasses register one converter method per mongoengine field type using
+    the [converts][starlette_admin.converters.converts] decorator.
+    """
+
+    def _external_converters(self) -> dict[Any, Callable[..., sa.BaseField]]:
+        return _EXTERNAL_CONVERTERS
+
     def get_converter(self, field: me.BaseField) -> Callable[..., sa.BaseField]:
+        """Look up the converter function registered for `field`'s type.
+
+        Tries an exact class match first, then falls back to the first
+        registered class that `field` is an instance of, so a converter
+        registered for a base mongoengine field type also matches its subclasses.
+
+        Raises:
+            NotSupportedField: If no registered converter matches `field`'s type.
+        """
         if field.__class__ in self.converters:
             return self.converters[field.__class__]
         for cls, converter in self.converters.items():
@@ -21,15 +59,37 @@ class BaseMongoEngineModelConverter(BaseModelConverter):
         )
 
     def convert(self, *args: Any, **kwargs: Any) -> sa.BaseField:
-        return self.get_converter(kwargs.get("field"))(*args, **kwargs)
+        """Convert a single mongoengine field, passed as the `field` keyword argument,
+        to its admin field equivalent.
+        """
+        return self.get_converter(cast(me.BaseField, kwargs.get("field")))(
+            *args, **kwargs
+        )
 
     def convert_fields_list(
         self,
         *,
         fields: Sequence[Any],
-        model: Type[me.Document],
+        model: type[me.Document],
         **kwargs: Any,
     ) -> Sequence[sa.BaseField]:
+        """Convert a mixed list of field specs into a list of admin fields.
+
+        Each entry in `fields` may already be a `sa.BaseField` instance (passed
+        through unchanged), a mongoengine field instance, or a string naming an
+        attribute on `model`.
+
+        Parameters:
+            fields: The field specs to convert.
+            model: The document class `fields` entries are resolved against
+                when given as attribute-name strings.
+
+        Returns:
+            The converted admin fields, in the same order as `fields`.
+
+        Raises:
+            ValueError: If a string entry does not name an attribute on `model`.
+        """
         converted_fields = []
         for value in fields:
             if isinstance(value, sa.BaseField):
@@ -46,26 +106,57 @@ class BaseMongoEngineModelConverter(BaseModelConverter):
 
 
 class ModelConverter(BaseMongoEngineModelConverter):
+    """Default converter mapping mongoengine field types to `starlette_admin` fields."""
+
     @classmethod
-    def _field_common(cls, *, field: me.BaseField, **kwargs: Any) -> Dict[str, Any]:
+    def _extract_default(cls, field: me.BaseField) -> Any:
+        """Return a Python-usable default value from a mongoengine field.
+
+        Primary keys are excluded since they are auto-generated and are not
+        pre-filled in create forms. Both scalar defaults (e.g. ``default=0``)
+        and callable defaults (e.g. ``default=datetime.utcnow`` or
+        ``default=list``) are supported, as `BaseField.default` already
+        accepts either.
+        """
+        if getattr(field, "primary_key", False):
+            return None
+        return field.default
+
+    @classmethod
+    def _field_common(cls, *, field: me.BaseField, **kwargs: Any) -> dict[str, Any]:
+        """Return the kwargs shared by every field conversion: name, help text,
+        required flag, and default value.
+        """
         return {
             "name": field.name,
             "help_text": getattr(field, "help_text", None),
             "required": field.required,
+            "default": cls._extract_default(field),
         }
 
     @classmethod
     def _numeric_field_common(
         cls, *, field: me.BaseField, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
+        """Return the `min`/`max` kwargs for numeric field conversions, read from
+        mongoengine's `min_value`/`max_value` validators.
+        """
         return {
             "min": getattr(field, "min_value", None),
             "max": getattr(field, "max_value", None),
         }
 
-    @converts(me.StringField, me.ObjectIdField, me.UUIDField)
+    @converts(me.StringField)
     def conv_string_field(self, *args: Any, **kwargs: Any) -> sa.BaseField:
         return sa.StringField(**self._field_common(*args, **kwargs))
+
+    @converts(me.UUIDField)
+    def conv_uuid_field(self, *args: Any, **kwargs: Any) -> sa.BaseField:
+        return sa.UUIDField(**self._field_common(*args, **kwargs))
+
+    @converts(me.ObjectIdField)
+    def conv_object_id_field(self, *args: Any, **kwargs: Any) -> sa.BaseField:
+        return internal_fields.ObjectIdField(**self._field_common(*args, **kwargs))
 
     @converts(me.IntField, me.LongField)
     def conv_int_field(self, *args: Any, **kwargs: Any) -> sa.BaseField:
@@ -120,19 +211,30 @@ class ModelConverter(BaseMongoEngineModelConverter):
     @converts(me.EnumField)
     def conv_enum_field(self, *args: Any, **kwargs: Any) -> sa.BaseField:
         field = kwargs["field"]
+        # mongoengine stores the wrapped Python enum class on the private
+        # `_enum_cls` attribute; there is no public accessor for it.
         return sa.EnumField(**self._field_common(*args, **kwargs), enum=field._enum_cls)
 
     @converts(me.ReferenceField)
     def conv_reference_field(self, *args: Any, **kwargs: Any) -> sa.BaseField:
+        """Convert a `ReferenceField` to a `HasOne` relation.
+
+        `document_type_obj` is a class for direct references and a string for
+        lazy references (declared before the target class exists); both are
+        normalized to the same key slug.
+        """
         field = kwargs["field"]
         dtype = field.document_type_obj
-        identity = slugify_class_name(
-            dtype if isinstance(dtype, str) else dtype.__name__
-        )
-        return sa.HasOne(**self._field_common(*args, **kwargs), identity=identity)
+        key = slugify_class_name(dtype if isinstance(dtype, str) else dtype.__name__)
+        return sa.HasOne(**self._field_common(*args, **kwargs), key=key)
 
     @converts(me.EmbeddedDocumentField)
     def conv_embedded_document_field(self, *args: Any, **kwargs: Any) -> sa.BaseField:
+        """Convert an `EmbeddedDocumentField` to a `CollectionField`.
+
+        Recursively converts each field of the embedded document type, in the
+        order declared on that type.
+        """
         field = kwargs["field"]
         document_type_obj: me.EmbeddedDocument = field.document_type
         _fields = []
@@ -143,6 +245,17 @@ class ModelConverter(BaseMongoEngineModelConverter):
 
     @converts(me.ListField, me.SortedListField)
     def conv_list_field(self, *args: Any, **kwargs: Any) -> sa.BaseField:
+        """Convert a `ListField`/`SortedListField` based on its inner field type.
+
+        A list of references becomes a `HasMany` relation. A list of dicts or
+        maps collapses to a single `JSONField`, since JSON already represents
+        nested lists natively. A list of enum values becomes a multi-select
+        dropdown over the enum's choices. Everything else is wrapped in a
+        generic `ListField` around the converted inner field.
+
+        Raises:
+            ValueError: If the `ListField` was declared without an inner `field`.
+        """
         field = kwargs["field"]
         if field.field is None:
             raise ValueError(f'ListField "{field.name}" must have field specified')
@@ -150,18 +263,20 @@ class ModelConverter(BaseMongoEngineModelConverter):
             field.field,
             (me.ReferenceField, me.CachedReferenceField, me.LazyReferenceField),
         ):
-            """To Many reference"""
+            # List of references: a to-many relationship.
             dtype = field.field.document_type_obj
-            identity = slugify_class_name(
+            key = slugify_class_name(
                 dtype if isinstance(dtype, str) else dtype.__name__
             )
-            return sa.HasMany(**self._field_common(*args, **kwargs), identity=identity)
+            return sa.HasMany(**self._field_common(*args, **kwargs), key=key)
         field.field.name = field.name
         kwargs["field"] = field.field
         if isinstance(field.field, (me.DictField, me.MapField)):
             return self.convert(*args, **kwargs)
         if isinstance(field.field, me.EnumField):
             admin_field = self.convert(*args, **kwargs)
-            admin_field.multiple = True  # type: ignore [attr-defined]
+            assert isinstance(admin_field, sa.EnumField)
+            admin_field.multiple = True
+            admin_field.select2 = True
             return admin_field
         return sa.ListField(self.convert(*args, **kwargs), required=field.required)

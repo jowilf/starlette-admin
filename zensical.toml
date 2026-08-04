@@ -1,6 +1,7 @@
 [project]
 site_name = "Starlette Admin"
-site_description = "Fast, beautiful and extensible administrative interface framework for Starlette/FastApi applications"
+site_description = "Fast, beautiful and extensible administrative interface framework for FastAPI & Starlette applications"
+site_author = "Jocelin Hounon"
 site_url = "https://jowilf.github.io/starlette-admin"
 repo_name = "jowilf/starlette-admin"
 repo_url = "https://github.com/jowilf/starlette-admin"
@@ -8,44 +9,83 @@ edit_uri = "https://github.com/jowilf/starlette-admin/tree/main/docs"
 docs_dir = "docs"
 watch = ["starlette_admin"]
 extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/extra.js"]
 
 nav = [
-  { "Overview" = "index.md" },
-  { "Tutorials" = [
-    { "Introduction" = "tutorials/index.md" },
-    { "Building your first admin panel" = "tutorials/basic/index.md" },
+  { "Home" = "index.md" },
+  { "Getting Started" = [
+    { "Installation" = "getting-started/installation.md" },
+    { "Quickstart" = "getting-started/quickstart.md" },
+    { "Concepts" = "getting-started/concepts.md" },
   ] },
   { "User Guide" = [
-    { "Getting Started" = "user-guide/getting-started/index.md" },
-    { "Configurations" = [
-      { "Admin" = "user-guide/configurations/admin/index.md" },
-      { "ModelView" = "user-guide/configurations/modelview/index.md" },
-    ] },
-    { "Forms Validations" = "user-guide/validations/index.md" },
-    { "Authentication" = "user-guide/authentication/index.md" },
-    { "Managing Files" = "user-guide/files/index.md" },
-    { "Actions" = "user-guide/actions/index.md" },
-    { "Multiple Admin" = "user-guide/multiple-admin/index.md" },
+    { "Views" = "user-guide/views.md" },
+    { "Admin" = "user-guide/admin.md" },
+    { "Fields" = "user-guide/fields.md" },
+    { "Filters" = "user-guide/filters.md" },
+    { "Actions" = "user-guide/actions.md" },
+    { "Inline Edit" = "user-guide/inline-edit.md" },
+    { "Authentication" = "user-guide/auth.md" },
+    { "Export & Import" = "user-guide/export-import.md" },
+    { "File Storage" = "user-guide/file-storage.md" },
+    { "Inline Forms" = "user-guide/inline-forms.md" },
+    { "Custom Views & Widgets" = "user-guide/custom-views.md" },
+    { "Flash Messages" = "user-guide/flash-messages.md" },
+    { "Internationalization & Timezones" = "user-guide/i18n.md" },
+    { "Security" = "user-guide/security.md" },
   ] },
-  { "Advanced User Guide" = [
-    { "Custom Field" = "advanced/custom-field/index.md" },
-    { "Extending BaseModelView" = "advanced/base-model-view/index.md" },
+  { "Integrations" = [
+    { "SQLAlchemy" = "integrations/sqlalchemy.md" },
+    { "SQLModel" = "integrations/sqlmodel.md" },
+    { "Beanie" = "integrations/beanie.md" },
+    { "Tortoise ORM" = "integrations/tortoise.md" },
+    { "MongoEngine" = "integrations/mongoengine.md" },
+    { "Custom Backend" = "integrations/custom-backend.md" },
   ] },
-  { "Deployment" = "deployment/index.md" },
-  { "Alternatives, Inspiration and Comparisons" = "alternatives/index.md" },
+  { "Advanced" = [
+    { "Custom Fields" = "advanced/custom-fields.md" },
+    { "Form Layout" = "advanced/form-layout.md" },
+    { "Custom Filters" = "advanced/custom-filters.md" },
+    { "Events" = "advanced/events.md" },
+    { "Custom Themes" = "advanced/custom-themes.md" },
+    { "Templates" = "advanced/templates.md" },
+    { "Multiple Admin Instances" = "advanced/multiple-admin.md" },
+    { "Extension Points" = "advanced/extension-points.md" },
+    { "Plugins" = "advanced/plugins.md" },
+    { "Deployment" = "advanced/deployment.md" },
+  ] },
+  { "Comparison" = [
+    { "Overview" = "comparison/index.md" },
+    { "Coming from Django Admin" = "comparison/django-admin.md" },
+    { "Coming from Flask-Admin" = "comparison/flask-admin.md" },
+  ] },
+  { "Blog" = [
+    { "Overview" = "blog/index.md" },
+    { "Add an Admin Panel to FastAPI in 5 Minutes" = "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md" },
+    { "Building Soft Deletes and a Trash View in FastAPI Using Starlette Admin" = "blog/posts/soft-deletes-trash-view.md" },
+  ] },
   { "API Reference" = [
+    { "Admin" = "api/admin.md" },
+    { "Views" = "api/views.md" },
+    { "Fields" = "api/fields.md" },
+    { "Widgets" = "api/widgets.md" },
+    { "Validators" = "api/validators.md" },
+    { "Filters" = "api/filters.md" },
+    { "Auth" = "api/auth.md" },
+    { "Events" = "api/events.md" },
+    { "Storage" = "api/storage.md" },
+    { "Export" = "api/export.md" },
+    { "Import" = "api/import.md" },
     { "Contrib" = [
-      { "SQLAlchemy" = [
-        { "ModelView" = "api/contrib/sqlalchemy/modelview/index.md" },
-      ] },
+      { "SQLAlchemy" = "api/contrib/sqlalchemy.md" },
+      { "SQLModel" = "api/contrib/sqlmodel.md" },
+      { "Tortoise ORM" = "api/contrib/tortoise.md" },
+      { "Beanie" = "api/contrib/beanie.md" },
+      { "MongoEngine" = "api/contrib/mongoengine.md" },
     ] },
-    { "Fields" = "api/fields/index.md" },
-    { "Views" = "api/views/index.md" },
-    { "BaseAdmin" = "api/base-admin/index.md" },
-    { "Auth" = "api/auth/index.md" },
-    { "Actions" = "api/actions/index.md" },
   ] },
-  { "Changelog" = "changelog/index.md" },
+  { "Migration Guide" = "migration.md" },
+  { "Changelog" = "changelog.md" },
 ]
 
 [project.theme]
@@ -59,6 +99,9 @@ features = [
   "navigation.footer",
   "content.tabs.link",
 ]
+
+[project.theme.font]
+code = "Fira Code"
 
 
 [project.theme.icon]
@@ -91,6 +134,8 @@ anchor_linenums = true
 alternate_style = true
 
 [project.markdown_extensions.attr_list]
+
+[project.plugins.social]
 
 [project.plugins.search]
 
