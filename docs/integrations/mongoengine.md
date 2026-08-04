@@ -26,7 +26,7 @@ MongoEngine models MongoDB documents as synchronous Python classes using a Djang
     uv install starlette-admin mongoengine
     ```
 
-## Minimal Example
+## Minimal example
 
 You must establish the MongoDB connection before any request reaches the admin interface. Wrapping the connection logic inside your main application's `lifespan` context manager is the best approach to ensure this prerequisite is met.
 
@@ -60,15 +60,15 @@ admin.mount_to(app)
 
 The `ModelView` accepts the `mongoengine.Document` class directly. It automatically derives the field list, forms, and filters from the document's fields.
 
-## Core Classes: Admin and ModelView
+## Core classes: Admin and ModelView
 
-### The `mongoengine.Admin` Class
+### The `mongoengine.Admin` class
 
 The `mongoengine.Admin` class extends the base `Admin` by adding a specialized route: `/api/file/{db}/{col}/{pk}`. This route streams a GridFS file directly back to the browser.
 
 Since every `FileField` and `ImageField` upload on a MongoEngine model is stored in GridFS, this route is required to serve those files. Always use `mongoengine.Admin` instead of the base `Admin`.
 
-### The `mongoengine.ModelView` Class
+### The `mongoengine.ModelView` class
 
 Unlike the base class, the `mongoengine.ModelView` constructor takes a `document` positional argument instead of a declarative model class:
 
@@ -102,7 +102,7 @@ class CategoryView(ModelView):
     searchable_fields = ["name"]
 ```
 
-## Filter Registry
+## Filter registry
 
 Every field type includes a fixed set of filters provided by the `MongoEngineFilterRegistry`. You can override these defaults per field using the `filters=[...]` argument.
 
@@ -125,7 +125,7 @@ Every field type includes a fixed set of filters provided by the `MongoEngineFil
 
 Under the hood, every filter's `apply()` method returns a MongoEngine `Q` fragment for its specific condition. Nested `FilterGroup` trees then combine those fragments using bitwise operators (`&` or `|`) before executing the query. For more details, see the [Filters](../user-guide/filters.md) documentation.
 
-## Embedded Documents
+## Embedded documents
 
 MongoEngine's `EmbeddedDocumentField` converts into a `CollectionField`. This process recursively converts every field on the embedded document into its own sub-field:
 
@@ -162,11 +162,11 @@ In this example:
 * The `address` field renders as a nested sub-form during creation and editing, and as a nested block on the detail page.
 * The `comments` field (an `EmbeddedDocumentListField`) converts to a `ListField` of `CollectionField`. It renders as a repeatable group of sub-forms, displaying one per list entry.
 
-## Full Working Example
+## Full working example
 
 This section provides a complete, runnable MongoEngine integration with `starlette-admin`.
 
-### 1. Install Dependencies
+### 1. Install dependencies
 
 === "pip"
 
@@ -182,7 +182,7 @@ This section provides a complete, runnable MongoEngine integration with `starlet
 
 The `fastapi[standard]` package includes the FastAPI CLI, allowing you to start the development server by running `fastapi dev`.
 
-### 2. Create the Application
+### 2. Create the application
 
 ```python title="main.py"
 from contextlib import asynccontextmanager
@@ -262,7 +262,7 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.mount_to(app)
 ```
 
-### 3. Run the Server
+### 3. Run the server
 
 Start the FastAPI development server:
 
@@ -285,7 +285,7 @@ Navigate to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) in your b
 
 ---
 
-## What to Read Next
+## What to read next
 
 * **[Views](../user-guide/views.md)**: Explore `BaseModelView` configuration options independent of the backend.
 * **[Fields](../user-guide/fields.md):** Detailed guide to every field type and its attributes, including the `CollectionField`.

@@ -5,13 +5,13 @@ description: Enable users to edit field values directly within the list view tab
 
 # Inline Edit
 
-Inline editing allows users to modify a single field directly from the list page. Clicking a cell opens a small popover, eliminating the need to navigate to the full edit form. Use this feature for quick, single-field updates like fixing a title, toggling a status, or adjusting a date. The interaction mirrors the familiar [x-editable](https://vitalets.github.io/x-editable/) pattern.
+Inline editing lets users change a single field straight from the list page. Selecting a cell opens a small popover, so nobody has to open the full edit form. Use it for quick, single-field updates: fixing a title, toggling a status, or adjusting a date. The interaction follows the familiar [x-editable](https://vitalets.github.io/x-editable/) pattern.
 
-This feature is opt-in and disabled by default. Enabling it does not affect the standard edit page, which remains the primary interface for complex, multi-field edits.
+The feature is opt-in and off by default. Turning it on doesn't change the standard edit page, which stays the main interface for complex, multi-field edits.
 
 > For a runnable example with inline editing, see [examples/01-quickstart](https://github.com/jowilf/starlette-admin/tree/main/examples/01-quickstart).
 
-## Basic Usage
+## Basic usage
 
 Declare the editable field names in the `inline_editable_fields` list:
 
@@ -24,34 +24,34 @@ class PostView(ModelView):
     inline_editable_fields = ["title", "status", "views", "published_at"]
 ```
 
-When enabled, editable cells display a dashed underline on the list page. Clicking a cell opens a popover with the field's standard form control, pre-filled with the current value.
+Editable cells then show a dashed underline on the list page. Selecting a cell opens a popover with the field's standard form control, prefilled with the current value.
 
-The underline is not painted on the whole cell. Each list template places the `inline-edit-value` CSS class on the exact element to underline, and the style only activates inside an editable cell. All built-in list templates already carry the class. A custom `list_template` that should show the affordance must add the class itself:
+The underline isn't painted on the whole cell. Each list template puts the `inline-edit-value` CSS class on the exact element to underline, and the style applies only inside an editable cell. All built-in list templates already carry the class. If you write a custom `list_template` and want the same affordance, add the class yourself:
 
 ```html
 <span class="avatar avatar-xs me-2">...</span>
 <span class="inline-edit-value">{{ data.name }}</span>
 ```
 
-Omitting the class keeps the cell fully clickable but renders it without the underline.
+Without the class, the cell still opens the popover, but it renders no underline.
 
-- **Save:** Click the check button or press <kbd>Enter</kbd> (for single-line inputs). This validates the field, persists the change, and refreshes the row without a page reload.
-- **Cancel:** Click the <kbd>x</kbd> button or press <kbd>Esc</kbd> to discard changes.
+- **Save:** Select the check button or press <kbd>Enter</kbd> in a single-line input. The admin validates the field, saves the change, and refreshes the row without reloading the page.
+- **Cancel:** Select the <kbd>x</kbd> button or press <kbd>Esc</kbd> to discard the change.
 
-## Configuration Rules
+## Configuration rules
 
-The application validates `inline_editable_fields` at startup to ensure misconfigurations fail fast. A `ValueError` is raised when a listed name meets any of the following conditions:
+The application validates `inline_editable_fields` at startup so misconfigurations fail fast. A listed name raises a `ValueError` when it meets any of these conditions:
 
-- Is not declared in `fields`.
-- Is the primary key field.
-- Is excluded from the list page (`exclude_from_list`) or the edit form (`exclude_from_edit`).
-- Is a container or read-only field (`CollectionField`, `ListField`, `ComputedField`, `FileField`, or `ImageField`).sa
+- It isn't declared in `fields`.
+- It's the primary key field.
+- It's excluded from the list page (`exclude_from_list`) or the edit form (`exclude_from_edit`).
+- It's a container or read-only field: `CollectionField`, `ListField`, `ComputedField`, `FileField`, or `ImageField`.
 
-## Field Support
+## Field support
 
-Every editable field renders the exact form widget it uses on the edit page. A field's specific JavaScript and CSS assets (like select2, flatpickr, JSONEditor, or TinyMCE) load on the list page only when that field is inline-editable. Views without inline edit keep their current lightweight page footprint.
+Every editable field renders the same form widget it uses on the edit page. A field's JavaScript and CSS assets, such as select2, flatpickr, JSONEditor, or TinyMCE, load on the list page only when that field is inline-editable. Views without inline edit keep their current lightweight page footprint.
 
-| Field Type                                                                           | Supported | Popover Widget                      |
+| Field type                                                                           | Supported | Popover widget                      |
 | ------------------------------------------------------------------------------------ | --------- | ----------------------------------- |
 | `StringField`, `EmailField`, `URLField`, `PhoneField`, `ColorField`, `PasswordField` | Yes       | Plain input                         |
 | `SlugField`                                                                          | Yes       | Plain input (source field excluded) |
@@ -71,7 +71,7 @@ Every editable field renders the exact form widget it uses on the edit page. A f
 
 ## Permissions
 
-Inline editing reuses the existing permission model. The popover appears and accepts requests only when both `is_accessible(request)` and `can_edit(request)` return `True`. Overriding `can_edit` automatically secures inline edits:
+Inline editing reuses the existing permission model. The popover appears, and the admin accepts the request, only when both `is_accessible(request)` and `can_edit(request)` return `True`. Overriding `can_edit` therefore secures inline edits too:
 
 ```python
 class PostView(ModelView):
@@ -89,9 +89,9 @@ class PostView(ModelView):
 An inline save validates and writes only the edited field.
 
 - The field's `required` check and `validators` chain run exactly as they do on the edit page.
-- Other fields are bypassed. A save from the list page cannot overwrite a concurrent edit to a different field, and existing invalid data in other fields will not block the save.
+- Other fields are skipped. A save from the list page can't overwrite a concurrent edit to a different field, and invalid data in another field doesn't block the save.
 
-The view's cross-field `validate` hook still runs, but the `data` dictionary contains only the edited field. Hooks expecting full-form submissions will raise a `KeyError` if they index missing keys directly. Use conditional checks to verify key presence:
+The view's cross-field `validate` hook still runs, but the `data` dictionary holds only the edited field. A hook that expects a full form submission raises a `KeyError` if it indexes missing keys directly, so check that a key is present first:
 
 ```python
 from typing import Any
@@ -122,20 +122,20 @@ class PostView(ModelView):
         await super().validate(request, data)
 ```
 
-On validation failure, the popover stays open with the submitted value intact. The edited field's message renders under the control, exactly as on the edit page. A message keyed to another field is prefixed with that field's label.
+When validation fails, the popover stays open with the submitted value intact. The edited field's message renders under the control, exactly as on the edit page. A message keyed to another field is prefixed with that field's label.
 
-Detect an inline save inside a hook using `request.state.action == RequestAction.INLINE_EDIT`. This is useful for skipping flash messages intended for full page renders.
+To detect an inline save inside a hook, check `request.state.action == RequestAction.INLINE_EDIT`. Use it to skip flash messages meant for full page renders.
 
-> **Warning**
-> A validation rule keyed to a field that was not edited will not fire during an inline save. If a field's invariants depend on values the user cannot see or change from the list page, exclude it from `inline_editable_fields`.
+!!! warning
+    A validation rule keyed to a field the user didn't edit doesn't run during an inline save. If a field's invariants depend on values the user can't see or change from the list page, leave that field out of `inline_editable_fields`.
 
 ---
 
-## Lifecycle Hooks and Events
+## Lifecycle hooks and events
 
-Inline saves route through the view's standard `edit()` path. The `before_edit`, `after_edit`, and `after_edit_committed` hooks fire normally, and the corresponding [events](../advanced/events.md) use the standard context types. However, the `data` and `old_data` payloads contain only the edited field to accurately reflect what the save touched.
+Inline saves go through the view's standard `edit()` path. The `before_edit`, `after_edit`, and `after_edit_committed` hooks fire as usual, and the matching [events](../advanced/events.md) use the standard context types. The `data` and `old_data` payloads contain only the edited field, so they reflect exactly what the save touched.
 
-To distinguish an inline save within an event listener, check `ctx.extra["inline"]`. This value is set to `True` for inline edits:
+To tell an inline save apart inside an event listener, check `ctx.extra["inline"]`, which is `True` for inline edits:
 
 ```python
 from starlette_admin import AdminEvent
@@ -150,6 +150,6 @@ async def audit(ctx: AfterEditContext) -> None:
 
 ---
 
-## Custom Fields
+## Custom fields
 
-Custom fields support inline editing automatically if they follow the standard `BaseField` contract. Because `RequestAction.INLINE_EDIT` is a form action, `action.is_form()` returns `True`. If your custom field code checks `action == RequestAction.EDIT` to generate a form-value representation, update it to use `action.is_form()` instead. This ensures the popover receives the correct representation. Review [Custom Fields](../advanced/custom-fields.md) for the complete field contract.
+Custom fields support inline editing automatically when they follow the standard `BaseField` contract. Because `RequestAction.INLINE_EDIT` is a form action, `action.is_form()` returns `True`. If your custom field checks `action == RequestAction.EDIT` to build a form-value representation, change it to use `action.is_form()` so the popover receives the right representation. For the complete field contract, see [Custom Fields](../advanced/custom-fields.md).

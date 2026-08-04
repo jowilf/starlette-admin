@@ -5,13 +5,13 @@ description: Learn how to configure list and detail views in starlette-admin, in
 
 # Views
 
-Starlette Admin builds its sidebar using three types of views: `ModelView` to expose database models, `CustomView` to render standalone pages, and `Link` to add simple hyperlinks.
+`starlette-admin` builds its sidebar from three kinds of view: `ModelView` exposes a database model, `CustomView` renders a standalone page, and `Link` adds a hyperlink.
 
 ## ModelView
 
-A `ModelView` subclass is the primary component used to expose a database model in the admin interface. You define how a resource looks, behaves, and processes data using class attributes and method overrides on this view.
+A `ModelView` subclass is how you expose a database model in the admin. Class attributes and method overrides on that view define how the resource looks, behaves, and handles data.
 
-Every example on this section uses the following standard SQLAlchemy setup:
+Every example in this section uses the following SQLAlchemy setup:
 
 ```python
 from datetime import datetime
@@ -43,9 +43,9 @@ class Post(Base):
     author: Mapped[Author] = relationship(back_populates="books")
 ```
 
-### Basic Usage
+### Basic usage
 
-To expose the `Post` model to the admin interface, subclass `ModelView` and configure its attributes.
+To expose the `Post` model, subclass `ModelView` and configure its attributes.
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
@@ -55,7 +55,7 @@ class PostView(ModelView):
     fields = ["id", "title", "content", "published", "created_at"]
 ```
 
-A view class remains dormant until registered with an `Admin` instance:
+A view class does nothing until you register it with an `Admin` instance:
 
 ```python
 from sqlalchemy import create_engine
@@ -70,28 +70,28 @@ admin.add_view(PostView(Post))
 
 See [examples/01-quickstart](https://github.com/jowilf/starlette-admin/tree/main/examples/01-quickstart) for a runnable admin built the same way, on a `Post` model.
 
-Registering a view instantly generates paginated, sortable, and searchable interfaces for listing, viewing, creating, editing, and deleting records. No custom routes or templates are required.
+Registering a view generates paginated, sortable, and searchable interfaces for listing, viewing, creating, editing, and deleting records. You write no routes and no templates.
 
 !!! note
-    `ModelView` is imported from your specific backend's contrib package (e.g., `starlette_admin.contrib.sqla`, `.beanie`, `.mongoengine`, `.sqlmodel`, or `.tortoise`). However, **every attribute described below is identical across backends**. You can swap a SQLAlchemy model for a MongoEngine document later without changing your view logic.
+    You import `ModelView` from your backend's contrib package, such as `starlette_admin.contrib.sqla`, `.beanie`, `.mongoengine`, `.sqlmodel`, or `.tortoise`. **Every attribute described below is identical across backends**, so you can swap a SQLAlchemy model for a MongoEngine document later without changing your view logic.
 
-### Core Configuration
+### Core configuration
 
-#### Naming & Routing
+#### Naming and routing
 
-Starlette Admin dynamically derives URL routing and UI labels from the model's class name by default. For the `Post` model, it assumes:
+By default, the admin derives URL routing and UI labels from the model's class name. For the `Post` model, it uses:
 
 * **Key:** `post` (URL: `/admin/post/list`)
-* **Menu label:** `Posts` (Sidebar entry)
-* **Display name:** `Post` (UI buttons like "New Post")
+* **Menu label:** `Posts` (sidebar entry)
+* **Display name:** `Post` (UI buttons such as **New Post**)
 
-If the derived values are incorrect, you can override them during registration or within the constructor.
+When the derived values are wrong, override them at registration or in the constructor.
 
-| Attribute | Description | Example Override | Resulting UI / URL |
+| Attribute | Description | Example override | Resulting UI or URL |
 | --- | --- | --- | --- |
 | **`key`** | The internal slug and base URL route. | `key="blog-post"` | `/admin/blog-post/list` |
-| **`menu_label`** | The plural noun used for the sidebar navigation. | `menu_label="Blog Posts"` | **Sidebar:** Blog Posts |
-| **`display_name`** | The singular noun used for actions and forms. | `display_name="Article"` | **Buttons:** "New Article" |
+| **`menu_label`** | The plural noun used in the sidebar. | `menu_label="Blog Posts"` | **Sidebar:** Blog Posts |
+| **`display_name`** | The singular noun used in actions and forms. | `display_name="Article"` | **Buttons:** New Article |
 
 ```python
 admin.add_view(
@@ -99,11 +99,11 @@ admin.add_view(
 )
 ```
 
-#### Field Selection & Customization
+#### Field selection and customization
 
-The `fields` list dictates which model attributes appear across the list view, detail page, and forms. Omitting this attribute exposes all model attributes by default.
+The `fields` list sets which model attributes appear on the list view, the detail page, and the forms. Omit it to expose every model attribute.
 
-You can mix string names and explicit `BaseField` instances for granular control over widgets, validation, and labeling:
+Mix string names and explicit `BaseField` instances to control widgets, validation, and labels:
 
 ```python
 from starlette_admin.fields import (
@@ -125,11 +125,11 @@ class PostView(ModelView):
 ```
 
 !!! note
-    The primary key is auto-detected. You only need to explicitly define `pk_attr` if auto-detection fails, such as when using a custom backend without a standard single-field primary key.
+    The admin detects the primary key for you. Define `pk_attr` only when detection fails, such as on a custom backend without a single-field primary key.
 
-#### Contextual Field Visibility
+#### Contextual field visibility
 
-Fields often need to be visible on the list or detail page but hidden from creation forms, such as timestamps or system-managed statuses. Use the `exclude_fields_from_*` attributes to selectively hide fields from specific UI surfaces:
+Fields often belong on the list or detail page but not on a create form, such as timestamps and system-managed statuses. Use the `exclude_fields_from_*` attributes to hide a field from specific surfaces:
 
 ```python
 class PostView(ModelView):
@@ -140,18 +140,18 @@ class PostView(ModelView):
     exclude_fields_from_export = ["content"]
 ```
 
-Available exclusion attributes include `_create`, `_edit`, `_list`, `_detail`, `_export`, and `_import`.
+The available exclusion attributes end in `_create`, `_edit`, `_list`, `_detail`, `_export`, and `_import`.
 
 !!! important
-    If you must allow edits to the primary key during creation (which is disabled by default), set `show_pk_in_forms = True`.
+    To let users set the primary key when they create a record, which is off by default, set `show_pk_in_forms = True`.
 
-#### Form Layout
+#### Form layout
 
-By default, the `fields` attribute renders your create and edit forms as a flat, vertical list. To reorganize the user interface without altering your underlying data definitions, use the `form_layout` attribute.
+By default, `fields` renders your create and edit forms as a flat, vertical list. To reorganize the interface without touching your data definitions, use the `form_layout` attribute.
 
-**The Tuple Shorthand**
+**The tuple shorthand**
 
-For basic grid layouts, you do not need to import complex widget classes. Simply group field names into a tuple to render them side-by-side in a single row.
+For a basic grid, you don't need to import widget classes. Group field names into a tuple to render them side by side in one row.
 
 ```python
 class ProductView(ModelView):
@@ -164,12 +164,12 @@ class ProductView(ModelView):
     ]
 ```
 
-**Advanced Layout Widgets**
+**Advanced layout widgets**
 
-As your forms grow in complexity, you can structure them using layout widgets. The tuple shorthand works seamlessly inside these components:
+As your forms grow, structure them with layout widgets. The tuple shorthand works inside them:
 
-* **`PanelWidget` or `FieldsetWidget`:** Use these to group related fields under a clear heading or to make sections collapsible.
-* **`TabsWidget`:** Use this when a resource has distinct categories of data (like shipping versus SEO metadata) that do not need to be visible all at once.
+* **`PanelWidget` or `FieldsetWidget`:** Group related fields under a heading, or make a section collapsible.
+* **`TabsWidget`:** Separate distinct categories of data, such as shipping details and SEO metadata, that don't need to be visible at the same time.
 
 ```python
 from starlette_admin import TabsWidget
@@ -200,11 +200,11 @@ class ProductView(ModelView):
 
 See [Form Layouts](../advanced/form-layout.md) for multi-column rows with explicit widths, tabs, static content, and access-control behavior.
 
-### Data Table Features
+### Data table features
 
-#### Search & Sort
+#### Search and sort
 
-Control how users find and order data using `searchable_fields` and `sortable_fields`.
+Control how users find and order data with `searchable_fields` and `sortable_fields`.
 
 ```python
 class PostView(ModelView):
@@ -214,13 +214,13 @@ class PostView(ModelView):
     fields_default_sort = [("created_at", True)]  # Sort newest first
 ```
 
-* **`searchable_fields`**: Enables the advanced filter builder and the global search box. Global search executes a full-text query against these fields.
-* **`sortable_fields`**: Restricts which column headers are clickable for sorting. Unauthorized sort queries via URL parameters are silently ignored.
-* **`fields_default_sort`**: Determines the initial table load state. Provide a bare string to sort ascending, a tuple with `True` to sort descending, or a tuple with `False` to explicitly sort ascending. You can also chain multiple items to define a multi-column sort order.
+* **`searchable_fields`**: Turns on the filter builder and the global search box. Global search runs a full-text query against these fields.
+* **`sortable_fields`**: Restricts which column headers users can sort by. A sort query for another field, passed through URL parameters, is ignored.
+* **`fields_default_sort`**: Sets the initial table state. Pass a bare string to sort ascending, a tuple with `True` to sort descending, or a tuple with `False` to sort ascending explicitly. Chain several items for a multi-column sort.
 
-#### Pagination & UI Controls
+#### Pagination and UI controls
 
-Fine-tune the list page layout and interactivity using the following attributes:
+Fine-tune the list page layout with these attributes:
 
 ```python
 class PostView(ModelView):
@@ -232,17 +232,17 @@ class PostView(ModelView):
     row_click_navigate = False
 ```
 
-* **`page_size` / `page_size_options`**: Set the default pagination limit and dropdown choices.
-* **`show_goto_page`**: Appends a "go to page" input for navigating large datasets.
-* **`search_auto_submit`**: Triggers filtering as the user types.
-* **`show_detail_search`**: Injects a search box on the detail page to filter inline relationship tables.
-* **`row_click_navigate`**: Opens the detail page when the user clicks anywhere on a table row. Enabled by default; set it to `False` to keep rows inert so users navigate only through the row actions. Rows are never clickable for users whose `can_view_detail` check fails.
+* **`page_size` and `page_size_options`**: The default pagination limit and the dropdown choices.
+* **`show_goto_page`**: Adds a "go to page" input for large datasets.
+* **`search_auto_submit`**: Filters as the user types.
+* **`show_detail_search`**: Adds a search box on the detail page to filter inline relationship tables.
+* **`row_click_navigate`**: Opens the detail page when the user selects anywhere on a table row. It's on by default. Set it to `False` to keep rows inert, so users navigate through the row actions instead. Rows are never clickable for users whose `can_view_detail` check fails.
 
-#### Inline Editing
+#### Inline editing
 
-To accelerate data management, you can allow users to modify specific fields directly from the list view without opening the full edit form.
+You can let users change specific fields straight from the list view, without opening the full edit form.
 
-Use the `inline_editable_fields` attribute to define which columns support this capability. When configured, clicking an enabled cell opens a contextual popover for rapid updates.
+Use the `inline_editable_fields` attribute to declare which columns support it. Selecting an enabled cell then opens a popover for a quick update.
 
 ```python
 class PostView(ModelView):
@@ -252,13 +252,14 @@ class PostView(ModelView):
     inline_editable_fields = ["title", "published"]
 ```
 
-> **Security & Access:** This feature is disabled by default. When enabled, it remains securely gated by the view's existing `can_edit` permission.
+!!! note "Security and access"
+    Inline editing is off by default. When you turn it on, the view's existing `can_edit` permission still gates it.
 
-For advanced configuration, validation behaviors, and a complete matrix of supported field types, refer to the [Inline Edit](inline-edit.md) guide.
+For configuration details, validation behavior, and the full matrix of supported field types, see the [Inline Edit](inline-edit.md) guide.
 
-### Relational Data
+### Relational data
 
-Starlette Admin automatically manages complex data relationships. For the Many-to-One setup between `Post` and `Author`, include the relationship attribute in your `fields` list. The UI renders the appropriate widgets automatically as long as both models have registered views.
+The admin handles data relationships for you. For the many-to-one setup between `Post` and `Author`, add the relationship attribute to your `fields` list. As long as both models have registered views, the UI renders the right widgets.
 
 ```python
 class AuthorView(ModelView):
@@ -273,9 +274,9 @@ admin.add_view(AuthorView(Author))
 admin.add_view(PostView(Post))
 ```
 
-#### Manual Relationship Declaration
+#### Manual relationship declaration
 
-You only need to manually declare `HasOne` or `HasMany` fields when the target view is registered under a custom `key`.
+Declare `HasOne` or `HasMany` fields yourself only when the target view is registered under a custom `key`.
 
 ```python
 from starlette_admin import HasMany, HasOne, StringField
@@ -294,13 +295,13 @@ admin.add_view(AuthorView(Author))
 admin.add_view(PostView(Post, key="post-article"))
 ```
 
-### Object Representation
+### Object representation
 
-Whenever the admin needs to display a record as a single value, it falls back to the primary key by default. A `Post` linked to `Author #3` therefore renders as "3" in relationship columns, which tells the user very little. Two optional methods, defined on the **model** rather than the view, replace this default with a meaningful representation. Both methods accept the current `Request` and can be either synchronous or asynchronous.
+When the admin needs to show a record as a single value, it falls back to the primary key. A `Post` linked to `Author #3` then renders as "3" in relationship columns, which tells the user almost nothing. Two optional methods, defined on the **model** rather than the view, replace that default with something meaningful. Both accept the current `Request` and can be synchronous or asynchronous.
 
 #### `__admin_repr__`
 
-Returns a plain string used wherever the record appears as text: relationship columns on the list and detail pages, breadcrumbs, and action confirmation messages.
+Returns a plain string, used wherever the record appears as text: relationship columns on the list and detail pages, breadcrumbs, and action confirmation messages.
 
 ```python
 class Author(Base):
@@ -317,7 +318,7 @@ With this method in place, a post's author renders as "Gabriel Garcia Marquez" i
 
 #### `__admin_select2_repr__`
 
-Returns an HTML snippet used to render options in the `select2` dropdowns that relationship form fields use. This lets you enrich choices with images, badges, or secondary text. When this method is missing, the admin falls back to the escaped output of `__admin_repr__`, or to a generated summary of the record's non-relation fields when neither method is defined.
+Returns an HTML snippet that renders the options in the `select2` dropdowns used by relationship form fields, so you can enrich choices with images, badges, or secondary text. Without this method, the admin falls back to the escaped output of `__admin_repr__`. Without either method, it falls back to a generated summary of the record's non-relation fields.
 
 ```python
 from jinja2 import Template
@@ -344,14 +345,14 @@ class Author(Base):
 !!! note
     The returned value must be valid HTML.
 
-!!! danger
-    Escape database values to prevent Cross-Site Scripting (XSS) attacks. Render the snippet with Jinja2 and `autoescape=True` as shown above, or escape each value manually with `html.escape`. For more information, refer to the [OWASP documentation](https://owasp.org/www-community/attacks/xss/).
+!!! warning
+    Escape database values to prevent cross-site scripting (XSS) attacks. Render the snippet with Jinja2 and `autoescape=True`, as shown above, or escape each value yourself with `html.escape`. For more information, see the [OWASP documentation](https://owasp.org/www-community/attacks/xss/).
 
-### Security & Authorization
+### Security and authorization
 
-Restrict user access by overriding permission methods on your `ModelView`. These methods expect a boolean return value. Base implementations always return `True`.
+Restrict access by overriding permission methods on your `ModelView`. Each returns a boolean, and the base implementations all return `True`.
 
-This pattern integrates directly with your `AuthProvider`. In this example, permissions are checked against a `roles` list stored on the session's `admin_user`:
+This pattern plugs straight into your `AuthProvider`. In the example below, each check reads a `roles` list from the session's `admin_user`:
 
 ```python
 from starlette.requests import Request
@@ -376,14 +377,14 @@ class PostView(ModelView):
         return "read:post" in request.state.admin_user.roles
 ```
 
-For a deeper dive into configuring your `AuthProvider` and populating the `admin_user` object, refer to the [Authentication](auth.md) documentation.
+For more on configuring your `AuthProvider` and populating the `admin_user` object, see [Authentication](auth.md).
 
 !!! note
-    You only need to override the restricted methods. Unmodified methods will continue to allow access.
+    Override only the methods you want to restrict. The ones you leave alone keep allowing access.
 
-### Lifecycle Hooks
+### Lifecycle hooks
 
-Use lifecycle hooks to execute side effects or mutate data immediately before or after a database transaction.
+Use lifecycle hooks to run side effects or mutate data right before or after a database transaction.
 
 ```python
 from typing import Any
@@ -404,9 +405,9 @@ class PostView(ModelView):
 
 The available hooks are `before_create`, `after_create`, `after_create_committed`, `before_edit`, `after_edit`, `after_edit_committed`, `before_delete`, `after_delete`, and `after_delete_committed`.
 
-#### Committed Hooks
+#### Committed hooks
 
-The `after_create_committed`, `after_edit_committed`, and `after_delete_committed` hooks execute only after the database transaction successfully commits. Use these for side effects that must be skipped if a write operation rolls back, such as sending emails or enqueueing background jobs:
+`after_create_committed`, `after_edit_committed`, and `after_delete_committed` run only after the database transaction commits. Use them for side effects that must not happen when a write rolls back, such as sending email or queuing background jobs:
 
 ```python
 class PostView(ModelView):
@@ -415,22 +416,22 @@ class PostView(ModelView):
 ```
 
 !!! warning
-    When these hooks execute, the request session is already committed and closed. Do not perform database writes using `request.state.session` within these methods. Instead, use external I/O or instantiate a new database session.
+    By the time these hooks run, the request session is committed and closed. Don't write to the database through `request.state.session` inside them. Use external I/O, or open a new database session.
 
-!!! warning
-    In `after_delete_committed`, `obj` is detached from any session: attributes already loaded before the delete remain readable, but accessing one that was never loaded will fail, since the row is gone.
+!!! important
+    In `after_delete_committed`, `obj` is detached from any session. Attributes loaded before the delete stay readable, but reading one that was never loaded fails, because the row is gone.
 
-!!! note "Backend Support"
-    These hooks are emitted exclusively by backends that defer the commit until the end of the request. Currently, this functionality is limited to the SQLAlchemy backend.
+!!! note "Backend support"
+    Only backends that defer the commit to the end of the request emit these hooks. Today that's the SQLAlchemy backend.
 
 !!! tip
-    For global logic that spans multiple views, such as a comprehensive audit log, utilize [Events](../advanced/events.md) instead.
+    For logic that spans several views, such as an audit log, use [Events](../advanced/events.md) instead.
 
-### UI Customization
+### UI customization
 
-#### Sidebar Organization
+#### Sidebar organization
 
-Group related views into a collapsible folder using `DropDown`. Folders can mix `ModelView`, `CustomView`, and `Link` entries.
+Group related views into a collapsible folder with `DropDown`. A folder can mix `ModelView`, `CustomView`, and `Link` entries.
 
 ```python
 from starlette_admin import DropDown, Link
@@ -453,9 +454,9 @@ admin.add_view(
 )
 ```
 
-#### Exporters & Importers
+#### Exporters and importers
 
-The `exporters` and `importers` attributes specify the exact formats available for data transfer. Refer to the [Export & Import](export-import.md) guide for details on built-in options and custom implementations.
+The `exporters` and `importers` attributes set which formats are available for data transfer. See the [Export & Import](export-import.md) guide for the built-in options and for writing your own.
 
 ```python
 class PostView(ModelView):
@@ -463,17 +464,17 @@ class PostView(ModelView):
     importers = ["json"]
 ```
 
-### Actions, Inline Forms, and Templates
+### Actions, inline forms, and templates
 
-`ModelView` includes three additional feature sets for complex use cases. Each has a dedicated guide:
+`ModelView` has three more feature sets for complex cases, each with its own guide:
 
-* **Actions & Row Actions:** The `actions` and `row_actions` attributes enable custom batch and per-row operations beyond standard CRUD capabilities. See [Actions](actions.md).
-* **Inline Forms:** The `inlines` attribute nests a related model's creation and editing forms directly within the parent view. See [Inline Forms](inline-forms.md).
-* **Templates & Assets:** Replace default pages with custom Jinja templates using `list_template`, `detail_template`, `create_template`, or `edit_template`. See [Templates](../advanced/templates.md).
+* **Actions and row actions:** The `actions` and `row_actions` attributes add custom batch and per-row operations beyond CRUD. See [Actions](actions.md).
+* **Inline forms:** The `inlines` attribute nests a related model's create and edit forms inside the parent view. See [Inline Forms](inline-forms.md).
+* **Templates and assets:** Replace the default pages with your own Jinja templates through `list_template`, `detail_template`, `create_template`, or `edit_template`. See [Templates](../advanced/templates.md).
 
 ## CustomView
 
-Administrative pages do not always map to a database model. `CustomView` creates a standalone sidebar page built from widgets, custom templates, or custom routes.
+Not every admin page maps to a database model. `CustomView` creates a standalone sidebar page built from widgets, custom templates, or custom routes.
 
 ```python
 from starlette_admin import CustomView, StatWidget
@@ -488,11 +489,11 @@ admin.add_view(
 )
 ```
 
-See [Custom Views](custom-views.md) for the full widget catalog, dashboard instructions, and custom route integration.
+See [Custom Views](custom-views.md) for the full widget catalog, dashboard instructions, and custom routes.
 
 ## Link
 
-`Link` adds a simple hyperlink to the sidebar to point users toward a live site, external documentation, or another internal tool.
+`Link` adds a hyperlink to the sidebar, pointing users to a live site, external documentation, or another internal tool.
 
 ```python
 from starlette_admin import Link
@@ -507,19 +508,19 @@ admin.add_link(
 )
 ```
 
-* **`label`** / **`icon`**: The sidebar entry text and icon.
-* **`url`** / **`target`**: The destination and the anchor target attribute.
+* **`label`** and **`icon`**: The sidebar entry text and icon.
+* **`url`** and **`target`**: The destination and the anchor target attribute.
 
-The `admin.add_link(link)` method is a thin wrapper around `admin.add_view(link)`. Use whichever reads better in your codebase. A `Link` can also be nested inside a `DropDown` as demonstrated in the Sidebar Organization section.
+`admin.add_link(link)` is a thin wrapper around `admin.add_view(link)`. Use whichever reads better in your codebase. You can also nest a `Link` inside a `DropDown`, as shown in [Sidebar organization](#sidebar-organization).
 
 ---
 
-## What's Next
+## What's next
 
-* **[Fields](fields.md)**: Explore the complete field type catalog.
-* **[Form Layouts](../advanced/form-layout.md)**: Arrange create/edit forms with rows, panels, fieldsets, and tabs.
+* **[Fields](fields.md)**: The complete field type catalog.
+* **[Form Layouts](../advanced/form-layout.md)**: Arrange create and edit forms with rows, panels, fieldsets, and tabs.
 * **[Custom Views](custom-views.md)**: Build dashboards and standalone pages with widgets, templates, and custom routes.
-* **[Actions & Row Actions](actions.md)**: Enable batch and per-row operations beyond standard CRUD capabilities.
-* **[Inline Edit](inline-edit.md)**: Let users edit a single field of a row directly from the list page.
-* **[Inline Forms](inline-forms.md)**: Learn how to nest a related model's create and edit forms directly within a parent view.
+* **[Actions & Row Actions](actions.md)**: Add batch and per-row operations beyond CRUD.
+* **[Inline Edit](inline-edit.md)**: Let users edit a single field of a row from the list page.
+* **[Inline Forms](inline-forms.md)**: Nest a related model's create and edit forms inside a parent view.
 * **[Templates](../advanced/templates.md)**: Swap in your own Jinja templates and inject custom assets.

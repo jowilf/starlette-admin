@@ -5,34 +5,34 @@ description: Comprehensive reference for all built-in fields in starlette-admin 
 
 # Fields
 
-Fields are the core building blocks of your models. Under the hood, they are plain Python dataclasses. Every attribute you pass to a field constructor becomes a dataclass field, and every field type is a subclass of `BaseField` that you can inspect, subclass, or instantiate directly.
+Fields are the building blocks of your views. Under the hood they're plain Python dataclasses: every attribute you pass to a field constructor becomes a dataclass field, and every field type subclasses `BaseField`, so you can inspect it, subclass it, or instantiate it directly.
 
-## Common Attributes
+## Common attributes
 
-All field types inherit a standard set of configuration attributes from `BaseField`.
+Every field type inherits this set of configuration attributes from `BaseField`.
 
 | Attribute | Type | Default | Description |
 | --- | --- | --- | --- |
 | `name` | `str` | **Required** | The attribute name on your model. |
 | `label` | `str | None` | Title-cased `name` | The column header and form label. |
-| `help_text` | `str | None` | `None` | Hint text displayed below the form input. |
-| `required` | `bool` | `False` | Enforces presence in forms (client- and server-side). |
+| `help_text` | `str | None` | `None` | Hint text shown below the form input. |
+| `required` | `bool` | `False` | Requires a value in forms, on both the client and the server. |
 | `validators` | `list[Validator]` | `[]` | Server-side validators run against the submitted value. See [Validation](#validation). |
 | `disabled` | `bool` | `False` | Greys out and locks the input in forms. |
-| `read_only` | `bool` | `False` | Displays the field but prevents edits. |
+| `read_only` | `bool` | `False` | Shows the field but blocks edits. |
 | `default` | `Any | Callable` | `None` | The prefill value on the create form. |
-| `getter` | `Callable | None` | `None` | Replaces the model attribute lookup when reading the value. See [Computing, Formatting, and Parsing Values](#computing-formatting-and-parsing-values). |
-| `formatter` | `dict[RequestAction, Callable] | None` | `None` | Per-action display formatting, replacing serialization for that action. See [Computing, Formatting, and Parsing Values](#computing-formatting-and-parsing-values). |
-| `parser` | `dict[RequestAction, Callable] | None` | `None` | Per-action input parsing, replacing the field's default parsing. See [Computing, Formatting, and Parsing Values](#computing-formatting-and-parsing-values). |
+| `getter` | `Callable | None` | `None` | Replaces the model attribute lookup when reading the value. See [Computing, formatting, and parsing values](#computing-formatting-and-parsing-values). |
+| `formatter` | `dict[RequestAction, Callable] | None` | `None` | Per-action display formatting, which replaces serialization for that action. See [Computing, formatting, and parsing values](#computing-formatting-and-parsing-values). |
+| `parser` | `dict[RequestAction, Callable] | None` | `None` | Per-action input parsing, which replaces the field's default parsing. See [Computing, formatting, and parsing values](#computing-formatting-and-parsing-values). |
 | `searchable` | `bool` | `True` | Included when the `q` search parameter matches. |
-| `orderable` | `bool` | `True` | Enables a sort link in the list header. |
+| `orderable` | `bool` | `True` | Adds a sort link in the list header. |
 | `copy_to_clipboard` | `bool` | `False` | Adds a copy button next to the value on the detail page. |
-| `filters` | `list | None` | `None` | Explicit override for list page filters. |
-| `extra` | `dict[str, Any]` | `{}` | A dictionary for storing custom metadata. |
+| `filters` | `list | None` | `None` | Explicit override for the list page filters. |
+| `extra` | `dict[str, Any]` | `{}` | A dictionary for your own metadata. |
 
-### Visibility Controls
+### Visibility controls
 
-You can fine-tune where a field is displayed using the following boolean flags (all default to `False`):
+Use these boolean flags, all `False` by default, to control where a field appears:
 
 * `exclude_from_list`
 * `exclude_from_detail`
@@ -41,9 +41,9 @@ You can fine-tune where a field is displayed using the following boolean flags (
 * `exclude_from_export`
 * `exclude_from_import`
 
-### Defining Defaults
+### Defining defaults
 
-The `default` attribute is highly flexible and accepts static values, zero-argument callables, or request-aware functions:
+The `default` attribute accepts a static value, a zero-argument callable, or a request-aware function:
 
 ```python
 from datetime import datetime
@@ -56,13 +56,13 @@ StringField(
 )  # Request-aware
 ```
 
-### Computing, Formatting, and Parsing Values
+### Computing, formatting, and parsing values
 
-Every field accepts three callable hooks (`getter`, `formatter`, and `parser`) to intercept and transform data as it flows between your model and the UI. These hooks accept both synchronous and asynchronous functions.
+Every field accepts three callable hooks, `getter`, `formatter`, and `parser`, that intercept and transform data as it moves between your model and the UI. Each accepts a synchronous or an asynchronous function.
 
-#### `getter`: Reading Custom Values
+#### `getter`: reading custom values
 
-The `getter` hook replaces the default `getattr()` lookup when reading a model instance. The field calls `getter(request, obj)` and displays the return value.
+The `getter` hook replaces the default `getattr()` lookup when the field reads a model instance. The field calls `getter(request, obj)` and displays the return value.
 
 ```python
 from starlette_admin import StringField
@@ -71,11 +71,11 @@ from starlette_admin import StringField
 StringField("author_email", getter=lambda request, obj: obj.author.email)
 ```
 
-Because `getter` values rarely map to physical database columns, they pair best with a read-only display. The [`ComputedField`](#computedfield) is a built-in shortcut for this exact combination.
+Because `getter` values rarely map to a physical database column, they pair best with a read-only display. [`ComputedField`](#computedfield) is a built-in shortcut for that combination.
 
-#### `formatter`: Transforming Display Output
+#### `formatter`: transforming display output
 
-The `formatter` hook dictates how a stored value renders on specific pages. It maps a `RequestAction` (`LIST`, `DETAIL`, `EXPORT`, etc.) to a `(request, value) -> value` callable.
+The `formatter` hook sets how a stored value renders on specific pages. It maps a `RequestAction`, such as `LIST`, `DETAIL`, or `EXPORT`, to a `(request, value) -> value` callable.
 
 ```python
 from starlette_admin import RequestAction, StringField
@@ -91,17 +91,17 @@ StringField(
 )
 ```
 
-**Formatting behavior to note:**
+**Formatting behavior to keep in mind:**
 
-* **Handles nulls:** Unlike default serialization, formatters receive `None` values, allowing you to provide fallback text (like `"unset"` in the example above).
-* **Bypasses serialization:** A matched formatter completely replaces the field's default `serialize_value` and `serialize_none_value` methods. The return value is used exactly as-is, making the formatter fully responsible for producing the final displayable output.
-* **JSON requirement:** Values returned for `LIST` and `RELATION_LOOKUP` actions must remain JSON serializable.
+* **Nulls reach the formatter:** Unlike default serialization, formatters receive `None` values, so you can supply fallback text, such as `"unset"` above.
+* **Serialization is bypassed:** A matched formatter replaces the field's `serialize_value` and `serialize_none_value` methods. The return value is used as is, so the formatter is fully responsible for the final output.
+* **JSON requirement:** Values returned for the `LIST` and `RELATION_LOOKUP` actions must stay JSON serializable.
 
-#### `parser`: Processing Incoming Data
+#### `parser`: processing incoming data
 
-The `parser` hook overrides the field's default logic for parsing submitted or imported data. It maps a `RequestAction` to a `(request, raw) -> value` callable.
+The `parser` hook overrides the field's default parsing of submitted or imported data. It maps a `RequestAction` to a `(request, raw) -> value` callable.
 
-* **Forms (`CREATE`, `EDIT`, `INLINE_EDIT`):** `raw` is the submitted form input (a list if `multiple=True`).
+* **Forms (`CREATE`, `EDIT`, `INLINE_EDIT`):** `raw` is the submitted form input, or a list when `multiple=True`.
 * **Imports (`IMPORT`):** `raw` is the unprocessed cell value from the file.
 
 ```python
@@ -118,35 +118,34 @@ IntegerField(
 )
 ```
 
-After parsing, the returned value proceeds through the standard validation chain (`required`, then `validators`) exactly as if the field had parsed the data itself.
+After parsing, the returned value goes through the standard validation chain, `required` and then `validators`, exactly as if the field had parsed the data itself.
 
-!!! tip "Hooks vs. Subclassing"
-    For a one-off customization on a single field, you rarely need a subclass. Instead, pass these hooks directly as constructor arguments to handle reading, display formatting, and input parsing.
-    **When to subclass:** [Subclass the field](../advanced/custom-fields.md) only if you need to reuse the logic across multiple views or if you need to modify the HTML rendering templates.
+!!! tip "Hooks or a subclass?"
+    For a one-off customization on a single field, you rarely need a subclass. Pass these hooks as constructor arguments to handle reading, display formatting, and input parsing. [Subclass the field](../advanced/custom-fields.md) when you reuse the logic across views, or when you need to change the HTML rendering templates.
 
 ### Validation
 
-Server-side validation runs on every field during form submission (create or edit actions). This ensures data integrity before interacting with the database.
+Server-side validation runs on every field when a create or edit form is submitted, so bad data never reaches the database.
 
-The validation lifecycle follows a strict sequence:
+The lifecycle is fixed:
 
-1. **Empty Values:** If a submitted value is empty (like `None`, `""`, or an empty collection), the system checks only the `required` flag. Standard validators are bypassed entirely.
-2. **Populated Values:** If data is present, the system executes each callable defined in the `validators` list sequentially against the parsed value.
+1. **Empty values:** When a submitted value is empty, such as `None`, `""`, or an empty collection, only the `required` flag is checked. The validators are skipped.
+2. **Populated values:** When data is present, each callable in the `validators` list runs in order against the parsed value.
 
-#### Validator Signature
+#### Validator signature
 
-Validators receive four arguments: `(request, field, value, form_values)`.
+A validator receives four arguments: `(request, field, value, form_values)`.
 
 * **`request`:** The current Starlette request object.
-* **`field`:** The field instance currently being validated.
+* **`field`:** The field instance being validated.
 * **`value`:** The parsed value submitted for this field.
-* **`form_values`:** A dictionary containing all parsed form data keyed by field name. This allows you to inspect other fields during validation.
+* **`form_values`:** A dictionary of all parsed form data, keyed by field name, so you can inspect other fields.
 
-To reject an invalid value, raise a `ValueError`. The system catches the first error raised, skips any remaining validators for that specific field, and aggregates all errors to display them next to their respective inputs in the UI.
+To reject a value, raise a `ValueError`. The admin catches the first error for a field, skips that field's remaining validators, and collects all errors to display next to their inputs.
 
-#### Built-in Validators
+#### Built-in validators
 
-The [`starlette_admin.validators`](../api/validators.md) module provides standard validation rules:
+The [`starlette_admin.validators`](../api/validators.md) module provides standard rules:
 
 ```python
 from starlette_admin import IntegerField, StringField
@@ -156,9 +155,9 @@ StringField("title", validators=[length(min=3, max=100)])
 IntegerField("price", validators=[number_range(min=0)])
 ```
 
-#### Custom and Asynchronous Validation
+#### Custom and asynchronous validation
 
-You can write custom validators as synchronous or asynchronous functions. Because they receive the `request` object, they can easily perform database queries to check complex constraints.
+Write custom validators as synchronous or asynchronous functions. They receive the `request`, so they can query the database to check complex constraints.
 
 ```python
 async def unique_slug(request, field, value, form_values):
@@ -169,7 +168,7 @@ async def unique_slug(request, field, value, form_values):
 StringField("slug", validators=[unique_slug])
 ```
 
-By leveraging the `form_values` argument, a field-level validator can also enforce rules that depend on other submitted fields.
+With the `form_values` argument, a field-level validator can also enforce a rule that depends on another submitted field.
 
 ```python
 def not_before_start(request, field, value, form_values):
@@ -181,15 +180,15 @@ def not_before_start(request, field, value, form_values):
 DateField("end_date", validators=[not_before_start])
 ```
 
-#### Context-Specific Validation Rules
+#### Context-specific validation rules
 
-* **Relation Fields:** Fields like `HasOne` and `HasMany` receive the primary keys of the related records during validation.
-* **File Fields:** Validation runs independently for every `UploadFile` in the payload. See [File & Media Fields](#file-media-fields) for more details.
-* **Cross-Field Validation:** While you can use `form_values` for simple dependencies, complex rules spanning the entire form state should be handled differently. Override the `validate()` method on your view instead. This view-level validation runs only after every individual field successfully clears its own validation chain.
+* **Relation fields:** `HasOne` and `HasMany` receive the primary keys of the related records during validation.
+* **File fields:** Validation runs once per `UploadFile` in the payload. See [File & media fields](#file-media-fields).
+* **Cross-field validation:** Use `form_values` for a simple dependency. For a rule that spans the whole form, override the `validate()` method on your view instead. View-level validation runs only after every field clears its own validation chain.
 
-### Storing Custom Metadata
+### Storing custom metadata
 
-`extra` is a plain `dict` that starlette-admin never reads from or writes to. Use it to attach your own data to a field instance (for a custom template, a hook in your [BaseAdmin](../api/admin.md#starlette_admin.base.BaseAdmin) subclass, or any other integration point) without subclassing the field:
+`extra` is a plain `dict` that `starlette-admin` never reads or writes. Use it to attach your own data to a field instance, for a custom template, a hook in your [BaseAdmin](../api/admin.md#starlette_admin.base.BaseAdmin) subclass, or any other integration point, without subclassing the field:
 
 ```python
 from starlette_admin import StringField
@@ -199,11 +198,11 @@ StringField("sku", extra={"barcode_format": "code128"})
 
 ---
 
-## Text Fields
+## Text fields
 
 ### StringField & TextAreaField
 
-`StringField` renders a standard single-line text input for brief content, while `TextAreaField` extends it to support multi-line long text via a `<textarea>` element.
+`StringField` renders a single-line text input for short content. `TextAreaField` extends it with a `<textarea>` element for long, multi-line text.
 
 ```python
 from starlette_admin import StringField, TextAreaField
@@ -217,15 +216,15 @@ class PostView(ModelView):
     ]
 ```
 
-| Extra Attribute | Type | Default | Description |
+| Extra attribute | Type | Default | Description |
 | --- | --- | --- | --- |
-| `maxlength` / `minlength` | `int | None` | `None` | HTML length constraints. |
+| `maxlength` and `minlength` | `int | None` | `None` | HTML length constraints. |
 | `placeholder` | `str | None` | `None` | Input placeholder text. |
 | `rows` *(TextArea only)* | `int` | `6` | Number of visible text lines. |
 
 ### TinyMCEEditorField
 
-Extends `TextAreaField` by integrating a WYSIWYG editor from the TinyMCE library. Requires the `tinymce` extra package.
+Extends `TextAreaField` with a WYSIWYG editor from the TinyMCE library. It requires the `tinymce` extra package.
 
 ```python
 from starlette_admin import TinyMCEEditorField
@@ -234,11 +233,11 @@ TinyMCEEditorField("content", height=400, toolbar="undo redo | bold italic")
 ```
 
 !!! note
-    The `height`, `menubar`, `statusbar`, and `toolbar` attributes control the editor's UI. You can pass any native TinyMCE configuration via `extra_options`.
+    The `height`, `menubar`, `statusbar`, and `toolbar` attributes control the editor's UI. Pass any other native TinyMCE configuration through `extra_options`.
 
-### Formatted Text Fields
+### Formatted text fields
 
-Specialized `StringField` variants that render matching HTML input types and provide customized display formatting when viewing records.
+These `StringField` variants render a matching HTML input type and format the value when the record is displayed.
 
 * `EmailField` (`type="email"`)
 * `URLField` (`type="url"`)
@@ -248,19 +247,20 @@ Specialized `StringField` variants that render matching HTML input types and pro
 * `IPAddressField` (`type="text"`)
 
 !!! note
-    `EmailField`, `URLField`, `UUIDField`, and `IPAddressField` each default to a matching validator (`email`, `url`, `uuid`, `ip_address` from [`starlette_admin.validators`](../api/validators.md)) when `validators` is left empty. Pass your own `validators` to override it.
+    `EmailField`, `URLField`, `UUIDField`, and `IPAddressField` each add a matching validator (`email`, `url`, `uuid`, and `ip_address` from [`starlette_admin.validators`](../api/validators.md)) when you leave `validators` empty. Pass your own `validators` to override it.
 
-    `UUIDField` sets `copy_to_clipboard=True` by default. `IPAddressField` accepts `ipv4` (default `True`) and `ipv6` (default `False`) to control which address families its default validator accepts.
+    `UUIDField` sets `copy_to_clipboard=True` by default. `IPAddressField` accepts `ipv4`, `True` by default, and `ipv6`, `False` by default, which control the address families its default validator accepts.
 
 ### PasswordField
 
-Renders an `<input type="password">` element on forms to obscure user input.
+Renders an `<input type="password">` element on forms to obscure what the user types.
 
 !!! danger
-    `PasswordField` only masks the input on create/edit forms. It does not override the display templates, meaning values render as **plain text** in lists and detail pages. It also logs raw submitted values at the `DEBUG` level.
-    > **Best Practice:** Set `exclude_from_list = True` and `exclude_from_detail = True` on password fields, and disable `DEBUG` logging in production.
+    `PasswordField` masks the input on create and edit forms only. It doesn't override the display templates, so values render as **plain text** on list and detail pages, and it logs raw submitted values at `DEBUG` level.
 
-## Numeric Fields
+    Set `exclude_from_list = True` and `exclude_from_detail = True` on password fields, and turn off `DEBUG` logging in production.
+
+## Numeric fields
 
 Numeric fields handle integers, floats, and decimals.
 
@@ -277,17 +277,17 @@ class ProductView(ModelView):
     ]
 ```
 
-| Extra Attribute | Applicable To | Description |
+| Extra attribute | Applies to | Description |
 | --- | --- | --- |
-| `min` / `max` | Integer, Decimal | Minimum and maximum allowed values. |
+| `min` and `max` | Integer, Decimal | Minimum and maximum allowed values. |
 | `step` | Integer, Decimal | The increment step constraint. |
 
 !!! note
-    `FloatField` operates uniquely. It renders as a plain text input coerced to a `float` upon submission and does not support `min`, `max`, or `step`.
+    `FloatField` works differently: it renders as a plain text input, coerces the submission to a `float`, and doesn't support `min`, `max`, or `step`.
 
-## Date & Time Fields
+## Date & time fields
 
-These fields utilize native browser date and time pickers, backed by their respective standard library types (`datetime.date`, `datetime.datetime`, `datetime.time`).
+These fields use the native browser date and time pickers, backed by the matching standard library types (`datetime.date`, `datetime.datetime`, and `datetime.time`).
 
 ```python
 from starlette_admin import DateField, DateTimeField, TimeField
@@ -302,23 +302,23 @@ class EventView(ModelView):
     ]
 ```
 
-| Extra Attribute | Type | Default | Description |
+| Extra attribute | Type | Default | Description |
 | --- | --- | --- | --- |
-| `output_format` | `str | None` | `None` | Babel display format (`"short"`, `"medium"`, `"long"`, `"full"`, or custom). |
-| `search_format` | `str | None` | ORM-specific | Format utilized for building database search queries. |
+| `output_format` | `str | None` | `None` | Babel display format: `"short"`, `"medium"`, `"long"`, `"full"`, or a custom pattern. |
+| `search_format` | `str | None` | ORM-specific | Format used to build database search queries. |
 
-!!!note
-    `DateTimeField` automatically handles conversions between configured display timezones and database timezones when timezone support is enabled.
+!!! note
+    When timezone support is on, `DateTimeField` converts between the display timezone and the database timezone for you.
 
 ### ArrowField
 
-A variant of `DateTimeField` backed by an `Arrow` object. It displays as a humanized relative time (e.g., "3 hours ago") outside of edit forms. Requires the `arrow` package.
+A `DateTimeField` variant backed by an `Arrow` object. Outside edit forms, it displays a humanized relative time, such as "3 hours ago". It requires the `arrow` package.
 
-## Selection & Collection Fields
+## Selection & collection fields
 
 ### EnumField
 
-The universal select field. It renders a `<select>` dropdown (or a `select2` multi-select when `multiple=True`). It can be backed by a Python `Enum` subclass, a list of tuples, or dynamically loaded choices.
+The general-purpose select field. It renders a `<select>` dropdown, or a `select2` multi-select when `multiple=True`. Back it with a Python `Enum` subclass, a list of tuples, or choices loaded at request time.
 
 ```python
 import enum
@@ -338,25 +338,25 @@ class PostView(ModelView):
     ]
 ```
 
-| Extra Attribute | Type | Description |
+| Extra attribute | Type | Description |
 | --- | --- | --- |
 | `enum` | `type[Enum] | None` | Build choices from a Python `Enum` class. |
-| `choices` | `Sequence | None` | Static `(value, label)` pairs or bare values. |
-| `choices_loader` | `Callable | None` | Dynamically compute choices per request. |
-| `multiple` | `bool` | Enables multi-select, storing values as a list. |
+| `choices` | `Sequence | None` | Static `(value, label)` pairs, or bare values. |
+| `choices_loader` | `Callable | None` | Compute choices per request. |
+| `multiple` | `bool` | Turns on multi-select and stores values as a list. |
 
 !!! important
-    You must provide exactly one of: `enum`, `choices`, or `choices_loader`.
+    Provide exactly one of `enum`, `choices`, or `choices_loader`.
 
-`TimeZoneField`, `CountryField`, and `CurrencyField` are specialized `EnumField` subclasses backed by Babel locale data (requires the `i18n` extra). They automatically localize the displayed labels based on the current request context.
+`TimeZoneField`, `CountryField`, and `CurrencyField` are `EnumField` subclasses backed by Babel locale data, which needs the `i18n` extra. They localize their labels to the current request.
 
 ### TagsField
 
-A free-text tagging input using `select2`. It stores a list of strings (`list[str]`) without requiring a pre-defined set of choices.
+A free-text tagging input built on `select2`. It stores a `list[str]` and needs no predefined choices.
 
 ### ListField
 
-Wraps another field to store an ordered list of values of that specific type. It renders as repeatable rows with add/remove controls. The wrapped field's name dictates the `ListField`'s name.
+Wraps another field to store an ordered list of values of that type. It renders as repeatable rows with add and remove controls. The wrapped field's name becomes the `ListField`'s name.
 
 ```python
 from starlette_admin import ListField, StringField
@@ -367,7 +367,7 @@ fields = [ListField(StringField("gallery_urls"))]
 
 ### CollectionField
 
-Groups multiple sub-fields into a single nested object. Ideal for embedded or struct-like data (e.g., MongoDB embedded documents).
+Groups several subfields into one nested object. Use it for embedded or struct-like data, such as a MongoDB embedded document.
 
 ```python
 from starlette_admin import CollectionField, IntegerField, StringField
@@ -384,15 +384,15 @@ fields = [
 ]
 ```
 
-## Specialized Fields
+## Specialized fields
 
 ### JSONField
 
-Renders a JSON tree/code editor and stores a Python `dict`. You can provide a standard JSON Schema dictionary to `validation_schema` to enable client-side feedback.
+Renders a JSON tree and code editor, and stores a Python `dict`. Pass a standard JSON Schema dictionary to `validation_schema` for client-side feedback.
 
 ### SlugField
 
-A variant of `StringField` that auto-populates client-side based on the input of another field. Manual edits stop the auto-fill behavior.
+A `StringField` variant that fills itself in on the client from another field's input. A manual edit stops the auto-fill.
 
 ```python
 from starlette_admin import SlugField, StringField
@@ -403,12 +403,12 @@ fields = [
 ]
 ```
 
-!!! note
-    The `populate_from` attribute is strictly required and must point to another field on the same form. The generated slug is submitted and stored in the database like any standard string.
+!!! important
+    `populate_from` is required and must point to another field on the same form. The generated slug is submitted and stored like any other string.
 
 ### ComputedField
 
-A read-only, virtual field derived dynamically from the model instance at display time. It requires no underlying database column. It builds on the [`getter` hook](#computing-formatting-and-parsing-values) available on every field, adding the defaults a virtual column needs: excluded from create forms, read-only, non-searchable, and non-orderable.
+A read-only, virtual field derived from the model instance at display time, with no database column behind it. It builds on the [`getter` hook](#computing-formatting-and-parsing-values) that every field has, and adds the defaults a virtual column needs: excluded from create forms, read-only, non-searchable, and non-orderable.
 
 ```python
 from starlette_admin import ComputedField
@@ -422,7 +422,7 @@ fields = [
 ]
 ```
 
-For complex or reusable logic, you can subclass `ComputedField` and override `parse_obj()` instead of passing an inline `getter`:
+For complex or reusable logic, subclass `ComputedField` and override `parse_obj()` instead of passing an inline `getter`:
 
 ```python
 class FullNameField(ComputedField):
@@ -430,13 +430,13 @@ class FullNameField(ComputedField):
         return f"{obj.first_name} {obj.last_name}"
 ```
 
-`getter` and `parse_obj` accomplish the same task: use `getter` for brief expressions, or subclass `ComputedField` when the logic spans multiple lines or is reused across views. On edit forms the field still appears as a plain-text display, so the user sees the current computed value.
+`getter` and `parse_obj` do the same job: use `getter` for short expressions, and subclass `ComputedField` when the logic spans several lines or is reused across views. On edit forms, the field still appears as plain-text display, so the user sees the current computed value.
 
-Any subclass of `ComputedField` keeps `StringField` rendering. To compute a value that should render as another type (a date, a badge, an image), set `getter=` on that field type directly along with the relevant `read_only` and `exclude_from_*` flags.
+Every `ComputedField` subclass keeps `StringField` rendering. To compute a value that should render as another type, such as a date, a badge, or an image, set `getter=` on that field type directly, along with the matching `read_only` and `exclude_from_*` flags.
 
-## File & Media Fields
+## File & media fields
 
-`FileField` renders a standard file upload input; `ImageField` adds an image preview and validity check. Attach a `storage=` backend to automatically save uploads and store a JSON `FileInfo` dictionary in the database, with full configuration details available in the [File Storage guide](file-storage.md).
+`FileField` renders a file upload input, and `ImageField` adds an image preview and a validity check. Attach a `storage=` backend to save uploads automatically and store a JSON `FileInfo` dictionary in the database. For the full configuration, see the [File Storage guide](file-storage.md).
 
 ```python
 from starlette_admin import FileField, ImageField
@@ -467,39 +467,39 @@ class ArticleView(ModelView):
     ]
 ```
 
-| Extra Attribute | Type | Default | Description |
+| Extra attribute | Type | Default | Description |
 | --- | --- | --- | --- |
-| `accept` | `str | None` | `None` |
-| `multiple` | `bool` | `False` | Allows batch uploading of multiple files. |
-| `storage` | `BaseStorage | None` | `None` |
+| `accept` | `str | None` | `None` | Comma-separated list of accepted file extensions or MIME types, passed to the HTML `accept` attribute. |
+| `multiple` | `bool` | `False` | Accepts several files in one field. |
+| `storage` | `BaseStorage | None` | `None` | Storage backend that saves the uploads. Without it, the field hands raw uploads to your backend. |
 | `upload_folder` | `str` | `""` | The storage-relative folder for saved files. |
-| `max_size` | `int | None` | `None` |
+| `max_size` | `int | None` | `None` | Maximum accepted upload size, in bytes. |
 | `validators` | `list[Validator]` | `[]` | Custom validators, each called as `(request, field, upload)` once per uploaded file, after the `accept` and `max_size` checks. Raise `ValueError` to reject. |
-| `thumbnail_size` | `tuple[int, int] | None` | `None` | `ImageField` only. When set, a bounded thumbnail is generated with Pillow at save time and used on the list page in place of the full image. |
+| `thumbnail_size` | `tuple[int, int] | None` | `None` | `ImageField` only. When set, Pillow generates a bounded thumbnail at save time, and the list page uses it in place of the full image. |
 
 !!! note
-`ImageField` automatically prepends a Pillow-based image validity check to the `validators` list. If Pillow is installed and storage is configured, it will also record the `width` and `height` in the resulting `FileInfo`.
+    `ImageField` prepends a Pillow-based image validity check to the `validators` list. When Pillow is installed and storage is configured, it also records `width` and `height` in the resulting `FileInfo`.
 
-With `thumbnail_size` set, a thumbnail is generated alongside the full image (aspect ratio preserved, never upscaled) and stored under its own key, e.g. `covers/cat.jpg` gets a `covers/cat.thumb.jpg` sibling. The list page uses the thumbnail automatically; rows without one (pre-existing data, or `thumbnail_size` left unset) fall back to the full image. A thumbnail generation failure is logged and never fails the upload itself.
+With `thumbnail_size` set, the admin generates a thumbnail alongside the full image, preserving the aspect ratio and never upscaling, and stores it under its own key. For example, `covers/cat.jpg` gets a `covers/cat.thumb.jpg` sibling. The list page uses the thumbnail automatically. Rows without one, from pre-existing data or because `thumbnail_size` is unset, fall back to the full image. A thumbnail generation failure is logged and never fails the upload.
 
-The detail page opens every `ImageField` image in a lightbox, so visitors can click through to a full-resolution, navigable view. Images that belong to the same field (`multiple=True`) are grouped into a single gallery.
+The detail page opens every `ImageField` image in a lightbox, so viewers can page through full-resolution images. Images that belong to the same field (`multiple=True`) are grouped into one gallery.
 
 See [examples/04-filestorage](https://github.com/jowilf/starlette-admin/tree/main/examples/04-filestorage) for a complete runnable app, including a custom MIME-type validator.
 
 ### Without a storage
 
-When no `storage=` is attached, the field hands uploads to your backend raw instead of saving them itself:
+With no `storage=` attached, the field hands uploads to your backend raw instead of saving them:
 
-* **In create and edit forms**, the parsed value is a tuple `(UploadFile | list[UploadFile] | None, bool)`. The first element is the raw Starlette `UploadFile` (a list when `multiple=True`, or `None` when the user selected nothing). The second element is `True` when the user checks the delete box on the edit form, meaning they want the existing file removed without uploading a replacement. Your backend's `edit()` / `create()` logic is responsible for storing the upload and honoring the delete flag.
-* **On list and detail pages**, the field expects the value to expose three keys (as a `dict`) or attributes (as an object): `url` (required, the link target), `filename` (the display label), and `content_type` (selects the file-type icon).
+* **In create and edit forms**, the parsed value is a tuple, `(UploadFile | list[UploadFile] | None, bool)`. The first element is the raw Starlette `UploadFile`, a list when `multiple=True`, or `None` when the user selected nothing. The second element is `True` when the user selects the delete box on the edit form, which means they want the existing file removed without a replacement. Your backend's `create()` and `edit()` logic stores the upload and honors the delete flag.
+* **On list and detail pages**, the field expects the value to expose three keys, as a `dict`, or three attributes, as an object: `url`, required, the link target; `filename`, the display label; and `content_type`, which selects the file-type icon.
 
 This contract is how the ORM integrations below plug their own file handling into the same field.
 
 ### ORM-native file columns
 
-**MongoEngine** supports `mongoengine.FileField` and `mongoengine.ImageField` out of the box, using **GridFS** as the storage. The admin uploads to, serves from, and deletes files in GridFS automatically. No `storage=` configuration is needed; just list the field by name.
+**MongoEngine** supports `mongoengine.FileField` and `mongoengine.ImageField` out of the box, with **GridFS** as the storage. The admin uploads to, serves from, and deletes files in GridFS for you. You need no `storage=` configuration: list the field by name.
 
-**SQLAlchemy** gets the same treatment through [sqlalchemy-file](https://jowilf.github.io/sqlalchemy-file/): declare its `FileField` / `ImageField` column types on your models and starlette-admin detects them, renders the matching admin field, and registers a route to serve the stored files. Storage is configured through sqlalchemy-file's own `StorageManager` (backed by Apache Libcloud containers), and uploads participate in the session transaction. A rolled-back session discards the stored file.
+**SQLAlchemy** gets the same treatment through [sqlalchemy-file](https://jowilf.github.io/sqlalchemy-file/). Declare its `FileField` or `ImageField` column types on your models, and `starlette-admin` detects them, renders the matching admin field, and registers a route to serve the stored files. You configure storage through sqlalchemy-file's own `StorageManager`, backed by Apache Libcloud containers, and uploads join the session transaction, so a rolled-back session discards the stored file.
 
 ```python
 import os
@@ -541,11 +541,11 @@ class AuthorView(ModelView):
     fields = ["id", "name", "avatar"]
 ```
 
-See [examples/13-sqlachemy-file](https://github.com/jowilf/starlette-admin/tree/main/examples/13-sqlachemy-file) for a full app with multiple storages, content-type validation, and `multiple=True` fields.
+See [examples/13-sqlachemy-file](https://github.com/jowilf/starlette-admin/tree/main/examples/13-sqlachemy-file) for a full app with several storages, content-type validation, and `multiple=True` fields.
 
-### HasOne & HasMany
+## HasOne & HasMany
 
-Relational fields that render as `select2` inputs, seamlessly backed by the related view's search endpoint.
+Relational fields that render as `select2` inputs, backed by the related view's search endpoint.
 
 ```python
 from starlette_admin import HasMany, HasOne, IntegerField, StringField
@@ -568,12 +568,12 @@ class BookView(ModelView):
     ]
 ```
 
-The `key` parameter links to the corresponding `ModelView`. Both views must be registered on the same `Admin` instance to resolve correctly.
+The `key` parameter points to the matching `ModelView`. Register both views on the same `Admin` instance so the keys resolve.
 
 ---
 
-### What's Next
+## What's next
 
-* [Filters](filters.md): Learn how to customize the filter builder on your list pages.
+* [Filters](filters.md): Customize the filter builder on your list pages.
 * [File Storage](file-storage.md): Configure storage backends for `FileField` and `ImageField`.
-* [Custom Fields](../advanced/custom-fields.md): build a custom field
+* [Custom Fields](../advanced/custom-fields.md): Build a custom field.

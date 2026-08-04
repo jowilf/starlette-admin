@@ -5,7 +5,7 @@ description: Mount multiple isolated admin dashboards on a single FastAPI applic
 
 # Multiple Admin Instances
 
-Every `Admin` instance you construct acts as a self-contained Starlette sub-application. You can mount as many instances as you need, and each can maintain its own `base_url`, `route_name`, authentication provider, and views.
+Every `Admin` instance you construct is a self-contained Starlette sub-application. Mount as many as you need, each with its own `base_url`, `route_name`, authentication provider, and views.
 
 ```python
 from sqlalchemy import create_engine
@@ -87,11 +87,11 @@ root_admin.mount_to(app)
 
 ```
 
-In this example, visiting `/staff` displays a login page secured by `StaffAuth`, while visiting `/root` displays a separate login page secured by `SuperAdminAuth`. Logging into one interface does not grant access to the other. Because each `SessionMiddleware` signs its cookie with a unique `secret_key`, each `Admin` instance only reads the session data written by its corresponding authentication provider.
+In this example, `/staff` shows a sign-in page backed by `StaffAuth` and `/root` shows a separate one backed by `SuperAdminAuth`. Signing in to one doesn't grant access to the other: each `SessionMiddleware` signs its cookie with its own `secret_key`, so each `Admin` instance only reads the session data its own authentication provider wrote.
 
 ## `base_url` and `route_name`
 
-Both `base_url` and `route_name` are constructor parameters for the `Admin` and `BaseAdmin` classes (located in `starlette_admin/base.py`). They default to `/admin` and `"admin"`, respectively:
+`base_url` and `route_name` are constructor parameters on the `Admin` and `BaseAdmin` classes in `starlette_admin/base.py`. They default to `/admin` and `"admin"`:
 
 ```python
 def __init__(
@@ -104,21 +104,21 @@ def __init__(
 
 ```
 
-* **`base_url`** determines the path prefix where the admin interface is mounted. Because this value is passed directly to the internal `app.mount(self.base_url, app=admin_app, name=self.route_name)` call, it must be unique for each admin instance. Otherwise, one mount will shadow the other.
-* **`route_name`** defines the name Starlette uses to register the mount. Every generated URL within the admin interface (including lists, details, edits, exports, and static assets) is built by calling `request.url_for(route_name + ":list", ...)`. Additionally, every page template reads `request.app.state.ROUTE_NAME` to determine the correct route name prefix for link building.
+* **`base_url`** sets the path prefix the admin mounts at. It goes straight into the internal `app.mount(self.base_url, app=admin_app, name=self.route_name)` call, so it has to be unique per instance. Otherwise one mount shadows the other.
+* **`route_name`** is the name Starlette registers the mount under. Every URL the admin generates, for lists, details, edits, exports, and static assets, comes from `request.url_for(route_name + ":list", ...)`, and every page template reads `request.app.state.ROUTE_NAME` to get the right prefix for link building.
 
-Calling `mount_to` builds a fresh Starlette sub-application for each admin instance. As a result, middleware, routes, and template globals remain fully isolated. The `Admin` class is not a process-wide singleton, meaning you can construct as many independent instances as your application requires.
+`mount_to` builds a fresh Starlette sub-application for each admin instance, so middleware, routes, and template globals stay isolated. `Admin` isn't a process-wide singleton: construct as many independent instances as your application needs.
 
 !!! warning
-    Give every `Admin` a distinct `route_name`. Starlette's router resolves `url_for("admin:list", ...)` by matching the mount **name**. If two admins share the same `route_name`, the parent application will have two mounts registered under identical names. Consequently, `url_for` will resolve to whichever mount Starlette matches first. This can cause every internal link in the second admin (such as edit links, static assets, or export endpoints) to silently point to the first admin's `base_url` instead of its own.
+    Give every `Admin` a distinct `route_name`. Starlette's router resolves `url_for("admin:list", ...)` by matching the mount **name**, so two admins sharing a `route_name` leave the parent application with two mounts under the same name, and `url_for` resolves to whichever one Starlette matches first. Every internal link in the second admin, including edit links, static assets, and export endpoints, then silently points at the first admin's `base_url`.
 
-## Sharing Views vs. Defining Separate Views
+## Sharing views vs. defining separate views
 
-The `add_view` method accepts a view instance and mutates it during setup. For a `BaseModelView`, the setup process binds internal callbacks specifically to the admin instance it is registered with. For example, it configures how `HasOne` and `HasMany` fields resolve related-record links.
+`add_view` takes a view instance and mutates it during setup. For a `BaseModelView`, that setup binds internal callbacks to the admin it's registered with, including how `HasOne` and `HasMany` fields resolve related-record links.
 
-If you register the exact same view **instance** on two different admins, the second `add_view` call will overwrite these callbacks. As a result, relation links on the first admin's pages will incorrectly resolve against the second admin's views and URLs.
+Register the same view **instance** on two admins and the second `add_view` call overwrites those callbacks, so relation links on the first admin's pages resolve against the second admin's views and URLs.
 
-To prevent this, always register a fresh instance of the `ModelView` **class** for each admin. The class itself carries no admin-specific state, only the instantiated objects do:
+To avoid this, give each admin a fresh instance of the `ModelView` **class**. The class holds no admin-specific state, only the instances do:
 
 ```python
 staff_admin.add_view(ModelView(Order))
@@ -126,7 +126,7 @@ root_admin.add_view(ModelView(Order))  # separate instance of the same class; th
 
 ```
 
-If you need distinct behavior for each admin interface (such as different visibility rules or `can_delete` permissions), create dedicated subclasses rather than relying on runtime overrides:
+When the two admins need different behavior, such as different visibility rules or `can_delete` permissions, write a subclass for each instead of patching a shared instance at runtime:
 
 ```python
 class StaffOrderView(ModelView):
@@ -147,7 +147,7 @@ root_admin.add_view(RootOrderView(Order))
 
 ---
 
-## What's Next
+## What's next
 
 * **[Authentication](../user-guide/auth.md):** The complete `AuthProvider` and `OAuthProvider` contract.
 * **[Extension Points](extension-points.md):** Every other pluggable surface available on the `Admin` class.

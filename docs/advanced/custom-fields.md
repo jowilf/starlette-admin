@@ -5,9 +5,9 @@ description: Learn how to create custom field types in starlette-admin to handle
 
 # Custom Fields
 
-While the built-in fields cover most columns you will encounter, you can create custom fields by subclassing [`BaseField`](../api/fields.md#starlette_admin.fields.BaseField). A field type primarily consists of three methods that transfer data between your model and the browser, alongside three template paths that handle rendering. You can subclass `BaseField` directly or extend an existing field that closely matches your requirements (such as `StringField` or `EnumField`), overriding only the necessary components.
+The built-in fields cover most columns you'll meet, but when none of them fit, you can build your own by subclassing [`BaseField`](../api/fields.md#starlette_admin.fields.BaseField). A field is three methods that move data between your model and the browser, plus a set of template paths that render it. Subclass `BaseField` directly, or extend the built-in field closest to what you need (such as `StringField` or `EnumField`) and override only the parts that differ.
 
-## Minimal Example
+## Minimal example
 
 ```python
 from dataclasses import dataclass
@@ -34,7 +34,7 @@ class StatusBadgeField(EnumField):
 
 ```
 
-Configure the templates directory in your `Admin` instance and apply the field within your view:
+Point your `Admin` instance at the templates directory, then use the field in your view:
 
 ```python
 from starlette_admin.contrib.sqla import Admin, ModelView
@@ -51,11 +51,11 @@ class EmployeeView(ModelView):
     ]
 ```
 
-Because `StatusBadgeField` subclasses `EnumField` rather than `BaseField` directly, it inherits several features automatically. It retains `choices`, form validation against those choices, and the default `fields/form/enum.html` template for the create and edit forms. Since none of these require modification, the class only updates the list and detail rendering attributes.
+Because `StatusBadgeField` subclasses `EnumField` rather than `BaseField`, it inherits `choices`, form validation against those choices, and the default `fields/form/enum.html` template for the create and edit forms. None of that needs to change, so the class only overrides the list and detail rendering attributes.
 
-The remainder of this guide explains how to override methods when a field requires more than a simple template swap. You can view the full working version of this code, along with a second field (`AvatarNameField`) that requires data-method overrides, in the [`examples/advanced/05-custom-fields`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/05-custom-fields) directory.
+The rest of this page covers what to override when a field needs more than a template swap. For the full working code, along with a second field (`AvatarNameField`) that does override the data methods, see [`examples/advanced/05-custom-fields`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/05-custom-fields).
 
-## The Three Data Methods
+## The three data methods
 
 | Method | Called when | Signature |
 | --- | --- | --- |
@@ -63,11 +63,11 @@ The remainder of this guide explains how to override methods when a field requir
 | `parse_obj` | Reading a value off a model instance for display | `async def parse_obj(self, request: Request, obj: Any) -> Any` |
 | `serialize_value` | Formatting a value for the frontend (list, detail, API, export) | `async def serialize_value(self, request: Request, value: Any) -> Any` |
 
-`StatusBadgeField` does not require these overrides because `EnumField` already parses the submitted value against `choices` and reads the raw string from `obj.status`. The badge acts purely as a presentation layer on top of that string. You should override these three methods when the value itself must be computed or reshaped instead of just being re-rendered.
+`StatusBadgeField` overrides none of them, because `EnumField` already parses the submitted value against `choices` and reads the raw string from `obj.status`. The badge is presentation on top of that string. Override these three methods when the value itself has to be computed or reshaped rather than re-rendered.
 
-!!! tip "Hooks vs. Subclassing"
-    For a one-off customization on a single field, you rarely need a subclass. Instead, you can pass the [`getter`, `formatter`, and `parser` hooks](../user-guide/fields.md#computing-formatting-and-parsing-values) directly as constructor arguments to handle reading, display formatting, and input parsing.
-    **When to subclass:** Create a subclass only if you need to reuse the logic across multiple views or modify the rendering templates.
+!!! tip "Hooks or subclassing"
+    For a one-off change to a single field, you rarely need a subclass. Pass the [`getter`, `formatter`, and `parser` hooks](../user-guide/fields.md#computing-formatting-and-parsing-values) as constructor arguments instead, to handle reading, display formatting, and input parsing.
+    **When to subclass:** only when you need the same logic in more than one view, or when you need to change the templates.
 
 `parse_form_data` receives the raw `FormData` (from `starlette.datastructures`) from the request and returns the data that `view.create()` or `view.edit()` should receive for this field. The default implementation reads `form_data.get(self.id)` and returns it unchanged. Most fields only need to add type coercion:
 
@@ -77,7 +77,7 @@ async def parse_form_data(self, request: Request, form_data: FormData) -> bool:
     return raw in ("on", "true", "yes")
 ```
 
-`parse_obj` receives the model instance and returns the value to display. The default behavior is to return `getattr(obj, self.name, None)`. Override this method for fields that do not map to a single model attribute, such as a field that combines two columns. For example, `AvatarNameField` combines a `name` string with the row's uploaded avatar:
+`parse_obj` receives the model instance and returns the value to display. The default returns `getattr(obj, self.name, None)`. Override it for fields that don't map to a single model attribute, such as one that combines two columns. `AvatarNameField`, for example, combines a `name` string with the row's uploaded avatar:
 
 ```python
 async def parse_obj(self, request: Request, obj: Any) -> Any:
@@ -86,7 +86,7 @@ async def parse_obj(self, request: Request, obj: Any) -> Any:
     return {"name": name, "avatar_key": avatar_key, "initials": self._initials(name)}
 ```
 
-`serialize_value` receives whatever data `parse_obj` (or the ORM layer) produced and formats it for the current request. It is called separately for the list page, the detail page, the JSON API, and data exports. You can branch your logic based on `request.state.action` when the data shape needs to differ across contexts. `AvatarNameField` only requires the avatar image on the list page; everywhere else it falls back to plain text:
+`serialize_value` receives whatever `parse_obj` (or the ORM layer) produced and formats it for the current request. It's called separately for the list page, the detail page, the JSON API, and data exports, so branch on `request.state.action` when the shape has to differ by context. `AvatarNameField` needs the avatar image only on the list page and falls back to plain text everywhere else:
 
 ```python
 async def serialize_value(self, request: Request, value: Any) -> Any:
@@ -99,11 +99,11 @@ async def serialize_value(self, request: Request, value: Any) -> Any:
 ```
 
 !!! warning
-    Whatever `serialize_value` returns for `RequestAction.LIST` and `RequestAction.RELATION_LOOKUP` is injected directly into a JSON response. You must return a JSON-serializable value.
+    Whatever `serialize_value` returns for `RequestAction.LIST` and `RequestAction.RELATION_LOOKUP` goes straight into a JSON response, so it must be JSON-serializable.
 
-## Template Paths
+## Template paths
 
-Every field contains three template attributes. Each attribute is a path resolved against the Jinja2 loader of the admin interface. This loader checks your custom `templates_dir` if provided, and otherwise falls back to the built-in `starlette_admin/templates/` directory (see [Templates](templates.md) for more details).
+Every field carries the template attributes below. Each one is a path the admin's Jinja2 loader resolves: it checks your `templates_dir` first, if you set one, then falls back to the built-in `starlette_admin/templates/` directory. See [Templates](templates.md) for the details.
 
 | Attribute | Default | Rendered for |
 | --- | --- | --- |
@@ -113,9 +113,9 @@ Every field contains three template attributes. Each attribute is a path resolve
 | `null_template` | `"fields/detail/_null.html"` | List and detail pages when the value is `None` |
 | `empty_template` | `"fields/detail/_empty.html"` | List and detail pages when the value is an empty list or tuple |
 
-All five templates receive the `field` instance and the current `data` value. The `data` value is never `None` or empty for `list_template` and `detail_template` because those conditions are routed to `null_template` or `empty_template` before the type-specific template is included. The `form_template` additionally receives `error` (the message from a `FormValidationError`, if one occurred) and `action` (`RequestAction.CREATE`, `RequestAction.EDIT`, or `RequestAction.INLINE_EDIT` when rendered inside the list page's [inline edit](../user-guide/inline-edit.md) popover). All three are form actions: `action.is_form()` returns `True`, and field code that needs the form-value representation should branch on it rather than on `action == RequestAction.EDIT`.
+All five templates receive the `field` instance and the current `data` value. For `list_template` and `detail_template`, `data` is never `None` or empty, because those cases route to `null_template` or `empty_template` before the type-specific template is included. The `form_template` also receives `error` (the message from a `FormValidationError`, if one occurred) and `action` (`RequestAction.CREATE`, `RequestAction.EDIT`, or `RequestAction.INLINE_EDIT` when rendered inside the list page's [inline edit](../user-guide/inline-edit.md) popover). All three are form actions, so `action.is_form()` returns `True`. Field code that needs the form-value representation should branch on that rather than on `action == RequestAction.EDIT`.
 
-Override `null_template` and `empty_template` when a field's absence should look different from the default muted `-null-` / `-empty-` labels, such as an empty-state icon or a "Not provided" badge that matches the field's own styling:
+Override `null_template` and `empty_template` when a missing value should look different from the default muted `-null-` and `-empty-` labels, for example an empty-state icon or a "Not provided" badge that matches the field's own styling:
 
 ```python
 @dataclass
@@ -130,16 +130,16 @@ class StatusBadgeField(EnumField):
 <span class="badge">Unknown</span>
 ```
 
-Because `null_template` and `empty_template` are plain field attributes like `list_template`, they are shared across list, detail, and any other view that renders this field (such as the inline table of a related view).
+Because `null_template` and `empty_template` are plain field attributes like `list_template`, they're shared across list, detail, and any other view that renders this field, such as the inline table of a related view.
 
-`StatusBadgeField` assigns the same template to both `list_template` and `detail_template` because the badge design applies perfectly to both contexts:
+`StatusBadgeField` assigns the same template to both `list_template` and `detail_template`, because the same badge works in both contexts:
 
 ```html title="templates/employee/status_badge.html"
 <span class="{{ field.badge_class_by_value.get(data, 'badge') }}">{{ data }}</span>
 
 ```
 
-`AvatarNameField` only overrides `list_template`. The `data` variable in this template is the dictionary constructed by `parse_obj` and reshaped by `serialize_value`, rather than a standard string:
+`AvatarNameField` overrides only `list_template`. The `data` variable in this template is the dictionary that `parse_obj` built and `serialize_value` reshaped, rather than a plain string:
 
 ```html title="templates/employee/avatar_name.html"
 <span class="avatar avatar-xs me-2"
@@ -150,21 +150,21 @@ Because `null_template` and `empty_template` are plain field attributes like `li
 
 ```
 
-The `inline-edit-value` class is the opt-in marker for the [inline edit](../user-guide/inline-edit.md) underline. It is inert unless the field is inline-editable, so placing it on the name (and not the avatar) costs nothing here while keeping the affordance correctly scoped if the field ever becomes editable.
+The `inline-edit-value` class is the opt-in marker for the [inline edit](../user-guide/inline-edit.md) underline. It's inert unless the field is inline-editable, so putting it on the name and not the avatar costs nothing here, while keeping the affordance correctly scoped if the field ever becomes editable.
 
-Overriding only `list_template` and `detail_template` while retaining the default `form_template` is the exact strategy `StatusBadgeField` uses by extending `EnumField`. The default `fields/form/enum.html` template automatically renders a `<select>` dropdown populated from `field.choices`. This requires no modifications to successfully edit a status.
+Overriding `list_template` and `detail_template` while keeping the default `form_template` is exactly what `StatusBadgeField` does by extending `EnumField`. The default `fields/form/enum.html` renders a `<select>` dropdown populated from `field.choices`, so editing a status works with no further change.
 
-## Registering With the Converter Registry
+## Registering with the converter registry
 
-The `fields = [...]` list on a view accepts plain attribute names as well as instantiated field objects. Any item that is not already a `BaseField` passes through a **converter registry** that maps the column type to a specific field class. Each ORM backend provides its own registry (such as `starlette_admin.contrib.sqla.converters.ModelConverter` or the equivalents for `beanie`, `mongoengine`, and `tortoise`), which are all built on the same foundation:
+The `fields = [...]` list on a view accepts plain attribute names as well as field objects. Any item that isn't already a `BaseField` passes through a **converter registry** that maps the column type to a field class. Each ORM backend ships its own registry (`starlette_admin.contrib.sqla.converters.ModelConverter` and the equivalents for `beanie`, `mongoengine`, and `tortoise`), all built on the same base:
 
 ```python
 from starlette_admin.converters import BaseModelConverter, converts
 ```
 
-The `@converts(*types)` decorator marks a method as the converter for one or more type keys. The `BaseModelConverter.__init__` method scans the instance for these decorated methods to construct its `converters` dictionary. For the SQLAlchemy backend, the type keys are the column type **names** (such as `"String"`, `"Integer"`, or `"Enum"`) because SQLAlchemy lacks a single common base class across dialects.
+The `@converts(*types)` decorator marks a method as the converter for one or more type keys. `BaseModelConverter.__init__` scans the instance for these decorated methods and builds its `converters` dictionary from them. For the SQLAlchemy backend, the type keys are the column type **names** (`"String"`, `"Integer"`, `"Enum"`, and so on), because SQLAlchemy has no single common base class across dialects.
 
-You can subclass the backend's converter to add your own mappings. The following example routes every `Enum` column to `StatusBadgeField` instead of the default `EnumField`:
+Subclass the backend's converter to add your own mappings. This example routes every `Enum` column to `StatusBadgeField` instead of the default `EnumField`:
 
 ```python
 from typing import Any
@@ -183,7 +183,7 @@ class MyModelConverter(ModelConverter):
         )
 ```
 
-Supply the subclass to `ModelView(converter=...)` so that string field names defined in `fields = [...]` resolve through your custom converter rather than the default configuration:
+Pass the subclass to `ModelView(converter=...)` so the string field names in `fields = [...]` resolve through your converter instead of the default one:
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
@@ -196,12 +196,12 @@ class EmployeeView(ModelView):
 admin.add_view(EmployeeView(Employee, converter=MyModelConverter()))
 ```
 
-If you consistently construct fields explicitly rather than relying on name-based conversion (as demonstrated in the minimal example above), you can skip the converter registry entirely. The registry is only necessary when you want an entry like `fields = ["status"]` to automatically produce a `StatusBadgeField` based on the underlying column type.
+If you always construct fields explicitly, as in the minimal example above, you can skip the converter registry. You need it only when you want an entry like `fields = ["status"]` to produce a `StatusBadgeField` from the underlying column type.
 
 ---
 
-**What's Next**
+## What's next
 
-* [Fields](../user-guide/fields.md): The full built-in field reference and `BaseField` attribute table.
-* [Templates](templates.md): A guide on how the template loader resolves `list_template`, `detail_template`, `form_template`, `null_template`, and `empty_template` paths.
-* [Extension Points](extension-points.md): An overview of every other pluggable surface in starlette-admin.
+* **[Fields](../user-guide/fields.md):** The full built-in field reference and the `BaseField` attribute table.
+* **[Templates](templates.md):** How the template loader resolves `list_template`, `detail_template`, `form_template`, `null_template`, and `empty_template`.
+* **[Extension Points](extension-points.md):** Every other pluggable surface in `starlette-admin`.

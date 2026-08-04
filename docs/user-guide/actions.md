@@ -5,38 +5,38 @@ description: Execute batch and row-level operations with custom confirmations an
 
 # Actions
 
-In `starlette-admin`, actions provide an intuitive way to interact with your database records and perform operations like mass deletions, bulk updates, and sending emails.
+Actions give you a direct way to work with your database records from the admin UI, so users can run operations like mass deletions, bulk updates, and email sends.
 
 ## Understanding `ActionSelection`
 
-A central component of the actions API is the `ActionSelection` object. Instead of passing a raw list of primary keys to your handler, `starlette-admin` provides an `ActionSelection` instance.
+`ActionSelection` is the central object in the actions API. Instead of a raw list of primary keys, your handler receives an `ActionSelection` instance.
 
-This object resolves lazily and behaves identically whether the user checked rows individually or used the "select all matching" feature. It also exposes the active list page filters directly to your handler.
+The object resolves lazily and behaves the same whether the user checked rows one by one or used "select all matching". It also exposes the active list page filters to your handler.
 
-### `ActionSelection` API Reference
+### `ActionSelection` API reference
 
-| Method / Property         | Description                                                       |
-| ------------------------- | ----------------------------------------------------------------- |
-| `await selection.rows()`  | Retrieves the target rows. This is fetched once and cached.       |
-| `await selection.pks()`   | Retrieves the primary keys of the targeted rows.                  |
-| `await selection.count()` | Returns the total number of rows the action targets.              |
-| `selection.is_select_all` | A boolean indicating if the user triggered "select all matching". |
-| `selection.filters`       | The active `FilterGroup` (identical to `ListParams.filters`).     |
-| `selection.q`             | The active full-text search term, or `None` if inactive.          |
+| Method or property        | Description                                                           |
+| ------------------------- | --------------------------------------------------------------------- |
+| `await selection.rows()`  | Retrieves the target rows. Fetched once, then cached.                 |
+| `await selection.pks()`   | Retrieves the primary keys of the target rows.                        |
+| `await selection.count()` | Returns the total number of rows the action targets.                  |
+| `selection.is_select_all` | A boolean that tells you whether the user chose "select all matching". |
+| `selection.filters`       | The active `FilterGroup`, identical to `ListParams.filters`.          |
+| `selection.q`             | The active full-text search term, or `None` when search is inactive.  |
 
-## Batch Actions
+## Batch actions
 
-By default, updating an object requires selecting it on the list page and modifying it individually. To apply the same change to multiple objects simultaneously, you can add a custom **batch action**.
+By default, users update an object by selecting it on the list page and editing it on its own. To apply the same change to many objects at once, add a custom **batch action**.
 
 !!! note
     `starlette-admin` adds a `delete` batch action by default.
 
-To add custom batch actions to your `ModelView`, define an asynchronous function with your logic and wrap it in the `@action` decorator.
+To add a custom batch action to your `ModelView`, write an async function with your logic and wrap it in the `@action` decorator.
 
-!!! warning
+!!! important
     Batch action names must be unique within a `ModelView`.
 
-### Batch Action Example
+### Batch action example
 
 ```python
 from starlette.datastructures import FormData
@@ -108,22 +108,22 @@ class ArticleView(ModelView):
 
 ```
 
-## Global Actions
+## Global actions
 
-Standard batch actions require an active user selection. The **With selected** dropdown only appears when at least one row is checked. If you need an action to operate on the entire collection (like a full database sync), configure a **Global Action**.
+A standard batch action needs an active selection: the **With selected** dropdown appears only when at least one row is checked. When an action targets the whole collection instead, such as a full database sync, make it a global action.
 
-Set `allow_empty_selection=True` in your `@action` decorator. Global actions render in an always-visible **Actions** dropdown and trigger without requiring row selection.
+Set `allow_empty_selection=True` in the `@action` decorator. Global actions render in an always-visible **Actions** dropdown and run without a row selection.
 
-**Handler Behavior for Global Actions:**
+**How the handler behaves for global actions:**
 
-- **Empty Selection:** The `selection` object may resolve to zero rows.
-- **Incidental Selections:** If a user happens to have rows checked when triggering a global action, those rows are still passed to the handler. You should explicitly ignore `selection` if your logic targets the entire collection.
+- **Empty selection:** The `selection` object can resolve to zero rows.
+- **Incidental selections:** If the user has rows checked when they trigger a global action, the handler still receives those rows. Ignore `selection` explicitly when your logic targets the entire collection.
 
-All other parameters (`confirmation`, `form`, `custom_response`, `is_action_allowed`) function exactly as they do for standard batch actions.
+Every other parameter (`confirmation`, `form`, `custom_response`, and `is_action_allowed`) works exactly as it does for a standard batch action.
 
-**Dedicated Toolbar Buttons:** Add `dedicated_button=True` to render a global action as its own toolbar button instead of an entry in the **Actions** dropdown. The built-in export action uses this option. Combining `dedicated_button=True` with a selection-only action raises an error at startup.
+**Dedicated toolbar buttons:** Add `dedicated_button=True` to render a global action as its own toolbar button instead of an entry in the **Actions** dropdown. The built-in export action uses this option. Combining `dedicated_button=True` with a selection-only action raises an error at startup.
 
-### Global Action Example
+### Global action example
 
 ```python
 class ArticleView(ModelView):
@@ -146,11 +146,11 @@ class ArticleView(ModelView):
 
 ```
 
-### The "Select All Matching" Feature
+### The "select all matching" feature
 
-When a user checks every row on the current page while more rows match the filter elsewhere, the UI prompts them to select all matching rows.
+When a user checks every row on the current page and more rows match the filter elsewhere, the UI offers to select all matching rows.
 
-Selecting this option sends `all=1` to the action API instead of a list of primary keys. Use `selection.is_select_all` to fork your logic, or simply rely on `selection.rows()` to resolve the data either way:
+That option sends `all=1` to the action API instead of a list of primary keys. Use `selection.is_select_all` to branch your logic, or let `selection.rows()` resolve the data either way:
 
 ```python
     @action(name="archive", text="Archive")
@@ -164,19 +164,19 @@ Selecting this option sends `all=1` to the action API instead of a list of prima
 
 ```
 
-!!! note "Materialization Limits:"
-`selection.rows()`, `pks()`, and `count()` are capped by `action_select_all_limit` (defaulting to 1000) when in select-all mode. Exceeding this limit raises an `ActionFailed` exception. Handlers that only read `selection.filters` and `selection.q` avoid materialization and bypass this cap entirely.
+!!! important "Materialization limits"
+    In select-all mode, `selection.rows()`, `pks()`, and `count()` are capped by `action_select_all_limit`, which defaults to 1000. Going over the limit raises an `ActionFailed` exception. A handler that reads only `selection.filters` and `selection.q` materializes nothing, so the cap doesn't apply.
 
-## Row Actions
+## Row actions
 
-Row actions allow users to perform operations on individual items directly from the list view. By default, `starlette-admin` includes three row actions: `view`, `edit`, and `delete`.
+Row actions let users operate on a single item straight from the list view. `starlette-admin` includes three row actions by default: `view`, `edit`, and `delete`.
 
-To add custom row actions, define your logic and apply the `@row_action` decorator. If the action simply navigates the user to a different URL, use the `@link_row_action` decorator instead. This embeds the link directly into the HTML `href` attribute, skipping the action API entirely.
+To add a custom row action, write your logic and apply the `@row_action` decorator. When the action only sends the user to a different URL, use the `@link_row_action` decorator instead. It embeds the link in the HTML `href` attribute and skips the action API.
 
-!!! warning
+!!! important
     Row action names must be unique within a `ModelView`.
 
-### Row Action Example
+### Row action example
 
 ```python
 from typing import Any
@@ -233,12 +233,12 @@ class ArticleView(ModelView):
 
 ```
 
-### Restricting Row Actions
+### Restricting row actions
 
-Two specific hooks govern row action availability. Both default to allowing the action.
+Two hooks govern whether a row action is available. Both allow the action by default.
 
-1. **`is_row_action_allowed(request, name)`**: Evaluated once per action name. Ideal for row-independent restrictions like role-based access control.
-2. **`is_row_action_allowed_for_obj(request, name, obj)`**: Evaluated once per row for actions that pass the first check. Ideal for data-dependent restrictions (e.g., hiding a "Publish" button on an already published article).
+1. **`is_row_action_allowed(request, name)`**: Runs once per action name. Use it for restrictions that don't depend on the row, such as role-based access control.
+2. **`is_row_action_allowed_for_obj(request, name, obj)`**: Runs once per row, for the actions that passed the first check. Use it for data-dependent restrictions, such as hiding a **Publish** button on an article that's already published.
 
 ```python
 from typing import Any
@@ -261,24 +261,24 @@ class ArticleView(ModelView):
 ```
 
 !!! warning
-    Always call `super()` for action names your override does not explicitly handle. Failing to do so will silently disable the permission checks for built-in actions.
+    Always call `super()` for action names your override doesn't handle. If you don't, you silently disable the permission checks for the built-in actions.
 
-## UI Configuration for Row Actions
+## UI configuration for row actions
 
-### Display Types
+### Display types
 
-The `row_actions_display_type` parameter dictates how actions appear on the list page. Detail page actions always render as full buttons.
+The `row_actions_display_type` parameter sets how actions appear on the list page. Detail page actions always render as full buttons.
 
-| Display Type   | Description                                                           |
+| Display type   | Description                                                           |
 | -------------- | --------------------------------------------------------------------- |
 | `ICON_LIST`    | Renders a horizontal list of icon-only buttons.                       |
 | `DROPDOWN`     | Groups actions into a labeled dropdown menu.                          |
-| `KEBAB`        | Groups actions into a dropdown menu triggered by a `⋮` icon.          |
+| `KEBAB`        | Groups actions into a dropdown menu opened by a `⋮` icon.             |
 | `INLINE_LINKS` | Renders the action label beneath the icon, separated by a middle dot. |
 
-### Column Positioning
+### Column positioning
 
-By default, the actions column renders before your data columns. You can move it to the right side of the table using `RowActionsPosition`:
+By default, the actions column renders before your data columns. To move it to the right side of the table, use `RowActionsPosition`:
 
 ```python
 from starlette_admin.types import RowActionsPosition
@@ -288,16 +288,16 @@ class ArticleView(ModelView):
 
 ```
 
-## Dynamic Action Forms
+## Dynamic action forms
 
-The `form` parameter on both `@action` and `@row_action` decorators accepts a callable. This allows you to generate HTML dynamically at request time.
+The `form` parameter on both the `@action` and `@row_action` decorators accepts a callable, so you can generate the HTML at request time.
 
-The callable can be synchronous or asynchronous and must return a string.
+The callable can be synchronous or asynchronous, and it must return a string.
 
 - **`@action` signature**: `(request) -> str`
 - **`@row_action` signature**: `(request, obj) -> str`
 
-This is highly recommended for pre-filling form inputs with a specific row's existing values.
+Use a callable when you want to prefill form inputs with a row's current values.
 
 ```python
 from typing import Any
@@ -354,5 +354,5 @@ class ArticleView(ModelView):
 
 ```
 
-!!! warning
-    Row action form callables execute once per row on the list page. Design them to be fast and avoid database queries inside the callable. All necessary row data is already accessible via the `obj` parameter.
+!!! important
+    A row action form callable runs once per row on the list page. Keep it fast and avoid database queries inside it. The row data you need is already available through the `obj` parameter.

@@ -5,7 +5,7 @@ description: Extend the built-in query builder by creating custom database filte
 
 # Custom filters
 
-Subclassing `BaseFilter` allows you to introduce custom operators beyond the built-in set. You can implement domain-specific checks like "_is divisible by_", create computed conditions like "_created this month_", or add support for field types the default registry omits. This guide explains the internal mechanics of custom filters and details the two methods for registering them: subclassing your backend's `FilterRegistry` to apply a filter across all matching field types, or passing the filter directly to a specific field's `filters=` list. For standard implementation details, including default filters per field type, manual overrides, and URL formatting, refer to the [Filters guide](../user-guide/filters.md).
+Subclass `BaseFilter` when you need an operator the built-in set doesn't cover: a domain-specific check like "_is divisible by_", a computed condition like "_created this month_", or support for a field type the default registry skips. This page explains how a filter works internally and shows the two ways to register one, either by subclassing your backend's `FilterRegistry` to cover every matching field type, or by passing the filter to a single field's `filters=` list. For the day-to-day details, including the default filters per field type, manual overrides, and the URL format, see the [Filters guide](../user-guide/filters.md).
 
 ## The `BaseFilter` interface
 
@@ -33,12 +33,12 @@ class MyFilter(BaseFilter):
         raise NotImplementedError()
 ```
 
-* **`parse_value(raw)`** converts the raw URL string into the data type required by `apply()`, such as a `Decimal`, a `date`, or a list. The default implementation passes the string through unchanged. This behavior is suitable for `STRING` or `ENUM` filters but must be overridden for numeric or temporal data. This method also serves as a validation hook. You should raise `FilterValidationError` for values that parse correctly but are otherwise unacceptable (such as out-of-range or malformed inputs).
-* **`apply(ctx)`** is the only abstract method. It receives a `FilterApplyContext` object containing the `query`, `field_name`, `value`, `value2`, `request`, and `view`. The method must return a query fragment specific to your backend.
+* **`parse_value(raw)`** converts the raw URL string into the type `apply()` expects, such as a `Decimal`, a `date`, or a list. The default passes the string through unchanged, which suits `STRING` and `ENUM` filters but not numeric or temporal data. It's also your validation hook: raise `FilterValidationError` for values that parse but are still unacceptable, such as out-of-range or malformed input.
+* **`apply(ctx)`** is the only abstract method. It receives a `FilterApplyContext` holding the `query`, `field_name`, `value`, `value2`, `request`, and `view`, and returns a query fragment for your backend.
 
 ## How raw URL values get parsed
 
-All URL parameters are strings. For example, `price__gt=50` and `created_at__eq=2026-01-01` both arrive at the server as raw text. Before a filter's `apply()` method executes, its `parse_value()` method converts that raw string into a Python object matching its defined `data_type`:
+Every URL parameter is a string, so `price__gt=50` and `created_at__eq=2026-01-01` both arrive as raw text. Before `apply()` runs, `parse_value()` converts that string into a Python object matching the filter's `data_type`:
 
 ```python
 def _parse_number(raw: Any) -> int | float:
@@ -61,7 +61,7 @@ class GreaterThanFilter(BaseFilter):
         return _parse_number(raw)
 ```
 
-As a result, parameters like `?filter=price__gt=50` and `?filter=price__gt=50.5` reach `GreaterThanFilter.apply()` as converted Python numbers (`50` as an `int`, and `50.5` as a `float`) instead of the literal strings `"50"` and `"50.5"`. The `apply()` method passes this parsed value directly to the query object. The database driver handles the final coercion against the column's actual database type (such as `Decimal` or `Numeric`).
+So `?filter=price__gt=50` and `?filter=price__gt=50.5` reach `GreaterThanFilter.apply()` as Python numbers (`50` as an `int`, `50.5` as a `float`) rather than the strings `"50"` and `"50.5"`. `apply()` passes that parsed value straight to the query object, and the database driver handles the final coercion against the column's actual type, such as `Decimal` or `Numeric`.
 
 | `data_type` | Example raw URL value | Parsed Python value | Parsed by |
 | --- | --- | --- | --- |
@@ -73,7 +73,7 @@ As a result, parameters like `?filter=price__gt=50` and `?filter=price__gt=50.5`
 | `string`, `enum` | `admin` | `"admin"` | `BaseFilter.parse_value` default (passed through unchanged) |
 | `none` | *(no value in the URL at all)* | *(never called)* | N/A |
 
-If a value fails to parse (for example, `price__gt=abc` or `created_at__eq=not-a-date`), `parse_value()` raises a `FilterValidationError`. The request handler catches this exception and returns an `HTTP 400` error before executing any database queries:
+When a value fails to parse, such as `price__gt=abc` or `created_at__eq=not-a-date`, `parse_value()` raises a `FilterValidationError`. The request handler catches it and returns `HTTP 400` before running any database query:
 
 ```text
 GET /admin/product/list?filter=price__gt=abc
@@ -81,19 +81,19 @@ Returns: 400 Bad Request: Invalid 'filter' parameter: 'abc' is not a valid numbe
 
 ```
 
-Value-less filters (where `data_type=none`, such as `is_null`, `is_true`, or `in_past`) skip this step entirely. The `parse_value` method never runs for these filters. This explains why `field__is_null` requires no `=value` in the URL, as there is no input string to convert.
+Value-less filters, the ones with `data_type=none` such as `is_null`, `is_true`, or `in_past`, skip this step. `parse_value` never runs for them, which is why `field__is_null` needs no `=value` in the URL: there's no input string to convert.
 
 ## Making a custom filter available
 
-There are two ways to register a custom filter with a view. Choose the method that best matches your intended scope.
+You can register a custom filter with a view in two ways. Pick the one that matches the scope you want.
 
 ### Per field instance (narrow scope)
 
-Pass the custom filter into the target field's `filters=` list. You can provide it alongside or instead of the defaults. See [Overriding filters for a specific field](../user-guide/filters.md#overriding-filters-for-a-specific-field) for the base pattern using built-in filters. Use this approach when the filter is highly specific and only applies to a single field.
+Pass the filter into the target field's `filters=` list, either alongside the defaults or in place of them. See [Overriding filters for a specific field](../user-guide/filters.md#overriding-filters-for-a-specific-field) for the same pattern with built-in filters. Use this when the filter only makes sense for one field.
 
 ### Registry-wide (every matching field type)
 
-Each backend includes a `FilterRegistry` subclass. Examples include `SqlaFilterRegistry` for SQLAlchemy, `BeanieFilterRegistry` for Beanie, `MongoEngineFilterRegistry` for MongoEngine, and `TortoiseFilterRegistry` for Tortoise ORM. These classes contain methods decorated with `@filters(FieldType, ...)` to define default filters for each supported field type:
+Each backend ships a `FilterRegistry` subclass: `SqlaFilterRegistry` for SQLAlchemy, `BeanieFilterRegistry` for Beanie, `MongoEngineFilterRegistry` for MongoEngine, and `TortoiseFilterRegistry` for Tortoise ORM. Each one defines the default filters for a supported field type in a method decorated with `@filters(FieldType, ...)`:
 
 ```python
 # starlette_admin/contrib/sqla/filters.py
@@ -121,7 +121,7 @@ class SqlaFilterRegistry(FilterRegistry):
     # ... one method per field type
 ```
 
-To modify the available filters for a field type across an entire view, create a subclass of the backend's registry. Override or add a `@filters` method, and then return an instance of your custom subclass from `get_filter_registry()`:
+To change the filters available for a field type across a whole view, subclass the backend's registry, override or add a `@filters` method, and return an instance of your subclass from `get_filter_registry()`:
 
 ```python
 class ProductFilterRegistry(SqlaFilterRegistry):
@@ -135,16 +135,16 @@ class ProductView(ModelView):
         return ProductFilterRegistry()
 ```
 
-You can declare these methods in two ways, depending on whether you want to replace or extend the existing filters:
+Declare these methods one of two ways, depending on whether you want to replace the existing filters or extend them:
 
-* **Override:** Re-declare `@filters(StringField)` on your subclass and return the exact classes you want to use. This entirely replaces the parent's default list. Be sure to include any built-in filters you want to retain.
-* **Extend:** Declare `@filters(IntegerField)` when the parent registry only provides a broader `NumberField` registration. Because `IntegerField` is a subclass of `NumberField`, the Method Resolution Order (MRO) will resolve `IntegerField` to your new method. Meanwhile, `DecimalField` (another `NumberField` subclass without its own explicit registration) will continue inheriting the parent's `numeric_filters` method unchanged.
+* **Override:** Re-declare `@filters(StringField)` on your subclass and return exactly the classes you want. This replaces the parent's list, so include any built-in filters you want to keep.
+* **Extend:** Declare `@filters(IntegerField)` when the parent registry only registers the broader `NumberField`. Because `IntegerField` subclasses `NumberField`, the method resolution order (MRO) resolves `IntegerField` to your new method, while `DecimalField`, another `NumberField` subclass with no registration of its own, keeps inheriting the parent's `numeric_filters` unchanged.
 
-Since this is a standard Python subclass, no global state is mutated. Each call to `ProductFilterRegistry()` instantiates an independent registry. Your modifications remain scoped to the views that explicitly return this custom registry, leaving the backend defaults intact for all other views.
+This is a plain Python subclass, so it mutates no global state. Every call to `ProductFilterRegistry()` builds an independent registry, and your changes stay scoped to the views that return it. All other views keep the backend defaults.
 
 ## Full SQLAlchemy example
 
-The `DivisibleByFilter` in the example below takes a value: the divisor to check the column against. It is applied to every `IntegerField` on the `ProductView` via a `SqlaFilterRegistry` subclass, rather than being attached directly to individual fields:
+The `DivisibleByFilter` below takes a value, the divisor to check the column against. A `SqlaFilterRegistry` subclass applies it to every `IntegerField` on `ProductView`, rather than attaching it to individual fields:
 
 ```python
 import uuid
@@ -223,9 +223,9 @@ class ProductFilterRegistry(SqlaFilterRegistry):
     """
     Custom filter registry that injects `DivisibleByFilter` into integer fields.
 
-    By overriding `integer_filters`, this registry ensures that any IntegerField
-    receives our custom divisibility filter in addition to the standard numeric defaults.
-    Other numeric fields (like DecimalField) remain unaffected.
+    Overriding `integer_filters` gives every IntegerField the divisibility filter
+    on top of the standard numeric defaults. Other numeric fields, such as
+    DecimalField, are unaffected.
     """
 
     @filters(IntegerField)
@@ -263,22 +263,22 @@ admin.mount_to(app)
 
 See [examples/02-filters](https://github.com/jowilf/starlette-admin/tree/main/examples/02-filters) for a runnable app with a custom `BaseFilter` subclass registered the same way.
 
-The `lot_size__divisible_by` option now appears as a filter for `IntegerField("lot_size")`. This happens automatically without needing an explicit `filters=` declaration on the field itself. For example, `lot_size__divisible_by=6` matches products whose lot size is a multiple of 6:
+The `lot_size__divisible_by` option now shows up as a filter for `IntegerField("lot_size")`, with no explicit `filters=` declaration on the field. For example, `lot_size__divisible_by=6` matches products whose lot size is a multiple of 6:
 
 ```text
 http://127.0.0.1:8000/admin/product/list?filter=lot_size__divisible_by=6&sort=id__asc
 ```
 
-> **Tip**
-> Use a `FilterRegistry` subclass when a filter is generic enough to apply to every field of a given type within a view. Use the per-field `filters=` approach when the logic is highly specific to a single field. See the [Filters guide](../user-guide/filters.md#overriding-filters-for-a-specific-field) for examples of the per-field pattern.
+!!! tip
+    Use a `FilterRegistry` subclass when a filter is generic enough to apply to every field of a given type in a view. Use the per-field `filters=` list when the logic belongs to one field only. The [Filters guide](../user-guide/filters.md#overriding-filters-for-a-specific-field) has examples of the per-field pattern.
 
 ## Dynamic choices with `get_choices`
 
-By default, a filter's value input follows its `data_type`: a plain text box for `STRING`, a number box for `NUMBER`, and so on. Override `get_choices(request)` when the value should instead come from a dropdown seeded with a per-request list of `(value, label)` pairs, for example an "is one of" filter over a relation field, where the value posted back is a foreign key but the picker should show a human-readable name.
+By default, a filter's value input follows its `data_type`: a plain text box for `STRING`, a number box for `NUMBER`, and so on. Override `get_choices(request)` when the value should come from a dropdown seeded with a per-request list of `(value, label)` pairs instead. An "is one of" filter over a relation field is the typical case: the value posted back is a foreign key, but the picker should show a readable name.
 
-`get_choices` receives the current `Request` and returns a sequence of `(value, label)` pairs, or `None` (the default) to leave the plain input in place. A non-empty result takes precedence over both the plain input and any choices the field itself supplies (as `EnumField` does).
+`get_choices` receives the current `Request` and returns a sequence of `(value, label)` pairs, or `None` (the default) to leave the plain input in place. A non-empty result wins over both the plain input and any choices the field itself supplies, as `EnumField` does.
 
-The example below, from [examples/advanced/07-hr](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/07-hr), adds an "is one of" / "is not one of" pair to the `Employee` list's `department` field. `department` is a `RelationField`, so the default registry only gives it null-check filters; there is no generic way to compare a related row to a raw string. `get_choices` lists every `Department` by name for the dropdown, and `parse_value` converts the posted-back values to integers so `apply` can match on the `Department.id` foreign key directly, rather than joining through the relationship and comparing on name:
+The example below, from [examples/advanced/07-hr](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/07-hr), adds an "is one of" and "is not one of" pair to the `department` field on the `Employee` list. `department` is a `RelationField`, so the default registry gives it null checks only: there's no generic way to compare a related row to a raw string. `get_choices` lists every `Department` by name for the dropdown, and `parse_value` converts the posted-back values to integers so `apply` can match on the `Department.id` foreign key directly instead of joining through the relationship and comparing names:
 
 ```python
 # examples/advanced/07-hr/filters.py
@@ -337,10 +337,10 @@ class DepartmentNotInFilter(_DepartmentChoicesMixin, NotInFilter):
 
 A few things to note about this pattern:
 
-* **The mixin sits before the base filter class in the MRO.** `_DepartmentChoicesMixin` is listed first in `class DepartmentInFilter(_DepartmentChoicesMixin, InFilter)`, so its `get_choices` and `parse_value` override the ones each filter would otherwise inherit, while `super().parse_value(raw)` still reaches `InFilter.parse_value` to split the raw value into a list before it is converted to integers.
-* **`get_choices` runs on every request**, not once at import time, so the dropdown always reflects the current rows. Here that means a newly added `Department` shows up in the filter builder immediately, with no server restart or cache to invalidate.
-* **The `(value, label)` pairs and `parse_value`'s output type must agree.** The dropdown posts back whichever `value` the user picked, so `parse_value` has to convert it into what `apply` expects. `Department.id` is already an `int` here, so the mixin's `parse_value` simply reasserts that with a validation error on anything that isn't.
-* **`InFilter`/`NotInFilter` already default to `data_type = FilterDataType.ENUM`** (a multi-select), so no `data_type` override is needed on either subclass. Overriding `get_choices` alone is enough to seed that multi-select with departments instead of leaving it empty.
+* **The mixin sits before the base filter class in the MRO.** `_DepartmentChoicesMixin` comes first in `class DepartmentInFilter(_DepartmentChoicesMixin, InFilter)`, so its `get_choices` and `parse_value` override the ones each filter would otherwise inherit. `super().parse_value(raw)` still reaches `InFilter.parse_value`, which splits the raw value into a list before the mixin converts it to integers.
+* **`get_choices` runs on every request**, not once at import time, so the dropdown always reflects the current rows. A newly added `Department` shows up in the filter builder immediately, with no server restart and no cache to invalidate.
+* **The `(value, label)` pairs and `parse_value`'s output type have to agree.** The dropdown posts back whichever `value` the user picked, so `parse_value` converts it into what `apply` expects. `Department.id` is already an `int` here, so the mixin's `parse_value` reasserts that and raises a validation error on anything else.
+* **`InFilter` and `NotInFilter` already default to `data_type = FilterDataType.ENUM`**, a multi-select, so neither subclass needs a `data_type` override. Overriding `get_choices` is enough to seed that multi-select with departments instead of leaving it empty.
 
 ---
 

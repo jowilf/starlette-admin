@@ -5,9 +5,9 @@ description: Manage related models inline directly within a parent model's creat
 
 # Inline Forms
 
-Inline forms allow users to manage related records directly from a parent model's create or edit page. This approach is ideal for child models that only make sense in the context of their parent, such as comments on an article or tasks within a project. Inlines eliminate the need for a separate administrative view for the child model.
+Inline forms let users manage related records directly from a parent model's create or edit page. They suit child models that only make sense next to their parent, such as comments on an article or tasks in a project, and they save you from building a separate admin view for the child model.
 
-See [examples/06-inline-forms](https://github.com/jowilf/starlette-admin/tree/main/examples/06-inline-forms) for a runnable app covering all three patterns described on this page: auto-detected foreign key, explicit foreign key, and composite foreign key.
+See [examples/06-inline-forms](https://github.com/jowilf/starlette-admin/tree/main/examples/06-inline-forms) for a runnable app that covers all three patterns on this page: auto-detected foreign key, explicit foreign key, and composite foreign key.
 
 ## A minimal inline
 
@@ -62,29 +62,30 @@ class ArticleView(ModelView):
     inlines = [CommentInline]
 ```
 
-Setting this up requires two steps: defining an `InlineModelView` subclass for the child model, and adding it to the `inlines` list on the parent's `ModelView`.
-The `ArticleView` create and edit pages will now render a `Comments` formset below the article's own fields. The formset begins with one empty row (`extra = 1`) and includes add and delete controls that the SQLAlchemy backend wires up automatically.
+Setting this up takes two steps: define an `InlineModelView` subclass for the child model, then add it to the `inlines` list on the parent's `ModelView`.
 
-Notice that `CommentInline` never sets the `fk_attr` property. The SQLAlchemy backend inspects `Article.comments` and infers `Comment.article_id` as the foreign key because it is the only relationship pointing to `Comment`. You only need to explicitly set `fk_attr` when this inference is ambiguous or if the relationship is not declared on the ORM model. See [Explicit and composite foreign keys](#explicit-and-composite-foreign-keys) for more details.
+The `ArticleView` create and edit pages now render a `Comments` formset below the article's own fields. The formset starts with one empty row (`extra = 1`) and includes the add and delete controls that the SQLAlchemy backend wires up for you.
+
+Note that `CommentInline` never sets `fk_attr`. The SQLAlchemy backend inspects `Article.comments` and infers `Comment.article_id` as the foreign key, because it's the only relationship that points to `Comment`. Set `fk_attr` yourself only when that inference is ambiguous, or when the relationship isn't declared on the ORM model. See [Explicit and composite foreign keys](#explicit-and-composite-foreign-keys).
 
 ## `InlineModelView` reference
 
 | Attribute | Type | Default | Description |
 | --- | --- | --- | --- |
 | `model` | ORM model class | `None` | The related model this inline manages. Required. |
-| `fk_attr` | `str | tuple[str, ...]` | `""` | Name of the foreign-key field on the inline model that points to the parent. A tuple declares a composite FK. Optional on the SQLAlchemy backend (auto-detected from the parent's relationship when omitted). |
-| `extra` | `int` | `0` | Number of empty rows shown on create/edit forms in addition to existing rows. |
-| `allow_delete` | `bool` | `True` | Show a delete checkbox/button on each existing row. |
+| `fk_attr` | `str | tuple[str, ...]` | `""` | Name of the foreign-key field on the inline model that points to the parent. A tuple declares a composite foreign key. Optional on the SQLAlchemy backend, which auto-detects it from the parent's relationship when you omit it. |
+| `extra` | `int` | `0` | Number of empty rows shown on create and edit forms, in addition to existing rows. |
+| `allow_delete` | `bool` | `True` | Show a delete checkbox or button on each existing row. |
 | `inline_template` | `str` | `"inline.html"` | Template used to render the formset. |
-| `collapsible` | `bool` | `True` | Whether the formset can be expanded/collapsed by the user. |
-| `collapsed` | `bool` | `False` | Initial collapsed state. Only meaningful when `collapsible=True`. |
+| `collapsible` | `bool` | `True` | Whether users can expand and collapse the formset. |
+| `collapsed` | `bool` | `False` | Initial collapsed state. Applies only when `collapsible=True`. |
 
 
-The constructor will raise a `ValueError` if `fk_attr` is left empty and the backend cannot unambiguously resolve the relationship automatically.
+The constructor raises a `ValueError` when you leave `fk_attr` empty and the backend can't resolve the relationship unambiguously.
 
 ## Collapsible formsets
 
-Every `InlineModelView` renders its formset with a clickable header by default (`collapsible = True`), so users can collapse child records that aren't relevant to the task at hand. Set `collapsed = True` to start the formset closed instead of open:
+By default (`collapsible = True`), every `InlineModelView` renders its formset with a header that users can select to collapse child records they don't need. Set `collapsed = True` to start the formset closed instead of open:
 
 ```python
 class CommentInline(InlineModelView):
@@ -94,7 +95,7 @@ class CommentInline(InlineModelView):
     collapsed = True
 ```
 
-Set `collapsible = False` to opt a formset out entirely and always render it expanded with no toggle:
+Set `collapsible = False` to opt a formset out entirely, so it always renders expanded with no toggle:
 
 ```python
 class CommentInline(InlineModelView):
@@ -106,7 +107,7 @@ class CommentInline(InlineModelView):
 
 ## Explicit and composite foreign keys
 
-You must explicitly set `fk_attr` when the parent has more than one relationship to the same child model, the relationship is not declared on the ORM model, or the foreign key is composite:
+Set `fk_attr` yourself when the parent has more than one relationship to the same child model, when the relationship isn't declared on the ORM model, or when the foreign key is composite:
 
 ```python hl_lines="40-44 89-92"
 from sqlalchemy import ForeignKey, ForeignKeyConstraint, Integer, String
@@ -208,19 +209,19 @@ class OrderView(ModelView):
     inlines = [OrderLineInline]
 ```
 
-Notice that `OrderLineInline` does not require an `fk_attr`, even though the primary key for `OrderLine` is composite (`order_store_id`, `order_seq`, `line_no`). The SQLAlchemy backend resolves the composite foreign key from the `ForeignKeyConstraint` between `Order` and `OrderLine`, automatically populating both columns on new rows. You only need to explicitly pass a `tuple[str, ...]` to `fk_attr` if constraint introspection fails to find a match.
+Note that `OrderLineInline` needs no `fk_attr`, even though the primary key for `OrderLine` is composite (`order_store_id`, `order_seq`, `line_no`). The SQLAlchemy backend resolves the composite foreign key from the `ForeignKeyConstraint` between `Order` and `OrderLine` and populates both columns on new rows. Pass a `tuple[str, ...]` to `fk_attr` only when constraint introspection finds no match.
 
 ## Validation
 
-Each submitted row validates independently through the same `create` and `edit` paths used by a standalone `ModelView`. The system saves the parent first, and then processes each inline row sequentially. A typo in one comment's `author` field will not stop the other comments from being processed. When a row fails validation, its errors attach to that specific row. The form then re-renders the row in place with the submitted values, allowing users to correct and resubmit just that entry.
+Each submitted row validates on its own, through the same `create` and `edit` paths a standalone `ModelView` uses. The admin saves the parent first, then processes each inline row in turn. A typo in one comment's `author` field doesn't stop the other comments from being processed. When a row fails validation, its errors attach to that row, and the form re-renders the row in place with the submitted values so users can correct and resubmit that entry.
 
-!!! note
-    On the SQLAlchemy backend, this process is entirely all-or-nothing. The parent and every inline row share the same request-scoped session, and that session only commits once the entire request succeeds. If any row fails validation, the response returns an error and the session rolls back. The parent and all inline rows revert together, including any rows that successfully passed validation. The per-row errors displayed in the UI indicate what needs fixing rather than serving as a record of saved data.
+!!! important
+    On the SQLAlchemy backend, the whole request is all-or-nothing. The parent and every inline row share the same request-scoped session, and that session commits only when the entire request succeeds. If any row fails validation, the response returns an error and the session rolls back, so the parent and all inline rows revert together, including rows that passed validation. Treat the per-row errors in the UI as a list of what to fix, not as a record of what was saved.
 
 ---
 
 ## What's next
 
-* **[SQLAlchemy](../integrations/sqlalchemy.md):** Explains how relationship introspection enables automatic foreign key detection.
-* **[Custom Views](custom-views.md):** Covers building pages beyond the standard create, edit, and list workflow.
-* **[Events](../advanced/events.md):** Shows how to react to inline changes after records are saved.
+* **[SQLAlchemy](../integrations/sqlalchemy.md):** How relationship introspection enables automatic foreign key detection.
+* **[Custom Views](custom-views.md):** Build pages beyond the standard create, edit, and list workflow.
+* **[Events](../advanced/events.md):** React to inline changes after records are saved.

@@ -5,9 +5,9 @@ description: Build custom dashboard widgets, static pages, and standalone views 
 
 # Custom Views
 
-Not every admin page maps to a database model. A `CustomView` creates a standalone page in the sidebar that you compose yourself using built-in widgets, custom templates, or custom routes.
+Not every admin page maps to a database model. A `CustomView` creates a standalone page in the sidebar that you compose yourself from built-in widgets, custom templates, or custom routes.
 
-In most cases, you don't need to subclass anything. Simply instantiate `CustomView`, pass it a widget, and register it:
+In most cases, you don't need to subclass anything. Instantiate `CustomView`, pass it a widget, and register it:
 
 ```python
 from starlette.requests import Request
@@ -32,24 +32,24 @@ admin.add_view(
 )
 ```
 
-* **`menu_label`**, **`icon`**, and **`path`**: Control the sidebar entry and URL.
-* **`widget`**: Determines what the page renders. This can be a single `BaseWidget` instance, or a callable (`(request) -> BaseWidget | None`) that builds the tree per request. Use the callable form when the page relies on live data, the current user, or feature flags.
+* **`menu_label`**, **`icon`**, and **`path`**: Control the sidebar entry and the URL.
+* **`widget`**: Determines what the page renders. Pass a single `BaseWidget` instance, or a callable (`(request) -> BaseWidget | None`) that builds the tree per request. Use the callable form when the page depends on live data, the current user, or feature flags.
 
-To display multiple widgets, pass a [Layout widget](#layout-widgets) containing children.
+To show more than one widget, pass a [layout widget](#layout-widgets) that contains children.
 
-Subclassing `CustomView` is only necessary when you need to add custom endpoints, enforce access control, or take full control over the HTTP response.
+Subclass `CustomView` only when you need custom endpoints, access control, or full control over the HTTP response.
 
 ---
 
-## Content Widgets
+## Content widgets
 
-Content widgets render the actual data. Their `*_callback` parameters accept async callables that receive the current `Request`, allowing every widget to fetch live data.
+Content widgets render the data itself. Their `*_callback` parameters accept async callables that receive the current `Request`, so every widget can fetch live data.
 
-For the complete constructor signature of every widget shown below, see the [Widgets API reference](../api/widgets.md).
+For the complete constructor signature of every widget below, see the [Widgets API reference](../api/widgets.md).
 
 ### StatWidget
 
-A KPI card showing a single metric, an optional description, and a sparkline.
+A KPI card that shows a single metric, an optional description, and a sparkline.
 
 ```python
 from starlette.requests import Request
@@ -71,15 +71,15 @@ orders_stat = StatWidget(
 
 **Key parameters:**
 
-* `title` / `value_callback`: The label and the async callable returning the metric.
-* `description` / `color`: The secondary text below the value. `color` accepts Tabler color tokens (e.g., `"success"`, `"danger"`).
-* `link`: Wraps the entire card in a clickable anchor.
-* `chart_callback`: Returns an ApexCharts `series` list (e.g., `[{"name": "Views", "data": [10, 20, 30]}]`) to render a sparkline at the bottom of the card.
-* `countup`: Animates the metric value on load using countup.js.
+* `title` and `value_callback`: The label and the async callable that returns the metric.
+* `description` and `color`: The secondary text below the value. `color` accepts Tabler color tokens, such as `"success"` and `"danger"`.
+* `link`: Wraps the whole card in an anchor.
+* `chart_callback`: Returns an ApexCharts `series` list, such as `[{"name": "Views", "data": [10, 20, 30]}]`, to render a sparkline at the bottom of the card.
+* `countup`: Animates the metric value on load with countup.js.
 
 ### ChartWidget
 
-An ApexCharts chart embedded inside a card.
+An ApexCharts chart inside a card.
 
 ```python
 from starlette.requests import Request
@@ -100,9 +100,9 @@ revenue_chart = ChartWidget(
 
 **Key parameters:**
 
-* `chart_type`: Any valid ApexCharts string (`"line"`, `"bar"`, `"pie"`, `"donut"`, `"heatmap"`, etc.).
-* `series_callback`: For most charts, returns a list of dictionaries (`[{"name": "...", "data": [...]}]`). For `"pie"`, `"donut"`, and `"radialBar"`, returns a flat list of numbers.
-* `options`: A dictionary that merges over the default ApexCharts config. Use this for per-type settings like `xaxis.categories` or `labels`.
+* `chart_type`: Any valid ApexCharts string, such as `"line"`, `"bar"`, `"pie"`, `"donut"`, or `"heatmap"`.
+* `series_callback`: Returns a list of dictionaries for most charts (`[{"name": "...", "data": [...]}]`). For `"pie"`, `"donut"`, and `"radialBar"`, it returns a flat list of numbers.
+* `options`: A dictionary that merges over the default ApexCharts config. Use it for per-type settings such as `xaxis.categories` or `labels`.
 
 ### TableWidget
 
@@ -142,29 +142,27 @@ banner = HtmlWidget(
 )
 ```
 
-!!! warning "Security Risk"
-    `HtmlWidget` renders strings exactly as provided without escaping. Never pass user-supplied content through it, or you risk XSS injection.
+!!! warning "Security risk"
+    `HtmlWidget` renders strings exactly as you provide them, without escaping. Never pass user-supplied content through it, because doing so exposes your admin to XSS injection.
 
 ### DividerWidget
 
-Renders a horizontal rule (`<hr>`) to separate sections. Takes no parameters.
+Renders a horizontal rule (`<hr>`) to separate sections. It takes no parameters.
 
-Here is a polished and refined version of the "Layout Widgets" section. I focused on tightening the prose for better scannability, clarifying the distinct use case for each widget, and ensuring the documentation flows logically for a developer reading it.
+## Layout widgets
 
-## Layout Widgets
+Layout widgets are the structural scaffolding of your custom views. Instead of rendering data, they organize, align, and position your content widgets.
 
-Layout widgets are the structural scaffolding of your custom views. Instead of rendering data directly, they organize, align, and position your content widgets into cohesive interfaces.
+!!! note
+    These same layout widgets power the `form_layout` attribute on `ModelView`, so you can also use them to arrange create and edit form fields into columns, panels, and tabs. See [Form Layouts](../advanced/form-layout.md).
 
-!!!
-    These exact layout widgets also power the `form_layout` attribute on `ModelView`. You can use them to arrange create and edit form fields into columns, panels, and tabs instead of standard dashboard content. See [Form Layouts](../advanced/form-layout.md) for details.
+### Rows, columns, and cards
 
-### Rows, Columns, and Cards
+To build a responsive grid, combine these layout primitives:
 
-To build a responsive grid, combine the following layout primitives:
-
-* **`ColumnWidget`**: The vertical foundation. Stacks child widgets from top to bottom and typically serves as the root container for your dashboard tree.
-* **`RowWidget`**: The horizontal container. Aligns children side-by-side using a standard flexbox row. Wrap child elements in a `Col` object to dictate their responsive width via `Breakpoints` (using a standard 1–12 grid system). If left unwrapped, children automatically split the available width equally.
-* **`CardRowWidget`**: The polished row. Inherits all `RowWidget` mechanics but automatically applies consistent, equal heights to all child elements. Use this strictly when arranging a row of cards, such as KPI statistics, charts, or data tables.
+* **`ColumnWidget`**: The vertical foundation. It stacks child widgets from top to bottom and usually serves as the root container for your dashboard tree.
+* **`RowWidget`**: The horizontal container. It aligns children side by side in a flexbox row. Wrap a child in a `Col` object to set its responsive width through `Breakpoints`, on a standard 1–12 grid. Unwrapped children split the available width equally.
+* **`CardRowWidget`**: The polished row. It inherits every `RowWidget` mechanic and gives all children equal heights. Use it when you arrange a row of cards, such as KPI statistics, charts, or data tables.
 
 ```python
 from starlette_admin import Breakpoints, CardRowWidget, Col, ColumnWidget
@@ -183,7 +181,7 @@ page = ColumnWidget(children=[kpi_row, revenue_chart, latest_orders])
 
 ### GridWidget
 
-A responsive grid built on Bootstrap's `row-cols-*` system. Unlike `Col`, `Breakpoints` here defines the **number of items per row**, not the column span.
+A responsive grid built on Bootstrap's `row-cols-*` system. Unlike `Col`, `Breakpoints` here sets the **number of items per row**, not the column span.
 
 ```python
 from starlette_admin import Breakpoints, GridWidget
@@ -197,7 +195,7 @@ stats_grid = GridWidget(
 
 ### PanelWidget & TabsWidget
 
-* **`PanelWidget`**: Wraps children in a titled, optionally collapsible card.
+* **`PanelWidget`**: Wraps children in a titled card that you can make collapsible.
 * **`TabsWidget`**: Renders one widget per tab. `tabs` accepts a list of `(label, widget)` tuples.
 
 ```python
@@ -214,11 +212,11 @@ reports = TabsWidget(tabs=[("Revenue", revenue_chart), ("Orders", latest_orders)
 ```
 
 
-## Composing the Home Dashboard
+## Composing the home dashboard
 
-The default admin root (`/admin/`) is powered by `CustomView`. When you don't supply one, `Admin` automatically builds a `DefaultIndexView` showing record counts and links for your registered models.
+A `CustomView` powers the default admin root (`/admin/`). When you don't supply one, `Admin` builds a `DefaultIndexView` that shows record counts and links for your registered models.
 
-To build a custom dashboard, create a function that builds your widget tree and pass it to the `index_view` parameter of your `Admin` instance.
+To build your own dashboard, write a function that assembles the widget tree and pass it to the `index_view` parameter of your `Admin` instance.
 
 ```python
 async def build_dashboard(request: Request) -> ColumnWidget:
@@ -243,12 +241,12 @@ admin = Admin(
 )
 ```
 
-Because `build_dashboard` runs on every request, your layout can dynamically adapt, like hiding panels from non-admins or swapping charts.
+Because `build_dashboard` runs on every request, your layout can adapt at runtime. For example, you can hide panels from non-admins or swap out charts.
 
 
-## Custom Templates
+## Custom templates
 
-When the widget system isn't flexible enough, subclass `CustomView` and re-decorate `index` with `@route("")` to render your own Jinja template instead of the default widget rendering:
+When the widget system isn't flexible enough, subclass `CustomView` and redecorate `index` with `@route("")` to render your own Jinja template instead of the default widget rendering:
 
 ```python
 from starlette_admin import CustomView, route
@@ -270,7 +268,7 @@ class StatusView(CustomView):
 admin.add_view(StatusView())
 ```
 
-`self.templates` is a `Jinja2Templates` instance resolved against your [templates directory](../advanced/templates.md); it's only available once the view is mounted, so don't call it from `__init__`. A custom template typically extends the base admin layout:
+`self.templates` is a `Jinja2Templates` instance resolved against your [templates directory](../advanced/templates.md). It's available only after the view is mounted, so don't call it from `__init__`. A custom template usually extends the base admin layout:
 
 ```html
 {% extends "layout.html" %}
@@ -282,7 +280,7 @@ admin.add_view(StatusView())
 
 ```
 
-To still show widgets inside your custom template, resolve and render them yourself and pass the result through your own context:
+To show widgets inside your custom template, resolve and render them yourself, then pass the result through your own context:
 
 ```python
 from starlette_admin.widgets import render_widget
@@ -328,12 +326,13 @@ class StatusView(CustomView):
 
 ```
 
-> **Note:** Skip the CSS/JS blocks only if your template renders no widgets. Chart and stat widgets otherwise fail to load their dependencies (like ApexCharts).
+!!! important
+    Leave out the CSS and JS blocks only when your template renders no widgets. Without them, chart and stat widgets can't load their dependencies, such as ApexCharts.
 
 
-## Adding Routes with `@route`
+## Adding routes with `@route`
 
-When a custom page needs its own endpoints, like a JSON route to feed a client-side chart or a POST handler for a form, subclass `CustomView` and attach methods using `@route`:
+When a custom page needs its own endpoints, such as a JSON route that feeds a client-side chart or a POST handler for a form, subclass `CustomView` and attach methods with `@route`:
 
 ```python
 from starlette.responses import JSONResponse
@@ -367,13 +366,13 @@ admin.add_view(ReportsView())
 ```
 
 * **`path`**: Appended to the view's root path. In the example above, `@route("/data")` registers at `/admin/reports/data`.
-* **CSRF Protection**: All mutating routes (POST, PUT, DELETE) pass through CSRF middleware. Forms in your templates must include `{{ csrf_input(request) }}`.
-* Since `CustomView` falls back from constructor arguments to class attributes (like `ModelView` does), `ReportsView()` above works with no arguments; pass overrides to `ReportsView(menu_label="...")` instead when you need per-instance configuration.
+* **CSRF protection**: Every mutating route (POST, PUT, DELETE) passes through CSRF middleware, so forms in your templates must include `{{ csrf_input(request) }}`.
+* `CustomView` falls back from constructor arguments to class attributes, the way `ModelView` does, so `ReportsView()` above works with no arguments. Pass overrides, as in `ReportsView(menu_label="...")`, when you need per-instance configuration.
 
 
-## Access Control
+## Access control
 
-To gate an entire `CustomView`, override the `is_accessible(request)` method. If it returns `False`, the view is removed from the sidebar and all its `@route` endpoints return a `403 Forbidden`.
+To gate an entire `CustomView`, override the `is_accessible(request)` method. When it returns `False`, the admin removes the view from the sidebar and every `@route` endpoint returns `403 Forbidden`.
 
 ```python
 class ReportsView(CustomView):
@@ -384,10 +383,10 @@ class ReportsView(CustomView):
         return request.state.admin_user is not None
 ```
 
-*If you need granular permissions (e.g., anyone can view, but only admins can POST), handle that logic inside the specific `@route` handler instead of `is_accessible`.*
+For granular permissions, such as letting anyone view the page but only admins POST to it, put that logic in the specific `@route` handler instead of in `is_accessible`.
 
 
-> See [examples/07-dashboard](https://github.com/jowilf/starlette-admin/tree/main/examples/07-dashboard) for a runnable app using every widget described on this page: `StatWidget`, `ChartWidget`, `TableWidget`, `TabsWidget`, `PanelWidget`, and `GridWidget`.
+> See [examples/07-dashboard](https://github.com/jowilf/starlette-admin/tree/main/examples/07-dashboard) for a runnable app that uses every widget described on this page: `StatWidget`, `ChartWidget`, `TableWidget`, `TabsWidget`, `PanelWidget`, and `GridWidget`.
 
 ---
 

@@ -7,7 +7,7 @@ description: Learn how to build a custom backend adapter for starlette-admin to 
 
 `starlette-admin` provides built-in backends for SQLAlchemy, SQLModel, Beanie, MongoEngine, and Tortoise ORM, but the admin panel is entirely storage-agnostic. Every backend is simply a subclass of `BaseModelView`. This class translates standard CRUD operations into commands your specific data source understands. Whether you are using a REST API, Redis, a legacy database without an ORM, or a lightweight document store like TinyDB, the implementation process remains identical.
 
-## Required Methods
+## Required methods
 
 `BaseModelView` requires you to implement six abstract methods. By providing these six methods, you automatically inherit the admin's full suite of features: listing, searching, sorting, filtering, pagination, creation, editing, importing, exporting, and deletion.
 
@@ -76,7 +76,7 @@ The admin handles parsing the request's query string (like `?page=2&sort=views__
 
 Your only task is to translate these structured arguments into your backend's native query language.
 
-## View Key, Display Name, and Fields
+## View key, display name, and fields
 
 Before rendering, a `ModelView` requires four core attributes to understand the data shape and routing:
 
@@ -108,7 +108,7 @@ class PostView(BaseModelView):
 
 Explicitly listing fields is the simplest approach for one-off views. However, if you are building a reusable `ModelView` base class designed for multiple models on a custom backend, you should write a custom `BaseModelConverter` instead. Implement the `convert()` and `convert_fields_list()` methods, decorate your type handlers with `@converts(...)`, and invoke the converter during initialization. This allows concrete views to inherit field definitions automatically, matching the behavior of the built-in backends.
 
-## Processing Filter Trees
+## Processing filter trees
 
 Filters are passed to your methods as a `FilterGroup`. This structure is a tree of logical AND/OR nodes containing `FilterRule` leaf objects:
 
@@ -172,11 +172,11 @@ def _build_rule_fragment(
 
 The `apply(ctx)` method on each concrete filter receives a `FilterApplyContext` object containing the `query`, `field name`, and `values`. It returns a query fragment specific to your backend language. Because this process avoids mutating shared state, you can cleanly combine the resulting rules regardless of your underlying database architecture.
 
-## The TinyDB Reference Example
+## The TinyDB reference example
 
 [`examples/advanced/03-custom-backend`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/03-custom-backend) contains a fully runnable admin panel backed by [TinyDB](https://github.com/msiemens/tinydb). TinyDB is a document store that saves data to a local JSON file. It serves as an excellent reference point because it lacks an ORM, meaning every method interacts directly with the data store.
 
-### Model Definition (`models.py`)
+### Model definition (`models.py`)
 
 The data model is a standard Python dataclass without any admin-specific logic:
 
@@ -212,7 +212,7 @@ class Post:
 
 The `search_query` method handles the `q` parameter by generating a full-text search across relevant fields.
 
-### View Implementation (`view.py`)
+### View implementation (`view.py`)
 
 The `PostView` implementation uses `_build_query` to merge the search query with the filter tree. Both `find_all` and `count` rely on this helper before executing the TinyDB search:
 
@@ -291,7 +291,7 @@ async def delete(self, request: Request, pks: list[Any]) -> int | None:
 
 ```
 
-### Application Wiring (`app.py`)
+### Application wiring (`app.py`)
 
 You do not need a specialized `Admin` subclass. The base `Admin` works universally because `BaseModelView` abstracts all backend details:
 
@@ -318,7 +318,7 @@ if __name__ == "__main__":
 
 To test this implementation, run `uv run app.py` from the example directory and navigate to `http://localhost:8000/admin/`.
 
-## Custom Field Filters
+## Custom field filters
 
 Filters are deeply tied to your specific backend syntax. A "contains" operation requires entirely different code in TinyDB, SQL, and MongoDB. Each custom backend must register its own `BaseFilter` subclasses in a `FilterRegistry` and return them via `get_filter_registry()`.
 
@@ -374,7 +374,7 @@ If a field has no matching registry entry and lacks an explicit `filters=[]` ove
 
 For dynamic schemas where filterable types are unknown until runtime, `FilterRegistry` provides an imperative `register(field_type, *filter_classes)` method.
 
-## Managing Lifecycle Events
+## Managing lifecycle events
 
 Your custom backend completely owns the `create`, `edit`, and `delete` methods. Because the `BaseModelView` never touches your data source directly, you must explicitly notify it when a write occurs. Failing to do so breaks two core systems silently:
 
@@ -397,7 +397,7 @@ Export and import operations do not require manual event wiring. The `BaseAdmin`
 
 ---
 
-### Additional Resources
+### Additional resources
 
 * **[Views](../user-guide/views.md)**: Explore `BaseModelView` configuration options independent of the backend.
 * **[Custom Filters](../advanced/custom-filters.md)**: Learn how to write and register custom filters from scratch.

@@ -20,7 +20,7 @@ Customizations of the old list page require the most attention. DataTables optio
 !!! tip
     Upgrade your dependencies in one step and start your application. Most removed or renamed attributes raise clear errors at startup rather than failing silently at runtime.
 
-### What's New
+### What's new
 
 Beyond the breaking changes outlined below, this release includes:
 
@@ -55,7 +55,7 @@ Beyond the breaking changes outlined below, this release includes:
 * **Beanie Backend:** Beanie 2.0+ is required.
 * **Odmantic Backend:** Removed. If you depend on it, stay on `starlette-admin<=0.17.1` and show your interest by [opening an issue](https://github.com/jowilf/starlette-admin/issues); support can be re-added if there is enough demand.
 
-### The Admin Constructor
+### The Admin constructor
 
 ```python
 # Before
@@ -72,7 +72,7 @@ admin = Admin(engine, static_dir="statics", secret_key=os.environ["ADMIN_SECRET_
 * **SQLAlchemy specifics:** The first argument is now `session_provider`. It accepts an `Engine` or `AsyncEngine`, and now also accepts a `sessionmaker` or `async_sessionmaker`. Existing `Admin(engine)` calls will continue to work.
 * `timezone_config` defaults to `TimezoneConfig()` instead of `None`. Datetimes now display in the viewer's local timezone by default. Pass `timezone_config=None` to retain raw values.
 
-### Renamed View Identifiers
+### Renamed view identifiers
 
 The naming convention for views is now unified. Update your `ModelView` constructors and class attributes accordingly:
 
@@ -93,7 +93,7 @@ admin.add_view(PostView(Post, key="post", display_name="Post", menu_label="Posts
 
 Note that `Link` and `DropDown` also use `menu_label` instead of `label`.
 
-### DataTables Removal
+### DataTables removal
 
 The list page no longer uses DataTables. The attributes that previously configured it have been removed entirely:
 
@@ -211,7 +211,7 @@ class PostView(ModelView):
 * Fields also accept `exclude_from_export` and `exclude_from_import` on an individual basis.
 * Configure global limits using `ExportConfig` and `ImportConfig` on the `Admin` instance. Refer to the [Export & Import](user-guide/export-import.md) documentation for details.
 
-### Custom Fields and Template Overrides
+### Custom fields and template overrides
 
 Field templates are now reorganized. Update your paths if you override built-in templates or ship custom fields:
 
@@ -272,7 +272,7 @@ class HomeView(CustomView):
 
 The `@route` decorator also allows any view to expose extra endpoints for requirements like JSON chart data or webhooks.
 
-### Custom Backends
+### Custom backends
 
 If you implemented `BaseModelView` against a custom datasource, note the updated data-access contract:
 
@@ -293,7 +293,7 @@ async def count(self, request, q=None, filters=None): ...
 * The `order_by` parameter (previously a list of `"field direction"` strings) is now `sorts`, taking a list of `(field_name, direction)` tuples.
 * Each backend now ships with a filter registry mapping field types to filter implementations. Check the [Custom Backend](integrations/custom-backend.md) documentation for the full contract and a working example.
 
-### Behavior Changes to Review
+### Behavior changes to review
 
 * **Timezones:** Datetimes render in the viewer's local timezone by default (see the `timezone_config` note in the Admin Constructor section).
 * **URL State:** List state now lives in the URL. Bookmarked admin URLs from previous versions will land on default list states, because saved DataTables states are not migrated.
@@ -301,12 +301,12 @@ async def count(self, request, q=None, filters=None): ...
 * **CSRF Protection:** CSRF protection is built-in and cookie-based. If you previously wrapped the admin with custom CSRF middleware, you can safely remove it. Ensure your `secret_key` is set so tokens survive server restarts.
 * **FileField Upload Size:** `FileField.max_size` now defaults to 50 MB instead of unlimited. Pass `max_size=None` to restore the old unbounded behavior, or set an explicit value to change the cap.
 
-### Removed with No Replacement
+### Removed with no replacement
 
 * `AdminConfig` (see [Authentication](#authentication)).
 * `datatables_options`, `responsive_table`, and `save_state` (see [DataTables Removal](#datatables-removal)).
 * The Odmantic backend (see [Requirements](#requirements)).
 
-## Getting Help
+## Getting help
 
 If you encounter a migration issue not covered in this guide, please [open an issue](https://github.com/jowilf/starlette-admin/issues). Include a minimal reproduction of the problem and specify the version you are upgrading from. Running with [`Admin(debug=True)`](user-guide/admin.md#debugging) often reveals the cause directly, and the resulting logs make a great addition to your report.

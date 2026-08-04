@@ -11,37 +11,37 @@ You protect the admin interface by implementing a single method:
 async def authenticate(request) -> AdminUser | None
 ```
 
-Every protected admin request is processed through this method. If it returns an `AdminUser`, the request is treated as authenticated. If it returns `None`, the request is treated as unauthenticated and handled by the configured login or OAuth flow.
+Every protected admin request goes through this method. When it returns an `AdminUser`, the request is authenticated. When it returns `None`, the request is unauthenticated, and the sign-in or OAuth flow you configured takes over.
 
-When authentication succeeds, the returned `AdminUser` is stored on:
+On success, the returned `AdminUser` lands on:
 
 ```python
 request.state.admin_user
 ```
 
-When authentication fails, the request is marked as anonymous:
+On failure, the request is marked anonymous:
 
 ```python
 request.state.is_anonymous = True
 ```
 
-This allows public or partially protected routes to distinguish between authenticated and unauthenticated requests without triggering a login flow.
+Public and partially protected routes can then tell authenticated and unauthenticated requests apart without starting a sign-in flow.
 
 
-## Choose an Authentication Provider
+## Choose an authentication provider
 
-| Provider | When to Use | What You Implement |
+| Provider | When to use it | What you implement |
 | --- | --- | --- |
-| `AuthProvider` | You want the built-in login page and to check credentials yourself. | `login()`, `logout()`, `authenticate()` |
-| `OAuthProvider` | You want an OAuth2/OIDC redirect flow (Auth0, Okta, Google, etc.). | `redirect_to_provider()`, `handle_callback()`, `authenticate()` |
+| `AuthProvider` | You want the built-in sign-in page and you check credentials yourself. | `login()`, `logout()`, `authenticate()` |
+| `OAuthProvider` | You want an OAuth2 or OIDC redirect flow, such as Auth0, Okta, or Google. | `redirect_to_provider()`, `handle_callback()`, `authenticate()` |
 
-Both subclass `BaseAuthProvider` and share the same contract. The `authenticate()` method runs on every request. Whatever it returns becomes `request.state.admin_user`, or if it returns `None`, the framework sets `request.state.is_anonymous = True`.
+Both subclass `BaseAuthProvider` and share the same contract. `authenticate()` runs on every request. What it returns becomes `request.state.admin_user`, and when it returns `None`, the framework sets `request.state.is_anonymous = True`.
 
-## `AuthProvider`: Built-In Login Page
+## `AuthProvider`: built-in sign-in page
 
-Use this provider when you want the framework to render and handle the login form while you handle the credential verification. The framework owns the template, the POST handling, and the redirect.
+Use this provider when you want the framework to render and handle the sign-in form while you verify the credentials. The framework owns the template, the POST handling, and the redirect.
 
-Here is a complete example:
+Here's a complete example:
 
 ```python
 from sqlalchemy import create_engine
@@ -87,48 +87,46 @@ admin = Admin(
 admin.mount_to(app)
 ```
 
-### Required Methods
+### Required methods
 
-To build your `AuthProvider`, you must implement three specific methods. `SessionMiddleware` is strictly required here so you can persist the user's logged-in state between requests.
+An `AuthProvider` implements three methods. `SessionMiddleware` is required here, because it persists the user's signed-in state between requests.
 
 #### `login()`
 
-This method processes the form submission. It receives the `username`, `password`, a `remember_me` boolean, and the current `request`.
+This method handles the form submission. It receives the `username`, the `password`, a `remember_me` boolean, and the current `request`.
 
-* **On success:** Write an identifier (like a user ID or username) to `request.session`, then either return `None` to let the framework redirect to `next` (or the admin index), or return a `Response` yourself to redirect somewhere custom.
-* **On failure:** Raise `LoginFailed("message")` to display an error natively above the form, or raise `FormValidationError({"username": "..."})` to mark a specific field as invalid.
+* **On success:** Write an identifier, such as a user ID or username, to `request.session`. Then return `None` to let the framework redirect to `next` or the admin index, or return a `Response` to redirect somewhere else.
+* **On failure:** Raise `LoginFailed("message")` to show an error above the form, or raise `FormValidationError({"username": "..."})` to mark a specific field invalid.
 
 #### `authenticate()`
 
-This method runs on *every single request* to a protected admin route. It receives the `request` object.
+This method runs on *every* request to a protected admin route. It receives the `request` object.
 
-* Read the identifier you saved in `request.session` during the `login()` step.
+* Read the identifier you saved in `request.session` during `login()`.
 * Look up the user in your database.
-* If the user exists and is valid, return an instance of `AdminUser`.
-* If the user does not exist or is not logged in, return `None`.
+* Return an `AdminUser` instance when the user exists and is valid.
+* Return `None` when the user doesn't exist or isn't signed in.
 
 #### `logout()`
 
-This method handles the logout sequence. It receives the `request` object. You should clear the user's data from `request.session` to revoke their access. Return `None` to fall back to the default redirect to the admin index, or return a `Response` to redirect somewhere custom.
+This method handles sign-out. It receives the `request` object, and you clear the user's data from `request.session` to revoke access. Return `None` for the default redirect to the admin index, or return a `Response` to redirect somewhere else.
 
-## `OAuthProvider`: OAuth2/OIDC Redirect Flow
+## `OAuthProvider`: OAuth2/OIDC redirect flow
 
 
-`OAuthProvider` is used when authentication is delegated to an external identity provider such as Auth0, Okta, Google, or Azure AD.
+Use `OAuthProvider` when you delegate authentication to an external identity provider such as Auth0, Okta, Google, or Microsoft Entra ID.
 
-Unlike `AuthProvider`, which handles a username/password form inside the admin, `OAuthProvider` uses a redirect-based flow:
+`AuthProvider` handles a username and password form inside the admin. `OAuthProvider` instead uses a redirect-based flow:
 
-1. Redirect the user to the identity provider
-2. The provider authenticates the user
-3. The provider redirects back to your application
-4. The application exchanges the callback for user identity
-5. `authenticate()` restores the user from the session
+1. Redirect the user to the identity provider.
+2. The provider authenticates the user.
+3. The provider redirects back to your application.
+4. Your application exchanges the callback for the user's identity.
+5. `authenticate()` restores the user from the session.
 
-### Callback URL Setup (Required)
+### Callback URL setup (required)
 
-Before implementing `OAuthProvider`, you must register your application’s callback URL in your identity provider dashboard.
-
-OAuth providers only redirect to pre-approved URLs for security reasons.
+Before you implement `OAuthProvider`, register your application's callback URL in your identity provider's dashboard. For security, OAuth providers redirect only to preapproved URLs.
 
 #### Example callback URL
 
@@ -143,48 +141,48 @@ http://localhost:8000/admin/oauth/callback
 ```
 
 !!! important
-    The exact callback URL depends on your configuration. It is constructed from the `route_name` used when mounting `Admin`, combined with the provider’s `callback_path`.
+    Your exact callback URL depends on your configuration. It's built from the `route_name` you use when you mount `Admin`, plus the provider's `callback_path`.
 
-    For example, the default setup uses:
+    The default setup uses:
 
     * `route_name="admin"`
     * `callback_path="oauth/callback"`
 
-    This results in a callback URL like:
+    which produces this callback URL:
 
     ```text
     /admin/oauth/callback
     ```
 
-    When deployed, this becomes:
+    Deployed, it becomes:
 
     ```text
     https://your-domain.com/admin/oauth/callback
     ```
 
-    If you change either the mount prefix or the provider callback path, the resulting URL will change accordingly and must be updated in your OAuth provider configuration.
+    If you change the mount prefix or the provider callback path, the URL changes with it, and you have to update it in your OAuth provider configuration.
 
-### Required Methods
+### Required methods
 
-Building an `OAuthProvider` relies on the same session-backed pattern as `AuthProvider`, but splits the login process into a redirect and a callback.
+An `OAuthProvider` uses the same session-backed pattern as `AuthProvider`, but it splits sign-in into a redirect and a callback.
 
 #### `redirect_to_provider()`
 
-This method initiates the OAuth flow. It receives the `request` and a dynamically generated `callback_url`. You must return a `Response` that redirects the user's browser to your authentication provider.
+This method starts the OAuth flow. It receives the `request` and a generated `callback_url`, and it must return a `Response` that redirects the user's browser to your identity provider.
 
 #### `handle_callback()`
 
-This method executes when the browser returns from the provider with an authorization code. It receives the `request`. Exchange the code for an access token, fetch the user's profile information, and store their identity in `request.session`.
+This method runs when the browser comes back from the provider with an authorization code. It receives the `request`. Exchange the code for an access token, fetch the user's profile, and store their identity in `request.session`.
 
 #### `authenticate()`
 
-Just like with `AuthProvider`, this method reads back whatever `handle_callback()` stored in the session. Return an `AdminUser` if the session contains valid user data, or return `None` if it does not.
+As with `AuthProvider`, this method reads back whatever `handle_callback()` stored in the session. Return an `AdminUser` when the session holds valid user data, or `None` when it doesn't.
 
 #### `logout()`
 
-Clear the session data. If you need to log the user out of the central identity provider entirely (OIDC RP-initiated logout), override this method to return a redirect `Response` pointing to the provider's end-session endpoint instead of returning `None`.
+Clear the session data. To sign the user out of the identity provider as well (OIDC RP-initiated logout), override this method and return a redirect `Response` that points to the provider's end-session endpoint instead of returning `None`.
 
-Here is a complete example:
+Here's a complete example:
 
 ```python
 import os
@@ -258,9 +256,9 @@ admin = Admin(
 admin.mount_to(app)
 ```
 
-## Register the Provider
+## Register the provider
 
-Once you have implemented an authentication provider, you must attach it to the Admin instance.
+After you implement an authentication provider, attach it to the `Admin` instance.
 
 ```python
 admin = Admin(
@@ -269,15 +267,15 @@ admin = Admin(
 admin.mount_to(app)
 ```
 
-That single initialization is the entire integration. `Admin` mounts the provider's `AuthMiddleware` ahead of every admin route and adds the provider's routes (login, logout, and the callback for `OAuthProvider`) inside the admin prefix.
+That single line is the whole integration. `Admin` mounts the provider's `AuthMiddleware` ahead of every admin route and adds the provider's routes (sign-in, sign-out, and the callback for `OAuthProvider`) inside the admin prefix.
 
-## Permission Checks
+## Permission checks
 
-Authentication answers "Who is this?", while permissions answer "What can they do?". Handling permissions is entirely the responsibility of the view. Building role-based access requires three steps:
+Authentication answers "Who is this?" Permissions answer "What can they do?" Permissions belong to the view. Role-based access takes three steps:
 
-1. Subclass `AdminUser` (which is a plain dataclass) to include a `roles` list.
+1. Subclass `AdminUser`, a plain dataclass, to add a `roles` list.
 2. Return that subclass from your provider's `authenticate()` method, populated from your user store.
-3. Read `request.state.admin_user.roles` back inside the view's permission hooks.
+3. Read `request.state.admin_user.roles` in the view's permission hooks.
 
 ```python
 from dataclasses import dataclass, field
@@ -324,7 +322,7 @@ class MyAuthProvider(AuthProvider):
             return
         raise LoginFailed("Invalid username or password")
 
-    # Step 2: authenticate() looks up the roles for the logged-in user and
+    # Step 2: authenticate() looks up the roles for the signed-in user and
     # returns them on a MyAdminUser instead of a plain AdminUser.
     async def authenticate(self, request: Request) -> AdminUser | None:
         username = request.session.get("username")
@@ -338,7 +336,7 @@ class MyAuthProvider(AuthProvider):
 
 
 # Step 3: Every hook below reads request.state.admin_user.roles, which is
-# populated strictly because authenticate() returned a MyAdminUser.
+# populated only because authenticate() returned a MyAdminUser.
 class ArticleView(ModelView):
     def is_accessible(self, request: Request) -> bool:
         return "read" in request.state.admin_user.roles  # Hides the view entirely
@@ -365,15 +363,15 @@ class ArticleView(ModelView):
         return await super().is_action_allowed(request, name)
 ```
 
-Wire `MyAuthProvider` up exactly like any other provider using `admin = Admin(engine, auth_provider=MyAuthProvider(), secret_key=SECRET)`. Every hook mentioned above will then have access to `request.state.admin_user.roles` for verification.
+Register `MyAuthProvider` like any other provider, with `admin = Admin(engine, auth_provider=MyAuthProvider(), secret_key=SECRET)`. Every hook above then has access to `request.state.admin_user.roles`.
 
-The `is_accessible()` method (available on every `BaseView`) hides the entire view, including its entry in the sidebar. Methods like `can_create`, `can_edit`, `can_delete`, `can_export`, `can_import`, and `can_view_detail` gate individual actions on a `ModelView`. Furthermore, `can_access_field` hides specific fields, while `is_action_allowed` and `is_row_action_allowed` restrict bulk and row actions. For row actions that must be allowed or denied per record rather than globally, for example hiding `publish` once an article is already published, override `is_row_action_allowed_for_obj(request, name, obj)` instead; it receives the row's underlying object and defaults to `is_row_action_allowed`.
+`is_accessible()`, available on every `BaseView`, hides the whole view, including its sidebar entry. `can_create`, `can_edit`, `can_delete`, `can_export`, `can_import`, and `can_view_detail` gate individual operations on a `ModelView`. `can_access_field` hides specific fields, and `is_action_allowed` and `is_row_action_allowed` restrict bulk and row actions. When a row action depends on the record rather than the user, such as hiding `publish` on an article that's already published, override `is_row_action_allowed_for_obj(request, name, obj)` instead. It receives the row's underlying object and falls back to `is_row_action_allowed`.
 
-See [Views](views.md) and [Actions](actions.md) for the complete API reference. A full working version containing `can_export`, `can_import`, and a row action is available in [`examples/03-auth`](https://github.com/jowilf/starlette-admin/tree/main/examples/03-auth).
+For the complete API reference, see [Views](views.md) and [Actions](actions.md). A full working version with `can_export`, `can_import`, and a row action is in [`examples/03-auth`](https://github.com/jowilf/starlette-admin/tree/main/examples/03-auth).
 
 ## `@login_not_required`
 
-Some routes need to remain public even behind an otherwise locked-down admin panel, such as a self-service registration form or a health check. Decorate the specific endpoint, and `AuthMiddleware` will let the request through without verifying a valid `authenticate()` result:
+Some routes stay public even in an otherwise locked-down admin panel, such as a self-service registration form or a health check. Decorate the endpoint, and `AuthMiddleware` lets the request through without checking for a valid `authenticate()` result:
 
 ```python
 from starlette.requests import Request
@@ -399,33 +397,33 @@ class AccountsView(CustomView):
         return RedirectResponse(request.url_for("admin:login"), status_code=302)
 ```
 
-Both `@route` and `@login_not_required` tag the function with an attribute and return it unchanged. Consequently, the stacking order of these decorators does not matter.
+`@route` and `@login_not_required` both tag the function with an attribute and return it unchanged, so the order you stack them in doesn't matter.
 
 ## `allow_routes`
 
-Using `allow_routes` on any provider achieves the exact same bypass logic at the route-name level instead of the function level. This is highly useful when you do not own the endpoint definition or prefer to keep your bypass list visible in one central location:
+`allow_routes` gives you the same bypass at the route-name level instead of the function level. Use it when you don't own the endpoint definition, or when you want the bypass list in one place:
 
 ```python
 provider = MyAuthProvider(allow_routes=["register"])
 ```
 
-The string passed corresponds to the route's name: either the method name, or the value you passed to the `name=` parameter in `@route`, as in `name="register"` in the example above. `AuthMiddleware` will always allow `"login"` and `"static"` in addition to whatever custom routes you list here.
+The string is the route's name: either the method name, or the value you passed to the `name=` parameter in `@route`, such as `name="register"` above. `AuthMiddleware` always allows `"login"` and `"static"`, on top of the custom routes you list.
 
 ## `AdminUser`
 
-Whatever object `authenticate()` returns ultimately populates `request.state.admin_user`. The application's top bar reads two fields off it directly:
+Whatever `authenticate()` returns populates `request.state.admin_user`. The top bar reads two fields from it:
 
 | Attribute | Type | Default | Description |
 | --- | --- | --- | --- |
-| `username` | `str` | `"Administrator"` (translatable) | The name displayed in the top-bar user menu. |
-| `photo_url` | `str | None` | `None` | The avatar image URL. This falls back to a placeholder icon when unset. |
+| `username` | `str` | `"Administrator"` (translatable) | The name shown in the top-bar user menu. |
+| `photo_url` | `str | None` | `None` | The avatar image URL. Falls back to a placeholder icon when unset. |
 
-Because `AdminUser` is a plain `@dataclass`, subclassing it to carry roles, a tenant ID, or anything else your permission hooks require is the intended pattern. The `MyAdminUser` implementation above demonstrates this approach natively.
+`AdminUser` is a plain `@dataclass`, so subclassing it to carry roles, a tenant ID, or anything else your permission hooks need is the intended pattern. The `MyAdminUser` example above shows it in practice.
 
 ---
 
-**What's Next**
+**What's next**
 
 * [Security](security.md): CSRF, secret keys, and what the framework protects automatically.
 * [Views](views.md): `can_create`, `can_edit`, `can_delete`, and the complete list of permission hooks.
-* [Actions](actions.md): `is_action_allowed` and `is_row_action_allowed` for bulk and row action management.
+* [Actions](actions.md): `is_action_allowed` and `is_row_action_allowed` for bulk and row actions.

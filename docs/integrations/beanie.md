@@ -27,7 +27,7 @@ Beanie models MongoDB documents as asynchronous Pydantic models. The `starlette_
     uv install starlette-admin beanie
     ```
 
-## Minimal Example
+## Minimal example
 
 You must initialize Beanie before any request reaches the administration interface. Wrapping the connection logic inside your main application's `lifespan` context manager is the best approach to ensure this prerequisite is met.
 
@@ -73,13 +73,13 @@ if __name__ == "__main__":
 
 The `ModelView` accepts the Beanie `Document` class directly. It automatically derives the field list, forms, and filters from the document's fields.
 
-## Core Classes
+## Core classes
 
-### The `beanie.Admin` Class
+### The `beanie.Admin` class
 
 The `beanie.Admin` class inherits from `BaseAdmin` and requires no database-specific configuration during initialization. Connection setup occurs entirely within the application's lifespan. Always import `Admin` from `starlette_admin.contrib.beanie` to ensure compatibility with future backend-specific enhancements.
 
-### The `beanie.ModelView` Class
+### The `beanie.ModelView` class
 
 The `beanie.ModelView` class provides the integration layer between your database and the UI. It handles several operations automatically:
 
@@ -104,7 +104,7 @@ Beanie uses `PydanticObjectId` for primary keys. The administration panel automa
 
 While it renders and validates exactly like a standard `StringField`, it maintains its own slot in the filter registry. This separation ensures that ObjectId-specific filters apply only to ObjectId fields, rather than to every standard text field in your application. These specialized filters safely parse strings into valid `PydanticObjectId` objects before querying the database.
 
-## Filter Registry
+## Filter registry
 
 Every field type receives a default set of filters from the `BeanieFilterRegistry`.
 
@@ -112,7 +112,7 @@ Every field type receives a default set of filters from the `BeanieFilterRegistr
 - **Array operations:** The registry provides built-in support for array-based filtering, allowing "Is one of" operations on list-valued fields (like `TagsField`) to work out of the box.
 - **Primary keys:** The `id` field automatically remaps to MongoDB's native `_id` when building query fragments.
 
-## Full-Text Search
+## Full-text search
 
 When users interact with the search box on a list page, the administration panel checks the MongoDB collection for an existing text index and adjusts its query strategy accordingly:
 
@@ -124,11 +124,11 @@ The administration panel detects existing text indexes but does not create them.
 !!! note
 If you enable a text index, you can set `full_text_override_order_by = True` on your `ModelView` subclass to sort search results by MongoDB's relevance score instead of the default column sort.
 
-## Full Working Example
+## Full working example
 
 This section provides a complete, runnable Beanie integration with `starlette-admin`.
 
-### 1. Install Dependencies
+### 1. Install dependencies
 
 === "pip"
 
@@ -144,7 +144,7 @@ This section provides a complete, runnable Beanie integration with `starlette-ad
 
 The `fastapi[standard]` package includes the FastAPI CLI, allowing you to start the development server by running `fastapi dev`.
 
-### 2. Create the Application
+### 2. Create the application
 
 Save the following code in a file named `main.py`.
 
@@ -231,7 +231,7 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.mount_to(app)
 ```
 
-### 3. Run the Server
+### 3. Run the server
 
 Start the FastAPI development server:
 
@@ -251,7 +251,7 @@ Navigate to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) in your b
 
 > **Advanced Example:** [`examples/15-beanie`](https://github.com/jowilf/starlette-admin/tree/main/examples/15-beanie) in the repository contains a fully featured example that includes inline views, events, and custom batch actions.
 
-## What to Read Next
+## What to read next
 
 - **[Views](../user-guide/views.md)**: Explore `BaseModelView` configuration options independent of the backend.
 - **[Filters](../user-guide/filters.md):** The filter builder and how ORM-specific filters plug in.

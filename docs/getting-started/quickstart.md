@@ -24,7 +24,7 @@ Install the necessary packages using your preferred package manager:
     ```
 
 !!! note
-    The `fastapi[standard]` package includes the FastAPI CLI, allowing you to start the development server by running `fastapi dev`.
+    The `fastapi[standard]` package includes the FastAPI CLI, which allows you to start the development server by running `fastapi dev`.
 
 ## The complete example
 
@@ -93,9 +93,9 @@ Start the development server:
     uv run -- fastapi dev
     ```
 
-Open your browser and navigate to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin).
+Open a browser and go to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin).
 
-Click **Posts** in the sidebar, then select **Create**. You now have access to paginated list, detail, create, edit, and delete pages. The system generates all of these interfaces automatically from your model definition.
+In the sidebar, select **Posts**, and then select **Create**. You can now access paginated list, detail, create, edit, and delete pages. The system automatically generates all these interfaces from your model definition.
 
 ## How it works
 
@@ -116,7 +116,7 @@ class Post(Base):
     )
 ```
 
-This code uses standard SQLAlchemy 2.0. Behind the scenes, **starlette-admin** reads the column metadata mapped to these attributes to determine the exact HTML input to generate. For example, it creates a text input for `str`, a checkbox for `bool`, and a datetime picker for `datetime`.
+This code uses standard SQLAlchemy 2.0. The starlette-admin package reads the column metadata mapped to these attributes to determine the exact HTML input to generate. For example, it creates a text input for `str`, a checkbox for `bool`, and a datetime picker for `datetime`.
 
 ### The view
 
@@ -126,10 +126,10 @@ class PostView(ModelView):
     searchable_fields = ("title", "content")
 ```
 
-`PostView` serves as the central object for this resource. The `fields` attribute controls which columns appear in the list and form, while `searchable_fields` enables the search bar. All configurations regarding how `Post` looks and behaves in the admin dashboard reside within this single class.
+`PostView` serves as the central object for this resource. The `fields` attribute controls which columns appear in the list and form, while `searchable_fields` enables the search bar. All configurations for how `Post` looks and behaves in the admin dashboard reside within this single class.
 
 !!! note
-    The example imports `ModelView` from `starlette_admin.contrib.sqla` because it relies on SQLAlchemy. If you use a different backend like Beanie, MongoEngine, or Tortoise ORM, you must import `ModelView` from the corresponding contrib package. The configuration API remains consistent across all supported backends.
+    The example imports `ModelView` from `starlette_admin.contrib.sqla` because it relies on SQLAlchemy. If you use a different backend, such as Beanie, MongoEngine, or Tortoise ORM, you must import `ModelView` from the corresponding contrib package. The configuration API remains consistent across all supported backends.
 
 ### The admin
 
@@ -147,7 +147,7 @@ The `Admin` class connects the database engine to the user interface.
 !!! warning
     The `secret_key` parameter signs cookies for session data, including flash messages and CSRF protection. In production environments, you must replace the example value with a long, random, and securely generated string. Never use a placeholder value in a live deployment.
 
-## Adding a second model
+## Add a second model
 
 You can register an unlimited number of models. For example, to add a `Tag` model and its corresponding view, define the classes and call `add_view` again:
 
@@ -168,12 +168,12 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.add_view(TagView(Tag, icon="fa fa-tag"))
 ```
 
-Refresh your browser to see both **Posts** and **Tags** appear in the sidebar. Each resource now features its own fully functional list, create, edit, and delete pages.
+Refresh the browser window to see both **Posts** and **Tags** appear in the sidebar. Each resource now features its own fully functional list, create, edit, and delete pages.
 
 ---
 
-## What's next
+## Next steps
 
 * **[Concepts](concepts.md):** Learn the terminology for the concepts introduced here to better navigate the User Guide.
-* **[Admin](../user-guide/admin.md):** Discover all `Admin(...)` options including branding, theming, authentication, security, and internationalization.
+* **[Admin](../user-guide/admin.md):** Discover all `Admin(...)` options, including branding, theming, authentication, security, and internationalization.
 * **[Views](../user-guide/views.md):** Explore every `ModelView` configuration option available for customizing your data presentation.

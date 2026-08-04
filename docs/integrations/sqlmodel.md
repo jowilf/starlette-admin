@@ -26,7 +26,7 @@ Rather than implementing a separate system, this integration inherits all field 
     uv add starlette-admin sqlmodel
     ```
 
-## Minimal Example
+## Minimal example
 
 ```python
 from sqlalchemy import create_engine
@@ -55,7 +55,7 @@ admin.add_view(ProductView(Product, icon="fa fa-box"))
 
 The `ModelView` accepts the SQLModel table class directly and automatically derives the field list, forms, and filters from the model's schema.
 
-## Core Classes
+## Core classes
 
 ### `sqlmodel.Admin`
 
@@ -92,7 +92,7 @@ class ArticleView(ModelView):
     inlines = [CommentInline]
 ```
 
-## Pydantic Validation
+## Pydantic validation
 
 Constraints declared on the model apply automatically to the create and edit forms:
 
@@ -117,11 +117,11 @@ An input like a `full_name` shorter than two characters or an invalid email addr
 !!! note
     The `EmailStr` type requires the `email-validator` package, which is installable via `pip install "pydantic[email]"`.
 
-## Full Working Example
+## Full working example
 
 This section provides a complete and runnable SQLModel integration with `starlette-admin`.
 
-### 1. Install Dependencies
+### 1. Install dependencies
 
 === "pip"
 
@@ -137,7 +137,7 @@ This section provides a complete and runnable SQLModel integration with `starlet
 
 The `fastapi[standard]` package includes the FastAPI CLI, allowing you to start the development server by running `fastapi dev`.
 
-### 2. Create the Application
+### 2. Create the application
 
 Save the following code in a file named `main.py`.
 
@@ -216,7 +216,7 @@ admin.mount_to(app)
 
 Submitting a `title` shorter than three characters or a `name` shorter than two characters re-renders the form with the error attached to the offending field.
 
-### 3. Run the Server
+### 3. Run the server
 
 Start the FastAPI development server:
 
@@ -236,7 +236,7 @@ Navigate to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) in your b
 
 > **Advanced Example:** [`examples/14-sqlmodel`](https://github.com/jowilf/starlette-admin/tree/main/examples/14-sqlmodel) in the repository contains a fully featured CMS example that includes relationships, inline views, actions, filters, events, and exports.
 
-## What to Read Next
+## What to read next
 
 * **[SQLAlchemy](sqlalchemy.md):** The backend this integration builds on, covering engines, sessions, transactions, and the filter registry.
 * **[Views](../user-guide/views.md):** Explore `BaseModelView` configuration options independent of the backend.

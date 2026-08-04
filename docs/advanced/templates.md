@@ -5,9 +5,9 @@ description: Override Jinja2 templates in starlette-admin to completely customiz
 
 # Templates
 
-Every page in the admin interface is a Jinja2 template you can override. Whether you need to customize a single list page, a specific field's table cell, or a dashboard widget, you can apply your changes without forking the built-in template tree.
+Every page in the admin is a Jinja2 template you can override. Change a single list page, one field's table cell, or a dashboard widget without forking the built-in template tree.
 
-## How the Template Loader Works
+## How the template loader works
 
 ```python
 from sqlalchemy import create_engine
@@ -17,12 +17,12 @@ engine = create_engine("sqlite:///admin.sqlite")
 admin = Admin(engine, title="My Admin", templates_dir="my_templates/")
 ```
 
-The `Admin` class builds a Jinja2 `ChoiceLoader` that evaluates paths in a specific order: it checks your `templates_dir` first, followed by the built-in `starlette_admin/templates/` package directory. If you place a file under `my_templates/` using the exact relative path it has inside `starlette_admin/templates/`, your file shadows the built-in version. All other templates will continue to render from the built-in directory.
+`Admin` builds a Jinja2 `ChoiceLoader` that checks your `templates_dir` first and the built-in `starlette_admin/templates/` package directory second. Put a file under `my_templates/` at the same relative path it has inside `starlette_admin/templates/` and your file shadows the built-in one. Every other template keeps rendering from the built-in directory.
 
 !!! note
-    The loader chain also registers a `PrefixLoader` under the key `@starlette-admin` that always resolves to the built-in templates, regardless of any files shadowing them in `templates_dir`. You can access these using the path format `@starlette-admin/<name>.html` (omitting the trailing slash on the prefix itself). See [Overriding a Single Page Template](#overriding-a-single-page-template) below for practical applications.
+    The loader chain also registers a `PrefixLoader` under the key `@starlette-admin` that always resolves to the built-in templates, whatever is shadowing them in `templates_dir`. Reach them with the path format `@starlette-admin/<name>.html`, leaving off the trailing slash on the prefix itself. See [Overriding a single page template](#overriding-a-single-page-template) below for what this is for.
 
-## Template Directory Map
+## Template directory map
 
 | Path | Rendered for |
 | --- | --- |
@@ -58,9 +58,9 @@ The `Admin` class builds a Jinja2 `ChoiceLoader` that evaluates paths in a speci
 | `macros/views.html` | Shared Jinja2 macros used across pages |
 
 !!! note
-    The built-in tree also includes `modals/loading.html` (a generic loading-state modal) and several field-specific templates in `fields/list/`, `fields/detail/`, and `fields/form/`. Verify the exact filenames in `starlette_admin/templates/` for your installed version before attempting to override generic `<type>.html` files.
+    The built-in tree also includes `modals/loading.html`, a generic loading-state modal, and several field-specific templates in `fields/list/`, `fields/detail/`, and `fields/form/`. Check the exact filenames in `starlette_admin/templates/` for the version you installed before you override a generic `<type>.html` file.
 
-## Overriding a Single Page Template
+## Overriding a single page template
 
 ```
 my_templates/
@@ -79,11 +79,11 @@ my_templates/
 
 ```
 
-Using `{% extends "list.html" %}` directly would resolve back to your custom `my_templates/list.html` because the `templates_dir` is checked first. This circular reference causes an infinite recursion error. The `@starlette-admin/` prefix always points to the built-in copy. Therefore, any `extends` or `include` statements inside an override must use this prefix instead of the bare filename.
+`{% extends "list.html" %}` would resolve back to your own `my_templates/list.html`, because `templates_dir` is checked first, and that circular reference raises an infinite recursion error. The `@starlette-admin/` prefix always points at the built-in copy, so every `extends` and `include` inside an override has to use it instead of the bare filename.
 
-## Overridable Blocks
+## Overridable blocks
 
-Every built-in page extends `layout.html`, which in turn extends `base.html`. By overriding a specific `{% block %}` instead of an entire file, you can customize a specific fragment without duplicating the rest of the page's code:
+Every built-in page extends `layout.html`, which extends `base.html`. Override a single `{% block %}` instead of a whole file to change one fragment without duplicating the rest of the page:
 
 ```jinja
 {# my_templates/list.html #}
@@ -218,17 +218,17 @@ Every built-in page extends `layout.html`, which in turn extends `base.html`. By
 | `error_actions` | Action buttons displayed below the error message (such as a "Go back" button) |
 
 !!! tip
-    Call `{{ super() }}` inside an override to retain the built-in block's existing content and append to it, rather than replacing it entirely. This pattern is demonstrated in the `list_toolbar_extra` example above, and it is also used internally by the built-in `index.html` and `create.html` files for the `head_css` block.
+    Call `{{ super() }}` inside an override to keep the built-in block's content and add to it rather than replace it. The `list_toolbar_extra` example above does this, and the built-in `index.html` and `create.html` use the same pattern for the `head_css` block.
 
-### Example: Replacing the Sidebar Logo with an Inline SVG
+### Example: replacing the sidebar logo with an inline SVG
 
-Passing a URL to `Admin(logo_url=...)` is the quickest way to set a logo and covers most use cases, including linking to external `.svg` files. However, the built-in template renders this URL inside a standard `<img>` tag, which restricts the SVG from inheriting CSS properties from the surrounding page.
+Passing a URL to `Admin(logo_url=...)` is the quickest way to set a logo and covers most cases, including external `.svg` files. The built-in template renders that URL inside an `<img>` tag, though, so the SVG can't inherit CSS properties from the surrounding page.
 
-**When to use this approach:** Override the `brand` block to inject **inline `<svg>` markup** when you need the logo to dynamically interact with the UI.
+Override the `brand` block with **inline `<svg>` markup** when you need the logo to respond to the rest of the UI.
 
 #### Implementation
 
-Create a `layout.html` file in your custom templates directory. Since every page in the admin interface inherits from `layout.html`, this single override applies sitewide.
+Create a `layout.html` file in your templates directory. Every page in the admin inherits from `layout.html`, so this one override applies sitewide.
 
 ```jinja
 {# my_templates/layout.html #}
@@ -242,12 +242,12 @@ Create a `layout.html` file in your custom templates directory. Since every page
 
 ```
 
-!!! note "Best Practice:"
-    Always retain the `navbar-logo` CSS class on your custom `<svg>` element. This ensures your inline graphic inherits the framework's built-in alignment, padding, and sizing constraints without requiring additional custom CSS.
+!!! tip "Keep the navbar-logo class"
+    Leave the `navbar-logo` CSS class on your custom `<svg>` element. It gives your inline graphic the framework's alignment, padding, and sizing without any CSS of your own.
 
-## Overriding Field Templates
+## Overriding field templates
 
-Each field context utilizes three sub-directories:
+Each field context uses three subdirectories:
 
 | Directory | Used in |
 | --- | --- |
@@ -255,7 +255,7 @@ Each field context utilizes three sub-directories:
 | `fields/detail/<type>.html` | Detail page display (full, read-only) |
 | `fields/form/<type>.html` | Create and edit form input |
 
-You can override the cell used for text fields without affecting the form or the detail display:
+You can override the list cell for text fields without touching the form or the detail display:
 
 ```
 my_templates/
@@ -265,7 +265,7 @@ my_templates/
 
 ```
 
-To point a specific **field instance** to your custom template instead of overriding the type globally, set `list_template`, `detail_template`, `form_template`, `null_template`, or `empty_template` directly on the field definition:
+To point one **field instance** at your template instead of overriding the type everywhere, set `list_template`, `detail_template`, `form_template`, `null_template`, or `empty_template` on the field itself:
 
 ```python
 from starlette_admin.fields import StringField
@@ -273,15 +273,15 @@ from starlette_admin.fields import StringField
 StringField("status", list_template="fields/list/status_badge.html")
 ```
 
-`null_template` (default `"fields/detail/_null.html"`) and `empty_template` (default `"fields/detail/_empty.html"`) are separate slots rendered on the list and detail pages in place of `list_template` or `detail_template`, whenever the field's value is `None` or an empty list/tuple respectively:
+`null_template` (default `"fields/detail/_null.html"`) and `empty_template` (default `"fields/detail/_empty.html"`) are separate slots. The list and detail pages render them in place of `list_template` or `detail_template` whenever the field's value is `None` or an empty list or tuple:
 
 ```python
 StringField("status", null_template="fields/detail/_status_null.html")
 ```
 
-## Overriding Widget Templates
+## Overriding widget templates
 
-You can apply the exact same override pattern for widgets by placing files under the `widgets/` directory:
+Widgets follow the same override pattern. Put your files under the `widgets/` directory:
 
 ```
 my_templates/
@@ -290,9 +290,9 @@ my_templates/
 
 ```
 
-## Global Template Variables
+## Global template variables
 
-These variables are available in every template without being passed explicitly. The `Admin` class installs them as Jinja2 globals once during setup:
+These variables are available in every template without being passed in. `Admin` installs them as Jinja2 globals once during setup:
 
 | Variable | Type | Description |
 | --- | --- | --- |
@@ -319,11 +319,11 @@ These variables are available in every template without being passed explicitly.
 | `csrf_input` | `callable` | `csrf_input(request)` → Renders the hidden CSRF `<input>` |
 
 !!! note
-    Functions like `get_locale`, `get_locale_display_name`, `get_timezone`, and `get_timezone_display_name` do not take a `request` parameter. Locale and timezone are read from `contextvars` populated by `LocaleMiddleware` for the duration of the request rather than being looked up on the `Request` object itself.
+    `get_locale`, `get_locale_display_name`, `get_timezone`, and `get_timezone_display_name` take no `request` parameter. They read the locale and timezone from `contextvars` that `LocaleMiddleware` populates for the duration of the request, rather than from the `Request` object.
 
-## Per-Page Context Variables
+## Per-page context variables
 
-Beyond the global variables above, each page passes its own context dictionary to `TemplateResponse`.
+On top of the globals above, each page passes its own context dictionary to `TemplateResponse`.
 
 ### `list.html`
 
@@ -368,9 +368,9 @@ Beyond the global variables above, each page passes its own context dictionary t
 | `errors` | `dict[str, list[str]]` | Validation errors keyed by field name (only present after a failed submit) |
 | `inlines` | `list[dict]` | Inline formset context |
 
-## Adding Your Own Globals and Filters
+## Adding your own globals and filters
 
-You can inject custom variables and functions into your templates by subclassing `Admin` and overriding `__init__`. Be sure to call `super().__init__()` first so `self.templates` is set up before you add to it:
+To add your own variables and functions to the templates, subclass `Admin` and override `__init__`. Call `super().__init__()` first, so `self.templates` exists before you add to it:
 
 ```python
 from sqlalchemy import create_engine
@@ -388,9 +388,9 @@ engine = create_engine("sqlite:///admin.sqlite")
 admin = MyAdmin(engine, title="My Admin")
 ```
 
-## Built-in Jinja2 Filters
+## Built-in Jinja2 filters
 
-These filters are registered automatically on every admin instance during `_setup_templates`:
+Every admin instance registers these filters during `_setup_templates`:
 
 | Filter | Signature | Description |
 | --- | --- | --- |
@@ -410,9 +410,9 @@ These filters are registered automatically on every admin instance during `_setu
 
 ---
 
-**What's Next**
+## What's next
 
-* **[Form Layout](form-layout.md):** Split the create/edit forms into titled, optionally collapsible groups, and override `_form_group.html` to customize their markup.
-* **[Custom Themes](custom-themes.md):** Restyle the admin interface without altering individual templates.
-* **[Custom Fields](custom-fields.md):** Pair a field's Python class with its own specific `list_template` or `form_template`.
-* **[Extension Points](extension-points.md):** Review the full list of pluggable configuration surfaces beyond basic templates.
+* **[Form Layouts](form-layout.md):** Split the create and edit forms into titled, optionally collapsible groups, and override `_form_group.html` to change their markup.
+* **[Custom Themes](custom-themes.md):** Restyle the admin without touching individual templates.
+* **[Custom Fields](custom-fields.md):** Pair a field's Python class with its own `list_template` or `form_template`.
+* **[Extension Points](extension-points.md):** The full list of pluggable surfaces beyond templates.

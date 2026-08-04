@@ -5,18 +5,18 @@ description: Enable CSV, JSON, and PDF export functionality and bulk data import
 
 # Export and Import
 
-Every list page lets users export data to a file and import data from a file directly, eliminating the need to write custom routes.
+Every list page lets users export data to a file and import data from a file, so you don't have to write custom routes.
 
-### Overview
+## Overview
 
-* **Export:** Use the toolbar button to configure the scope, fields, format, and filename.
-* **Import:** Use the toolbar button to launch a three-step wizard handling upload, preview, and results.
-* **Formats:** Leverage built-in support for CSV, JSON, XLSX, ODS, YAML, PDF, and custom formats.
-* **Upsert:** Update existing records matched by primary key optionally during import.
-* **Integration:** Works seamlessly with filtering, sorting, row selection, and storage-backed fields.
-* **Zero Overhead:** Deploy with no custom endpoints required.
+* **Export:** Users select the toolbar button, then set the scope, fields, format, and filename.
+* **Import:** Users select the toolbar button to open a three-step wizard: upload, preview, and results.
+* **Formats:** CSV, JSON, XLSX, ODS, YAML, PDF, and custom formats are supported out of the box.
+* **Upsert:** Imports can optionally update existing records matched by primary key.
+* **Integration:** Both features work with filtering, sorting, row selection, and storage-backed fields.
+* **No extra endpoints:** Everything ships with the view.
 
-### Minimal Example
+## Minimal example
 
 ```python hl_lines="23 24"
 from sqlalchemy import Integer, String, Text, create_engine
@@ -47,13 +47,13 @@ admin.add_view(ProductView(Product, icon="fa fa-box"))
 
 ```
 
-`ProductView` now displays an **Export** button and an **Import** button in the list toolbar. Both dialogs offer exactly the formats listed in the `exporters` and `importers` arrays.
+`ProductView` now shows an **Export** button and an **Import** button in the list toolbar. Each dialog offers exactly the formats you list in `exporters` and `importers`.
 
 ---
 
-## Enabling Export
+## Enabling export
 
-The `exporters` attribute lists the formats to expose as plain extension strings:
+The `exporters` attribute lists the formats to expose, as plain extension strings:
 
 ```python hl_lines="2"
 class ProductView(ModelView):
@@ -61,9 +61,9 @@ class ProductView(ModelView):
 
 ```
 
-The default is `["csv", "json"]`. The table below lists every built-in format and the package it requires. The `csv`, `tsv`, and `json` formats ship with no extra dependencies. Every other tabular format uses `tablib`, and `pdf` uses `reportlab`. Declaring an unknown format string or a format whose package is not installed raises an error at startup.
+The default is `["csv", "json"]`. The table below lists every built-in format and the package it needs. The `csv`, `tsv`, and `json` formats need no extra dependencies. Every other tabular format uses `tablib`, and `pdf` uses `reportlab`. An unknown format string, or a format whose package isn't installed, raises an error at startup.
 
-| Format | Install Requirement |
+| Format | Install requirement |
 | --- | --- |
 | `csv`, `tsv`, `json` | Included in core |
 | `xlsx` | `pip install tablib[xlsx]` |
@@ -73,9 +73,9 @@ The default is `["csv", "json"]`. The table below lists every built-in format an
 | `dbf`, `html`, `latex`, `jira`, `rst` | `pip install tablib` |
 | `pdf` | `pip install starlette-admin[pdf]` |
 
-### Overriding Format Options
+### Overriding format options
 
-Each format string resolves to a pre-configured exporter instance with sensible defaults. When a format needs non-default settings, pass an exporter instance instead of the string. Strings and instances mix freely in the same list:
+Each format string resolves to a preconfigured exporter instance with sensible defaults. When a format needs different settings, pass an exporter instance instead of the string. You can mix strings and instances in the same list:
 
 ```python hl_lines="5"
 from starlette_admin.export import CsvExporter
@@ -87,9 +87,10 @@ class ProductView(ModelView):
 
 `CsvExporter` forwards keyword arguments to `csv.writer` and accepts an `escape_formulas` parameter. `TablibExporter(format, **kwargs)` covers every tablib format and forwards keyword arguments to `tablib.Dataset.export()`.
 
-Formula escaping is disabled by default. If exported fields can contain user-supplied strings, set `escape_formulas=True` on `CsvExporter`, `TsvExporter`, or `TablibExporter` to prevent formula injection when the file is opened in a spreadsheet application. See [Formula injection](security.md#formula-injection).
+!!! warning
+    Formula escaping is off by default. If exported fields can contain user-supplied strings, set `escape_formulas=True` on `CsvExporter`, `TsvExporter`, or `TablibExporter` to prevent formula injection when someone opens the file in a spreadsheet application. See [Formula injection](security.md#formula-injection).
 
-Export is active by default. The **Export** button appears in the toolbar as long as the `exporters` list is non-empty. To restrict export access, override the `can_export(request)` method:
+Export is on by default. The **Export** button appears in the toolbar whenever the `exporters` list isn't empty. To restrict who can export, override the `can_export(request)` method:
 
 ```python hl_lines="5 6"
 from starlette.requests import Request
@@ -100,18 +101,18 @@ class ProductView(ModelView):
 
 ```
 
-### The Export Dialog
+### The export dialog
 
-Export is a built-in global action. Clicking **Export** opens a dialog where the user configures the export before downloading.
+Export is a built-in global action. Selecting **Export** opens a dialog where the user sets up the export before downloading it.
 
-* **Scope:** Configures what to export. Options include "Selected rows" (default when rows are checked), "All matching rows" (when using the select-all banner), and "Current page" (default when nothing is selected).
-* **Fields:** Displays one checkbox per exportable field. Uncheck a field to drop its column. Fields marked `exclude_from_export=True` never appear here.
-* **Format:** Shows one entry per format configured in `exporters`.
-* **Filename:** Defaults to the view key. The server appends the file extension automatically.
+* **Scope:** What to export. The options are "Selected rows", the default when rows are checked, "All matching rows", available from the select-all banner, and "Current page", the default when nothing is selected.
+* **Fields:** One checkbox per exportable field. Clearing a checkbox drops that column. Fields marked `exclude_from_export=True` never appear here.
+* **Format:** One entry per format in `exporters`.
+* **Filename:** Defaults to the view key. The server appends the file extension.
 
-Every scope honors the list page's current search, filters, and sort order. What you see in the interface is what you export.
+Every scope honors the list page's current search, filters, and sort order, so what the user sees is what they export.
 
-### The Row Cap
+### The row cap
 
 ```python
 from starlette_admin.export import ExportConfig
@@ -126,13 +127,13 @@ admin = Admin(
 
 ```
 
-The `ExportConfig.max_rows` setting defaults to 100,000. This cap applies to the number of rows the export would actually produce for the chosen scope. The count is checked before any row is fetched. When it exceeds the limit, the system flashes an error message and redirects back to the list page instead of generating the file. This prevents broad, unfiltered exports on large tables from hanging the request. Set `max_rows=None` to remove the limit entirely.
+`ExportConfig.max_rows` defaults to 100,000. The cap applies to the number of rows the chosen scope would actually produce, and the admin checks the count before it fetches any row. When the count goes over the limit, the admin flashes an error and redirects back to the list page instead of generating the file. This keeps a broad, unfiltered export on a large table from hanging the request. Set `max_rows=None` to remove the limit.
 
 ---
 
-## Enabling Import
+## Enabling import
 
-The `importers` attribute works exactly like `exporters` by accepting format strings:
+The `importers` attribute works exactly like `exporters` and accepts format strings:
 
 ```python hl_lines="2"
 class ProductView(ModelView):
@@ -140,9 +141,9 @@ class ProductView(ModelView):
 
 ```
 
-The built-in import formats are `csv`, `tsv`, `json`, `yaml`, `xlsx`, `xls`, `ods`, `dbf`, and `html`, with the same dependency requirements as their export counterparts. Pass an importer instance to override a format's defaults, such as `CsvImporter(delimiter=";")` from `starlette_admin.importers`.
+The built-in import formats are `csv`, `tsv`, `json`, `yaml`, `xlsx`, `xls`, `ods`, `dbf`, and `html`, with the same dependencies as their export counterparts. To override a format's defaults, pass an importer instance, such as `CsvImporter(delimiter=";")` from `starlette_admin.importers`.
 
-Import is active by default and defaults to `["csv", "json"]`. The **Import** button appears in the toolbar as long as the `importers` list is non-empty. To restrict import access, override the `can_import(request)` method:
+Import is on by default, with `["csv", "json"]`. The **Import** button appears in the toolbar whenever the `importers` list isn't empty. To restrict who can import, override the `can_import(request)` method:
 
 ```python hl_lines="5 6"
 from starlette.requests import Request
@@ -153,17 +154,18 @@ class ProductView(ModelView):
 
 ```
 
-### The Import Wizard
+### The import wizard
 
-Clicking **Import** opens a three-step wizard. Nothing is written to the database before the final confirmation, and no file is stored server-side between steps. The browser holds the file and re-posts it for each step.
+Selecting **Import** opens a three-step wizard. Nothing is written to the database before the final confirmation, and no file is stored on the server between steps: the browser holds the file and reposts it at each step.
 
-1. **Upload:** Pick a format, choose a file, and optionally check **Update existing records by primary key**. When checked, a row whose primary key matches an existing record updates that record instead of creating a new one. When unchecked, every row is created.
-2. **Preview:** Submitting the upload runs a full validation pass without writing anything. It displays a summary, column mappings, sample rows, and a detailed error table.
-3. **Result:** Commits the import and reports the final row counts for created, updated, and skipped records. Rows that failed validation in the preview are skipped.
+1. **Upload:** Pick a format, choose a file, and optionally select **Update existing records by primary key**. When you select it, a row whose primary key matches an existing record updates that record instead of creating a new one. Otherwise, every row is created.
+2. **Preview:** Submitting the upload runs a full validation pass without writing anything. The wizard shows a summary, the column mappings, sample rows, and a detailed error table.
+3. **Result:** The wizard commits the import and reports the final counts for created, updated, and skipped records. Rows that failed validation in the preview are skipped.
+
 !!! tip
-    To let a backend auto-generate primary keys, uncheck the primary key column in the preview mapping. The imported rows then carry no key value, ensuring that re-importing a file produced by export creates fresh records instead of failing on stale IDs.
+    To let the backend generate primary keys, clear the primary key column in the preview mapping. The imported rows then carry no key value, so reimporting a file you exported creates fresh records instead of failing on stale IDs.
 
-### Upload and Row Caps
+### Upload and row caps
 
 ```python
 from starlette_admin.importers import ImportConfig
@@ -177,15 +179,15 @@ admin = Admin(
 )
 ```
 
-The import endpoint mirrors the export row cap. `ImportConfig.max_rows` defaults to 100,000 and is enforced before any record is created. The uploaded file is counted in a pre-pass, and a file holding more rows is rejected with an HTTP 400 error. Set `max_rows=None` to remove the limit entirely. Uploads are also capped at 10 MB by default via `ImportConfig.max_upload_size`.
+The import endpoint mirrors the export row cap. `ImportConfig.max_rows` defaults to 100,000 and is enforced before any record is created. The admin counts the uploaded file in a pre-pass and rejects a file with more rows than the cap with an HTTP 400 error. Set `max_rows=None` to remove the limit. `ImportConfig.max_upload_size` also caps uploads at 10 MB by default.
 
-### Header Matching
+### Header matching
 
-The wizard matches each file header against your field's `label` and then its `name`. A file containing the column `Name` and another containing `name` will both map correctly to a field named `name`. Unmatched columns are ignored, and fields missing a corresponding column receive `None`.
+The wizard matches each file header against your field's `label` first, then its `name`. A file with the column `Name` and a file with the column `name` both map to a field named `name`. Unmatched columns are ignored, and fields without a matching column receive `None`.
 
-## File Fields
+## File fields
 
-Views containing a storage-backed `FileField` or `ImageField` export data as a ZIP archive. This packaging ensures the actual file contents travel alongside the row data:
+A view with a storage-backed `FileField` or `ImageField` exports as a ZIP archive, so the file contents travel with the row data:
 
 ```python
 from sqlalchemy import Integer, JSON, String, create_engine
@@ -219,7 +221,7 @@ admin = Admin(engine, title="Catalog Admin", secret_key="change-me")
 admin.add_view(ProductView(Product, icon="fa fa-box"))
 ```
 
-Exporting `ProductView` to CSV produces `export.zip` with the following structure:
+Exporting `ProductView` to CSV produces an `export.zip` with this structure:
 
 ```text
 export.zip
@@ -232,14 +234,14 @@ export.zip
 
 ```
 
-The `photo` column in `export.csv` contains the file's ZIP-relative path (`assets/<storage-name>/<key>`), keeping the CSV readable in standard spreadsheet software. The system fetches every referenced file from its storage backend and packages them within the `assets/` directory.
+The `photo` column in `export.csv` holds the file's ZIP-relative path, `assets/<storage-name>/<key>`, which keeps the CSV readable in a spreadsheet application. The admin fetches every referenced file from its storage backend and packages it under `assets/`.
 
-Import does not accept ZIP archives. `FileField` and `ImageField` are always excluded from import (`exclude_from_import=True` by default), so the `photo` column is ignored on upload. Re-import a plain data file and attach files through the create or edit forms instead.
+Import doesn't accept ZIP archives. `FileField` and `ImageField` are always excluded from import, because `exclude_from_import=True` by default, so the wizard ignores the `photo` column on upload. Reimport a plain data file, then attach files through the create or edit forms.
 
 
-## Writing a Custom Exporter
+## Writing a custom exporter
 
-To create a custom exporter, subclass `BaseExporter` and implement the `generate` method. The base class automatically handles ZIP wrapping, file downloads, and response headers:
+To write a custom exporter, subclass `BaseExporter` and implement the `generate` method. The base class handles ZIP wrapping, file downloads, and response headers:
 
 ```python
 from typing import Any
@@ -262,11 +264,11 @@ class MarkdownExporter(BaseExporter):
         return "\n".join(lines).encode("utf-8")
 ```
 
-The `rows` data arrives pre-cleaned. The system replaces any `FileField` or `ImageField` value with its ZIP-relative path string beforehand, meaning your `generate` method never needs to handle file dictionaries separately. Register `MarkdownExporter()` in your `exporters` list to display it in the format dropdown.
+The `rows` data arrives pre-cleaned: the admin replaces each `FileField` and `ImageField` value with its ZIP-relative path string first, so your `generate` method never handles file dictionaries. Register `MarkdownExporter()` in your `exporters` list to show it in the format dropdown.
 
-## Writing a Custom Importer
+## Writing a custom importer
 
-To create a custom importer, subclass `BaseImporter` and implement the `parse` method as an asynchronous generator that yields one dictionary per row:
+To write a custom importer, subclass `BaseImporter` and implement `parse` as an async generator that yields one dictionary per row:
 
 ```python
 import json
@@ -285,8 +287,8 @@ class NdjsonImporter(BaseImporter):
 
 ---
 
-## What's Next
+## What's next
 
 * **[File Storage](file-storage.md):** Configure the storage backends referenced in the export ZIP bundle.
-* **[Security](security.md):** Learn about export row caps and import upload size limits.
-* **[Actions](actions.md):** Add bulk and row actions alongside the export and import features.
+* **[Security](security.md):** Export row caps and import upload size limits.
+* **[Actions](actions.md):** Add bulk and row actions alongside export and import.

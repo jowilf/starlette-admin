@@ -5,11 +5,11 @@ description: Configure your starlette-admin instance, customize theming, routing
 
 # Admin
 
-Every admin-wide setting (such as the navbar title, the mount location, CSRF and authentication configurations, and the rendered theme) is passed as a keyword argument to the `Admin` class.
+You pass every admin-wide setting as a keyword argument to the `Admin` class: the navbar title, the mount location, the CSRF and authentication configuration, and the rendered theme.
 
 ## Basic usage
 
-To get started, import the `Admin` class from the `contrib` package that matches your Object-Relational Mapper (ORM):
+Start by importing the `Admin` class from the `contrib` package that matches your object-relational mapper (ORM):
 
 ```python
 from starlette_admin.contrib.sqla import Admin  # SQLAlchemy
@@ -19,7 +19,7 @@ from starlette_admin.contrib.mongoengine import Admin  # MongoEngine
 from starlette_admin.contrib.tortoise import Admin  # Tortoise ORM
 ```
 
-Here is a minimal configuration using SQLAlchemy:
+Here's a minimal configuration that uses SQLAlchemy:
 
 ```python
 from sqlalchemy import create_engine
@@ -41,30 +41,30 @@ admin.add_view(ModelView(Post))
 admin.mount_to(app)
 ```
 
-* The `title` parameter sets the navbar text and the HTML `<title>` tag.
-* The `base_url` defines the path prefix where the admin is mounted.
-* The `secret_key` signs the CSRF and flash cookies.
-* The `add_view` method registers a view, while `mount_to` builds the admin's routes and middleware before mounting them onto your application.
+* `title` sets the navbar text and the HTML `<title>` tag.
+* `base_url` defines the path prefix where the admin is mounted.
+* `secret_key` signs the CSRF and flash cookies.
+* `add_view` registers a view, and `mount_to` builds the admin's routes and middleware before mounting them onto your application.
 
-Every `Admin` class accepts all the configuration options documented below and occasionally adds backend-specific functionality:
+Every `Admin` class accepts all the configuration options described below, and some add backend-specific behavior:
 
-* `contrib.sqla.Admin(session_provider, ...)` requires an `Engine`, `AsyncEngine`, `sessionmaker`, or `async_sessionmaker` as its first positional argument and automatically inserts `DBSessionMiddleware`. Note that `contrib.sqlmodel.Admin` is simply this same class re-exported. See [SQLAlchemy](../integrations/sqlalchemy.md) and [SQLModel](../integrations/sqlmodel.md).
-* `contrib.beanie.Admin`, `contrib.mongoengine.Admin`, and `contrib.tortoise.Admin` take no extra constructor arguments because Beanie, MongoEngine, and Tortoise ORM manage their own connections outside the admin interface. Additionally, `mongoengine.Admin` registers a GridFS file-serving route within `mount_to`. See [Beanie](../integrations/beanie.md), [MongoEngine](../integrations/mongoengine.md), and [Tortoise ORM](../integrations/tortoise.md).
+* `contrib.sqla.Admin(session_provider, ...)` takes an `Engine`, `AsyncEngine`, `sessionmaker`, or `async_sessionmaker` as its first positional argument and inserts `DBSessionMiddleware` for you. `contrib.sqlmodel.Admin` is the same class, re-exported. See [SQLAlchemy](../integrations/sqlalchemy.md) and [SQLModel](../integrations/sqlmodel.md).
+* `contrib.beanie.Admin`, `contrib.mongoengine.Admin`, and `contrib.tortoise.Admin` take no extra constructor arguments, because Beanie, MongoEngine, and Tortoise ORM manage their own connections outside the admin. `mongoengine.Admin` also registers a GridFS file-serving route in `mount_to`. See [Beanie](../integrations/beanie.md), [MongoEngine](../integrations/mongoengine.md), and [Tortoise ORM](../integrations/tortoise.md).
 
 ## Full reference
 
-All parameters listed below are accepted as keyword arguments by the `Admin` constructor.
+The `Admin` constructor accepts all the parameters below as keyword arguments.
 
 ### Identity and branding
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
 | `title` | `str` | `"Admin"` | Navbar text and `<title>` tag. |
-| `logo_url` | `str | Callable[[Request], str | None] | None` | `None` | Logo shown in the navbar instead of `title`. Pass a plain URL, or a callable that resolves it per-request (e.g. per-tenant branding). |
-| `login_logo_url` | `str | Callable[[Request], str | None] | None` | `None` | Logo shown on the login page instead of `logo_url`. Falls back to `logo_url` when unset. |
+| `logo_url` | `str | Callable[[Request], str | None] | None` | `None` | Logo shown in the navbar instead of `title`. Pass a plain URL, or a callable that resolves it per request, for example for per-tenant branding. |
+| `login_logo_url` | `str | Callable[[Request], str | None] | None` | `None` | Logo shown on the sign-in page instead of `logo_url`. Falls back to `logo_url` when unset. |
 | `favicon_url` | `str | Callable[[Request], str | None] | None` | `None` | Favicon `<link>` href. |
 
-The `logo_url`, `login_logo_url`, and `favicon_url` parameters accept either a string or a `(request) -> str | None` callable. Using a callable is particularly useful when different requests (such as different hostnames or a multi-tenant application) require dynamic branding:
+`logo_url`, `login_logo_url`, and `favicon_url` each accept either a string or a `(request) -> str | None` callable. Use a callable when branding depends on the request, such as in a multi-tenant application or when you serve several hostnames:
 
 ```python
 def logo_for_tenant(request):
@@ -79,9 +79,9 @@ admin = Admin(engine, title="My Admin", logo_url=logo_for_tenant)
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
 | `base_url` | `str` | `"/admin"` | URL prefix the admin is mounted under. |
-| `route_name` | `str` | `"admin"` | Starlette mount name; every internal link (`list`, `edit`, exports, static assets) is generated by calling `request.url_for(route_name + ":list", ...)`. |
+| `route_name` | `str` | `"admin"` | Starlette mount name. Every internal link (`list`, `edit`, exports, static assets) is generated by calling `request.url_for(route_name + ":list", ...)`. |
 
-Running more than one `Admin` within the same application requires a distinct `base_url` and `route_name` for each instance. Otherwise, generated links from one admin might incorrectly resolve to another. See [Multiple Admin Instances](../advanced/multiple-admin.md).
+To run more than one `Admin` in the same application, give each instance a distinct `base_url` and `route_name`. Otherwise, links generated by one admin can resolve to another. See [Multiple Admin Instances](../advanced/multiple-admin.md).
 
 
 ### Templates, statics, and theme
@@ -89,10 +89,10 @@ Running more than one `Admin` within the same application requires a distinct `b
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
 | `templates_dir` | `str` | `"templates"` | Directory checked for template overrides before falling back to the built-in templates. |
-| `static_dir` | `str | None` | `None` | Directory of extra static files served alongside the built-in CSS/JS. |
-| `theme` | `BaseTheme` | `DefaultTheme()` | A theme subclass defining the layout templates, icon set, and static assets. |
+| `static_dir` | `str | None` | `None` | Directory of extra static files served alongside the built-in CSS and JS. |
+| `theme` | `BaseTheme` | `DefaultTheme()` | A theme subclass that defines the layout templates, icon set, and static assets. |
 
-These options are covered in full in [Custom Themes](../advanced/custom-themes.md) and [Templates](../advanced/templates.md).
+[Custom Themes](../advanced/custom-themes.md) and [Templates](../advanced/templates.md) cover these options in full.
 
 ### The home page
 
@@ -100,7 +100,7 @@ These options are covered in full in [Custom Themes](../advanced/custom-themes.m
 | --- | --- | --- | --- |
 | `index_view` | `CustomView | None` | `None` (a `DefaultIndexView` built from your registered views) | The page rendered at `base_url`. |
 
-The default is a welcome banner alongside one panel per registered model view, displaying its respective record count. To replace this, pass your own `CustomView` (typically a `DefaultIndexView` subclass or any `CustomView` featuring a `widget`). For further instructions, see [Custom Views & Widgets](custom-views.md).
+The default home page is a welcome banner plus one panel per registered model view, each showing its record count. To replace it, pass your own `CustomView`, typically a `DefaultIndexView` subclass or any `CustomView` with a `widget`. See [Custom Views & Widgets](custom-views.md).
 
 ### Auth, security, and data safety
 
@@ -108,11 +108,11 @@ The default is a welcome banner alongside one panel per registered model view, d
 | --- | --- | --- | --- |
 | `auth_provider` | `BaseAuthProvider | None` | `None` (admin is publicly accessible) | Gates every route. See [Authentication](auth.md). |
 | `secret_key` | `str | None` | `None` (a random key is generated at startup, with a `UserWarning`) | Signs the CSRF and flash cookies. |
-| `middlewares` | `Sequence[Middleware] | None` | `None` | Extra Starlette middleware, run in addition to the CSRF/flash/auth middleware the admin adds itself. |
+| `middlewares` | `Sequence[Middleware] | None` | `None` | Extra Starlette middleware, run in addition to the CSRF, flash, and auth middleware the admin adds itself. |
 | `import_config` | `ImportConfig | None` | `None` (`ImportConfig()` defaults) | Upload size and ZIP-bomb limits for the import endpoint. |
 | `export_config` | `ExportConfig | None` | `None` (`ExportConfig()` defaults) | Row-count cap and URL-file download limits for the export endpoint. |
 
-All five parameters are covered in depth in the [Security](security.md) documentation.
+The [Security](security.md) guide covers all five parameters in depth.
 
 ### Locale and timezone
 
@@ -121,13 +121,13 @@ All five parameters are covered in depth in the [Security](security.md) document
 | `i18n_config` | `I18nConfig | None` | `None` (English only, no `LocaleMiddleware`) | Enables translated UI strings. |
 | `timezone_config` | `TimezoneConfig | None` | `TimezoneConfig()` (on) | Converts displayed datetimes to the viewer's timezone. |
 
-For a complete walkthrough, refer to [Internationalization & Timezones](i18n.md).
+For a complete walkthrough, see [Internationalization & Timezones](i18n.md).
 
 ### Debugging
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
-| `debug` | `bool` | `False` | When `True`, calls `starlette_admin.logging.configure_logging()` before startup, turning on coloured DEBUG-level console logging for the `starlette_admin` package. |
+| `debug` | `bool` | `False` | When `True`, calls `starlette_admin.logging.configure_logging()` before startup, which turns on colored DEBUG-level console logging for the `starlette_admin` package. |
 
 ```python
 admin = Admin(
@@ -135,31 +135,35 @@ admin = Admin(
 )
 ```
 
-This is highly useful during development. Every request logs the executed middleware, the view that resolved a given URL, and the reasoning behind a passed or failed permission check. Keep this disabled in production; it is verbose and adds significant logging overhead to every request.
+Debug logging helps during development. Every request logs the middleware that ran, the view that resolved the URL, and the reason a permission check passed or failed.
 
-For a lighter approach, call `starlette_admin.logging.configure_logging(level=logging.INFO)` manually instead of passing `debug=True`. This provides the handler without the complete DEBUG verbosity.
+!!! warning
+    Keep `debug=False` in production. DEBUG-level logging is verbose and adds significant overhead to every request.
 
-## Registering Views and Mounting
+For a lighter approach, call `starlette_admin.logging.configure_logging(level=logging.INFO)` yourself instead of passing `debug=True`. You get the handler without the full DEBUG verbosity.
 
-After creating the `Admin` instance, you must register your views and mount the admin interface to your application.
+## Registering views and mounting
+
+After you create the `Admin` instance, register your views and mount the admin to your application.
 
 ```python
-admin.add_view(ModelView(Post))  # Register a view (e.g., BaseModelView, CustomView)
+admin.add_view(ModelView(Post))  # Register a view (BaseModelView, CustomView, and so on)
 admin.mount_to(app)  # Mount the admin onto your Starlette or FastAPI app
 ```
 
-### Registering Views
+### Registering views
 
-Use `add_view` to add components to your admin dashboard. This method accepts either a view instance or a view class. You can use it to register model views, custom pages, drop-down menus, and external links.
+Use `add_view` to add components to your admin dashboard. The method accepts either a view instance or a view class, and you can register model views, custom pages, dropdown menus, and external links.
 
-### Mounting the Application
+### Mounting the application
 
-Once you have registered all your views, call `mount_to(app)` exactly once to attach the admin to your Starlette or FastAPI application. This step finalizes your routing and security configurations.
+After you register all your views, call `mount_to(app)` exactly once to attach the admin to your Starlette or FastAPI application. This step finalizes the routing and security configuration.
 
-**Order of operations is critical.** The admin configuration is locked once mounted to ensure all views are properly routed.
+!!! important "Order of operations matters"
+    Mounting locks the admin configuration so that every view is routed correctly.
 
-* Accessing the underlying `admin.app` before mounting raises a `RuntimeError`.
-* Attempting to register additional views or calling `mount_to` again after the initial mount also raises a `RuntimeError`.
+    * Accessing `admin.app` before mounting raises a `RuntimeError`.
+    * Registering another view or calling `mount_to` again after the first mount also raises a `RuntimeError`.
 
 ```python
 admin.app  # Raises RuntimeError: not mounted yet
@@ -174,6 +178,6 @@ admin.add_view(ModelView(Comment))  # Raises RuntimeError: already mounted
 
 **What's next**
 
-* **[Security](security.md):** The `secret_key`, CSRF, and complete export/import limits.
+* **[Security](security.md):** The `secret_key`, CSRF, and the export and import limits.
 * **[Authentication](auth.md):** Wiring up the `auth_provider`.
 * **[Multiple Admin Instances](../advanced/multiple-admin.md):** Running more than one `Admin` in the same application.

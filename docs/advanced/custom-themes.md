@@ -5,11 +5,11 @@ description: Override Tabler CSS variables, inject custom stylesheets, and modif
 
 # Custom Themes
 
-You can customize the appearance of your admin interface using the theme abstractions, custom templates, and static files. The `DefaultTheme` class controls the default styling by applying specific data attributes to the `<html>` tag through `TablerSettings`. For more advanced customizations, you can subclass `BaseTheme` to bundle your own templates, static assets, and icon sets, or simply pass custom template and static directories to the `Admin` application.
+You can restyle the admin through theme settings, custom templates, and static files. `DefaultTheme` controls the default look by writing data attributes onto the `<html>` tag from a `TablerSettings` object. For deeper changes, subclass `BaseTheme` to bundle your own templates, static assets, and icon sets, or pass your own template and static directories to `Admin`.
 
-## Applying a Theme
+## Applying a theme
 
-Use the `TablerSettings` class to define your color palette, border radius, and color mode. Pass this configuration to the `DefaultTheme`, which is then passed to the `theme` parameter of your `Admin` instance.
+Use `TablerSettings` to set your color palette, border radius, and color mode. Pass it to `DefaultTheme`, then pass that to the `theme` parameter of your `Admin` instance.
 
 ```python
 from myapp.models import Post
@@ -41,22 +41,22 @@ This configuration applies `data-bs-theme*` attributes directly to the root `<ht
 
 ```
 
-## `TablerSettings` Reference
+## `TablerSettings` reference
 
-| Attribute | Type | Default | Valid Values |
+| Attribute | Type | Default | Valid values |
 | --- | --- | --- | --- |
 | `mode` | `str` | `"light"` | `"light"`, `"dark"` |
 | `base` | `str | None` | `"stone"` | `"slate"`, `"gray"`, `"zinc"`, `"neutral"`, `"stone"`, `"pink"` |
 | `primary` | `str | None` | `"blue"` | `"blue"`, `"azure"`, `"indigo"`, `"purple"`, `"pink"`, `"red"`, `"orange"`, `"yellow"`, `"lime"`, `"green"`, `"teal"`, `"cyan"`, `"inverted"` |
 | `radius` | `float | None` | `1` | `0`, `0.5`, `1`, `1.5`, `2` |
 
-## Restyling Components with a Class Map
+## Restyling components with a class map
 
-Core templates avoid hardcoding component styling. Instead, they render class attributes using the `cls('role.name')` Jinja helper. This helper resolves a semantic role, such as `form.save_button` or `list.table`, to a CSS class string. The default values for every role reside in `starlette_admin.theme.CoreClasses`.
+Core templates don't hardcode component styling. They render class attributes through the `cls('role.name')` Jinja helper, which resolves a semantic role such as `form.save_button` or `list.table` to a CSS class string. The default value for every role lives in `starlette_admin.theme.CoreClasses`.
 
-To restyle specific roles, create a `ClassMap` subclass. Any unmapped role automatically falls back to `CoreClasses`, making partial overrides completely safe. Note that a button role controls the element's entire class attribute, including its variant, size, and spacing. Mapping a button role completely replaces its visual appearance.
+To restyle a role, write a `ClassMap` subclass. Any role you don't map falls back to `CoreClasses`, so partial overrides are safe. Keep in mind that a button role sets the element's entire class attribute, including variant, size, and spacing, so mapping one replaces the button's appearance outright.
 
-You do not need to build a full custom theme to utilize class maps. To adjust the default theme, subclass `DefaultTheme` and return your map from the `get_class_map()` method:
+Class maps don't require a full custom theme. To adjust the default theme, subclass `DefaultTheme` and return your map from `get_class_map()`:
 
 ```python
 from starlette_admin.theme import ClassMap, DefaultTheme
@@ -81,51 +81,51 @@ class MyTheme(DefaultTheme):
 admin = Admin(engine, title="My Admin", theme=MyTheme())
 ```
 
-Review `CoreClasses.classes` in `starlette_admin/theme.py` to see the full vocabulary of roles. Roles manage three distinct types of styling:
+Read `CoreClasses.classes` in `starlette_admin/theme.py` for the full vocabulary of roles. Roles cover three kinds of styling:
 
-* **Buttons:** Assigns one role per button location, including form footers, list toolbars, filter bars, action modals, and inline editing. The assigned value becomes the button's entire class attribute.
-* **Component classes:** Defines framework-specific classes that a custom CSS framework must swap out, such as `list.table`, `modal.base`, or `filter.chip`.
-* **Runtime classes:** Specifies classes that core JavaScript applies dynamically, such as `alert.success` or `import.status_badge`.
+* **Buttons:** One role per button location, covering form footers, list toolbars, filter bars, action modals, and inline editing. The value you set becomes the button's entire class attribute.
+* **Component classes:** Framework-specific classes a different CSS framework has to swap out, such as `list.table`, `modal.base`, or `filter.chip`.
+* **Runtime classes:** Classes the core JavaScript applies dynamically, such as `alert.success` or `import.status_badge`.
 
-## Building and Sharing Custom Themes
+## Building and sharing custom themes
 
-With `starlette-admin`, you can author, package, and share complete theme packages on PyPI, much like plugins. Subclassing `BaseTheme` lets you create a reusable Python package that replaces the admin layout and UI styling across multiple projects or distributes a custom visual system to the broader community.
+You can package a theme and publish it on PyPI, much like a plugin. Subclass `BaseTheme` to build a reusable Python package that replaces the admin layout and styling across several projects, or to share a visual system with other people.
 
 ### Scaffolding with Cookiecutter
 
-Use the official cookiecutter template to start authoring a theme. It generates a complete, publishable package with the correct directory structure and configuration files.
+Start from the official cookiecutter template. It generates a publishable package with the right directory structure and configuration files.
 
-Install `cookiecutter` via your preferred package manager. Refer to the [official installation guide](https://cookiecutter.readthedocs.io/en/stable/README.html#installation) for specific details:
+Install `cookiecutter` with your package manager. See the [official installation guide](https://cookiecutter.readthedocs.io/en/stable/README.html#installation) for the details:
 
 ```bash
 pip install cookiecutter
 
 ```
 
-Next, run the template from any directory:
+Then run the template from any directory:
 
 ```bash
 cookiecutter gh:jowilf/starlette-admin --directory themes/cookiecutter-starlette-admin-theme
 
 ```
 
-The template prompts you for variables like the theme name, package slug, and version. Once finished, it provides a self-contained package featuring:
+The template prompts you for the theme name, package slug, version, and a few other variables. When it finishes, you have a self-contained package with:
 
-* A `src/` directory containing the theme class, icon set, and class map.
+* A `src/` directory holding the theme class, icon set, and class map.
 * Preconfigured `templates/`, `static/`, and translation folders.
 * A test suite and a runnable example application.
 
-### `BaseTheme` Architecture
+### `BaseTheme` architecture
 
-A theme serves as the root of the rendering engine. Each `Admin` instance supports exactly one active theme. A `BaseTheme` subclass configures the following components:
+A theme sits at the root of the rendering chain, and each `Admin` instance has exactly one active theme. A `BaseTheme` subclass configures these pieces:
 
-* **Templates:** Ships replacement templates inside the package's `templates/` folder using bare relative paths like `base.html`, `layout.html`, or `list.html`. The active theme sits above plugins in Jinja's loader chain, which allows it to restyle both core and plugin template structures.
-* **Static Assets:** Distributes stylesheets, scripts, and images within the package's `static/` directory.
-* **Icon Set:** Replaces the admin icon library by returning a custom `IconSet` subclass from `get_icon_set()`. This maps semantic keys like `list.new` or `auth.logout` to concrete CSS classes.
-* **Class Map:** Restyles component roles by returning a `ClassMap` subclass from `get_class_map()`, as detailed in the [Restyling Components with a Class Map](%23restyling-components-with-a-class-map) section.
-* **Template Globals:** Exposes global variables to Jinja templates by overriding the `template_globals()` method.
+* **Templates:** Replacement templates in the package's `templates/` folder, using bare relative paths such as `base.html`, `layout.html`, or `list.html`. The active theme sits above plugins in Jinja's loader chain, so it can restyle both core and plugin templates.
+* **Static assets:** Stylesheets, scripts, and images in the package's `static/` directory.
+* **Icon set:** A custom `IconSet` subclass returned from `get_icon_set()`, mapping semantic keys such as `list.new` or `auth.logout` to CSS classes.
+* **Class map:** A `ClassMap` subclass returned from `get_class_map()`, as described in [Restyling components with a class map](#restyling-components-with-a-class-map).
+* **Template globals:** Global variables exposed to Jinja by overriding `template_globals()`.
 
-### Example Theme Package
+### Example theme package
 
 ```python
 from typing import Any
@@ -161,38 +161,38 @@ class CorporateTheme(BaseTheme):
         return {"company_name": "Acme Corp"}
 ```
 
-### Template Loader Hierarchy
+### Template loader hierarchy
 
-The template engine resolves files in the following order:
+The template engine resolves files in this order:
 
-1. User `templates_dir` (always overrides all templates).
-2. Active Theme `templates/` (restyles core and plugin templates).
-3. Namespaced Plugin `templates/`.
-4. Core `starlette_admin` default templates.
+1. Your `templates_dir`, which overrides everything below it.
+2. The active theme's `templates/`, which restyles core and plugin templates.
+3. The namespaced plugin `templates/`.
+4. The core `starlette_admin` default templates.
 
-You can safely extend themes from user overrides or theme subclasses using the `@theme` Jinja prefix mapping, for example, `{% extends "@theme/layout.html" %}`.
+To extend a theme template from a user override or a theme subclass, use the `@theme` Jinja prefix, for example `{% extends "@theme/layout.html" %}`.
 
-## Custom Templates Directory
+## Custom templates directory
 
-To override the default HTML without building a full custom theme, provide a directory path to the `templates_dir` parameter.
+To override the default HTML without building a full theme, pass a directory path to `templates_dir`.
 
 ```python
 admin = Admin(engine, title="My Admin", templates_dir="my_templates/")
 ```
 
-Any file placed inside your custom directory shadows the built-in template at the exact same relative path. The rest of the built-in template tree remains unaffected. For a complete list of overridable templates and a detailed guide, refer to the [Templates](templates.md) documentation.
+Any file you put in that directory shadows the built-in template at the same relative path, and the rest of the built-in tree keeps rendering as before. For the full list of overridable templates, see [Templates](templates.md).
 
-## Custom Static Directory
+## Custom static directory
 
-To include custom CSS, JavaScript, or images without creating a full theme, provide a directory path to the `static_dir` parameter.
+To add your own CSS, JavaScript, or images without building a full theme, pass a directory path to `static_dir`.
 
 ```python
 admin = Admin(engine, title="My Admin", static_dir="my_static/")
 ```
 
-Files placed in this directory are served alongside the built-in assets at the `/admin/static/` endpoint. For example, a file located at `my_static/custom.css` becomes accessible at `/admin/static/custom.css`.
+Files in this directory are served alongside the built-in assets under `/admin/static/`. A file at `my_static/custom.css`, for example, becomes available at `/admin/static/custom.css`.
 
-You can reference this custom stylesheet from your templates using the following snippet:
+Reference the stylesheet from your templates like this:
 
 ```html
 <link rel="stylesheet" href="{{ url_for('admin:static', path='custom.css') }}">
@@ -201,7 +201,7 @@ You can reference this custom stylesheet from your templates using the following
 
 ---
 
-## What's Next
+## What's next
 
 * **[Templates](templates.md):** Override a single page, cell, or widget without forking the entire template tree.
 * **[Extension Points](extension-points.md):** Explore hooks and customization points beyond basic themes.

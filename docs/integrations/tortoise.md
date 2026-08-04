@@ -28,7 +28,7 @@ Tortoise ORM is an asyncio-native object-relational mapper inspired by Django. T
     uv add starlette-admin tortoise-orm
     ```
 
-## Minimal Example
+## Minimal example
 
 Tortoise connects to the database inside your application's `lifespan` context manager. Because admin views are typically instantiated at import time (before `Tortoise.init()` executes), you must resolve relations early.
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
 The `ModelView` accepts the Tortoise `Model` class directly and automatically derives the field list, forms, and filters from the model's schema.
 
-## Core Classes
+## Core classes
 
 ### `tortoise.Admin`
 
@@ -120,7 +120,7 @@ class PostView(ModelView):
     inlines = [CommentInline]
 ```
 
-## Handling Relations
+## Handling relations
 
 The integration maps database relations to admin fields based on the field type. You must register a `ModelView` for every related model so relation fields can successfully resolve their foreign views.
 
@@ -133,9 +133,9 @@ The integration maps database relations to admin fields based on the field type.
 **Filtering and Sorting on Relations:**
 To-one relations offer "Is null" and "Is not null" filters targeting the raw key column. To expose a relation in the filter builder, add the relation name to `searchable_fields`. To enable sorting by the raw key column, add the relation name to `sortable_fields`.
 
-## Search and Filtering
+## Search and filtering
 
-### Filter Registry
+### Filter registry
 
 Every field type receives a default set of filters from the `TortoiseFilterRegistry`, implemented using Tortoise `Q` expressions:
 
@@ -143,15 +143,15 @@ Every field type receives a default set of filters from the `TortoiseFilterRegis
 * **Enums:** Raw filter values are coerced back to enum members before querying for both `CharEnumField` and `IntEnumField` columns.
 * **Time columns:** `TimeField` columns offer only null checks. This limitation exists because time-typed parameters cannot be bound portably across all database backends.
 
-### Full-Text Search
+### Full-text search
 
 The list page's search box builds a case-insensitive `contains` match (`OR`-combined `Q` expressions) across all searchable string-like fields. You can customize this behavior by overriding the `get_search_query()` method on your view.
 
-## Full Working Example
+## Full working example
 
 This section provides a complete, runnable Tortoise ORM integration with `starlette-admin`.
 
-### 1. Install Dependencies
+### 1. Install dependencies
 
 === "pip"
 
@@ -167,7 +167,7 @@ This section provides a complete, runnable Tortoise ORM integration with `starle
 
 The `fastapi[standard]` package includes the FastAPI CLI, allowing you to start the development server by running `fastapi dev`.
 
-### 2. Create the Application
+### 2. Create the application
 
 Save the following code in a file named `main.py`.
 
@@ -251,7 +251,7 @@ admin.mount_to(app)
 
 Because `created_at` uses `auto_now_add`, the admin renders it read-only automatically. No `exclude_fields_from_create` or `exclude_fields_from_edit` configuration is needed.
 
-### 3. Run the Server
+### 3. Run the server
 
 Start the FastAPI development server:
 
@@ -271,7 +271,7 @@ Navigate to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) in your b
 
 > **Advanced Example:** [`examples/17-tortoise`](https://github.com/jowilf/starlette-admin/tree/main/examples/17-tortoise) in the repository contains a fully featured example that includes relations, inline views, enums, and JSON fields backed by SQLite.
 
-## What to Read Next
+## What to read next
 
 * **[Views](../user-guide/views.md):** Explore `BaseModelView` configuration options independent of the backend.
 * **[Filters](../user-guide/filters.md):** Learn about the filter builder and how ORM-specific filters plug in.
