@@ -291,6 +291,23 @@ class BaseAdmin:
             _("Model with identity %(identity)s not found") % {"identity": identity},
         )
 
+    def _get_default_values(self, model: BaseModelView) -> Dict[str, Any]:
+        """Extract default values from the model's column definitions.
+
+        For SQLAlchemy models, reads ``column.default.arg`` for each column
+        that has a Python-side default.  For other model types, returns an
+        empty dict.
+        """
+        defaults: Dict[str, Any] = {}
+        # Check if the underlying model has a __table__ attribute (SQLAlchemy)
+        sa_model = getattr(model, "model", None)
+        if sa_model is None or not hasattr(sa_model, "__table__"):
+            return defaults
+        for col in sa_model.__table__.columns:
+            if col.default is not None and hasattr(col.default, "arg"):
+                defaults[col.key] = col.default.arg
+        return defaults
+
     def _render_custom_view(
         self, custom_view: CustomView
     ) -> Callable[[Request], Awaitable[Response]]:
@@ -448,10 +465,17 @@ class BaseAdmin:
         request.state.action = RequestAction.CREATE
         identity = request.path_params.get("identity")
         model = self._find_model_from_identity(identity)
-        config = {"title": model.title(request), "model": model}
         if not model.is_accessible(request) or not model.can_create(request):
             raise HTTPException(HTTP_403_FORBIDDEN)
+        config: Dict[str, Any] = {
+            "title": model.title(request),
+            "model": model,
+        }
         if request.method == "GET":
+            # Pre-fill form fields with SQLAlchemy column defaults
+            default_values = self._get_default_values(model)
+            if default_values:
+                config["obj"] = default_values
             return self.templates.TemplateResponse(
                 request=request,
                 name=model.create_template,
