@@ -104,7 +104,12 @@ class BaseSQLAModelConverter(BaseModelConverter):
                     if attr.direction.name == "MANYTOONE" or (
                         attr.direction.name == "ONETOMANY" and not attr.uselist
                     ):
-                        converted_fields.append(HasOne(attr.key, identity=identity))
+                        # Determine required from the local foreign key column(s).
+                        # If all local columns are NOT NULL, the relationship is required.
+                        required = all(not col.nullable for col in attr.local_columns)
+                        converted_fields.append(
+                            HasOne(attr.key, identity=identity, required=required)
+                        )
                     else:
                         converted_fields.append(
                             HasMany(
