@@ -62,6 +62,10 @@ class BaseField:
         exclude_from_detail: Control field visibility in detail page
         exclude_from_create: Control field visibility in create page
         exclude_from_edit: Control field visibility in edit page
+        hidden_from_list: Hide field from list page by default. The column is still
+            available via the Column Visibility button when column_visibility is
+            enabled (the default). Unlike exclude_from_list, the column remains
+            in the DataTable and users can toggle it back on.
         searchable: Indicate if the fields is searchable
         orderable: Indicate if the fields is orderable
         render_function_key: Render function key inside the global `render` variable in javascript
@@ -82,6 +86,7 @@ class BaseField:
     exclude_from_detail: Optional[bool] = False
     exclude_from_create: Optional[bool] = False
     exclude_from_edit: Optional[bool] = False
+    hidden_from_list: Optional[bool] = False
     searchable: Optional[bool] = True
     orderable: Optional[bool] = True
     render_function_key: str = "text"
