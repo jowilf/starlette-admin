@@ -3,6 +3,7 @@ from json import JSONDecodeError
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Type, Union
 
 from jinja2 import (
+    BaseLoader,
     ChoiceLoader,
     Environment,
     FileSystemLoader,
@@ -64,6 +65,8 @@ class BaseAdmin:
         i18n_config: Optional[I18nConfig] = None,
         timezone_config: Optional[TimezoneConfig] = None,
         favicon_url: Optional[str] = None,
+        additional_template_loaders: Optional[Sequence[BaseLoader]] = None,
+        additional_static_packages: Optional[Sequence[str]] = None,
     ):
         """
         Parameters:
@@ -80,6 +83,12 @@ class BaseAdmin:
             i18n_config: i18n configuration
             timezone_config: timezone configuration
             favicon_url: URL of favicon.
+            additional_template_loaders: Additional Jinja2 template loaders to
+                register. Useful for custom fields or third-party packages that
+                ship their own templates.
+            additional_static_packages: Additional Python package names to serve
+                static files from. Useful for custom fields or third-party
+                packages that ship their own static assets.
         """
         self.title = title
         self.base_url = base_url
@@ -102,6 +111,12 @@ class BaseAdmin:
         self.debug = debug
         self.i18n_config = i18n_config
         self.timezone_config = timezone_config
+        self._additional_template_loaders: Sequence[BaseLoader] = (
+            list(additional_template_loaders) if additional_template_loaders else []
+        )
+        self._additional_static_packages: Sequence[str] = (
+            list(additional_static_packages) if additional_static_packages else []
+        )
         self._setup_templates()
         self.init_locale()
         self.init_auth()
@@ -149,7 +164,8 @@ class BaseAdmin:
             self.auth_provider.setup_admin(self)
 
     def init_routes(self) -> None:
-        statics = StaticFiles(directory=self.statics_dir, packages=["starlette_admin"])
+        static_packages = ["starlette_admin", *self._additional_static_packages]
+        statics = StaticFiles(directory=self.statics_dir, packages=static_packages)
         self.routes.extend(
             [
                 Mount("/statics", app=statics, name="statics"),
@@ -207,20 +223,18 @@ class BaseAdmin:
             self._views.append(self.index_view)
 
     def _setup_templates(self) -> None:
-        env = Environment(
-            loader=ChoiceLoader(
-                [
-                    FileSystemLoader(self.templates_dir),
-                    PackageLoader("starlette_admin", "templates"),
-                    PrefixLoader(
-                        {
-                            "@starlette-admin": PackageLoader(
-                                "starlette_admin", "templates"
-                            ),
-                        }
-                    ),
-                ]
+        loaders: List[BaseLoader] = [
+            FileSystemLoader(self.templates_dir),
+            PackageLoader("starlette_admin", "templates"),
+            PrefixLoader(
+                {
+                    "@starlette-admin": PackageLoader("starlette_admin", "templates"),
+                }
             ),
+            *self._additional_template_loaders,
+        ]
+        env = Environment(
+            loader=ChoiceLoader(loaders),
             extensions=["jinja2.ext.i18n"],
             autoescape=True,
         )
