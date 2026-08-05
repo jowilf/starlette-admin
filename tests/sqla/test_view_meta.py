@@ -148,7 +148,7 @@ def test_user_fields_conversion():
     assert UserView(User).fields == [
         StringField("name", required=True, maxlength=100, help_text="user fullname"),
         TextAreaField("bio"),
-        HasOne("document", identity="document", orderable=False, searchable=False),
+        HasOne("document", identity="document", orderable=False),
     ]
 
 
@@ -161,7 +161,7 @@ def test_attachment_fields_conversion():
         ImageField("images", multiple=True, orderable=False, searchable=False),
         FileField("file", orderable=False, searchable=False),
         FileField("files", multiple=True, orderable=False, searchable=False),
-        HasOne("document", identity="document", orderable=False, searchable=False),
+        HasOne("document", identity="document", orderable=False),
     ]
 
 
@@ -184,10 +184,8 @@ def test_document_fields_conversion():
         JSONField("json_field"),
         ListField(StringField("tags")),
         ListField(IntegerField("ints")),
-        HasOne("user", identity="user", orderable=False, searchable=False),
-        HasMany(
-            "attachments", identity="attachment", orderable=False, searchable=False
-        ),
+        HasOne("user", identity="user", orderable=False),
+        HasMany("attachments", identity="attachment", orderable=False),
     ]
 
 
