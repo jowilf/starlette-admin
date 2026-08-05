@@ -106,51 +106,45 @@ $(function () {
 
   buttons = [];
   export_buttons = [];
+
+  // Helper to get current query state for export
+  function getExportQueryState() {
+    return {
+      search: (typeof table !== "undefined" && table.search) ? table.search() : "",
+      where: (typeof where !== "undefined") ? where : null,
+      orderBy: (typeof order !== "undefined") ? order : [],
+    };
+  }
+
   if (model.exportTypes.includes("csv"))
     export_buttons.push({
-      extend: "csv",
       text: function (dt) {
         return `<i class="fa-solid fa-file-csv"></i> ${dt.i18n("buttons.csv")}`;
       },
-      exportOptions: {
-        columns: model.exportColumns,
-        orthogonal: "export-csv",
-      },
+      action: function () { ExportAll.exportAll("csv", model, getExportQueryState()); },
     });
   if (model.exportTypes.includes("excel"))
     export_buttons.push({
-      extend: "excel",
       text: function (dt) {
         return `<i class="fa-solid fa-file-excel"></i> ${dt.i18n(
           "buttons.excel"
         )}`;
       },
-      exportOptions: {
-        columns: model.exportColumns,
-        orthogonal: "export-excel",
-      },
+      action: function () { ExportAll.exportAll("excel", model, getExportQueryState()); },
     });
   if (model.exportTypes.includes("pdf"))
     export_buttons.push({
-      extend: "pdf",
       text: function (dt) {
         return `<i class="fa-solid fa-file-pdf"></i> ${dt.i18n("buttons.pdf")}`;
       },
-      exportOptions: {
-        columns: model.exportColumns,
-        orthogonal: "export-pdf",
-      },
+      action: function () { ExportAll.exportAll("pdf", model, getExportQueryState()); },
     });
   if (model.exportTypes.includes("print"))
     export_buttons.push({
-      extend: "print",
       text: function (dt) {
         return `<i class="fa-solid fa-print"></i> ${dt.i18n("buttons.print")}`;
       },
-      exportOptions: {
-        columns: model.exportColumns,
-        orthogonal: "export-print",
-      },
+      action: function () { ExportAll.exportAll("print", model, getExportQueryState()); },
     });
   if (export_buttons.length > 0)
     buttons.push({
