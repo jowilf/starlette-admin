@@ -17,7 +17,7 @@
 </a>
 </p>
 
-![Admin panel](./docs/assets/images/list-preview.png)
+![Admin panel](https://raw.githubusercontent.com/jowilf/starlette-admin/refs/heads/main/docs/assets/images/list-preview.png)
 
 ## Installation
 ```sh
