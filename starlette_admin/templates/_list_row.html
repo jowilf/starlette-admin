@@ -1,0 +1,53 @@
+{# One list-table row. Shared by list.html's row loop and the inline-edit
+   row endpoint (`BaseAdmin._render_inline_edit_row`), so a row swapped in
+   after an inline save matches the surrounding table exactly.
+   Context: `view`, `fields` (visible columns), `row` (serialized object),
+   `row_actions` (pk -> allowed actions), `_actions` (allowed batch actions,
+   used to decide whether the selection checkbox is shown). #}
+{% set inline_edit_enabled = view.inline_editable_fields and view.can_edit(request) %}
+{% set row_pk = row[view.pk_attr] %}
+{% set row_clickable = view.row_click_navigate and view.can_view_detail(request) %}
+<tr data-sa-pk="{{ row_pk }}"
+    {% if row_clickable %}data-sa-href="{{ detail_url(request, view.key, row_pk) }}" class="row-clickable" tabindex="0"{% endif %}>
+    {% if _actions %}
+        <td class="checkbox-cell" data-sa-hook="checkbox-cell">
+            <input class="form-check-input row-checkbox"
+                   type="checkbox"
+                   data-sa-hook="row-checkbox"
+                   value="{{ row_pk }}"
+                   aria-label="{{ _('Select row') }}" />
+        </td>
+    {% endif %}
+    {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}
+        <td>
+            {% with pk=row_pk, _actions=row_actions.get(row_pk, []), display_type=view.row_actions_display_type %}
+                {% include "row-actions.html" %}
+            {% endwith %}
+        </td>
+    {% endif %}
+    {% for field in fields %}
+        {% set editable = inline_edit_enabled and field.name in view.inline_editable_fields %}
+        {# The dashed inline-edit underline is opt-in: templates mark the
+           element to underline with the `inline-edit-value` class, which the
+           CSS activates only inside `td[data-sa-inline-editable]`. #}
+        <td data-column="{{ field.name }}"
+            {% if editable %}data-sa-inline-editable="1" data-sa-field="{{ field.name }}"{% endif %}>
+            {% with data=row[field.name] %}
+                {% if data == None %}
+                    {% include field.null_template %}
+                {% elif (data | is_iter) and (data | length) == 0 %}
+                    {% include field.empty_template %}
+                {% else %}
+                    {% include field.list_template %}
+                {% endif %}
+            {% endwith %}
+        </td>
+    {% endfor %}
+    {% if view.row_actions_position.value == "AFTER_COLUMNS" %}
+        <td>
+            {% with pk=row_pk, _actions=row_actions.get(row_pk, []), display_type=view.row_actions_display_type %}
+                {% include "row-actions.html" %}
+            {% endwith %}
+        </td>
+    {% endif %}
+</tr>

@@ -12,8 +12,12 @@ htmlcov
 coverage.xml
 site
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 .cache
 __pycache__/
 .pytest_cache/
-.examples/
+upload*/
+CLAUDE.md
+.DS_Store

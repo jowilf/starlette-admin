@@ -1,0 +1,13 @@
+<div class="{% if error %}{{ cls(field.error_class) }}{% endif %}">
+    <label class="form-check form-switch">
+        <input id="{{ field.id }}"
+               name="{{ field.id }}"
+               class="field-boolean form-check-input"
+               type="checkbox"
+               {{ 'checked' if data else '' }}
+               {% if error %}aria-invalid="true" aria-describedby="{{ field.id }}-error"{% endif %}
+               {{ field.input_params() | safe }} />
+        {% if field.help_text %}<span class="form-check-label">{{ field.help_text }}</span>{% endif %}
+    </label>
+</div>
+{% include "fields/form/_error.html" %}

@@ -1,0 +1,11 @@
+{# Inline-edit popover fragment: the field's edit-form control, populated
+   with the current (or submitted) value, plus any validation messages keyed
+   to other fields, each prefixed with that field's label. Rendered by
+   `BaseAdmin._render_inline_edit_field` for the popover GET and for the
+   422/500 re-render after a failed save. #}
+{% include field.form_template %}
+{% if other_errors %}
+    <div class="inline-edit-cross-errors" role="alert">
+        {% for label, message in other_errors %}<div>{{ label }}: {{ message }}</div>{% endfor %}
+    </div>
+{% endif %}

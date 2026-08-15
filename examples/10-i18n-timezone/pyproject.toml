@@ -1,0 +1,14 @@
+[project]
+name = "10-i18n-timezone"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "sqlalchemy>=2",
+    "starlette-admin[i18n]",
+    "uvicorn[standard]",
+]
+
+[tool.uv.sources]
+starlette-admin = { workspace = true, editable = true }

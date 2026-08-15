@@ -1,0 +1,8 @@
+<div class="d-flex">
+    {% for v in (data if field.multiple else [data]) -%}
+        <div class="p-1">
+            <span class="avatar avatar-sm"
+                  style="background-image: url('{{ v.thumbnail_url or v.url }}')"></span>
+        </div>
+    {%- endfor %}
+</div>

@@ -1,0 +1,38 @@
+{% set inline_formset_id = inline.key ~ "-inline-formset" %}
+<div class="inline-formset card rounded-0 mt-3"
+     data-inline-prefix="{{ inline._prefix() }}"
+     data-inline-extra="{{ inline.extra }}">
+    <div class="card-header bg-primary rounded-0{% if inline.collapsible %} sa-panel-toggle{% endif %}"
+         {% if inline.collapsible %} data-bs-toggle="collapse" data-bs-target="#{{ inline_formset_id }}" role="button" tabindex="0" aria-expanded="{{ 'false' if inline.collapsed else 'true' }}" aria-controls="{{ inline_formset_id }}" {% endif %}>
+        <h3 class="card-title text-white">{{ inline.menu_label or inline.display_name }}</h3>
+        {% if inline.collapsible %}
+            <div class="card-actions">
+                <i class="{{ icon('panel.collapse_toggle') }} sa-panel-toggle-icon text-white"></i>
+            </div>
+        {% endif %}
+    </div>
+    <div class="{% if inline.collapsible %}collapse{% endif %} {% if not inline.collapsed %}show{% endif %}"
+         {% if inline.collapsible %}id="{{ inline_formset_id }}"{% endif %}>
+        <div class="card-body">
+            <div class="inline-template d-none">
+                {% filter forceescape %}
+                    {{ inline.set_row_field_ids("__prefix__") }}
+                    {% with row={'index': '__prefix__', 'pk': none, 'obj': none, 'errors': {}, 'delete': false, 'is_extra': true} %}
+                        {% include "inline_row.html" %}
+                    {% endwith %}
+                {% endfilter %}
+            </div>
+            <div class="inline-rows">
+                {% for row in rows %}
+                    {{ inline.set_row_field_ids(row.index) }}
+                    {% include "inline_row.html" %}
+                {% endfor %}
+            </div>
+            <button type="button"
+                    class="inline-add-row {{ cls('inline.add_row_button') }}">
+                <i class="{{ icon('inline.add_row') }} me-1"></i>
+                {{ _("Add %(name)s", name=(inline.display_name or inline.menu_label) ) }}
+            </button>
+        </div>
+    </div>
+</div>

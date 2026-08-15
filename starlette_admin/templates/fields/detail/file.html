@@ -1,0 +1,8 @@
+<div class="btn-list">
+    {% for file in (data if field.multiple else [data]) %}
+        <a class="btn-link" href="{{ file.url | safe_url }}" target="_blank">
+            <i class="{{ file.content_type | file_icon }}"></i> {{ file.filename }}
+        </a>
+        {%- if not loop.last %}-{% endif %}
+    {% endfor %}
+</div>

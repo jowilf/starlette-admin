@@ -1,0 +1,91 @@
+---
+title: Installation
+description: Learn how to install starlette-admin and its optional dependencies to build an admin interface for your FastAPI or Starlette application.
+---
+
+# Installation
+
+Install **starlette-admin** using your preferred package manager.
+
+=== "pip"
+
+    ```bash
+    pip install starlette-admin
+    ```
+
+=== "uv"
+
+    ```bash
+    uv add starlette-admin
+    ```
+
+starlette-admin requires **Python 3.11 or later**.
+
+The core package is backend-agnostic. To build an admin interface for your application, install the appropriate integration for your data layer (such as SQLAlchemy, Beanie, MongoEngine, or Tortoise ORM) alongside the base package.
+
+## Included dependencies
+
+The base installation includes everything required to run the admin interface. No optional dependencies are installed by default.
+
+| Dependency | Purpose |
+| --- | --- |
+| [Starlette](https://www.starlette.io/) | Hosts the admin application. |
+| [Jinja2](https://jinja.palletsprojects.com/) | Provides the template engine for list, detail, and form pages. |
+| [python-multipart](https://github.com/Kludex/python-multipart) | Parses form submissions and file uploads. |
+| [itsdangerous](https://itsdangerous.palletsprojects.com/) | Signs cookies for CSRF tokens and flash messages. |
+
+Applications built with FastAPI require no additional integration because FastAPI is built on Starlette. Mount the admin interface to your existing FastAPI application.
+
+## Optional dependencies
+
+starlette-admin provides the following optional dependencies:
+
+- `pdf`: Adds PDF export support ([reportlab](https://www.reportlab.com/)).
+- `i18n`: Adds internationalization support ([Babel](https://babel.pocoo.org/)).
+- `tinymce`: Adds rich text editor support. Installs [nh3](https://nh3.readthedocs.io/), which sanitizes HTML submitted by `TinyMCEEditorField`.
+- `s3`: Adds S3-compatible object storage support. Installs [aiobotocore](https://aiobotocore.readthedocs.io/) for asynchronous uploads to AWS S3 and compatible object storage services, such as MinIO.
+
+Install one or more optional dependencies together with starlette-admin:
+
+=== "pip"
+
+    ```bash
+    # Install the `pdf` extra.
+    pip install "starlette-admin[pdf]"
+
+    # Install multiple extras.
+    pip install "starlette-admin[i18n,pdf,s3]"
+    ```
+
+=== "uv"
+
+    ```bash
+    # Install the `pdf` extra.
+    uv add "starlette-admin[pdf]"
+
+    # Install multiple extras.
+    uv add "starlette-admin[i18n,pdf,s3]"
+    ```
+
+## Install from source
+
+To use the latest unreleased changes, install the package directly from the GitHub repository.
+
+=== "pip"
+
+    ```bash
+    pip install "git+https://github.com/jowilf/starlette-admin.git"
+    ```
+
+=== "uv"
+
+    ```bash
+    uv add "git+https://github.com/jowilf/starlette-admin.git"
+    ```
+
+---
+
+## Next steps
+
+- **[Quickstart](quickstart.md)**: Build your first admin interface with real data.
+- **[Concepts](concepts.md)**: Learn the core architecture and design principles behind starlette-admin.

@@ -1,12 +1,7 @@
-import functools
+import types as _types
+from collections.abc import Sequence
 from typing import (
     Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Type,
     Union,
     get_args,
     get_origin,
@@ -15,49 +10,43 @@ from typing import (
 from beanie import Document, Link
 from beanie.odm.enums import SortDirection
 from beanie.odm.fields import ExpressionField
-from beanie.odm.operators.find import BaseFindOperator
 from beanie.odm.operators.find.logical import LogicalOperatorForListOfExpressions
-from beanie.operators import GT, GTE, LT, LTE, NE, And, Eq, In, Not, NotIn, Or, RegEx
 
 
 class BeanieLogicalOperator(LogicalOperatorForListOfExpressions):
+    """Placeholder Beanie find operator that resolves to an empty query.
+
+    `ModelView.build_full_text_search_query` returns an instance of this
+    class when a document has no searchable string fields, so callers
+    still get a valid (no-op) operator to pass to `find()`. It must be
+    constructed with no expressions; `query` raises otherwise.
+    """
 
     @property
-    def query(self) -> Dict[str, Any]:
+    def query(self) -> dict[str, Any]:
         if not self.expressions:
             return {}
         raise ValueError(
-            "BeanieLogicalOperator should not be used directly. Use resolve_deep_query instead."
+            "BeanieLogicalOperator only supports an empty query: it must be "
+            "constructed with no expressions."
         )
 
 
-OPERATORS: Dict[str, Callable[[str, Any], BaseFindOperator]] = {
-    "eq": Eq,
-    "neq": NE,
-    "lt": LT,
-    "gt": GT,
-    "le": LTE,
-    "ge": GTE,
-    "in": In,
-    "not_in": NotIn,
-    "startswith": lambda f, v: RegEx(f, f"^{v}", "i"),
-    "not_startswith": lambda f, v: Not(RegEx(f, f"^{v}", "i")),
-    "endswith": lambda f, v: RegEx(f, f"{v}$", "i"),
-    "not_endswith": lambda f, v: Not(RegEx(f, f"{v}$", "i")),
-    "contains": lambda f, v: RegEx(f, v, "i"),
-    "not_contains": lambda f, v: Not(RegEx(f, v, "i")),
-    "is_false": lambda f, v: Eq(f, False),
-    "is_true": lambda f, v: Eq(f, True),
-    "is_null": lambda f, v: Eq(f, None),
-    "is_not_null": lambda f, v: NE(f, None),
-    "between": lambda f, v: And(GTE(f, v[0]), LTE(f, v[1])),
-    "not_between": lambda f, v: Or(LT(f, v[0]), GT(f, v[1])),
-}
+def isvalid_field(document: type[Document], field: str) -> bool:
+    """Check whether `field` names an existing attribute on `document`.
 
+    Nested attributes are addressed with dot notation (e.g., `"child.age"`);
+    each dot-separated segment is validated against the corresponding
+    model's fields.
 
-def isvalid_field(document: Type[Document], field: str) -> bool:
-    """
-    Check if field is valid field for document. nested field is separate with '.'
+    Args:
+        document: The Beanie document (or nested pydantic model) type to
+            check against.
+        field: The field path to validate, possibly dotted.
+
+    Returns:
+        `True` if `field` resolves to an existing attribute, `False`
+        otherwise, including when any intermediate segment is missing.
     """
     try:
         split_fields = field.split(".", maxsplit=1)
@@ -80,62 +69,93 @@ def isvalid_field(document: Type[Document], field: str) -> bool:
 
 
 def resolve_expression_field_name(field: ExpressionField) -> str:
+    """Return the admin-facing name for a Beanie `ExpressionField`.
+
+    MongoDB's `_id` key is exposed to starlette-admin as `id`; every other
+    expression field name passes through unchanged.
+    """
     field_str = str(field)
     return "id" if field_str == "_id" else field_str
 
 
-def normalize_field_list(field_list: List[Union[str, ExpressionField]]) -> List[str]:
-    converted_field_list = []
-    for field in field_list:
-        if isinstance(field, ExpressionField):
-            field_name = resolve_expression_field_name(field)
-        elif isinstance(field, str):
-            field_name = field
+def _normalize_field_name(field: str | ExpressionField) -> str:
+    """Resolve `field` to its admin-facing string name, if it's an `ExpressionField`."""
+    if isinstance(field, ExpressionField):
+        return resolve_expression_field_name(field)
+    return field
+
+
+def normalize_field_list(
+    field_list: Sequence[str | ExpressionField | tuple[str | ExpressionField, bool]],
+    is_default_sort_list: bool = False,
+) -> list:
+    """Normalize a list of field references to their admin-facing string names.
+
+    Each entry may be a `str`, an `ExpressionField`, or, only when
+    `is_default_sort_list` is `True`, a `(field, is_descending)` tuple as
+    used for `fields_default_sort`. `ExpressionField`s are resolved with
+    `resolve_expression_field_name`.
+
+    Raises:
+        ValueError: If a tuple entry is given while `is_default_sort_list`
+            is `False`, if a tuple entry isn't shaped
+            `(str | ExpressionField, bool)`, or if an entry is neither a
+            `str`, an `ExpressionField`, nor (when allowed) such a tuple.
+    """
+    result: list[Any] = []
+    for item in field_list:
+        if isinstance(item, (str, ExpressionField)):
+            result.append(_normalize_field_name(item))
+        elif isinstance(item, tuple) and is_default_sort_list:
+            if (
+                len(item) == 2
+                and isinstance(item[0], (str, ExpressionField))
+                and isinstance(item[1], bool)
+            ):
+                result.append((_normalize_field_name(item[0]), item[1]))
+            else:
+                raise ValueError(
+                    "Invalid argument, expected tuple[str | ExpressionField, bool]"
+                )
         else:
             raise ValueError(
-                f"Expected str or ExpressionField, got {type(field).__name__}"
+                f"Expected str or ExpressionField, got {type(item).__name__}"
             )
-
-        converted_field_list.append(field_name)
-    return converted_field_list
+    return result
 
 
-def is_link_type(field_type: Type) -> bool:
-    """Check if the field type is a Link or a list of Links.
-    This is used to determine if the field is a relation field.
-    If the field type is Optional[Link], return true
+def _is_union(tp: type) -> bool:
+    return get_origin(tp) is Union or isinstance(tp, _types.UnionType)
 
-    Args:
-        field_type (Type): The field type to check.
 
-    Returns:
-        bool: True if the field type is a Link or a list of Links, False otherwise.
+def is_link_type(field_type: type) -> bool:
+    """Return `True` if `field_type` is a Beanie `Link[T]` annotation.
+
+    Also matches a `Link[T]` wrapped in a `Union`/`Optional`, e.g.,
+    `Link[T] | None`.
     """
     if get_origin(field_type) is Link:
         return True
-    if get_origin(field_type) is Union:
+    if _is_union(field_type):
         field_args = get_args(field_type)
         if any(get_origin(arg) is Link for arg in field_args):
             return True
     return False
 
 
-def is_list_of_links_type(field_type: Type) -> bool:
-    """Check if the field type is a list of Links.
+def is_list_of_links_type(field_type: type) -> bool:
+    """Return `True` if `field_type` is `list[Link[T]]`.
 
-    Args:
-        field_type (Type): The field type to check.
-
-    Returns:
-        bool: True if the field type is a list of Links, False otherwise.
+    Also matches `list[Link[T]]` wrapped in a `Union`/`Optional`, e.g.,
+    `list[Link[T]] | None`.
     """
     if get_origin(field_type) is list:
         field_args = get_args(field_type)
         if len(field_args) == 1 and get_origin(field_args[0]) is Link:
             return True
 
-    # if is Optional[List[Link]], return true
-    if get_origin(field_type) is Union:
+    # Handle Optional[list[Link[...]]] and list[Link[...]] | None forms.
+    if _is_union(field_type):
         field_args = get_args(field_type)
         if any(
             get_origin(arg) is list and get_origin(get_args(arg)[0]) is Link
@@ -145,40 +165,22 @@ def is_list_of_links_type(field_type: Type) -> bool:
     return False
 
 
-def resolve_deep_query(
-    where: Dict[str, Any],
-    document: Type[Document],
-    latest_field: Optional[str] = None,
-) -> LogicalOperatorForListOfExpressions:
-    _all_queries = []
-    for key, _ in where.items():
-        if key in ["or", "and"]:
-            _arr = [(resolve_deep_query(q, document, latest_field)) for q in where[key]]
-            if len(_arr) > 0:
-                funcs = {
-                    "or": Or,
-                    "and": And,
-                }
-                _all_queries.append(functools.reduce(funcs[key], _arr))
-        elif key in OPERATORS:
-            _all_queries.append(OPERATORS[key](latest_field, where[key]))  # type: ignore
-        elif isvalid_field(document, key):
-            _all_queries.append(resolve_deep_query(where[key], document, key))
-    if _all_queries:
-        return functools.reduce(And, _all_queries)
-    return BeanieLogicalOperator()
+def build_order_clauses(
+    sorts: Sequence[tuple[str, str]],
+) -> list[tuple[str, SortDirection]]:
+    """Convert `(field, direction)` sort pairs into pymongo sort clauses.
 
-
-def build_order_clauses(order_list: List[str]) -> List[Tuple[str, SortDirection]]:
-    clauses: List[Tuple[str, SortDirection]] = []
-    for value in order_list:
-        key, order = value.strip().split(maxsplit=1)
-        if key == "id":
-            key = "_id"  # this is a beanie quirk
+    Maps the admin's `id` field to MongoDB's `_id` key and the direction
+    string `"desc"` (case-insensitive) to `SortDirection.DESCENDING`; any
+    other direction value is treated as ascending.
+    """
+    clauses: list[tuple[str, SortDirection]] = []
+    for key, order in sorts:
+        field_key = "_id" if key == "id" else key
         direction = (
             SortDirection.DESCENDING
             if order.lower() == "desc"
             else SortDirection.ASCENDING
         )
-        clauses.append((key, direction))
+        clauses.append((field_key, direction))
     return clauses

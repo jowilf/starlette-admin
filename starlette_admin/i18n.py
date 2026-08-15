@@ -1,14 +1,17 @@
 import datetime
 import pathlib
+import zoneinfo
 from contextvars import ContextVar
 from dataclasses import dataclass
-from functools import cache
-from typing import Any, Dict, List, Optional, Tuple
+from functools import lru_cache
+from typing import Any
 
-import zoneinfo
 from starlette.requests import HTTPConnection
 from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette_admin.logging import get_logger
 from starlette_admin.utils.countries import countries_codes
+
+_log = get_logger(__name__)
 
 DEFAULT_LOCALE = "en"
 DEFAULT_TIMEZONE = "UTC"
@@ -35,7 +38,7 @@ _timezone_conversion_enabled: ContextVar[bool] = ContextVar(
 )
 
 
-@cache
+@lru_cache(maxsize=512)
 def _validate_timezone(timezone: str, default: str = DEFAULT_TIMEZONE) -> str:
     try:
         zoneinfo.ZoneInfo(timezone)
@@ -73,7 +76,7 @@ def get_database_tzinfo() -> datetime.tzinfo:
 
 
 def is_timezone_conversion_enabled() -> bool:
-    """Check if timezone conversion is enabled"""
+    """Check if timezone conversion is enabled."""
     return _timezone_conversion_enabled.get()
 
 
@@ -89,14 +92,14 @@ try:
         if not show_offset:
             return tz_name
 
-        # get UTC offset
+        # Get UTC offset.
         now = datetime.datetime.now(tz)
         offset = now.strftime("%z")
         formatted_offset = f"UTC{offset[:3]}:{offset[3:]}"
 
         return f"{tz_name} ({formatted_offset})"
 
-    translations: Dict[str, NullTranslations] = {
+    translations: dict[str, NullTranslations] = {
         locale: Translations.load(
             dirname=pathlib.Path(__file__).parent.joinpath("translations/"),
             locales=[locale],
@@ -112,6 +115,37 @@ try:
         "current_translation", default=translations[DEFAULT_LOCALE]
     )
 
+    def register_translation_catalog(package: str, domain: str = "admin") -> None:
+        """Merge the compiled catalogs shipped under ``<package>/translations``
+        into the active catalogs.
+
+        For each supported locale whose MO file is present, the catalog is
+        loaded and merged into ``translations[locale]``; later calls win for
+        shared message ids. Used at ``Admin`` construction to fold plugin and
+        theme catalogs on top of the core ones. No-op when ``package`` ships no
+        ``translations/`` folder.
+        """
+        import importlib.resources
+
+        try:
+            folder = importlib.resources.files(package) / "translations"
+        except TypeError:
+            # `package` is a module, not a package (no translations/ to ship).
+            return
+        if not folder.is_dir():
+            return
+        for locale in SUPPORTED_LOCALES:
+            mo = folder / locale / "LC_MESSAGES" / f"{domain}.mo"
+            if not mo.is_file():
+                continue
+            with mo.open("rb") as fp:
+                extra = Translations(fp=fp, domain=domain)
+            target = translations[locale]
+            if isinstance(target, Translations):
+                target.merge(extra)
+            elif isinstance(extra, Translations):
+                translations[locale] = extra
+
     def set_locale(locale: str) -> None:
         _current_locale.set(locale if locale in translations else DEFAULT_LOCALE)
         _current_translation.set(translations[get_locale()])
@@ -126,38 +160,46 @@ try:
         return _current_translation.get().ngettext(msgid1, msgid2, n)
 
     def lazy_gettext(message: str) -> str:
-        return LazyProxy(gettext, message)  # type: ignore[return-value]
+        # Returns a `LazyProxy`, which behaves like a `str` but defers
+        # translation until the value is used, so the locale in effect at
+        # render time is applied rather than the one active at call time.
+        return LazyProxy(  # ty: ignore[invalid-return-type]
+            gettext, message, enable_cache=False
+        )
 
     def format_datetime(
         datetime: datetime.datetime,
-        format: Optional[str] = None,
+        format: str | None = None,
         tzinfo: Any = None,
     ) -> str:
         return dates.format_datetime(datetime, format or "medium", tzinfo, get_locale())
 
-    def format_date(date: datetime.date, format: Optional[str] = None) -> str:
+    def format_date(date: datetime.date, format: str | None = None) -> str:
         return dates.format_date(date, format or "medium", get_locale())
 
     def format_time(
         time: datetime.time,
-        format: Optional[str] = None,
+        format: str | None = None,
         tzinfo: Any = None,
     ) -> str:
         return dates.format_time(time, format or "medium", tzinfo, get_locale())
 
-    def get_countries_list() -> List[Tuple[str, str]]:
+    def get_countries_list() -> list[tuple[str, str]]:
         locale = Locale.parse(get_locale())
         return [(x, locale.territories[x]) for x in countries_codes]
 
-    def get_currencies_list() -> List[Tuple[str, str]]:
+    def get_currencies_list() -> list[tuple[str, str]]:
         locale = Locale.parse(get_locale())
         return [(str(x), f"{x} - {locale.currencies[x]}") for x in locale.currencies]
 
     def get_locale_display_name(locale: str) -> str:
-        return Locale(locale).display_name.capitalize()
+        return (Locale(locale).display_name or locale).capitalize()
 
 except ImportError:
-    # Provide i18n support even if babel is not installed
+    # Provide i18n support even if Babel is not installed.
+
+    def register_translation_catalog(package: str, domain: str = "admin") -> None:
+        return None
 
     def set_locale(locale: str) -> None:
         pass
@@ -176,7 +218,7 @@ except ImportError:
 
     def format_datetime(
         datetime: datetime.datetime,
-        format: Optional[str] = None,
+        format: str | None = None,
         tzinfo: Any = None,
     ) -> str:
         if tzinfo is not None:
@@ -184,18 +226,18 @@ except ImportError:
 
         return datetime.strftime(format or "%B %d, %Y %H:%M:%S")
 
-    def format_date(date: datetime.date, format: Optional[str] = None) -> str:
+    def format_date(date: datetime.date, format: str | None = None) -> str:
         return date.strftime(format or "%B %d, %Y")
 
     def format_time(
-        time: datetime.time, format: Optional[str] = None, tzinfo: Any = None
+        time: datetime.time, format: str | None = None, tzinfo: Any = None
     ) -> str:
         return time.strftime(format or "%H:%M:%S")
 
-    def get_countries_list() -> List[Tuple[str, str]]:
+    def get_countries_list() -> list[tuple[str, str]]:
         raise NotImplementedError()
 
-    def get_currencies_list() -> List[Tuple[str, str]]:
+    def get_currencies_list() -> list[tuple[str, str]]:
         raise NotImplementedError()
 
     def get_locale_display_name(locale: str) -> str:
@@ -207,26 +249,22 @@ except ImportError:
 
 @dataclass
 class I18nConfig:
-    """
-    i18n config for your admin interface
-    """
+    """i18n configuration for your admin interface."""
 
     default_locale: str = DEFAULT_LOCALE
-    language_cookie_name: Optional[str] = "language"
-    language_header_name: Optional[str] = "Accept-Language"
-    language_switcher: Optional[List[str]] = None
+    language_cookie_name: str | None = "language"
+    language_header_name: str | None = "Accept-Language"
+    language_switcher: list[str] | None = None
 
 
 @dataclass
 class TimezoneConfig:
-    """
-    Timezone config for your admin interface
-    """
+    """Timezone configuration for your admin interface."""
 
     default_timezone: str = DEFAULT_TIMEZONE
-    timezone_cookie_name: Optional[str] = "timezone"
+    timezone_cookie_name: str | None = "timezone"
     database_timezone: str = DEFAULT_DB_TIMEZONE
-    timezone_switcher: Optional[List[str]] = None
+    timezone_switcher: list[str] | None = None
 
     # If True, the user's locale-based timezone will be used
     # instead of the `default_timezone` (when available).
@@ -240,22 +278,28 @@ class LocaleMiddleware:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         conn = HTTPConnection(scope)
-        locale: Optional[str] = self.i18n_config.default_locale
+        locale: str | None = self.i18n_config.default_locale
         if (
             self.i18n_config.language_cookie_name
             and conn.cookies.get(self.i18n_config.language_cookie_name, None)
             in SUPPORTED_LOCALES
         ):
-            """detect locale in cookies"""
+            """Detect locale in cookies."""
             locale = conn.cookies.get(self.i18n_config.language_cookie_name)
         elif (
             self.i18n_config.language_header_name
             and conn.headers.get(self.i18n_config.language_header_name, None)
             in SUPPORTED_LOCALES
         ):
-            """detect locale in headers"""
+            """Detect locale in headers."""
             locale = conn.headers.get(self.i18n_config.language_header_name)
         set_locale(locale or DEFAULT_LOCALE)
+        _log.debug(
+            "LocaleMiddleware: resolved locale=%r for %s %s",
+            get_locale(),
+            scope.get("method"),
+            scope.get("path"),
+        )
         await self.app(scope, receive, send)
 
 
@@ -278,5 +322,12 @@ class TimezoneMiddleware:
 
         set_timezone(timezone)
         set_database_timezone(self.timezone_config.database_timezone)
+        _log.debug(
+            "TimezoneMiddleware: resolved timezone=%r db_timezone=%r for %s %s",
+            timezone,
+            self.timezone_config.database_timezone,
+            scope.get("method"),
+            scope.get("path"),
+        )
 
         await self.app(scope, receive, send)

@@ -1,0 +1,121 @@
+{# Employee detail page: extends the stock detail.html but drops the generic
+   Attribute/Value table entirely. Overriding the `details_table` block swaps
+   the table for a hand-built profile body while everything around it (card
+   header with row actions, modals, scripts) is inherited untouched.
+
+   The card body is laid out as a profile: an identity row (avatar, job
+   title, badges) followed by a single datagrid that lists contact,
+   employment, and compensation details plus any free-form metadata pairs.
+
+   Three context sources are combined here:
+   - `obj`: the serialized object, whose values are already display-ready
+     (`obj.avatar.url` is refreshed by ImageField, `obj.employment_type` is
+     the badge dict built by EmploymentTypeBadgeField, `obj.salary` is
+     dollar-formatted by DollarField)
+   - `raw_obj`: the SQLAlchemy model instance, for plain attributes and
+     relationships (`raw_obj.department.name`)
+   - `view`: the EmployeeView instance, for Python helpers that the template
+     cannot compute itself (`view.tenure`, `view.initials`) #}
+{% extends "detail.html" %}
+{% block detail_title %}
+    <h3 class="card-title">
+        <span class="text-secondary">#{{ obj.id }}</span>
+    </h3>
+{% endblock detail_title %}
+{% block details_table %}
+    <div class="row align-items-center g-3">
+        <div class="col-auto">
+            <span class="avatar avatar-xl rounded"
+                  {% if obj.avatar %}style="background-image: url({{ obj.avatar.url }})"{% endif %}>
+                {% if not obj.avatar %}{{ view.initials(obj.name) }}{% endif %}
+            </span>
+        </div>
+        <div class="col">
+            <h2 class="mb-0">{{ obj.name }}</h2>
+            <div class="text-secondary">
+                {{ raw_obj.job_title }}
+                {% if raw_obj.department %}· {{ raw_obj.department.name }}{% endif %}
+            </div>
+            <div class="mt-2 d-flex align-items-center gap-2 flex-wrap">
+                {% with data=obj.employment_type %}
+                    {% include "fields/badge.html" %}
+                {% endwith %}
+                {% if not raw_obj.is_active %}<span class="badge bg-danger-lt">Inactive</span>{% endif %}
+                {% for skill in raw_obj.skills or [] %}<span class="badge">{{ skill }}</span>{% endfor %}
+            </div>
+        </div>
+    </div>
+    <hr class="my-3">
+    <div class="datagrid">
+        <div class="datagrid-item">
+            <div class="datagrid-title">Email</div>
+            <div class="datagrid-content">
+                <a href="mailto:{{ obj.email }}">{{ obj.email }}</a>
+            </div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Phone</div>
+            <div class="datagrid-content">
+                {% if raw_obj.phone %}
+                    {{ raw_obj.phone }}
+                {% else %}
+                    <span class="text-secondary">Not provided</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Date of birth</div>
+            <div class="datagrid-content">
+                {% if raw_obj.date_of_birth %}
+                    {{ raw_obj.date_of_birth.strftime("%b %d, %Y") }}
+                {% else %}
+                    <span class="text-secondary">Not provided</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Department</div>
+            <div class="datagrid-content">
+                {% if raw_obj.department %}
+                    <a href="{{ detail_url(request, 'department', raw_obj.department.id) }}">{{ raw_obj.department.name }}</a>
+                {% else %}
+                    <span class="text-secondary">Unassigned</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Hired</div>
+            <div class="datagrid-content">{{ raw_obj.hire_date.strftime("%b %d, %Y") }}</div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Tenure</div>
+            <div class="datagrid-content">{{ view.tenure(raw_obj) }}</div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Salary</div>
+            <div class="datagrid-content">
+                {% if obj.salary %}
+                    {{ obj.salary }}
+                {% else %}
+                    <span class="text-secondary">Not set</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="datagrid-item">
+            <div class="datagrid-title">Status</div>
+            <div class="datagrid-content">
+                {% if raw_obj.is_active %}
+                    <span class="badge bg-success-lt">Active</span>
+                {% else %}
+                    <span class="badge bg-danger-lt">Inactive</span>
+                {% endif %}
+            </div>
+        </div>
+        {% for entry in raw_obj.metadata_ or [] %}
+            <div class="datagrid-item">
+                <div class="datagrid-title">{{ entry.property }}</div>
+                <div class="datagrid-content">{{ entry.value }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock details_table %}

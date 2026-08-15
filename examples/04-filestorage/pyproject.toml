@@ -1,0 +1,15 @@
+[project]
+name = "04-filestorage"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "sqlalchemy>=2",
+    "starlette-admin",
+    "uvicorn[standard]",
+    "filetype>=1.2",
+]
+
+[tool.uv.sources]
+starlette-admin = { workspace = true, editable = true }

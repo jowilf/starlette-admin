@@ -1,0 +1,4 @@
+<div>
+    <p class="form-control-plaintext">{{ data if data is not none else '' }}</p>
+    {% if field.help_text %}<small class="form-hint">{{ field.help_text }}</small>{% endif %}
+</div>

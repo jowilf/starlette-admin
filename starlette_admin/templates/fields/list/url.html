@@ -1,0 +1,20 @@
+{% from "fields/list/_truncated.html" import truncated %}
+{% from "fields/_copy_button.html" import copy_button %}
+{% if field.copy_to_clipboard %}
+    <span class="d-inline-flex align-items-center gap-2">
+        {% call truncated() -%}
+            {% for v in (data if field.multiple else [data]) -%}
+                <a href="{{ v | escape }}" target="_blank">{{ v | escape }}</a>
+                {% if not loop.last %},{% endif %}
+            {%- endfor %}
+        {%- endcall %}
+        {{ copy_button((data | join(', ') ) if field.multiple else data) }}
+    </span>
+{% else %}
+    {% call truncated() -%}
+        {% for v in (data if field.multiple else [data]) -%}
+            <a href="{{ v | escape }}" target="_blank">{{ v | escape }}</a>
+            {% if not loop.last %},{% endif %}
+        {%- endfor %}
+    {%- endcall %}
+{% endif %}

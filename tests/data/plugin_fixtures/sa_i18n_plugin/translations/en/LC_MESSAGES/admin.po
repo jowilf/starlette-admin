@@ -1,0 +1,11 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: test-plugin 1.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "test_plugin_greeting"
+msgstr "Hello from test plugin"

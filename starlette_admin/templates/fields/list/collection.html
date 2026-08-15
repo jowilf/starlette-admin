@@ -1,0 +1,7 @@
+{% from "fields/list/_truncated.html" import truncated %}
+{% call truncated() -%}
+    {% for f in field.get_fields_list(request) -%}
+        <strong>{{ f.label }}:</strong> {{ (data[f.name] if data else None) }}
+        {%- if not loop.last %},{% endif %}
+    {%- endfor %}
+{%- endcall %}
