@@ -76,7 +76,7 @@ dev = [
     "poethepoet >=0.30.0, <0.49.0",
     "pre-commit >=2.20.0, <4.7.0",
     "requests",
-    "uvicorn >=0.20.0, <0.52.0",
+    "uvicorn >=0.20.0, <0.53.0",
 ]
 
 lint = ["ty ==0.0.62", "ruff ==0.15.21"]
@@ -115,13 +115,13 @@ test = [
     "SQLAlchemy[asyncio] >=2.0.0, <2.1.0",
     "sqlmodel >=0.0.11, <0.1.0",
     "testcontainers[minio,mongodb,mysql,postgres] >=4.8.0",
-    "tinydb >=4.7.0, <4.9.0",
+    "tinydb >=4.7.0, <4.10.0",
     "tortoise-orm >=0.21.0",
 ]
 
-cov = ["coverage[toml] >=7.0.0, <7.15.0"]
+cov = ["coverage[toml] >=7.0.0, <7.16.0"]
 docs = ["mkdocstrings[python] >=0.27.0", "zensical >=0.0.44"]
-e2e = ["pytest-playwright >=0.5.0, <0.8.0"]
+e2e = ["pytest-playwright >=0.5.0, <0.10.0"]
 
 [tool.uv]
 default-groups = ["dev", "lint", "test", "cov", "docs", "e2e"]
