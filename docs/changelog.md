@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## \[1.0.0rc1\] - 2026-07-24
+## \[1.0.0\] - 2026-08-16
 
 This release refactors starlette-admin's internals and adds a large set of new features. The high-level
 API is mostly unchanged; the one big rewrite is the list page rendering, which replaces DataTables with a server-rendered table.
