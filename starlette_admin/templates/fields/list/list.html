@@ -1,0 +1,9 @@
+<ul class="list-unstyled d-flex align-items-center gap-1 mb-0">
+    {% for value in data %}
+        <li class="{% if not loop.first %}border-start ps-2{% endif %}">
+            {% with data=value, error=False, field=field.field %}
+                {% include field.list_template %}
+            {% endwith %}
+        </li>
+    {% endfor %}
+</ul>

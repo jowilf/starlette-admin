@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "{{ cookiecutter.distribution_name }}"
+description = "{{ cookiecutter.description }}"
+readme = "README.md"
+{% if cookiecutter.license != "Proprietary" %}
+license = "{{ cookiecutter.license }}"
+{% endif %}
+requires-python = "{{ cookiecutter.python_requires }}"
+authors = [{ name = "{{ cookiecutter.author_name }}", email = "{{ cookiecutter.author_email }}" }]
+version = "{{ cookiecutter.version }}"
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "starlette-admin {{ cookiecutter.starlette_admin_version_spec }}",
+]
+
+[project.urls]
+Homepage = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.distribution_name }}"
+Repository = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.distribution_name }}"
+
+[project.entry-points."starlette_admin.themes"]
+{{ cookiecutter.theme_slug }} = "{{ cookiecutter.package_slug }}:{{ cookiecutter.class_prefix }}Theme"
+
+[project.optional-dependencies]
+i18n = ["babel>=2.17.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/{{ cookiecutter.package_slug }}"]
+
+# Uncomment when developing this theme inside the starlette-admin monorepo
+# (themes/{{ cookiecutter.theme_slug }}), so `uv sync` links the local core
+# checkout instead of resolving it from PyPI:
+# [tool.uv.sources]
+# starlette-admin = { workspace = true, editable = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.27",
+    "sqlalchemy>=2.0",
+    "uvicorn[standard]>=0.30",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

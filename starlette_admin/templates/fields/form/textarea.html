@@ -1,0 +1,9 @@
+{% set describedby = ((field.id ~ '-error') if error else None, (field.id ~ '-help') if field.help_text else None) | select | join(' ') %}
+<div class="{% if error %}{{ cls(field.error_class) }}{% endif %}">
+    <textarea id="{{ field.id }}" name="{{ field.id }}" data-bs-toggle="autosize" class="{{ cls(field.class_) }}{% if error %} {{ cls(field.error_class) }}{% endif %}" {% if error %}aria-invalid="true"{% endif %} {% if describedby %}aria-describedby="{{ describedby }}"{% endif %} {{ field.input_params() | safe }}>
+{% if data -%}{{ data }}{% endif %}</textarea>
+    {% if field.help_text -%}
+        <small class="form-hint" id="{{ field.id }}-help">{{ field.help_text }}</small>
+    {% endif -%}
+</div>
+{% include "fields/form/_error.html" %}

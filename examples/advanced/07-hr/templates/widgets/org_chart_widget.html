@@ -1,0 +1,73 @@
+{# Template for OrgChartWidget (see dashboard.py).
+
+   The tree data is embedded as a JSON script tag rather than inlined into
+   the init call, so department names never need JavaScript escaping. The
+   init runs on DOMContentLoaded because the ApexTree vendor bundle is
+   injected at the end of the page body, after this inline script. #}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">{{ title }}</h3>
+    </div>
+    <div class="card-body">
+        <div id="{{ chart_id }}"
+             data-height="{{ height }}"
+             data-direction="{{ direction }}"
+             data-node-width="{{ node_width }}"
+             data-node-height="{{ node_height }}"></div>
+        {# djlint:off #}
+        <script type="application/json" id="{{ chart_id }}-data">{{tree | tojson}}</script>
+        {# djlint:on #}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var el = document.getElementById('{{ chart_id }}');
+                var data = JSON.parse(document.getElementById('{{ chart_id }}-data').textContent);
+
+                function escapeHtml(value) {
+                    var span = document.createElement('span');
+                    span.textContent = value == null ? '' : String(value);
+                    return span.innerHTML;
+                }
+
+                // Pick black or white text for a hex background so every
+                // node label stays readable regardless of department color.
+                function inkFor(hexColor) {
+                    var hex = (hexColor || '#6b7280').replace('#', '');
+                    var r = parseInt(hex.substring(0, 2), 16);
+                    var g = parseInt(hex.substring(2, 4), 16);
+                    var b = parseInt(hex.substring(4, 6), 16);
+                    var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                    return luminance > 0.6 ? '#1a1a19' : '#ffffff';
+                }
+
+                var tree = new ApexTree(el, {
+                    contentKey: 'data',
+                    width: el.clientWidth || 900,
+                    height: parseInt(el.dataset.height, 10),
+                    nodeWidth: parseInt(el.dataset.nodeWidth, 10),
+                    nodeHeight: parseInt(el.dataset.nodeHeight, 10),
+                    childrenSpacing: 70,
+                    siblingSpacing: 24,
+                    direction: el.dataset.direction,
+                    enableToolbar: true,
+                    canvasStyle: 'background: transparent;',
+                    borderWidth: 0,
+                    borderRadius: '8px',
+                    nodeTemplate: function(content) {
+                        var ink = inkFor(content.color);
+                        return (
+                            '<div style="display:flex;flex-direction:column;justify-content:center;' + 'height:100%;padding:6px 10px;color:' + ink + ';' + 'font-family:inherit;text-align:left;border-radius:8px;">' +
+                            '<div style="font-weight:600;font-size:13px;line-height:1.2;' + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                            escapeHtml(content.name) + '</div>' +
+                            '<div style="font-size:11px;opacity:.85;margin-top:2px;">' +
+                            escapeHtml(content.people) + '</div>' +
+                            '<div style="font-size:11px;opacity:.85;">' +
+                            escapeHtml(content.budget) + ' budget</div>' +
+                            '</div>'
+                        );
+                    }
+                });
+                tree.render(data);
+            });
+        </script>
+    </div>
+</div>

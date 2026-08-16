@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any
 
 
 class StarletteAdminException(Exception):
@@ -6,7 +6,13 @@ class StarletteAdminException(Exception):
 
 
 class FormValidationError(StarletteAdminException):
-    def __init__(self, errors: Dict[Union[str, int], Any]) -> None:
+    def __init__(
+        self,
+        errors: dict[str | int, Any],
+    ) -> None:
+        if not isinstance(errors, dict):
+            raise TypeError(f"errors must be a dict, got {type(errors).__name__!r}")
+
         self.errors = errors
 
     def has(self, name: str) -> bool:
@@ -29,4 +35,13 @@ class ActionFailed(StarletteAdminException):
 
 
 class NotSupportedAnnotation(StarletteAdminException):
+    pass
+
+
+class InvalidRelationFieldError(StarletteAdminException):
+    """Raised when a RelationField (HasOne/HasMany) points to a key that
+    has no matching view registered on the admin instance."""
+
+
+class ExportError(StarletteAdminException):
     pass

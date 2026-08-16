@@ -1,0 +1,7 @@
+{% extends "@core/base.html" %}
+
+{% block core_css %}
+    {{ super() }}
+    <link rel="stylesheet"
+          href="{{ static_url(request, 'css/theme.css', v='1') }}">
+{% endblock %}

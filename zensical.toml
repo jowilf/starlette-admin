@@ -1,0 +1,160 @@
+[project]
+site_name = "Starlette Admin"
+site_description = "Fast, beautiful and extensible administrative interface framework for FastAPI & Starlette applications"
+site_author = "Jocelin Hounon"
+site_url = "https://jowilf.github.io/starlette-admin"
+repo_name = "jowilf/starlette-admin"
+repo_url = "https://github.com/jowilf/starlette-admin"
+edit_uri = "https://github.com/jowilf/starlette-admin/tree/main/docs"
+docs_dir = "docs"
+watch = ["starlette_admin"]
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/extra.js"]
+
+nav = [
+  { "Home" = "index.md" },
+  { "Getting Started" = [
+    { "Installation" = "getting-started/installation.md" },
+    { "Quickstart" = "getting-started/quickstart.md" },
+    { "Concepts" = "getting-started/concepts.md" },
+  ] },
+  { "User Guide" = [
+    { "Views" = "user-guide/views.md" },
+    { "Admin" = "user-guide/admin.md" },
+    { "Fields" = "user-guide/fields.md" },
+    { "Filters" = "user-guide/filters.md" },
+    { "Actions" = "user-guide/actions.md" },
+    { "Inline Edit" = "user-guide/inline-edit.md" },
+    { "Authentication" = "user-guide/auth.md" },
+    { "Export & Import" = "user-guide/export-import.md" },
+    { "File Storage" = "user-guide/file-storage.md" },
+    { "Inline Forms" = "user-guide/inline-forms.md" },
+    { "Custom Views & Widgets" = "user-guide/custom-views.md" },
+    { "Flash Messages" = "user-guide/flash-messages.md" },
+    { "Internationalization & Timezones" = "user-guide/i18n.md" },
+    { "Security" = "user-guide/security.md" },
+  ] },
+  { "Integrations" = [
+    { "SQLAlchemy" = "integrations/sqlalchemy.md" },
+    { "SQLModel" = "integrations/sqlmodel.md" },
+    { "Beanie" = "integrations/beanie.md" },
+    { "Tortoise ORM" = "integrations/tortoise.md" },
+    { "MongoEngine" = "integrations/mongoengine.md" },
+    { "Custom Backend" = "integrations/custom-backend.md" },
+  ] },
+  { "Advanced" = [
+    { "Custom Fields" = "advanced/custom-fields.md" },
+    { "Form Layout" = "advanced/form-layout.md" },
+    { "Custom Filters" = "advanced/custom-filters.md" },
+    { "Events" = "advanced/events.md" },
+    { "Custom Themes" = "advanced/custom-themes.md" },
+    { "Templates" = "advanced/templates.md" },
+    { "Multiple Admin Instances" = "advanced/multiple-admin.md" },
+    { "Extension Points" = "advanced/extension-points.md" },
+    { "Plugins" = "advanced/plugins.md" },
+    { "Deployment" = "advanced/deployment.md" },
+  ] },
+  { "Comparison" = [
+    { "Overview" = "comparison/index.md" },
+    { "Coming from Django Admin" = "comparison/django-admin.md" },
+    { "Coming from Flask-Admin" = "comparison/flask-admin.md" },
+  ] },
+  { "Blog" = [
+    { "Overview" = "blog/index.md" },
+    { "Add an Admin Panel to FastAPI in 5 Minutes" = "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md" },
+    { "Building Soft Deletes and a Trash View in FastAPI Using Starlette Admin" = "blog/posts/soft-deletes-trash-view.md" },
+  ] },
+  { "API Reference" = [
+    { "Admin" = "api/admin.md" },
+    { "Views" = "api/views.md" },
+    { "Fields" = "api/fields.md" },
+    { "Widgets" = "api/widgets.md" },
+    { "Validators" = "api/validators.md" },
+    { "Filters" = "api/filters.md" },
+    { "Auth" = "api/auth.md" },
+    { "Events" = "api/events.md" },
+    { "Storage" = "api/storage.md" },
+    { "Export" = "api/export.md" },
+    { "Import" = "api/import.md" },
+    { "Contrib" = [
+      { "SQLAlchemy" = "api/contrib/sqlalchemy.md" },
+      { "SQLModel" = "api/contrib/sqlmodel.md" },
+      { "Tortoise ORM" = "api/contrib/tortoise.md" },
+      { "Beanie" = "api/contrib/beanie.md" },
+      { "MongoEngine" = "api/contrib/mongoengine.md" },
+    ] },
+  ] },
+  { "Migration Guide" = "migration.md" },
+  { "Changelog" = "changelog.md" },
+]
+
+[project.theme]
+favicon = "assets/favicon.ico"
+features = [
+  "content.code.copy",
+  "content.action.view",
+  "search.suggest",
+  "search.highlight",
+  "navigation.tabs",
+  "navigation.footer",
+  "content.tabs.link",
+]
+
+[project.theme.font]
+code = "Fira Code"
+
+
+[project.theme.icon]
+logo = "material/database-settings"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+primary = "custom"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"
+primary = "custom"
+
+[project.markdown_extensions.admonition]
+
+[project.markdown_extensions.pymdownx.details]
+
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+
+[project.markdown_extensions.pymdownx.superfences]
+
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+
+[project.markdown_extensions.attr_list]
+
+[project.plugins.social]
+
+[project.plugins.search]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+show_root_heading = true
+show_source = true
+
+[project.extra.analytics]
+provider = "google"
+property = "G-PRC6TQ4K82"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/jowilf"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/twitter"
+link = "https://twitter.com/jowilf"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/linkedin"
+link = "https://www.linkedin.com/in/jocelin-hounon-2008aa139"

@@ -1,0 +1,64 @@
+<form data-sa-export-scope
+      data-sa-label-selected="{{ _('Selected rows') }}"
+      data-sa-label-all="{{ _('All matching rows') }}">
+    <div class="mb-3">
+        <label class="form-label">{{ _("Scope") }}</label>
+        <div class="px-2">
+            <label class="form-check">
+                <input type="radio"
+                       name="scope"
+                       value="selected"
+                       class="form-check-input"
+                       data-sa-export-scope-selected
+                       disabled>
+                <span class="form-check-label">
+                    <span data-sa-export-selected-label>{{ _("Selected rows") }}</span>
+                    (<span data-sa-export-selected-count>0</span>)
+                </span>
+            </label>
+            <label class="form-check">
+                <input type="radio"
+                       name="scope"
+                       value="page"
+                       class="form-check-input"
+                       data-sa-export-scope-page
+                       checked>
+                <span class="form-check-label">{{ _("Current page") }}</span>
+            </label>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ _("Fields") }}</label>
+        <div style="max-height: 12rem; overflow-y: auto;" class= "p-2">
+            {% for field in fields %}
+                <label class="form-check">
+                    <input type="checkbox"
+                           class="form-check-input"
+                           name="fields"
+                           value="{{ field.name }}"
+                           checked>
+                    <span class="form-check-label">{{ field.label or field.name }}</span>
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="export-action-format">{{ _("Format") }}</label>
+        <select class="form-select" name="format" id="export-action-format">
+            {% for fmt in exporters %}
+                <option value="{{ fmt.format_key or fmt.extension }}">{{ (fmt.format_key or fmt.extension) | upper }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-1">
+        <label class="form-label" for="export-action-filename">{{ _("Filename") }}</label>
+        <input type="text"
+               class="form-control"
+               name="filename"
+               id="export-action-filename"
+               placeholder="{{ filename }}">
+        {# djlint:off #}
+        <div class="form-text">{{ _("Defaults to \"%(filename)s\" if left empty.", filename=filename) }}</div>
+        {# djlint:on #}
+    </div>
+</form>

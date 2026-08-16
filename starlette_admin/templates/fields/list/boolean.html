@@ -1,0 +1,12 @@
+{# inline-edit-value marks the underline target for inline-editable cells. #}
+<div class="d-flex">
+    {% for v in (data if field.multiple else [data]) -%}
+        <div class="p-1">
+            {% if v -%}
+                <span class="text-success inline-edit-value"><i class="{{ icon('field.boolean_true') }} fa-lg"></i></span>
+            {%- else -%}
+                <span class="text-danger inline-edit-value"><i class="{{ icon('field.boolean_false') }} fa-lg"></i></span>
+            {%- endif %}
+        </div>
+    {%- endfor %}
+</div>

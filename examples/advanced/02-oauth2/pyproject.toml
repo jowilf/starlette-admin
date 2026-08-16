@@ -1,0 +1,16 @@
+[project]
+name = "02-oauth2"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "authlib>=1.7",
+    "httpx2>=2.4",
+    "sqlalchemy>=2",
+    "starlette-admin",
+    "uvicorn[standard]",
+]
+
+[tool.uv.sources]
+starlette-admin = { workspace = true, editable = true }

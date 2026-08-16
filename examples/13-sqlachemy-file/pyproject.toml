@@ -1,0 +1,17 @@
+[project]
+name = "13-sqlachemy-file"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fasteners>=0.20",
+    "pillow>=12.2.0",
+    "sqlalchemy>=2",
+    "sqlalchemy-file>=0.6.0",
+    "starlette-admin",
+    "uvicorn[standard]",
+]
+
+[tool.uv.sources]
+starlette-admin = { workspace = true, editable = true }

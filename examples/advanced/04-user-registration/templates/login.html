@@ -1,0 +1,6 @@
+{% extends "@starlette-admin/login.html" %}
+{% block login_card_footer %}
+    <div class="text-center text-secondary mt-3">
+        Don't have an account yet? <a href="{{ url_for(__name__ ~ ':register') }}">Sign up</a>
+    </div>
+{% endblock %}

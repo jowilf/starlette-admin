@@ -1,0 +1,8 @@
+<div class="mb-3">
+    {% with data=value, error=error, input_group_prepend=input_group_prepend, input_group_append=input_group_append, input_group_flat=input_group_flat %}
+        {% if show_label %}
+            {% include field.label_template %}
+        {% endif %}
+        {% include field.form_template %}
+    {% endwith %}
+</div>

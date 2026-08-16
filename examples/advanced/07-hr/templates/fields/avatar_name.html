@@ -1,0 +1,7 @@
+<div class="d-flex align-items-center">
+    <span class="avatar avatar-xs me-1 flex-shrink-0"
+          {% if data.avatar_url %}style="background-image: url({{ data.avatar_url }})"{% endif %}>
+        {% if not data.avatar_url %}{{ data.initials }}{% endif %}
+    </span>
+    <span class="text-nowrap">{{ data.name }}</span>
+</div>

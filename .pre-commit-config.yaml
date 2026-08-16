@@ -1,8 +1,9 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+exclude: ^(plugins/cookiecutter-starlette-admin-plugin|themes/cookiecutter-starlette-admin-theme)/
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
     -   id: check-added-large-files
         args:
@@ -18,14 +19,17 @@ repos:
     hooks:
     -   id: pyupgrade
         args:
-        - --py38-plus
+        - --py311-plus
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.9
+    rev: v0.15.21
     hooks:
-    -   id: ruff
+    -   id: ruff-check
         args:
         - --fix
--   repo: https://github.com/psf/black
-    rev: 25.1.0
+        exclude: ^(plugins/cookiecutter-starlette-admin-plugin|themes/cookiecutter-starlette-admin-theme)/
+    -   id: ruff-format
+        exclude: ^(plugins/cookiecutter-starlette-admin-plugin|themes/cookiecutter-starlette-admin-theme)/
+-   repo: https://github.com/djlint/djLint
+    rev: v1.41.0
     hooks:
-    -   id: black
+    -   id: djlint-reformat-jinja

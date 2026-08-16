@@ -1,0 +1,9 @@
+/* Recolors the JSONEditor toolbar to match the admin theme's primary color,
+   overriding the vendor stylesheet's hardcoded blue. */
+div.jsoneditor-menu {
+    background-color: var(--tblr-primary);
+    border-bottom-color: var(--tblr-primary);
+}
+div.jsoneditor {
+    border-color: var(--tblr-primary);
+}

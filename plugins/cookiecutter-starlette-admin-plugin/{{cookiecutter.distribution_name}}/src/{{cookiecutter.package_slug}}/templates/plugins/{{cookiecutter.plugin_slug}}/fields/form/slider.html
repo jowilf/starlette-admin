@@ -1,0 +1,16 @@
+<div class="sa-slider {% if error %}{{ field.error_class }}{% endif %}"
+     data-sa-slider
+     data-suffix="{{ field.suffix }}">
+    <input type="range"
+           class="form-range"
+           id="{{ field.id }}"
+           name="{{ field.id }}"
+           min="{{ field.min_value }}"
+           max="{{ field.max_value }}"
+           step="{{ field.step }}"
+           value="{{ data if data is not none else field.min_value }}"
+           {% if field.disabled or field.read_only %}disabled{% endif %}>
+    <output for="{{ field.id }}" class="sa-slider-output">{{ data if data is not none else field.min_value }}{{ field.suffix }}</output>
+    {% if field.help_text %}<small class="form-hint mt-2">{{ field.help_text }}</small>{% endif %}
+</div>
+{% include "fields/form/_error.html" %}

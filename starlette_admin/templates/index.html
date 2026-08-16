@@ -1,1 +1,16 @@
 {% extends "layout.html" %}
+{% block head_css %}
+    {{ super() }}
+    {% for link in widget_additional_css %}
+        <link rel="stylesheet" href="{{ link }}">
+    {% endfor %}
+{% endblock head_css %}
+{% block content %}
+    {{ widget_html }}
+{% endblock content %}
+{% block script %}
+    {{ super() }}
+    {% for link in widget_additional_js %}
+        <script type="text/javascript" src="{{ link }}"></script>
+    {% endfor %}
+{% endblock script %}

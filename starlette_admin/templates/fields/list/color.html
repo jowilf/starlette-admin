@@ -1,0 +1,22 @@
+{% from "fields/list/_truncated.html" import truncated %}
+{% from "fields/_copy_button.html" import copy_button %}
+{% if field.copy_to_clipboard %}
+    <span class="d-inline-flex align-items-center gap-2">
+        {% call truncated() -%}
+            <span class="badge me-1"
+                  style="background-color:{{ data }}"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  title="{{ data | string | escape }}">&nbsp;</span>
+        {%- endcall %}
+        {{ copy_button(data) }}
+    </span>
+{% else %}
+    {% call truncated() -%}
+        <span class="badge me-1"
+              style="background-color:{{ data }}"
+              data-bs-toggle="tooltip"
+              data-bs-placement="bottom"
+              title="{{ data | string | escape }}">&nbsp;</span>
+    {%- endcall %}
+{% endif %}

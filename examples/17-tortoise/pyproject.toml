@@ -1,0 +1,14 @@
+[project]
+name = "17-tortoise"
+version = "0.1.0"
+description = "Tortoise ORM + SQLite example for starlette-admin"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "starlette-admin",
+    "tortoise-orm>=0.21.0",
+    "uvicorn[standard]>=0.39.0",
+]
+
+[tool.uv.sources]
+starlette-admin = { workspace = true, editable = true }

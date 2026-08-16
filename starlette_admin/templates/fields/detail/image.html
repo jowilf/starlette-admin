@@ -1,0 +1,14 @@
+<div class="d-flex flex-wrap">
+    {% for image in (data if field.multiple else [data]) %}
+        <div class="mx-1 my-2">
+            <a data-fslightbox="{{ field.name }}" href="{{ image.url | safe_url }}">
+                <img style="width: 5em;
+                            height: 5em;
+                            object-fit: cover"
+                     src="{{ image.url | safe_url }}"
+                     class="img-fluid rounded me-3 d-block"
+                     alt="{{ image.filename }}" />
+            </a>
+        </div>
+    {% endfor %}
+</div>
