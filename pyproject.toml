@@ -172,10 +172,10 @@ docs-deploy = "zensical gh-deploy --force"
 path = "starlette_admin/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-include = ["starlette_admin"]
+include = ["starlette_admin", ".agents"]
 
 [tool.hatch.build.targets.sdist]
-include = ["starlette_admin"]
+include = ["starlette_admin", ".agents"]
 
 [tool.coverage.report]
 fail_under = 100
