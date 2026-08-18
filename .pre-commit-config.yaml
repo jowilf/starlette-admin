@@ -21,7 +21,7 @@ repos:
         args:
         - --py311-plus
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.21
+    rev: v0.16.3
     hooks:
     -   id: ruff-check
         args:
@@ -30,6 +30,6 @@ repos:
     -   id: ruff-format
         exclude: ^(plugins/cookiecutter-starlette-admin-plugin|themes/cookiecutter-starlette-admin-theme)/
 -   repo: https://github.com/djlint/djLint
-    rev: v1.41.0
+    rev: v1.44.2
     hooks:
     -   id: djlint-reformat-jinja
