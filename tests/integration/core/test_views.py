@@ -799,3 +799,34 @@ class TestViews:
         assert "Users" in response.text
         assert "42" in response.text
         assert 'class="row row-deck row-cards"' in response.text
+
+    def test_custom_view_displays_flash_messages(self):
+        from starlette_admin import flash
+
+        async def _async_value(value):
+            return value
+
+        class FlashingCustomView(CustomView):
+            @route("")
+            async def index(self, request: Request) -> Response:
+                flash(request, "Flash from CustomView", "success")
+                return await super().index(request)
+
+        admin = BaseAdmin()
+        app = Starlette()
+        admin.add_view(
+            FlashingCustomView(
+                menu_label="Dashboard",
+                path="/dashboard",
+                widget=StatWidget(
+                    title="Users",
+                    value_callback=lambda request: _async_value(42),
+                ),
+            )
+        )
+        admin.mount_to(app)
+        client = TestClient(app)
+        response = client.get("/admin/dashboard")
+
+        assert response.status_code == 200
+        assert "Flash from CustomView" in response.text

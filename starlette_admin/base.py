@@ -255,6 +255,7 @@ class BaseAdmin:
                 self._model_views, self.templates.env, app_title=title
             )
         )
+        self._set_admin(self.index_view)
         _log.debug("Admin: templates ready")
         self._ensure_secret_key()
         self._init_locale()
