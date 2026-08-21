@@ -449,6 +449,7 @@ class CustomView(BaseView):
         ``@route("")``) to render your own template via
         ``self.templates.TemplateResponse`` instead."""
         assert self.templates is not None, "CustomView must be mounted before use"
+        assert self._admin is not None, "CustomView must be mounted before use"
         widget = await self._resolve_widget(request)
         widget_html = (
             await render_widget(widget, request, self.templates.env)
@@ -461,7 +462,7 @@ class CustomView(BaseView):
         widget_additional_js = (
             widget.additional_js_links(request) if widget is not None else []
         )
-        return self.templates.TemplateResponse(
+        return self._admin._template_response(
             request=request,
             name="index.html",
             context={
