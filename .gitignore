@@ -21,3 +21,7 @@ __pycache__/
 upload*/
 CLAUDE.md
 .DS_Store
+
+docs/locales/*/content/assets/
+docs/locales/*/content/javascripts/
+docs/locales/*/content/stylesheets/
