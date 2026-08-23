@@ -37,10 +37,11 @@ def snapshot() -> dict[str, float]:
     return state
 
 
-def build() -> None:
-    result = subprocess.run(
-        [sys.executable, str(BUILD_SCRIPT)], cwd=PROJECT_ROOT, check=False
-    )
+def build(locales: list[str] | None = None) -> None:
+    command = [sys.executable, str(BUILD_SCRIPT)]
+    if locales:
+        command.extend(["--locales", *locales])
+    result = subprocess.run(command, cwd=PROJECT_ROOT, check=False)
     if result.returncode == 0:
         print("build ok", flush=True)
 
@@ -65,9 +66,15 @@ def main() -> int:
         default=DEFAULT_PORT,
         help=f"port to serve on (default: {DEFAULT_PORT})",
     )
+    parser.add_argument(
+        "--locales",
+        nargs="+",
+        metavar="LOC",
+        help="locale codes to build on each rebuild ('all' for every supported locale)",
+    )
     args = parser.parse_args()
 
-    build()
+    build(args.locales)
     handler = functools.partial(Handler)
     server = http.server.ThreadingHTTPServer(("127.0.0.1", args.port), handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -86,7 +93,7 @@ def main() -> int:
                     if current.get(k) != last.get(k)
                 }
                 print(f"change detected: {len(changed)} file(s), rebuilding...")
-                build()
+                build(args.locales)
                 last = current
     except KeyboardInterrupt:
         print("\nstopping")

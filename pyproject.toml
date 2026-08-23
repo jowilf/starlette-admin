@@ -120,7 +120,11 @@ test = [
 ]
 
 cov = ["coverage[toml] >=7.0.0, <7.16.0"]
-docs = ["mkdocstrings[python] >=0.27.0", "zensical >=0.0.44"]
+docs = [
+    "mkdocstrings[python] >=0.27.0",
+    "openrouter >=1.1.0",
+    "zensical >=0.0.44",
+]
 e2e = ["pytest-playwright >=0.5.0, <0.10.0"]
 
 [tool.uv]
@@ -166,7 +170,7 @@ clean = "rm -rf .coverage .coverage.* coverage.xml site .ruff_cache dist build .
 # Docs
 docs-serve = "python docs/scripts/serve.py"
 docs-build = "python docs/scripts/build.py"
-docs-deploy = "zensical gh-deploy --force"
+docs-translate = "python docs/scripts/translate.py"
 
 [tool.hatch.version]
 path = "starlette_admin/__init__.py"

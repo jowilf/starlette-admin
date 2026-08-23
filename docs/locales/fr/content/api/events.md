@@ -1,0 +1,69 @@
+---
+title: Référence de l'API des événements
+description: Documentation de référence de l'API pour le système d'événements et les
+  hooks de starlette-admin.
+source_hash: 38b33892f675bf13798c334f941f806a503dc542816e56e5593ee7eb99103312
+prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+machine_translated: true
+translation_model: stealth/ox-alpha
+translation_date: '2026-08-22'
+---
+
+??? info "Traduction automatique supervisée"
+
+    Ce contenu est généré par traduction automatique, guidée par des
+    glossaires et des guides de style validés par des humains. Comme le
+    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
+    maladroites peuvent parfois apparaître.
+
+    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+
+# Événements
+
+Référence complète des attributs et méthodes du système d'événements, générée à partir des docstrings. Pour un guide orienté tâches, consultez [Événements](../advanced/events.md).
+
+## Bus d'événements
+
+::: starlette_admin.events.AdminEventBus
+
+::: starlette_admin.events.EventBus
+
+::: starlette_admin.events.AdminEventSubscriber
+
+::: starlette_admin.events.on
+
+::: starlette_admin.events.AdminEvent
+
+## Contextes d'événements
+
+::: starlette_admin.events.EventContext
+
+::: starlette_admin.events.BeforeCreateContext
+
+::: starlette_admin.events.AfterCreateContext
+
+::: starlette_admin.events.BeforeEditContext
+
+::: starlette_admin.events.AfterEditContext
+
+::: starlette_admin.events.BeforeDeleteContext
+
+::: starlette_admin.events.AfterDeleteContext
+
+::: starlette_admin.events.BeforeBulkDeleteContext
+
+::: starlette_admin.events.AfterBulkDeleteContext
+
+::: starlette_admin.events.BeforeActionContext
+
+::: starlette_admin.events.AfterActionContext
+
+::: starlette_admin.events.BeforeExportContext
+
+::: starlette_admin.events.AfterExportContext
+
+::: starlette_admin.events.BeforeImportContext
+
+::: starlette_admin.events.AfterImportContext
+
+::: starlette_admin.events.AfterLoginContext

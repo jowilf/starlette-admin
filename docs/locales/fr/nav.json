@@ -1,0 +1,211 @@
+{
+  "skip": [],
+  "nav": [
+    {
+      "Home": "index.md"
+    },
+    {
+      "Getting Started": [
+        {
+          "Installation": "getting-started/installation.md"
+        },
+        {
+          "Quickstart": "getting-started/quickstart.md"
+        },
+        {
+          "Concepts": "getting-started/concepts.md"
+        }
+      ]
+    },
+    {
+      "User Guide": [
+        {
+          "Views": "user-guide/views.md"
+        },
+        {
+          "Admin": "user-guide/admin.md"
+        },
+        {
+          "Fields": "user-guide/fields.md"
+        },
+        {
+          "Filters": "user-guide/filters.md"
+        },
+        {
+          "Actions": "user-guide/actions.md"
+        },
+        {
+          "Inline Edit": "user-guide/inline-edit.md"
+        },
+        {
+          "Authentication": "user-guide/auth.md"
+        },
+        {
+          "Export & Import": "user-guide/export-import.md"
+        },
+        {
+          "File Storage": "user-guide/file-storage.md"
+        },
+        {
+          "Inline Forms": "user-guide/inline-forms.md"
+        },
+        {
+          "Custom Views & Widgets": "user-guide/custom-views.md"
+        },
+        {
+          "Flash Messages": "user-guide/flash-messages.md"
+        },
+        {
+          "Internationalization & Timezones": "user-guide/i18n.md"
+        },
+        {
+          "Security": "user-guide/security.md"
+        }
+      ]
+    },
+    {
+      "Integrations": [
+        {
+          "SQLAlchemy": "integrations/sqlalchemy.md"
+        },
+        {
+          "SQLModel": "integrations/sqlmodel.md"
+        },
+        {
+          "Beanie": "integrations/beanie.md"
+        },
+        {
+          "Tortoise ORM": "integrations/tortoise.md"
+        },
+        {
+          "MongoEngine": "integrations/mongoengine.md"
+        },
+        {
+          "Custom Backend": "integrations/custom-backend.md"
+        }
+      ]
+    },
+    {
+      "Advanced": [
+        {
+          "Custom Fields": "advanced/custom-fields.md"
+        },
+        {
+          "Form Layout": "advanced/form-layout.md"
+        },
+        {
+          "Custom Filters": "advanced/custom-filters.md"
+        },
+        {
+          "Events": "advanced/events.md"
+        },
+        {
+          "Custom Themes": "advanced/custom-themes.md"
+        },
+        {
+          "Templates": "advanced/templates.md"
+        },
+        {
+          "Multiple Admin Instances": "advanced/multiple-admin.md"
+        },
+        {
+          "Extension Points": "advanced/extension-points.md"
+        },
+        {
+          "Plugins": "advanced/plugins.md"
+        },
+        {
+          "Deployment": "advanced/deployment.md"
+        }
+      ]
+    },
+    {
+      "Comparison": [
+        {
+          "Overview": "comparison/index.md"
+        },
+        {
+          "Coming from Django Admin": "comparison/django-admin.md"
+        },
+        {
+          "Coming from Flask-Admin": "comparison/flask-admin.md"
+        }
+      ]
+    },
+    {
+      "Blog": [
+        {
+          "Overview": "blog/index.md"
+        },
+        {
+          "Add an Admin Panel to FastAPI in 5 Minutes": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
+        },
+        {
+          "Building Soft Deletes and a Trash View in FastAPI Using Starlette Admin": "blog/posts/soft-deletes-trash-view.md"
+        }
+      ]
+    },
+    {
+      "API Reference": [
+        {
+          "Admin": "api/admin.md"
+        },
+        {
+          "Views": "api/views.md"
+        },
+        {
+          "Fields": "api/fields.md"
+        },
+        {
+          "Widgets": "api/widgets.md"
+        },
+        {
+          "Validators": "api/validators.md"
+        },
+        {
+          "Filters": "api/filters.md"
+        },
+        {
+          "Auth": "api/auth.md"
+        },
+        {
+          "Events": "api/events.md"
+        },
+        {
+          "Storage": "api/storage.md"
+        },
+        {
+          "Export": "api/export.md"
+        },
+        {
+          "Import": "api/import.md"
+        },
+        {
+          "Contrib": [
+            {
+              "SQLAlchemy": "api/contrib/sqlalchemy.md"
+            },
+            {
+              "SQLModel": "api/contrib/sqlmodel.md"
+            },
+            {
+              "Tortoise ORM": "api/contrib/tortoise.md"
+            },
+            {
+              "Beanie": "api/contrib/beanie.md"
+            },
+            {
+              "MongoEngine": "api/contrib/mongoengine.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Migration Guide": "migration.md"
+    },
+    {
+      "Changelog": "changelog.md"
+    }
+  ]
+}
