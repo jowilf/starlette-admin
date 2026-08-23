@@ -10,14 +10,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/comparison/)
+<!-- translation-notice:end -->
 
 # Comparer starlette-admin, Django Admin et Flask-Admin
 
@@ -66,11 +71,11 @@ starlette-admin cible la stack Python asynchrone. Si votre application utilise F
 | Vues CRUD générées automatiquement | **Oui** | **Oui** | **Oui** |
 | Recherche plein texte | **Oui** `search_fields` | **Oui** `column_searchable_list` | **Oui** [`searchable_fields`](../user-guide/filters.md) |
 | Filtres de colonnes | **Oui** `list_filter` | **Oui** `column_filters` | **Oui** [Constructeur visuel de filtres](../user-guide/filters.md) avec groupes `AND`/`OR` |
-| Tri et ordre par défaut | **Oui** | **Oui** | **Oui** [`sortable_fields`, `fields_default_sort`](../user-guide/views.md#search-and-sort) |
+| Tri et ordre par défaut | **Oui** | **Oui** | **Oui** [`sortable_fields`, `fields_default_sort`](../user-guide/views.md#recherche-et-tri) |
 | Édition en ligne dans la vue liste | **Oui** `list_editable` | **Oui** `column_editable_list` | **Oui** [`inline_editable_fields`](../user-guide/inline-edit.md) |
 | Formulaires inline pour modèles liés | **Oui** `TabularInline` / `StackedInline` | **Oui** `inline_models` | **Oui** [`InlineModelView`](../user-guide/inline-forms.md) |
 | Actions groupées | **Oui** `actions` | **Oui** `@action` | **Oui** [`@action`](../user-guide/actions.md) avec boîtes de dialogue de confirmation et formulaires personnalisés |
-| Actions par ligne | **Partiel** templates personnalisés | **Partiel** formateurs personnalisés | **Oui** [`@row_action`, `@link_row_action`](../user-guide/actions.md#row-actions) |
+| Actions par ligne | **Partiel** templates personnalisés | **Partiel** formateurs personnalisés | **Oui** [`@row_action`, `@link_row_action`](../user-guide/actions.md#actions-de-ligne) |
 | Exportation de données | **Partiel** `django-import-export` | **Oui** CSV et autres | **Oui** [CSV, JSON, Excel, PDF](../user-guide/export-import.md) |
 | Importation de données | **Partiel** `django-import-export` | **Non** | **Oui** [CSV, JSON, Excel](../user-guide/export-import.md) avec validation d'aperçu et upsert |
 | Téléversement de fichiers et d'images | **Oui** `FileField` / `ImageField` | **Partiel** configuration supplémentaire requise | **Oui** [Stockage local et S3](../user-guide/file-storage.md) |
@@ -78,9 +83,9 @@ starlette-admin cible la stack Python asynchrone. Si votre application utilise F
 | Pages autonomes personnalisées | **Oui** URLs `AdminSite` personnalisées | **Oui** `BaseView` + `@expose` | **Oui** [`CustomView`](../user-guide/custom-views.md) |
 | Contrôle de la mise en page des formulaires | **Oui** `fieldsets` | **Oui** `form_rules` | **Oui** [`form_layout`](../advanced/form-layout.md) avec onglets et grilles |
 | Authentification | **Oui** `django.contrib.auth` | **Non** à fournir vous-même | **Oui** [`AuthProvider`](../user-guide/auth.md) ou `OAuthProvider` |
-| Permissions par modèle | **Oui** framework de permissions | **Oui** surcharge des indicateurs `can_*` | **Oui** [méthodes par requête](../user-guide/views.md#security-and-authorization) |
-| Permissions par champ | **Partiel** `get_readonly_fields` | **Non** | **Oui** [`can_access_field`](../user-guide/views.md#security-and-authorization) |
-| Hooks de cycle de vie | **Oui** `save_model`, signals | **Oui** `on_model_change` | **Oui** [Hooks de cycle de vie](../user-guide/views.md#lifecycle-hooks) et [événements](../advanced/events.md) |
+| Permissions par modèle | **Oui** framework de permissions | **Oui** surcharge des indicateurs `can_*` | **Oui** [méthodes par requête](../user-guide/views.md#securite-et-autorisations) |
+| Permissions par champ | **Partiel** `get_readonly_fields` | **Non** | **Oui** [`can_access_field`](../user-guide/views.md#securite-et-autorisations) |
+| Hooks de cycle de vie | **Oui** `save_model`, signals | **Oui** `on_model_change` | **Oui** [Hooks de cycle de vie](../user-guide/views.md#hooks-de-cycle-de-vie) et [événements](../advanced/events.md) |
 | Protection CSRF | **Oui** middleware Django | **Oui** via Flask-WTF | **Oui** [Intégré à `Admin`](../user-guide/security.md) |
 | Historique des modifications / journal d'audit | **Oui** `LogEntry` | **Non** | **Partiel** à construire vous-même avec les [événements](../advanced/events.md) |
 | Internationalisation | **Oui** | **Oui** via Flask-Babel | **Oui** [`I18nConfig`](../user-guide/i18n.md) |

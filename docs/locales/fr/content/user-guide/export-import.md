@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/user-guide/export-import/)
+<!-- translation-notice:end -->
 
 # Exportation et importation
 
@@ -103,7 +108,7 @@ class ProductView(ModelView):
 `CsvExporter` transmet ses arguments nommés à `csv.writer` et accepte un paramètre `escape_formulas`. `TablibExporter(format, **kwargs)` couvre tous les formats de tablib et transmet ses arguments nommés à `tablib.Dataset.export()`.
 
 !!! warning
-    L'échappement des formules est désactivé par défaut. Si les champs exportés peuvent contenir des chaînes fournies par les utilisateurs, définissez `escape_formulas=True` sur `CsvExporter`, `TsvExporter` ou `TablibExporter` afin de prévenir l'injection de formules lorsqu'une personne ouvre le fichier dans un tableur. Voir [Injection de formules](security.md#formula-injection).
+    L'échappement des formules est désactivé par défaut. Si les champs exportés peuvent contenir des chaînes fournies par les utilisateurs, définissez `escape_formulas=True` sur `CsvExporter`, `TsvExporter` ou `TablibExporter` afin de prévenir l'injection de formules lorsqu'une personne ouvre le fichier dans un tableur. Voir [Injection de formules](security.md#injection-de-formules).
 
 L'exportation est activée par défaut. Le bouton **Export** apparaît dans la barre d'outils dès lors que la liste `exporters` n'est pas vide. Pour restreindre qui peut exporter, redéfinissez la méthode `can_export(request)` :
 

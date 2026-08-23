@@ -28,6 +28,8 @@ ROOT_CONFIG_PATH = PROJECT_ROOT / "zensical.toml"
 DEFAULT_SKIP = ["changelog.md"]
 
 NOTICE_TITLE = "Supervised Machine Translation"
+#: Label of the per-page link pointing at the English original.
+NOTICE_LINK_LABEL = "Read the original English version"
 NOTICE_BODY = (
     "This content is translated using machine generation guided by "
     "human-curated glossaries and style guides. Because the text is not "
@@ -35,31 +37,106 @@ NOTICE_BODY = (
     "may occur. In case of any discrepancies, the original English version "
     "is the authoritative source."
 )
-#: Localized notices for machine translated pages, keyed by locale code.
-#: Falls back to the English notice for locales without an entry.
-NOTICES: dict[str, tuple[str, str]] = {
-    "fr": (
-        "Traduction automatique supervisée",
-        "Ce contenu est généré par traduction automatique, guidée par des "
-        "glossaires et des guides de style validés par des humains. Comme le "
-        "texte n'est pas relu ligne par ligne, des erreurs ou des formulations "
-        "maladroites peuvent parfois apparaître."
-        "\n\n"
-        "En cas de divergence, la [version originale en anglais]"
-        "(https://jowilf.github.io/starlette-admin/) fait foi.",
-    ),
-}
-NOTICE_RE = re.compile(
-    r"\A---\n.*?\n---\n\n"
-    r"\?\?\? (?P<variant>info|warning) \"[^\"]*\"\n\n"
-    r"(?:    .*(?:\n|\Z))+",
-    re.DOTALL,
-)
+#: Markers wrapping the disclosure notice block in translated pages, so the
+#: block can be identified and rewritten without parsing admonition syntax.
+NOTICE_START_MARKER = "<!-- translation-notice:start -->"
+NOTICE_END_MARKER = "<!-- translation-notice:end -->"
+#: Heading line of the disclosure notice (`??? info "Title"` / warning).
+NOTICE_HEADING_RE = re.compile(r'\?\?\? (?P<variant>info|warning) "[^"]*"')
+
 FRONT_MATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?", re.DOTALL)
 
 
 class I18nError(Exception):
     """A configuration or validation error in the docs i18n pipeline."""
+
+
+# --------------------------------------------------------------------------
+# Minimal TOML writer (stdlib-only, no tomli_w dependency)
+# --------------------------------------------------------------------------
+
+_TOML_BARE_KEY_RE = re.compile(r"[A-Za-z0-9_-]+")
+
+
+def _toml_key(key: str) -> str:
+    return (
+        key if _TOML_BARE_KEY_RE.fullmatch(key) else json.dumps(key, ensure_ascii=False)
+    )
+
+
+def _toml_value(value: Any, indent: int = 0) -> str:
+    """Serialize a value as inline TOML (arrays may span multiple lines)."""
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return repr(value)
+    if isinstance(value, str):
+        return json.dumps(value, ensure_ascii=False)
+    if isinstance(value, list):
+        if not value:
+            return "[]"
+        if any(isinstance(item, dict) for item in value):
+            pad = "    " * (indent + 1)
+            close = "    " * indent
+            items = ",\n".join(
+                f"{pad}{_toml_value(item, indent + 1)}" for item in value
+            )
+            return f"[\n{items},\n{close}]"
+        return "[" + ", ".join(_toml_value(item, indent) for item in value) + "]"
+    if isinstance(value, dict):
+        body = ", ".join(
+            f"{_toml_key(key)} = {_toml_value(item, indent)}"
+            for key, item in value.items()
+        )
+        return "{ " + body + " }"
+    raise I18nError(f"cannot serialize {type(value).__name__} as TOML")
+
+
+def _emit_toml_nav(lines: list[str], nav: list[Any], prefix: str) -> None:
+    for item in nav:
+        label, value = next(iter(item.items()))
+        lines.append(f"\n[[{prefix}]]")
+        lines.append(f"{_toml_key(label)} = {_toml_value(value, indent=1)}")
+
+
+def _emit_toml_table(lines: list[str], table: dict[str, Any], prefix: str) -> None:
+    scalars: list[tuple[str, Any]] = []
+    subtables: list[tuple[str, Any]] = []
+    arrays: list[tuple[str, Any]] = []
+    for key, value in table.items():
+        if isinstance(value, dict):
+            subtables.append((key, value))
+        elif (
+            isinstance(value, list)
+            and value
+            and all(isinstance(item, dict) for item in value)
+        ):
+            arrays.append((key, value))
+        else:
+            scalars.append((key, value))
+    for key, value in scalars:
+        lines.append(f"{_toml_key(key)} = {_toml_value(value)}")
+    if isinstance(table.get("nav"), list):
+        _emit_toml_nav(lines, table["nav"], f"{prefix}.nav")
+    for key, value in subtables:
+        lines.append(f"\n[{prefix}.{_toml_key(key)}]")
+        _emit_toml_table(lines, value, f"{prefix}.{_toml_key(key)}")
+    for key, items in arrays:
+        if key == "nav":
+            continue
+        for item in items:
+            lines.append(f"\n[[{prefix}.{_toml_key(key)}]]")
+            _emit_toml_table(lines, item, f"{prefix}.{_toml_key(key)}")
+
+
+def dump_toml(data: dict[str, Any]) -> str:
+    lines: list[str] = ["[project]"]
+    _emit_toml_table(lines, data, "project")
+    return "\n".join(lines) + "\n"
+
+
+def locale_config_path(code: str) -> Path:
+    return PROJECT_ROOT / f"zensical.{code}.toml"
 
 
 def locale_dir(code: str) -> Path:
@@ -254,8 +331,61 @@ def dump_document(meta: dict[str, Any], body: str) -> str:
     return f"---\n{front}\n---\n\n{body}"
 
 
-def notice_text(variant: str, code: str = SOURCE_LOCALE) -> str:
-    title, notice_body = NOTICES.get(code, (NOTICE_TITLE, NOTICE_BODY))
+def load_notice(code: str) -> tuple[str, str]:
+    """Return the localized (title, body, link label) for the disclosure notice.
+
+    Read from the locale's nav.json (`notice_title` / `notice_body` /
+    `notice_link_label`, written by `translate.py <code> --init`). Falls back
+    to the English wording when the locale carries no complete translation.
+    """
+    if code == SOURCE_LOCALE:
+        return NOTICE_TITLE, NOTICE_BODY, NOTICE_LINK_LABEL
+    try:
+        data = load_nav_json(code)
+    except (OSError, ValueError):
+        return NOTICE_TITLE, NOTICE_BODY, NOTICE_LINK_LABEL
+    title = data.get("notice_title")
+    body = data.get("notice_body")
+    if (
+        isinstance(title, str)
+        and title.strip()
+        and isinstance(body, str)
+        and body.strip()
+    ):
+        label = data.get("notice_link_label")
+        if not isinstance(label, str) or not label.strip():
+            label = NOTICE_LINK_LABEL
+        return title, body, label.strip()
+    return NOTICE_TITLE, NOTICE_BODY, NOTICE_LINK_LABEL
+
+
+def site_url() -> str:
+    """Base URL of the English site, from the root zensical config."""
+    try:
+        config = tomllib.loads(ROOT_CONFIG_PATH.read_text(encoding="utf-8"))
+        url = config["project"]["site_url"]
+        if isinstance(url, str) and url.strip():
+            return url.rstrip("/") + "/"
+    except (OSError, KeyError, tomllib.TOMLDecodeError):
+        pass
+    return "https://jowilf.github.io/starlette-admin/"
+
+
+def en_page_url(rel: str) -> str:
+    """URL of the English counterpart of a translated page (`dir/page.md`)."""
+    base = site_url()
+    if rel == "index.md":
+        return base
+    path = rel.removesuffix(".md")
+    if path.endswith("/index"):
+        path = path[: -len("/index")]
+    return f"{base}{path}/"
+
+
+def notice_text(
+    variant: str, code: str = SOURCE_LOCALE, en_url: str | None = None
+) -> str:
+    title, notice_body, link_label = load_notice(code)
     paragraphs = []
     for para in notice_body.split("\n" * 2):
         if "](" in para:
@@ -273,23 +403,64 @@ def notice_text(variant: str, code: str = SOURCE_LOCALE) -> str:
                     break_on_hyphens=False,
                 )
             )
+    if en_url:
+        paragraphs.append(f"    [{link_label}]({en_url})")
     body = ("\n" * 2).join(paragraphs)
     return f'??? {variant} "{title}"\n\n{body}\n'
 
 
-def insert_notice(body: str, variant: str, code: str = SOURCE_LOCALE) -> str:
-    return f"{notice_text(variant, code)}\n{body.strip(chr(10))}\n"
+def insert_notice(
+    body: str, variant: str, code: str = SOURCE_LOCALE, en_url: str | None = None
+) -> str:
+    """Prepend a marker-wrapped notice block followed by the page body."""
+    return (
+        f"{NOTICE_START_MARKER}\n"
+        f"{notice_text(variant, code, en_url)}"
+        f"{NOTICE_END_MARKER}\n\n{body.strip(chr(10))}\n"
+    )
 
 
-def flip_notice(text: str, desired: str) -> tuple[str, bool]:
-    match = NOTICE_RE.search(text)
-    if not match:
+def set_notice(
+    text: str, variant: str, code: str, en_url: str | None = None
+) -> tuple[str, bool]:
+    """Rewrite the notice block with the given variant and localized wording.
+
+    Handles both marker-wrapped blocks and legacy unmarked notices (which are
+    migrated to the marker format). Idempotent: returns the text unchanged
+    when the block already matches.
+    """
+    meta, body = split_front_matter(text)
+    if meta is None:
         return text, False
-    current = match.group("variant")
-    if current == desired:
+    start = body.find(NOTICE_START_MARKER)
+    if start != -1:
+        end = body.find(NOTICE_END_MARKER, start)
+        if end == -1:
+            return text, False
+        rest = body[end + len(NOTICE_END_MARKER) :]
+        updated = dump_document(meta, insert_notice(rest, variant, code, en_url))
+        return updated, updated != text
+    # Legacy unmarked notice: the admonition is the first line of the body.
+    lines = body.lstrip("\n").split("\n")
+    heading = NOTICE_HEADING_RE.match(lines[0]) if lines else None
+    if not heading:
         return text, False
-    start = match.start("variant")
-    return text[:start] + desired + text[start + len(current) :], True
+    index = 1
+    while index < len(lines):
+        line = lines[index]
+        # Notice paragraphs are indented; blank lines belong to the block
+        # only when another indented paragraph follows them.
+        if line.startswith("    ") or (
+            line == ""
+            and index + 1 < len(lines)
+            and lines[index + 1].startswith("    ")
+        ):
+            index += 1
+            continue
+        break
+    rest = "\n".join(lines[index:])
+    updated = dump_document(meta, insert_notice(rest, variant, code, en_url))
+    return updated, updated != text
 
 
 def stored_source_hash(text: str) -> str | None:
@@ -348,7 +519,12 @@ def staleness_pass(content_dir: Path) -> int:
         if not is_machine_translated(text):
             continue
         fresh = hashes_current(text, EN_CONTENT_DIR / rel, code)
-        text, did = flip_notice(text, "info" if fresh else "warning")
+        # Rewrite the notice with the right variant, the locale's current
+        # wording and a link to the English original (also migrates legacy
+        # unmarked notices to the marker format).
+        text, did = set_notice(
+            text, "info" if fresh else "warning", code, en_url=en_page_url(rel)
+        )
         if did:
             path.write_text(text, encoding="utf-8")
             flipped += 1
@@ -372,13 +548,32 @@ def _prune_nav(nav: list[Any], content_dir: Path) -> list[Any]:
     return pruned
 
 
-def _count_leaves(nav: list[Any]) -> int:
-    total = 0
+def _nav_translation_stats(
+    nav: list[Any], content_dir: Path, skip: list[str]
+) -> tuple[int, int]:
+    """Return (translated, expected) nav leaf counts for a locale.
+
+    Deliberately untranslated pages (`DEFAULT_SKIP` plus the locale's own
+    `skip` list) are excluded from both counts.
+    """
+    translated = expected = 0
     for item in nav:
-        if isinstance(item, dict) and len(item) == 1:
-            value = next(iter(item.values()))
-            total += 1 if isinstance(value, str) else _count_leaves(value)
-    return total
+        if not isinstance(item, dict) or len(item) != 1:
+            continue
+        value = next(iter(item.values()))
+        if isinstance(value, str):
+            if is_skipped(value, skip):
+                continue
+            expected += 1
+            if (content_dir / value).is_file():
+                translated += 1
+        else:
+            sub_translated, sub_expected = _nav_translation_stats(
+                value, content_dir, skip
+            )
+            translated += sub_translated
+            expected += sub_expected
+    return translated, expected
 
 
 def generate_locale_config(code: str) -> Path:
@@ -388,18 +583,89 @@ def generate_locale_config(code: str) -> Path:
     config["site_dir"] = f"site/{code}"
     theme = config.setdefault("theme", {})
     theme["language"] = code
-    nav = load_nav_json(code)["nav"]
+    nav_data = load_nav_json(code)
+    nav = nav_data["nav"]
     content_dir = locale_content_dir(code)
-    available, total = _count_leaves(_prune_nav(nav, content_dir)), _count_leaves(nav)
+    translated, total = _nav_translation_stats(
+        nav, content_dir, [*DEFAULT_SKIP, *nav_data.get("skip", [])]
+    )
     config["nav"] = _prune_nav(nav, content_dir)
-    if available < total:
+    if translated < total:
         print(
-            f"note ({code}): {total - available}/{total} nav pages are not "
+            f"note ({code}): {total - translated}/{total} nav pages are not "
             "translated yet and were left out of this build",
             flush=True,
         )
-    out_path = PROJECT_ROOT / f"zensical.{code}.json"
-    out_path.write_text(
-        json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    out_path = locale_config_path(code)
+    out_path.write_text(dump_toml(config), encoding="utf-8")
     return out_path
+
+
+# --------------------------------------------------------------------------
+# Language switcher (`extra.alternate`) in the main zensical.toml
+# --------------------------------------------------------------------------
+
+ALTERNATE_HEADER = "[[project.extra.alternate]]"
+ALTERNATE_MARKER = (
+    "# Language switcher entries -- managed by docs/scripts/build.py, do not edit."
+)
+
+
+def alternate_entries() -> list[dict[str, str]]:
+    """Language switcher entries: English at the site root, locales in subdirs."""
+    entries = [{"name": "English", "link": "/", "lang": SOURCE_LOCALE}]
+    for entry in load_registry():
+        code = entry["code"]
+        entries.append(
+            {"name": entry.get("name") or code, "link": f"/{code}/", "lang": code}
+        )
+    return entries
+
+
+def render_alternate_block() -> str:
+    chunks = [ALTERNATE_MARKER]
+    for entry in alternate_entries():
+        chunks.extend(
+            [
+                ALTERNATE_HEADER,
+                f'name = "{entry["name"]}"',
+                f'link = "{entry["link"]}"',
+                f'lang = "{entry["lang"]}"',
+                "",
+            ]
+        )
+    return "\n".join(chunks).rstrip("\n")
+
+
+def strip_alternate_block(text: str) -> str:
+    lines = text.splitlines()
+    kept: list[str] = []
+    index = 0
+    total = len(lines)
+    while index < total:
+        line = lines[index]
+        if line.strip() in (ALTERNATE_HEADER, ALTERNATE_MARKER):
+            index += 1
+            # Swallow the whole managed block: its key/value lines, blanks
+            # and repeated [[...]] headers. Stop at any other table header
+            # or foreign comment.
+            while index < total:
+                stripped = lines[index].strip()
+                if stripped in (ALTERNATE_HEADER, ALTERNATE_MARKER):
+                    index += 1
+                elif stripped.startswith(("[", "#")):
+                    break
+                else:
+                    index += 1
+            continue
+        kept.append(line)
+        index += 1
+    return "\n".join(kept).rstrip("\n")
+
+
+def sync_alternates() -> None:
+    """Regenerate the `[[project.extra.alternate]]` block in zensical.toml."""
+    text = strip_alternate_block(ROOT_CONFIG_PATH.read_text(encoding="utf-8"))
+    updated = text + "\n\n" + render_alternate_block() + "\n"
+    ROOT_CONFIG_PATH.write_text(updated, encoding="utf-8")
+    print(f"synced language switcher into {ROOT_CONFIG_PATH.name}", flush=True)

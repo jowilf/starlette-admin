@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/user-guide/inline-forms/)
+<!-- translation-notice:end -->
 
 # Formulaires en ligne
 
@@ -81,7 +86,7 @@ Sa mise en place se fait en deux étapes : définissez une sous-classe d'`Inline
 
 Les pages de création et de modification d'`ArticleView` affichent désormais un formset `Comments` sous les champs propres à l'article. Le formset démarre avec une ligne vide (`extra = 1`) et inclut les contrôles d'ajout et de suppression que le backend SQLAlchemy câble pour vous.
 
-Notez que `CommentInline` ne définit jamais `fk_attr`. Le backend SQLAlchemy inspecte `Article.comments` et déduit que `Comment.article_id` est la clé étrangère, car il s'agit de la seule relation qui pointe vers `Comment`. Définissez vous-même `fk_attr` uniquement lorsque cette inférence est ambiguë ou lorsque la relation n'est pas déclarée sur le modèle ORM. Consultez [Clés étrangères explicites et composites](#clés-étrangères-explicites-et-composites).
+Notez que `CommentInline` ne définit jamais `fk_attr`. Le backend SQLAlchemy inspecte `Article.comments` et déduit que `Comment.article_id` est la clé étrangère, car il s'agit de la seule relation qui pointe vers `Comment`. Définissez vous-même `fk_attr` uniquement lorsque cette inférence est ambiguë ou lorsque la relation n'est pas déclarée sur le modèle ORM. Consultez [Clés étrangères explicites et composites](#cles-etrangeres-explicites-et-composites).
 
 ## Référence de `InlineModelView`
 

@@ -7,8 +7,9 @@ import sys
 from pathlib import Path
 
 from i18n import (
+    CONTENT_SUBDIR,
     DOCS_DIR,
-    EN_CONTENT_DIR,
+    LOCALES_DIR,
     SHARED_DIR,
     SHARED_ITEMS,
     I18nError,
@@ -17,6 +18,7 @@ from i18n import (
     locale_content_dir,
     resolve_locales,
     staleness_pass,
+    sync_alternates,
 )
 
 
@@ -35,6 +37,13 @@ def sync_shared(content_dir: Path) -> None:
         print(f"synced shared/{item} -> {rel}/{item}", flush=True)
 
 
+def sync_all_shared() -> None:
+    """Sync shared files into every locale content dir (EN included)."""
+    for content_dir in sorted(LOCALES_DIR.glob(f"*/{CONTENT_SUBDIR}")):
+        if content_dir.is_dir():
+            sync_shared(content_dir)
+
+
 def run_zensical(args: list[str]) -> int:
     return subprocess.run(["zensical", "build", *args], check=False).returncode
 
@@ -49,7 +58,13 @@ def main() -> int:
     )
     args, extras = parser.parse_known_args()
 
-    sync_shared(EN_CONTENT_DIR)
+    try:
+        sync_alternates()
+    except I18nError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+
+    sync_all_shared()
     code = run_zensical(extras)
     if code != 0 or not args.locales:
         return code

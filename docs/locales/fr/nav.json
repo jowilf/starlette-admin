@@ -2,15 +2,15 @@
   "skip": [],
   "nav": [
     {
-      "Home": "index.md"
+      "Accueil": "index.md"
     },
     {
-      "Getting Started": [
+      "Premiers pas": [
         {
           "Installation": "getting-started/installation.md"
         },
         {
-          "Quickstart": "getting-started/quickstart.md"
+          "Démarrage rapide": "getting-started/quickstart.md"
         },
         {
           "Concepts": "getting-started/concepts.md"
@@ -18,53 +18,53 @@
       ]
     },
     {
-      "User Guide": [
+      "Guide de l'utilisateur :": [
         {
-          "Views": "user-guide/views.md"
+          "Vues": "user-guide/views.md"
         },
         {
           "Admin": "user-guide/admin.md"
         },
         {
-          "Fields": "user-guide/fields.md"
+          "Champs": "user-guide/fields.md"
         },
         {
-          "Filters": "user-guide/filters.md"
+          "Filtres": "user-guide/filters.md"
         },
         {
           "Actions": "user-guide/actions.md"
         },
         {
-          "Inline Edit": "user-guide/inline-edit.md"
+          "Modification en ligne": "user-guide/inline-edit.md"
         },
         {
-          "Authentication": "user-guide/auth.md"
+          "Authentification": "user-guide/auth.md"
         },
         {
-          "Export & Import": "user-guide/export-import.md"
+          "Exportation et importation": "user-guide/export-import.md"
         },
         {
-          "File Storage": "user-guide/file-storage.md"
+          "Stockage de fichiers": "user-guide/file-storage.md"
         },
         {
-          "Inline Forms": "user-guide/inline-forms.md"
+          "Formulaires en ligne": "user-guide/inline-forms.md"
         },
         {
-          "Custom Views & Widgets": "user-guide/custom-views.md"
+          "Vues personnalisées et widgets": "user-guide/custom-views.md"
         },
         {
-          "Flash Messages": "user-guide/flash-messages.md"
+          "Messages flash": "user-guide/flash-messages.md"
         },
         {
-          "Internationalization & Timezones": "user-guide/i18n.md"
+          "Internationalisation et fuseaux horaires": "user-guide/i18n.md"
         },
         {
-          "Security": "user-guide/security.md"
+          "Sécurité": "user-guide/security.md"
         }
       ]
     },
     {
-      "Integrations": [
+      "Intégrations": [
         {
           "SQLAlchemy": "integrations/sqlalchemy.md"
         },
@@ -81,104 +81,104 @@
           "MongoEngine": "integrations/mongoengine.md"
         },
         {
-          "Custom Backend": "integrations/custom-backend.md"
+          "Backend personnalisé": "integrations/custom-backend.md"
         }
       ]
     },
     {
-      "Advanced": [
+      "Sujets avancés": [
         {
-          "Custom Fields": "advanced/custom-fields.md"
+          "Champs personnalisés": "advanced/custom-fields.md"
         },
         {
-          "Form Layout": "advanced/form-layout.md"
+          "Mise en page des formulaires": "advanced/form-layout.md"
         },
         {
-          "Custom Filters": "advanced/custom-filters.md"
+          "Filtres personnalisés": "advanced/custom-filters.md"
         },
         {
-          "Events": "advanced/events.md"
+          "Événements": "advanced/events.md"
         },
         {
-          "Custom Themes": "advanced/custom-themes.md"
+          "Thèmes personnalisés": "advanced/custom-themes.md"
         },
         {
           "Templates": "advanced/templates.md"
         },
         {
-          "Multiple Admin Instances": "advanced/multiple-admin.md"
+          "Instances d'administration multiples": "advanced/multiple-admin.md"
         },
         {
-          "Extension Points": "advanced/extension-points.md"
+          "Points d'extension": "advanced/extension-points.md"
         },
         {
-          "Plugins": "advanced/plugins.md"
+          "Plug-ins": "advanced/plugins.md"
         },
         {
-          "Deployment": "advanced/deployment.md"
+          "Déploiement": "advanced/deployment.md"
         }
       ]
     },
     {
-      "Comparison": [
+      "Comparaisons": [
         {
-          "Overview": "comparison/index.md"
+          "Vue d'ensemble": "comparison/index.md"
         },
         {
-          "Coming from Django Admin": "comparison/django-admin.md"
+          "Venir de Django Admin": "comparison/django-admin.md"
         },
         {
-          "Coming from Flask-Admin": "comparison/flask-admin.md"
+          "Venir de Flask-Admin": "comparison/flask-admin.md"
         }
       ]
     },
     {
       "Blog": [
         {
-          "Overview": "blog/index.md"
+          "Vue d'ensemble": "blog/index.md"
         },
         {
-          "Add an Admin Panel to FastAPI in 5 Minutes": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
+          "Ajouter un panneau d'administration à FastAPI en 5 minutes": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
         },
         {
-          "Building Soft Deletes and a Trash View in FastAPI Using Starlette Admin": "blog/posts/soft-deletes-trash-view.md"
+          "Créer des suppressions logiques et une vue corbeille dans FastAPI avec Starlette Admin": "blog/posts/soft-deletes-trash-view.md"
         }
       ]
     },
     {
-      "API Reference": [
+      "Référence de l'API :": [
         {
           "Admin": "api/admin.md"
         },
         {
-          "Views": "api/views.md"
+          "Vues": "api/views.md"
         },
         {
-          "Fields": "api/fields.md"
+          "Champs": "api/fields.md"
         },
         {
           "Widgets": "api/widgets.md"
         },
         {
-          "Validators": "api/validators.md"
+          "Validateurs": "api/validators.md"
         },
         {
-          "Filters": "api/filters.md"
+          "Filtres": "api/filters.md"
         },
         {
-          "Auth": "api/auth.md"
+          "Authentification": "api/auth.md"
         },
         {
-          "Events": "api/events.md"
+          "Événements": "api/events.md"
         },
         {
-          "Storage": "api/storage.md"
+          "Stockage": "api/storage.md"
         },
         {
-          "Export": "api/export.md"
+          "Exportation": "api/export.md"
         },
         {
-          "Import": "api/import.md"
+          "Importation": "api/import.md"
         },
         {
           "Contrib": [
@@ -202,10 +202,13 @@
       ]
     },
     {
-      "Migration Guide": "migration.md"
+      "Guide de migration :": "migration.md"
     },
     {
-      "Changelog": "changelog.md"
+      "Journal des modifications :": "changelog.md"
     }
-  ]
+  ],
+  "notice_title": "Traduction automatique supervisée",
+  "notice_body": "Ce contenu est traduit à l'aide d'une génération automatique guidée par des glossaires et des guides de style élaborés par des humains. Le texte n'étant pas relu manuellement ligne par ligne, des erreurs ou des tournures maladroites peuvent occasionnellement apparaître.\n\nEn cas de divergence, la version anglaise constitue la source de référence.",
+  "notice_link_label": "Lire la version originale en anglais"
 }

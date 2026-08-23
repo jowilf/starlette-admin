@@ -158,3 +158,19 @@ link = "https://twitter.com/jowilf"
 [[project.extra.social]]
 icon = "fontawesome/brands/linkedin"
 link = "https://www.linkedin.com/in/jocelin-hounon-2008aa139"
+
+# Language switcher entries -- managed by docs/scripts/build.py, do not edit.
+[[project.extra.alternate]]
+name = "English"
+link = "/"
+lang = "en"
+
+[[project.extra.alternate]]
+name = "Français"
+link = "/fr/"
+lang = "fr"
+
+[[project.extra.alternate]]
+name = "Español"
+link = "/es/"
+lang = "es"

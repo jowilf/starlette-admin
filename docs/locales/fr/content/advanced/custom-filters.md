@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/advanced/custom-filters/)
+<!-- translation-notice:end -->
 
 # Filtres personnalisés
 
@@ -104,7 +109,7 @@ Vous pouvez enregistrer un filtre personnalisé auprès d'une vue de deux façon
 
 ### Par instance de champ (portée limitée)
 
-Transmettez le filtre dans la liste `filters=` du champ cible, soit en complément des filtres par défaut, soit à leur place. Consultez [Remplacer les filtres d'un champ spécifique](../user-guide/filters.md#overriding-filters-for-a-specific-field) pour le même modèle appliqué aux filtres intégrés. Utilisez cette approche lorsque le filtre n'a de sens que pour un seul champ.
+Transmettez le filtre dans la liste `filters=` du champ cible, soit en complément des filtres par défaut, soit à leur place. Consultez [Remplacer les filtres d'un champ spécifique](../user-guide/filters.md#remplacer-les-filtres-dun-champ-specifique) pour le même modèle appliqué aux filtres intégrés. Utilisez cette approche lorsque le filtre n'a de sens que pour un seul champ.
 
 ### À l'échelle du registre (tous les types de champs correspondants)
 
@@ -285,7 +290,7 @@ http://127.0.0.1:8000/admin/product/list?filter=lot_size__divisible_by=6&sort=id
 ```
 
 !!! tip
-    Utilisez une sous-classe de `FilterRegistry` lorsqu'un filtre est suffisamment générique pour s'appliquer à chaque champ d'un type donné dans une vue. Utilisez la liste `filters=` par champ lorsque la logique ne concerne qu'un seul champ. Le [guide des filtres](../user-guide/filters.md#overriding-filters-for-a-specific-field) contient des exemples du modèle par champ.
+    Utilisez une sous-classe de `FilterRegistry` lorsqu'un filtre est suffisamment générique pour s'appliquer à chaque champ d'un type donné dans une vue. Utilisez la liste `filters=` par champ lorsque la logique ne concerne qu'un seul champ. Le [guide des filtres](../user-guide/filters.md#remplacer-les-filtres-dun-champ-specifique) contient des exemples du modèle par champ.
 
 ## Choix dynamiques avec `get_choices`
 

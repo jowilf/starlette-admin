@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/user-guide/custom-views/)
+<!-- translation-notice:end -->
 
 # Vues personnalisées
 
@@ -50,7 +55,7 @@ admin.add_view(
 * **`menu_label`**, **`icon`** et **`path`** : contrôlent l'entrée dans la barre latérale ainsi que l'URL.
 * **`widget`** : détermine ce que la page affiche. Passez une instance unique de `BaseWidget`, ou un appelable (`(request) -> BaseWidget | None`) qui construit l'arborescence à chaque requête. Utilisez la forme appelable lorsque la page dépend de données en temps réel, de l'utilisateur actuel ou de feature flags.
 
-Pour afficher plusieurs widgets, passez un [widget de mise en page](#layout-widgets) contenant des enfants.
+Pour afficher plusieurs widgets, passez un [widget de mise en page](#widgets-de-mise-en-page) contenant des enfants.
 
 N'héritez de `CustomView` que si vous avez besoin d'endpoints personnalisés, d'un contrôle d'accès ou d'un contrôle total sur la réponse HTTP.
 

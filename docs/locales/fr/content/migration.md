@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/migration/)
+<!-- translation-notice:end -->
 
 # Guide de migration
 
@@ -28,9 +33,9 @@ Cette page rassemble les instructions de mise à niveau entre les versions de `s
 
 Cette version refactorise les internes de `starlette-admin` et introduit un large ensemble de nouvelles fonctionnalités. Bien que l'API de haut niveau reste largement inchangée, la mise à jour la plus significative est la réécriture du rendu de la page de liste. Nous avons abandonné DataTables au profit d'un tableau rendu côté serveur. La plupart des autres mises à jour consistent en des renommages ou des modifications mineures de signatures.
 
-Ce guide couvre chaque changement majeur dans l'ordre où vous êtes le plus susceptible de les rencontrer. Chaque section compare l'ancienne API à son remplacement. Si votre implémentation repose sur les bases ou des personnalisations légères (comme une instance d'`Admin`, quelques sous-classes de `ModelView`, `fields` et `searchable_fields`), votre migration se limitera probablement aux sections [Prérequis](#requirements) et [Le constructeur de `Admin`](#the-admin-constructor), plus quelques renommages.
+Ce guide couvre chaque changement majeur dans l'ordre où vous êtes le plus susceptible de les rencontrer. Chaque section compare l'ancienne API à son remplacement. Si votre implémentation repose sur les bases ou des personnalisations légères (comme une instance d'`Admin`, quelques sous-classes de `ModelView`, `fields` et `searchable_fields`), votre migration se limitera probablement aux sections [Prérequis](#prerequis) et [Le constructeur de `Admin`](#le-constructeur-de-admin), plus quelques renommages.
 
-Les personnalisations de l'ancienne page de liste demandent le plus d'attention. Les options DataTables et les fonctions de rendu JavaScript n'ont pas d'équivalent direct et doivent être portées vers des templates côté serveur (voir [Suppression de DataTables](#datatables-removal)).
+Les personnalisations de l'ancienne page de liste demandent le plus d'attention. Les options DataTables et les fonctions de rendu JavaScript n'ont pas d'équivalent direct et doivent être portées vers des templates côté serveur (voir [Suppression de DataTables](#suppression-de-datatables)).
 
 !!! tip
     Effectuez la mise à niveau de vos dépendances en une seule étape et démarrez votre application. La plupart des attributs supprimés ou renommés génèrent des erreurs claires au démarrage plutôt que d'échouer silencieusement à l'exécution.
@@ -49,7 +54,7 @@ Au-delà des changements majeurs décrits ci-dessous, cette version inclut :
 * **[Édition en ligne](user-guide/inline-edit.md) :** Modifiez un champ unique directement depuis la page de liste.
 * **[Formulaires en ligne](user-guide/inline-forms.md) :** Modifiez des modèles liés dans un formulaire parent à l'aide d'`InlineModelView`.
 * **Autres améliorations :** [Messages flash](user-guide/flash-messages.md), [connexion OAuth](user-guide/auth.md), un [backend Tortoise ORM](integrations/tortoise.md), de nouveaux champs (`ComputedField`, `SlugField`, `UUIDField`, `IPAddressField`), des `validators` au niveau des champs et une fonctionnalité de copie vers le presse-papiers sur n'importe quel champ.
-* **[Journalisation](user-guide/admin.md#debugging) :** Le paquet journalise désormais en interne sous l'espace de noms `starlette_admin`, silencieux par défaut. Passez `Admin(debug=True)` ou appelez `starlette_admin.logging.configure_logging()` pour voir le routage des requêtes, le middleware et les décisions de permissions dans la console, ce qui est particulièrement pratique pendant la migration.
+* **[Journalisation](user-guide/admin.md#debogage) :** Le paquet journalise désormais en interne sous l'espace de noms `starlette_admin`, silencieux par défaut. Passez `Admin(debug=True)` ou appelez `starlette_admin.logging.configure_logging()` pour voir le routage des requêtes, le middleware et les décisions de permissions dans la console, ce qui est particulièrement pratique pendant la migration.
 * **Couverture de tests étendue :** La suite de tests est désormais nettement plus vaste, avec des tests Playwright de bout en bout qui valident les flux critiques de l'interface d'administration.
 * **Paquet plus léger :** La taille du paquet publié sur PyPI a été réduite d'environ 50 %.
 
@@ -195,7 +200,7 @@ class MyAuthProvider(AuthProvider):
 * Les méthodes `is_authenticated`, `get_admin_user` et `get_admin_config` sont fusionnées en une seule méthode `authenticate(request) -> AdminUser | None`. Retourner `None` indique un état non authentifié.
 * Les méthodes `login` et `logout` ne reçoivent ni ne retournent plus la `response` préparée. Retournez `None` pour la redirection par défaut, ou retournez une `Response` personnalisée pour modifier ce comportement.
 * `AdminConfig` est supprimé. Gérez les titres et logos par requête à l'aide de la forme callable de `logo_url` et `login_logo_url` sur l'instance `Admin`.
-* Un [`OAuthProvider`](user-guide/auth.md#oauthprovider-oauth2oidc-redirect-flow) intégré gère les flux de connexion OAuth2/OIDC prêts à l'emploi.
+* Un [`OAuthProvider`](user-guide/auth.md#oauthprovider-flux-de-redirection-oauth2oidc) intégré gère les flux de connexion OAuth2/OIDC prêts à l'emploi.
 * Le décorateur `login_not_required` reste inchangé.
 
 ### Exportation et importation
@@ -318,10 +323,10 @@ async def count(self, request, q=None, filters=None): ...
 
 ### Éléments supprimés sans remplacement
 
-* `AdminConfig` (voir [Authentification](#authentication)).
-* `datatables_options`, `responsive_table` et `save_state` (voir [Suppression de DataTables](#datatables-removal)).
-* Le backend Odmantic (voir [Prérequis](#requirements)).
+* `AdminConfig` (voir [Authentification](#authentification)).
+* `datatables_options`, `responsive_table` et `save_state` (voir [Suppression de DataTables](#suppression-de-datatables)).
+* Le backend Odmantic (voir [Prérequis](#prerequis)).
 
 ## Obtenir de l'aide
 
-Si vous rencontrez un problème de migration non couvert par ce guide, veuillez [ouvrir une issue](https://github.com/jowilf/starlette-admin/issues). Incluez une reproduction minimale du problème et précisez la version depuis laquelle vous effectuez la mise à niveau. Exécuter avec [`Admin(debug=True)`](user-guide/admin.md#debugging) révèle souvent directement la cause, et les journaux obtenus constituent un excellent complément à votre rapport.
+Si vous rencontrez un problème de migration non couvert par ce guide, veuillez [ouvrir une issue](https://github.com/jowilf/starlette-admin/issues). Incluez une reproduction minimale du problème et précisez la version depuis laquelle vous effectuez la mise à niveau. Exécuter avec [`Admin(debug=True)`](user-guide/admin.md#debogage) révèle souvent directement la cause, et les journaux obtenus constituent un excellent complément à votre rapport.

@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/advanced/custom-fields/)
+<!-- translation-notice:end -->
 
 # Champs personnalisés
 
@@ -81,7 +86,7 @@ Le reste de cette page décrit quoi remplacer lorsqu'un champ nécessite plus qu
 `StatusBadgeField` ne remplace aucune d'entre elles, car `EnumField` analyse déjà la valeur soumise par rapport à `choices` et lit la chaîne brute depuis `obj.status`. Le badge est une présentation posée sur cette chaîne. Remplacez ces trois méthodes lorsque la valeur elle-même doit être calculée ou restructurée plutôt que simplement re-rendue.
 
 !!! tip "Hooks ou héritage"
-    Pour une modification ponctuelle d'un seul champ, vous avez rarement besoin d'une sous-classe. Passez plutôt les [hooks `getter`, `formatter` et `parser`](../user-guide/fields.md#computing-formatting-and-parsing-values) comme arguments du constructeur, afin de gérer la lecture, la mise en forme pour l'affichage et l'analyse de la saisie.
+    Pour une modification ponctuelle d'un seul champ, vous avez rarement besoin d'une sous-classe. Passez plutôt les [hooks `getter`, `formatter` et `parser`](../user-guide/fields.md#calculer-mettre-en-forme-et-analyser-les-valeurs) comme arguments du constructeur, afin de gérer la lecture, la mise en forme pour l'affichage et l'analyse de la saisie.
     **Quand hériter :** uniquement lorsque vous avez besoin de la même logique dans plusieurs vues, ou lorsque vous devez modifier les templates.
 
 `parse_form_data` reçoit le `FormData` brut (de `starlette.datastructures`) provenant de la requête et renvoie les données que `view.create()` ou `view.edit()` doit recevoir pour ce champ. L'implémentation par défaut lit `form_data.get(self.id)` et la renvoie inchangée. La plupart des champs ont seulement besoin d'ajouter une conversion de type :

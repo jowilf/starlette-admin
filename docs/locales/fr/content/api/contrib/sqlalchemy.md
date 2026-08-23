@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/api/contrib/sqlalchemy/)
+<!-- translation-notice:end -->
 
 # Contrib : SQLAlchemy
 
@@ -33,7 +38,7 @@ générée à partir des docstrings. Pour un guide orienté tâches, consultez
 ## Validation Pydantic
 
 L'extension `ext.pydantic` valide les données du formulaire par rapport à un modèle Pydantic avant
-d'écrire l'enregistrement. Consultez [Validation Pydantic](../../integrations/sqlalchemy.md#pydantic-validation) pour
+d'écrire l'enregistrement. Consultez [Validation Pydantic](../../integrations/sqlalchemy.md#validation-pydantic) pour
 le guide complet.
 
 ::: starlette_admin.contrib.sqla.ext.pydantic.ModelView
@@ -66,4 +71,4 @@ le guide complet.
     Les classes concrètes de filtres (`EqualFilter`, `ContainsFilter`, `BetweenFilter`, etc.) ne sont pas
     énumérées ici. Elles correspondent un à un aux filtres indépendants du backend documentés dans
     [Filtres](../filters.md) ; les comportements spécifiques à SQLAlchemy qu'il est utile de connaître sont
-    traités dans [SQLAlchemy](../../integrations/sqlalchemy.md#filter-registry).
+    traités dans [SQLAlchemy](../../integrations/sqlalchemy.md#registre-de-filtres).

@@ -2,7 +2,11 @@
   "locales": [
     {
       "code": "fr",
-      "name": "fr"
+      "name": "Français"
+    },
+    {
+      "code": "es",
+      "name": "Español"
     }
   ]
 }

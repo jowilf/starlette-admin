@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/comparison/flask-admin/)
+<!-- translation-notice:end -->
 
 # Migrer depuis Flask-Admin
 
@@ -74,18 +79,18 @@ Il n'y a pas de commutateur `template_mode`. L'interface utilise [Tabler](https:
 | `column_exclude_list` | `exclude_fields_from_list` |  |
 | `column_labels` | `label=` | Par exemple, `StringField("title", label="Headline")` |
 | `column_descriptions` | `help_text=` | S'applique à la définition du champ. |
-| `column_formatters` | [`formatter=`](../user-guide/fields.md#computing-formatting-and-parsing-values) sur le champ | Par exemple, `StringField("title", formatter={RequestAction.LIST: lambda request, value: value[:40]})`. |
+| `column_formatters` | [`formatter=`](../user-guide/fields.md#calculer-mettre-en-forme-et-analyser-les-valeurs) sur le champ | Par exemple, `StringField("title", formatter={RequestAction.LIST: lambda request, value: value[:40]})`. |
 | `column_formatters_detail` / formateurs d'exportation | Le même dictionnaire `formatter=`, indexé par `RequestAction` | Une seule correspondance couvre le formatage pour la liste, le détail et l'exportation. Les actions sans entrée conservent la valeur brute. |
 | `column_type_formatters` | `formatter=` par champ, ou une sous-classe de champ personnalisée | Il n'existe pas de registre par type. Attachez le formateur à chaque champ, ou [créez une sous-classe du champ](../advanced/custom-fields.md) et réutilisez-la. |
 | Propriétés du modèle ou callables dans `column_list` | [`ComputedField`](../user-guide/fields.md#computedfield) ou `getter=` sur n'importe quel champ | Ajoute des colonnes virtuelles, ou redirige la recherche de valeur d'un champ existant, sans sous-classe. |
-| Champs WTForms personnalisés (conversion de valeur) | [`parser=`](../user-guide/fields.md#computing-formatting-and-parsing-values) sur le champ | Remplace l'analyse par défaut du formulaire ou de l'importation du champ selon `RequestAction`. |
-| `column_searchable_list` | [`searchable_fields`](../user-guide/views.md#search-and-sort) |  |
+| Champs WTForms personnalisés (conversion de valeur) | [`parser=`](../user-guide/fields.md#calculer-mettre-en-forme-et-analyser-les-valeurs) sur le champ | Remplace l'analyse par défaut du formulaire ou de l'importation du champ selon `RequestAction`. |
+| `column_searchable_list` | [`searchable_fields`](../user-guide/views.md#recherche-et-tri) |  |
 | `column_filters` | `searchable_fields` combiné aux `filters=` par champ | Remplace la liste plate de filtres par un [constructeur visuel](../user-guide/filters.md) qui prend en charge des groupes imbriqués `AND`/`OR`. |
-| `column_sortable_list` | [`sortable_fields`](../user-guide/views.md#search-and-sort) |  |
-| `column_default_sort` | [`fields_default_sort`](../user-guide/views.md#search-and-sort) | Par exemple, `[("created_at", True)]` trie dans l'ordre décroissant. |
+| `column_sortable_list` | [`sortable_fields`](../user-guide/views.md#recherche-et-tri) |  |
+| `column_default_sort` | [`fields_default_sort`](../user-guide/views.md#recherche-et-tri) | Par exemple, `[("created_at", True)]` trie dans l'ordre décroissant. |
 | `column_editable_list` | [`inline_editable_fields`](../user-guide/inline-edit.md) | Les utilisateurs sélectionnent une cellule et la modifient sur place. |
-| `page_size` | [`page_size`](../user-guide/views.md#pagination-and-ui-controls) |  |
-| `can_set_page_size` | [`page_size_options`](../user-guide/views.md#pagination-and-ui-controls) | Valeurs par défaut : `[10, 25, 50, 100]`. Les utilisateurs choisissent parmi ces options. |
+| `page_size` | [`page_size`](../user-guide/views.md#pagination-et-controles-de-linterface) |  |
+| `can_set_page_size` | [`page_size_options`](../user-guide/views.md#pagination-et-controles-de-linterface) | Valeurs par défaut : `[10, 25, 50, 100]`. Les utilisateurs choisissent parmi ces options. |
 | `column_display_pk` | Incluez la clé primaire dans `fields` |  |
 | `column_details_list` | `fields` moins `exclude_fields_from_detail` | La page de détail est intégrée. Il n'y a pas d'activation via `can_view_details`. |
 
@@ -162,11 +167,11 @@ L'exportation CSV et JSON est activée par défaut. Des limites de lignes s'appl
             flash(request, "Posts published")
     ```
 
-Le gestionnaire reçoit un objet [`ActionSelection`](../user-guide/actions.md) au lieu d'identifiants bruts. Il résout les lignes paresseusement, expose les filtres actifs et fonctionne de la même manière lorsqu'un utilisateur sélectionne tous les enregistrements correspondants sur plusieurs pages. Les actions peuvent également afficher un formulaire HTML personnalisé dans la boîte de dialogue de confirmation. Pour les opérations par ligne, [`@row_action` et `@link_row_action`](../user-guide/actions.md#row-actions) remplacent les formateurs de colonnes personnalisés.
+Le gestionnaire reçoit un objet [`ActionSelection`](../user-guide/actions.md) au lieu d'identifiants bruts. Il résout les lignes paresseusement, expose les filtres actifs et fonctionne de la même manière lorsqu'un utilisateur sélectionne tous les enregistrements correspondants sur plusieurs pages. Les actions peuvent également afficher un formulaire HTML personnalisé dans la boîte de dialogue de confirmation. Pour les opérations par ligne, [`@row_action` et `@link_row_action`](../user-guide/actions.md#actions-de-ligne) remplacent les formateurs de colonnes personnalisés.
 
 ## Autorisations et contrôle d'accès
 
-Les indicateurs de classe `can_*` de Flask-Admin deviennent des [méthodes par requête](../user-guide/views.md#security-and-authorization) dans starlette-admin ; les décisions d'autorisation peuvent donc dépendre de l'utilisateur connecté.
+Les indicateurs de classe `can_*` de Flask-Admin deviennent des [méthodes par requête](../user-guide/views.md#securite-et-autorisations) dans starlette-admin ; les décisions d'autorisation peuvent donc dépendre de l'utilisateur connecté.
 
 | Flask-Admin | starlette-admin | Remarques |
 | --- | --- | --- |
@@ -184,7 +189,7 @@ Avec Flask-Admin, vous intégrez Flask-Login vous-même. starlette-admin fournit
 
 | Flask-Admin | starlette-admin |
 | --- | --- |
-| `on_model_change(form, model, is_created)` | [`before_create(request, data, obj)` / `before_edit(request, data, obj)`](../user-guide/views.md#lifecycle-hooks) |
+| `on_model_change(form, model, is_created)` | [`before_create(request, data, obj)` / `before_edit(request, data, obj)`](../user-guide/views.md#hooks-de-cycle-de-vie) |
 | `after_model_change` | `after_create` / `after_edit` |
 | `on_model_delete` | `before_delete` |
 | `after_model_delete` | `after_delete` |
@@ -211,7 +216,7 @@ admin.events.on(AdminEvent.AFTER_CREATE, audit)
 | Rendu de template personnalisé | Sous-classe de `CustomView` | Vous donne un contrôle total sur les routes et les réponses. |
 | `AdminIndexView` | `Admin(index_view=...)` | Construisez des tableaux de bord à partir de `StatWidget`, `ChartWidget`, `TableWidget` et des widgets de mise en page. |
 | `MenuLink` | Vue [`Link`](../user-guide/views.md#link) | Par exemple, `admin.add_link(Link(menu_label="Docs", url="https://..."))` |
-| Catégories dans le menu | Vue [`DropDown`](../user-guide/views.md#sidebar-organization) | Regroupe les vues dans la barre latérale. |
+| Catégories dans le menu | Vue [`DropDown`](../user-guide/views.md#organisation-de-la-barre-laterale) | Regroupe les vues dans la barre latérale. |
 | `FileAdmin` | Non disponible | Les champs de fichiers et d'images avec [stockage local ou S3](../user-guide/file-storage.md) gèrent les pièces jointes. Il n'y a pas d'explorateur de fichiers côté serveur. |
 
 ## Modèles en ligne

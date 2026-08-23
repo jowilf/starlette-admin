@@ -17,9 +17,13 @@ from typing import Any
 from i18n import (
     EN_CONTENT_DIR,
     LOCALES_DIR,
+    NOTICE_BODY,
+    NOTICE_LINK_LABEL,
+    NOTICE_TITLE,
     REGISTRY_PATH,
     I18nError,
     dump_document,
+    en_page_url,
     insert_notice,
     iter_markdown,
     load_en_nav,
@@ -143,6 +147,7 @@ def _compose_document(
     prompt_hash_value: str,
     model: str,
     code: str,
+    rel: str,
 ) -> str:
     meta, body = split_front_matter(translated)
     meta = meta or {}
@@ -151,7 +156,9 @@ def _compose_document(
     meta["machine_translated"] = True
     meta["translation_model"] = model
     meta["translation_date"] = datetime.date.today().isoformat()
-    return dump_document(meta, insert_notice(body, "info", code))
+    return dump_document(
+        meta, insert_notice(body, "info", code, en_url=en_page_url(rel))
+    )
 
 
 def _translate_one(
@@ -183,7 +190,7 @@ def _translate_one(
         return content, prompt, completion
 
     translated, prompt, completion = _with_retries(attempt, rel)
-    document = _compose_document(translated, digest, prompt_digest, model, code)
+    document = _compose_document(translated, digest, prompt_digest, model, code, rel)
     loc_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = loc_path.with_name(loc_path.name + ".tmp")
     tmp_path.write_text(document, encoding="utf-8")
@@ -329,6 +336,9 @@ Describe here the tone, register and formality expected for this language
 (for example: formal address, neutral technical writing, active voice,
 sentence-length conventions).
 
+- Never use em dashes in the translation; recast the sentence with commas,
+  parentheses, colons or separate sentences instead.
+
 ## Structural rules
 
 - Translate prose only. Never alter code blocks, inline code, identifiers,
@@ -364,22 +374,42 @@ def _cmd_init(args: argparse.Namespace) -> int:
     base = LOCALES_DIR / code
     if base.exists():
         raise I18nError(f"{base} already exists")
-    base.mkdir(parents=True)
     name = args.name or code
-    (base / "llm_prompt.md").write_text(
-        STARTER_PROMPT.format(name=name, code=code), encoding="utf-8"
-    )
+    starter_prompt = STARTER_PROMPT.format(name=name, code=code)
+    model = args.model or os.environ.get("OPENROUTER_MODEL") or DEFAULT_MODEL
+    reasoning = args.reasoning or os.environ.get("OPENROUTER_REASONING") or None
+
+    # Translate the AI notice first: it needs one LLM round-trip, and doing
+    # it before anything is written keeps a failed init free of side effects.
+    # Notices must always be translated, so there is no English fallback here.
+    notice = _translate_notice(code, name, starter_prompt, model, reasoning)
+
+    base.mkdir(parents=True)
+    (base / "llm_prompt.md").write_text(starter_prompt, encoding="utf-8")
+    notice_data = {
+        "skip": [],
+        "nav": load_en_nav(),
+        "notice_title": notice["title"],
+        "notice_body": notice["body"],
+    }
+    if "link_label" in notice:
+        notice_data["notice_link_label"] = notice["link_label"]
     (base / "nav.json").write_text(
-        json.dumps({"skip": [], "nav": load_en_nav()}, ensure_ascii=False, indent=2)
+        json.dumps(
+            notice_data,
+            ensure_ascii=False,
+            indent=2,
+        )
         + "\n",
         encoding="utf-8",
     )
     entries.append({"code": code, "name": name})
     save_registry(entries)
-    print(f"initialized locale '{code}' in {base}")
+    print(f"initialized locale '{code}' in {base} (model={model})")
+    print(f"wrote localized notice into {base / 'nav.json'}")
     print("next steps:")
     print(f"  1. edit {base / 'llm_prompt.md'} (style rules + glossary)")
-    print(f"  2. review {base / 'nav.json'} labels (or run --nav later)")
+    print(f"  2. review {base / 'nav.json'} labels and notice (or run --nav later)")
     print(f"  3. OPENROUTER_API_KEY=... python docs/scripts/translate.py {code}")
     return 0
 
@@ -394,6 +424,79 @@ Rules:
 
 {payload}
 """
+
+NOTICE_PROMPT = """\
+Translate the AI-disclosure notice below into {name} ({code}). It is shown
+at the top of every machine-translated documentation page.
+
+Rules:
+- Return ONLY a JSON object with three string keys, no code fences, no
+  commentary: {{"title": "...", "body": "...", "link_label": "..."}}
+- "title" is a short noun phrase equivalent to the English title.
+- "body" keeps the meaning, tone and paragraph breaks of the English body.
+  It has exactly two paragraphs separated by one blank line ("\\n\\n").
+  Do NOT include any markdown links or URLs in "body": the per-page link
+  to the English original is added automatically by the build.
+- "link_label" is a short phrase equivalent to the English label; it is
+  used as the visible text of that automatic link.
+
+English title:
+{title}
+
+English body:
+{body}
+
+English link label:
+{label}
+"""
+
+
+def _extract_notice(raw: str) -> dict[str, str]:
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if not match:
+            raise I18nError("model did not return JSON for the notice") from None
+        data = json.loads(match.group(0))
+    title = data.get("title") if isinstance(data, dict) else None
+    body = data.get("body") if isinstance(data, dict) else None
+    if (
+        not isinstance(title, str)
+        or not title.strip()
+        or not isinstance(body, str)
+        or not body.strip()
+    ):
+        raise I18nError("model returned an incomplete notice translation")
+    notice = {"title": title.strip(), "body": body.strip()}
+    label = data.get("link_label") if isinstance(data, dict) else None
+    if isinstance(label, str) and label.strip():
+        notice["link_label"] = label.strip()
+    return notice
+
+
+def _translate_notice(
+    code: str,
+    name: str,
+    system_prompt: str,
+    model: str,
+    reasoning: str | None = None,
+) -> dict[str, str]:
+    """One LLM round-trip: localized disclosure notice (title/body/label)."""
+    user = NOTICE_PROMPT.format(
+        name=name,
+        code=code,
+        title=NOTICE_TITLE,
+        body=NOTICE_BODY,
+        label=NOTICE_LINK_LABEL,
+    )
+    raw = _with_retries(
+        lambda: _clean_output(
+            _extract_content(_chat(system_prompt, user, model, reasoning))
+        ),
+        f"notice translation ({code})",
+    )
+    return _extract_notice(raw)
 
 
 def _cmd_nav(args: argparse.Namespace) -> int:
@@ -425,6 +528,23 @@ def _cmd_nav(args: argparse.Namespace) -> int:
     nav_path = LOCALES_DIR / args.locale / "nav.json"
     existing = json.loads(nav_path.read_text(encoding="utf-8"))
     existing["nav"] = translated
+
+    has_notice = (
+        isinstance(existing.get("notice_title"), str)
+        and bool(existing["notice_title"].strip())
+        and isinstance(existing.get("notice_body"), str)
+        and bool(existing["notice_body"].strip())
+    )
+    if args.force or not has_notice:
+        # Same command translates the disclosure notice; an existing one is
+        # only redone with --force so wording is never duplicated per run.
+        notice = _translate_notice(args.locale, name, system_prompt, model, reasoning)
+        existing["notice_title"] = notice["title"]
+        existing["notice_body"] = notice["body"]
+        if "link_label" in notice:
+            existing["notice_link_label"] = notice["link_label"]
+        print("translated disclosure notice")
+
     nav_path.write_text(
         json.dumps(existing, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
@@ -445,7 +565,9 @@ def _build_parser() -> argparse.ArgumentParser:
         "--status", action="store_true", help="report freshness; no network"
     )
     mode.add_argument(
-        "--nav", action="store_true", help="(re)translate nav.json labels only"
+        "--nav",
+        action="store_true",
+        help="(re)translate nav.json labels and the AI-disclosure notice",
     )
     mode.add_argument("--init", action="store_true", help="scaffold a new locale")
     parser.add_argument(
@@ -480,6 +602,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.init:
+            _get_client()
             return _cmd_init(args)
         if not args.dry_run and not args.status:
             _get_client()

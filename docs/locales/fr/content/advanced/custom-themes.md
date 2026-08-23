@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/advanced/custom-themes/)
+<!-- translation-notice:end -->
 
 # Thèmes personnalisés
 
@@ -137,7 +142,7 @@ Un thème se situe à la racine de la chaîne de rendu, et chaque instance de `A
 * **Templates :** des templates de remplacement dans le dossier `templates/` du package, utilisant des chemins relatifs simples tels que `base.html`, `layout.html` ou `list.html`. Le thème actif se trouve au-dessus des plugins dans la chaîne de chargeurs de Jinja, il peut donc restyler aussi bien les templates principaux que ceux des plugins.
 * **Ressources statiques :** feuilles de style, scripts et images dans le répertoire `static/` du package.
 * **Jeu d'icônes :** une sous-classe personnalisée de `IconSet` renvoyée par `get_icon_set()`, associant des clés sémantiques telles que `list.new` ou `auth.logout` à des classes CSS.
-* **Mappage de classes :** une sous-classe de `ClassMap` renvoyée par `get_class_map()`, comme décrit dans [Restyler les composants avec un mappage de classes](#restyling-components-with-a-class-map).
+* **Mappage de classes :** une sous-classe de `ClassMap` renvoyée par `get_class_map()`, comme décrit dans [Restyler les composants avec un mappage de classes](#restyler-les-composants-avec-un-mappage-de-classes).
 * **Variables globales de template :** variables globales exposées à Jinja en redéfinissant `template_globals()`.
 
 ### Exemple de package de thème

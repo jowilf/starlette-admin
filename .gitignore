@@ -26,4 +26,4 @@ docs/locales/*/content/assets/
 docs/locales/*/content/javascripts/
 docs/locales/*/content/stylesheets/
 
-zensical.*.json
+zensical.*.toml

@@ -9,14 +9,19 @@ translation_model: stealth/ox-alpha
 translation_date: '2026-08-22'
 ---
 
+<!-- translation-notice:start -->
 ??? info "Traduction automatique supervisée"
 
-    Ce contenu est généré par traduction automatique, guidée par des
-    glossaires et des guides de style validés par des humains. Comme le
-    texte n'est pas relu ligne par ligne, des erreurs ou des formulations
-    maladroites peuvent parfois apparaître.
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
 
-    En cas de divergence, la [version originale en anglais](https://jowilf.github.io/starlette-admin/) fait foi.
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/user-guide/fields/)
+<!-- translation-notice:end -->
 
 # Champs
 
@@ -36,9 +41,9 @@ Chaque type de champ hérite de `BaseField` cet ensemble d'attributs de configur
 | `disabled` | `bool` | `False` | Grise et verrouille la saisie dans les formulaires. |
 | `read_only` | `bool` | `False` | Affiche le champ mais bloque les modifications. |
 | `default` | `Any | Callable` | `None` | La valeur de préremplissage du formulaire de création. |
-| `getter` | `Callable | None` | `None` | Remplace l'accès à l'attribut du modèle lors de la lecture de la valeur. Voir [Calculer, mettre en forme et analyser les valeurs](#computing-formatting-and-parsing-values). |
-| `formatter` | `dict[RequestAction, Callable] | None` | `None` | Mise en forme d'affichage par action, qui remplace la sérialisation pour cette action. Voir [Calculer, mettre en forme et analyser les valeurs](#computing-formatting-and-parsing-values). |
-| `parser` | `dict[RequestAction, Callable] | None` | `None` | Analyse des entrées par action, qui remplace l'analyse par défaut du champ. Voir [Calculer, mettre en forme et analyser les valeurs](#computing-formatting-and-parsing-values). |
+| `getter` | `Callable | None` | `None` | Remplace l'accès à l'attribut du modèle lors de la lecture de la valeur. Voir [Calculer, mettre en forme et analyser les valeurs](#calculer-mettre-en-forme-et-analyser-les-valeurs). |
+| `formatter` | `dict[RequestAction, Callable] | None` | `None` | Mise en forme d'affichage par action, qui remplace la sérialisation pour cette action. Voir [Calculer, mettre en forme et analyser les valeurs](#calculer-mettre-en-forme-et-analyser-les-valeurs). |
+| `parser` | `dict[RequestAction, Callable] | None` | `None` | Analyse des entrées par action, qui remplace l'analyse par défaut du champ. Voir [Calculer, mettre en forme et analyser les valeurs](#calculer-mettre-en-forme-et-analyser-les-valeurs). |
 | `searchable` | `bool` | `True` | Inclus lorsque le paramètre de recherche `q` correspond. |
 | `orderable` | `bool` | `True` | Ajoute un lien de tri dans l'en-tête de la page de liste. |
 | `copy_to_clipboard` | `bool` | `False` | Ajoute un bouton de copie à côté de la valeur sur la page de détail. |
@@ -198,7 +203,7 @@ DateField("end_date", validators=[not_before_start])
 #### Règles de validation spécifiques au contexte
 
 * **Champs de relation :** `HasOne` et `HasMany` reçoivent les clés primaires des enregistrements liés pendant la validation.
-* **Champs de fichier :** la validation s'exécute une fois par `UploadFile` présent dans la charge utile. Voir [Champs de fichiers et médias](#file-media-fields).
+* **Champs de fichier :** la validation s'exécute une fois par `UploadFile` présent dans la charge utile. Voir [Champs de fichiers et médias](#champs-de-fichiers-et-medias).
 * **Validation multi-champs :** utilisez `form_values` pour une simple dépendance. Pour une règle couvrant tout le formulaire, surchargez plutôt la méthode `validate()` de votre vue. La validation au niveau de la vue ne s'exécute qu'une fois que chaque champ a franchi sa propre chaîne de validation.
 
 ### Stocker des métadonnées personnalisées
@@ -423,7 +428,7 @@ fields = [
 
 ### ComputedField
 
-Un champ virtuel en lecture seule, calculé à partir de l'instance de modèle au moment de l'affichage, sans colonne de base de données sous-jacente. Il s'appuie sur le [hook `getter`](#computing-formatting-and-parsing-values) présent dans chaque champ et ajoute les valeurs par défaut nécessaires à une colonne virtuelle : exclu des formulaires de création, en lecture seule, non recherchable et non triable.
+Un champ virtuel en lecture seule, calculé à partir de l'instance de modèle au moment de l'affichage, sans colonne de base de données sous-jacente. Il s'appuie sur le [hook `getter`](#calculer-mettre-en-forme-et-analyser-les-valeurs) présent dans chaque champ et ajoute les valeurs par défaut nécessaires à une colonne virtuelle : exclu des formulaires de création, en lecture seule, non recherchable et non triable.
 
 ```python
 from starlette_admin import ComputedField
