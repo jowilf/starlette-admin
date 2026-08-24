@@ -184,3 +184,8 @@ lang = "de"
 name = "ru - Русский"
 link = "/ru/"
 lang = "ru"
+
+[[project.extra.alternate]]
+name = "hi - हिन्दी"
+link = "/hi/"
+lang = "hi"
