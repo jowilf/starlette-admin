@@ -1,11 +1,9 @@
 ---
-title: SQLAlchemy Contrib API Reference
+title: SQLAlchemy Contrib API-Referenz
 description: API-Referenzdokumentation für die SQLAlchemy-Backend-Integration in starlette-admin.
 source_hash: c966b22ba523b8451e3c0168394e068bf412475140a3d5427bc0c70d2c6d971d
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,7 +22,7 @@ translation_date: '2026-08-23'
 
 # Contrib: SQLAlchemy
 
-Vollständige Referenz der Attribute und Methoden für das SQLAlchemy-Backend (`starlette_admin.contrib.sqla`),
+Vollständige Referenz aller Attribute und Methoden des SQLAlchemy-Backends (`starlette_admin.contrib.sqla`),
 generiert aus den Docstrings. Eine aufgabenorientierte Einführung finden Sie unter
 [SQLAlchemy](../../integrations/sqlalchemy.md).
 
@@ -36,13 +34,13 @@ generiert aus den Docstrings. Eine aufgabenorientierte Einführung finden Sie un
 
 ## Pydantic-Validierung
 
-Die Erweiterung `ext.pydantic` validiert die Formulardaten anhand eines Pydantic-Modells, bevor der
-Datensatz geschrieben wird. Eine vollständige Schritt-für-Schritt-Anleitung finden Sie unter
-[Pydantic-Validierung](../../integrations/sqlalchemy.md#pydantic-validierung).
+Die `ext.pydantic`-Erweiterung validiert Formulardaten gegen ein Pydantic-Modell, bevor der
+Datensatz geschrieben wird. Die vollständige Anleitung finden Sie unter
+[Pydantic-Validierung](../../integrations/sqlalchemy.md#pydantic-validation).
 
 ::: starlette_admin.contrib.sqla.ext.pydantic.ModelView
 
-## Felder
+## Fields
 
 ::: starlette_admin.contrib.sqla.fields.MultiplePKField
 
@@ -50,13 +48,13 @@ Datensatz geschrieben wird. Eine vollständige Schritt-für-Schritt-Anleitung fi
 
 ::: starlette_admin.contrib.sqla.fields.ImageField
 
-## Konverter
+## Converter
 
 ::: starlette_admin.contrib.sqla.converters.BaseSQLAModelConverter
 
 ::: starlette_admin.contrib.sqla.converters.ModelConverter
 
-## Ausnahmen
+## Exceptions
 
 ::: starlette_admin.contrib.sqla.exceptions.InvalidModelError
 
@@ -67,7 +65,7 @@ Datensatz geschrieben wird. Eine vollständige Schritt-für-Schritt-Anleitung fi
 ::: starlette_admin.contrib.sqla.exceptions.NotSupportedValue
 
 !!! note
-    Die konkreten Filterklassen (`EqualFilter`, `ContainsFilter`, `BetweenFilter` usw.) werden hier
-    nicht aufgezählt. Sie entsprechen den backendunabhängigen Filtern aus
-    [Filtern](../filters.md) eins zu eins; das SQLAlchemy-spezifische Verhalten, das es zu kennen
-    lohnt, ist in [SQLAlchemy](../../integrations/sqlalchemy.md#filter-registry) beschrieben.
+    Konkrete Filterklassen (`EqualFilter`, `ContainsFilter`, `BetweenFilter` usw.) werden hier
+    nicht aufgeführt. Sie entsprechen eins zu eins den backend-unabhängigen Filtern, die in
+    [Filters](../filters.md) dokumentiert sind; das SQLAlchemy-spezifische Verhalten, das es zu
+    kennen lohnt, wird unter [SQLAlchemy](../../integrations/sqlalchemy.md#filter-registry) behandelt.

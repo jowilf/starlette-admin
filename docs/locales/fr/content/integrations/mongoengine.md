@@ -1,12 +1,10 @@
 ---
 title: Intégration de MongoEngine
-description: Apprenez à connecter des modèles MongoEngine avec starlette-admin pour
-  gérer vos données MongoDB via un panneau d'administration.
+description: Découvrez comment connecter des modèles MongoEngine à starlette-admin
+  pour gérer vos données MongoDB via un panneau d'administration.
 source_hash: 8782d539b644b3b326c33fe888719c2964127823189e389afa0546976021964c
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,12 +23,12 @@ translation_date: '2026-08-22'
 
 # Intégration de MongoEngine
 
-MongoEngine modélise les documents MongoDB sous forme de classes Python synchrones en utilisant une API de champs de style Django. Le module `starlette_admin.contrib.mongoengine` fournit des classes `Admin` et `ModelView` spécialisées qui construisent directement des vues d'administration à partir de vos définitions `mongoengine.Document`.
+MongoEngine modélise les documents MongoDB sous forme de classes Python synchrones en s'appuyant sur une API de champs de style Django. Le module `starlette_admin.contrib.mongoengine` fournit des classes `Admin` et `ModelView` spécialisées qui construisent directement les vues d'administration à partir de vos définitions `mongoengine.Document`.
 
-**Fonctionnalités principales :**
+**Fonctionnalités clés :**
 
 * Conversion automatique des types de champs, des relations et des documents intégrés.
-* Prise en charge prête à l'emploi des téléversements `FileField` et `ImageField` basés sur GridFS.
+* Prise en charge prête à l'emploi des téléversements `FileField` et `ImageField` adossés à GridFS.
 
 ## Installation
 
@@ -48,7 +46,7 @@ MongoEngine modélise les documents MongoDB sous forme de classes Python synchro
 
 ## Exemple minimal
 
-Vous devez établir la connexion MongoDB avant que toute requête n'atteigne l'interface d'administration. La meilleure approche pour garantir cette condition préalable consiste à encapsuler la logique de connexion dans le gestionnaire de contexte `lifespan` de votre application principale.
+Vous devez établir la connexion à MongoDB avant que la moindre requête n'atteigne l'interface d'administration. Pour garantir que ce prérequis soit satisfait, la meilleure approche consiste à encapsuler la logique de connexion dans le gestionnaire de contexte `lifespan` de votre application principale.
 
 ```python
 from contextlib import asynccontextmanager
@@ -78,15 +76,15 @@ admin.add_view(ModelView(Category, icon="fa fa-tags"))
 admin.mount_to(app)
 ```
 
-Le `ModelView` accepte directement la classe `mongoengine.Document`. Il dérive automatiquement la liste des champs, les formulaires et les filtres à partir des champs du document.
+Le `ModelView` accepte directement la classe `mongoengine.Document`. Il déduit automatiquement la liste des champs, les formulaires et les filtres à partir des champs du document.
 
 ## Classes principales : Admin et ModelView
 
 ### La classe `mongoengine.Admin`
 
-La classe `mongoengine.Admin` étend la classe `Admin` de base en ajoutant une route spécialisée : `/api/file/{db}/{col}/{pk}`. Cette route renvoie un fichier GridFS directement au navigateur.
+La classe `mongoengine.Admin` étend la classe `Admin` de base en ajoutant une route spécialisée : `/api/file/{db}/{col}/{pk}`. Cette route renvoie directement un fichier GridFS au navigateur sous forme de flux.
 
-Comme chaque téléversement via un champ `FileField` ou `ImageField` sur un modèle MongoEngine est stocké dans GridFS, cette route est nécessaire pour servir ces fichiers. Utilisez toujours `mongoengine.Admin` plutôt que la classe `Admin` de base.
+Comme chaque téléversement via un champ `FileField` ou `ImageField` d'un modèle MongoEngine est stocké dans GridFS, cette route est indispensable pour servir ces fichiers. Utilisez toujours `mongoengine.Admin` plutôt que la classe `Admin` de base.
 
 ### La classe `mongoengine.ModelView`
 
@@ -105,13 +103,13 @@ def __init__(
 
 ```
 
-Si vous ne définissez pas l'attribut `fields` sur votre sous-classe de `ModelView`, il inclut par défaut tous les champs du document dans leur ordre de déclaration.
+Si vous laissez l'attribut `fields` non défini dans votre sous-classe de `ModelView`, il inclut par défaut tous les champs du document, dans leur ordre de déclaration.
 
 Les attributs tels que `key`, `menu_label` et `display_name` suivent un ordre de repli strict :
 
 1. L'argument du constructeur.
-2. Un attribut défini au niveau de la classe sur la sous-classe.
-3. Une valeur dérivée du nom de classe du document (`key` devient le nom slugifié, `menu_label` devient le nom embelli et mis au pluriel, et `display_name` devient le nom embelli au singulier).
+2. Un attribut défini au niveau de la classe dans la sous-classe.
+3. Une valeur dérivée du nom de classe du document (`key` devient le nom slugifié, `menu_label` devient le nom pluralisé et embelli, et `display_name` devient le nom singulier embelli).
 
 ```python
 from starlette_admin.contrib.mongoengine import ModelView
@@ -122,32 +120,32 @@ class CategoryView(ModelView):
     searchable_fields = ["name"]
 ```
 
-## Registre des filtres
+## Registre de filtres {#filter-registry}
 
-Chaque type de champ inclut un ensemble fixe de filtres fourni par le `MongoEngineFilterRegistry`. Vous pouvez remplacer ces valeurs par défaut pour chaque champ à l'aide de l'argument `filters=[...]`.
+Chaque type de champ inclut un ensemble fixe de filtres fourni par le `MongoEngineFilterRegistry`. Vous pouvez remplacer ces valeurs par défaut champ par champ grâce à l'argument `filters=[...]`.
 
 | Type de champ | Filtres disponibles |
 | --- | --- |
-| `StringField` | contains, not contains, starts with, ends with, equals, not equals, is null, is not null |
-| `TextAreaField` | contains, not contains, starts with, ends with, is null, is not null |
-| `EnumField` | equals, not equals, in, not in, is null, is not null |
-| `NumberField` | equals, not equals, greater than, less than, between, is null, is not null |
-| `FloatField` | equals, not equals, greater than, less than, between, is null, is not null |
-| `DateField` | equals, between, in the past, in the future, is null, is not null |
-| `DateTimeField` | equals, between, in the past, in the future, is null, is not null |
-| `BooleanField` | is true, is false, is null, is not null |
-| `TagsField` | in, not in, is null, is not null |
-| `RelationField` | is null, is not null |
-| `ObjectIdField` | equals, not equals, in, not in, is null, is not null |
+| `StringField` | contient, ne contient pas, commence par, se termine par, égal à, différent de, est nul, n'est pas nul |
+| `TextAreaField` | contient, ne contient pas, commence par, se termine par, est nul, n'est pas nul |
+| `EnumField` | égal à, différent de, dans, pas dans, est nul, n'est pas nul |
+| `NumberField` | égal à, différent de, supérieur à, inférieur à, compris entre, est nul, n'est pas nul |
+| `FloatField` | égal à, différent de, supérieur à, inférieur à, compris entre, est nul, n'est pas nul |
+| `DateField` | égal à, compris entre, dans le passé, dans le futur, est nul, n'est pas nul |
+| `DateTimeField` | égal à, compris entre, dans le passé, dans le futur, est nul, n'est pas nul |
+| `BooleanField` | est vrai, est faux, est nul, n'est pas nul |
+| `TagsField` | dans, pas dans, est nul, n'est pas nul |
+| `RelationField` | est nul, n'est pas nul |
+| `ObjectIdField` | égal à, différent de, dans, pas dans, est nul, n'est pas nul |
 
 !!! note
-    Le champ `ObjectIdField` représente l'identifiant `id` du document.
+    Le champ `ObjectIdField` représente l'`id` du document.
 
-Sous le capot, la méthode `apply()` de chaque filtre renvoie un fragment `Q` de MongoEngine correspondant à sa condition spécifique. Les arbres imbriqués de `FilterGroup` combinent ensuite ces fragments à l'aide d'opérateurs bit à bit (`&` ou `|`) avant d'exécuter la requête. Pour plus de détails, consultez la documentation sur les [filtres](../user-guide/filters.md).
+En coulisses, la méthode `apply()` de chaque filtre renvoie un fragment `Q` de MongoEngine correspondant à sa condition spécifique. Les arbres de `FilterGroup` imbriqués combinent ensuite ces fragments à l'aide d'opérateurs bit à bit (`&` ou `|`) avant d'exécuter la requête. Pour plus de détails, consultez la documentation [Filters](../user-guide/filters.md).
 
 ## Documents intégrés
 
-Le champ `EmbeddedDocumentField` de MongoEngine est converti en un champ `CollectionField`. Ce processus convertit récursivement chaque champ du document intégré en son propre sous-champ :
+Le champ `EmbeddedDocumentField` de MongoEngine est converti en `CollectionField`. Ce processus convertit récursivement chaque champ du document intégré en son propre sous-champ :
 
 ```python
 import mongoengine as me
@@ -179,10 +177,10 @@ admin.add_view(PostView(Post))
 
 Dans cet exemple :
 
-* Le champ `address` s'affiche sous forme de sous-formulaire imbriqué lors de la création et de la modification, et sous forme de bloc imbriqué sur la page de détail.
-* Le champ `comments` (un champ `EmbeddedDocumentListField`) est converti en un champ `ListField` de champs `CollectionField`. Il s'affiche sous forme de groupe répétable de sous-formulaires, avec un affichage par entrée de liste.
+* Le champ `address` s'affiche sous la forme d'un sous-formulaire imbriqué lors de la création et de la modification, et sous la forme d'un bloc imbriqué sur la page de détail.
+* Le champ `comments` (un `EmbeddedDocumentListField`) est converti en `ListField` de `CollectionField`. Il s'affiche sous la forme d'un groupe répétable de sous-formulaires, avec un affichage par entrée de la liste.
 
-## Exemple complet fonctionnel
+## Exemple complet et fonctionnel
 
 Cette section fournit une intégration MongoEngine complète et exécutable avec `starlette-admin`.
 
@@ -282,7 +280,7 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.mount_to(app)
 ```
 
-### 3. Démarrer le serveur
+### 3. Lancer le serveur
 
 Démarrez le serveur de développement FastAPI :
 
@@ -299,15 +297,15 @@ Démarrez le serveur de développement FastAPI :
     uv run -- fastapi dev
     ```
 
-Accédez à [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) dans votre navigateur pour consulter le tableau de bord d'administration et interagir avec lui.
+Rendez-vous à l'adresse [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) dans votre navigateur pour consulter le tableau de bord d'administration et interagir avec lui.
 
-> **Exemple avancé :** [`examples/16-mongoengine`](https://github.com/jowilf/starlette-admin/tree/main/examples/16-mongoengine) dans le dépôt contient une application complète. Elle comprend des vues inline, des événements, des actions de ligne et groupées personnalisées, ainsi que des téléversements d'images et de fichiers GridFS.
+> **Exemple avancé :** [`examples/16-mongoengine`](https://github.com/jowilf/starlette-admin/tree/main/examples/16-mongoengine) dans le dépôt contient une application complète. Elle inclut des vues en ligne, des événements ainsi que des actions personnalisées sur les lignes et par lot, et des téléversements d'images et de fichiers via GridFS.
 
 ---
 
 ## Pour aller plus loin
 
-* **[Vues](../user-guide/views.md)** : explorez les options de configuration de `BaseModelView`, indépendantes du backend.
-* **[Champs](../user-guide/fields.md) :** guide détaillé de chaque type de champ et de ses attributs, y compris le champ `CollectionField`.
-* **[Filtres](../user-guide/filters.md) :** explorez l'interface du constructeur de filtres et apprenez à écrire un filtre personnalisé.
-* **[Beanie](beanie.md) :** découvrez l'alternative asynchrone basée sur Pydantic pour MongoDB.
+* **[Views](../user-guide/views.md)** : explorez les options de configuration de `BaseModelView`, indépendantes du backend.
+* **[Fields](../user-guide/fields.md) :** guide détaillé de chaque type de champ et de ses attributs, y compris le `CollectionField`.
+* **[Filters](../user-guide/filters.md) :** explorez l'interface du générateur de filtres et apprenez à écrire un filtre personnalisé.
+* **[Beanie](beanie.md) :** découvrez l'alternative asynchrone fondée sur Pydantic pour MongoDB.

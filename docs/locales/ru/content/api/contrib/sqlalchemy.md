@@ -1,11 +1,9 @@
 ---
-title: Справочник API для SQLAlchemy Contrib
-description: Справочная документация по интеграции с бэкендом SQLAlchemy в starlette-admin.
+title: Справочник API SQLAlchemy Contrib
+description: Справочная документация по API интеграции SQLAlchemy backend в starlette-admin.
 source_hash: c966b22ba523b8451e3c0168394e068bf412475140a3d5427bc0c70d2c6d971d
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,8 +22,8 @@ translation_date: '2026-08-23'
 
 # Contrib: SQLAlchemy
 
-Полный справочник атрибутов и методов бэкенда SQLAlchemy (`starlette_admin.contrib.sqla`),
-сгенерированный из докстрингов. Пошаговое руководство по задачам см. в разделе
+Полный справочник атрибутов и методов для SQLAlchemy backend (`starlette_admin.contrib.sqla`),
+сгенерированный из docstrings. Пошаговое руководство по решению задач см. в разделе
 [SQLAlchemy](../../integrations/sqlalchemy.md).
 
 ::: starlette_admin.contrib.sqla.admin.Admin
@@ -34,15 +32,15 @@ translation_date: '2026-08-23'
 
 ::: starlette_admin.contrib.sqla.view.InlineModelView
 
-## Валидация Pydantic
+## Валидация с помощью Pydantic
 
-Расширение `ext.pydantic` проверяет данные формы на соответствие модели Pydantic перед записью
-записи. Полное пошаговое описание см. в разделе
-[Валидация Pydantic](../../integrations/sqlalchemy.md#pydantic-validation).
+Расширение `ext.pydantic` выполняет валидацию данных формы на соответствие модели Pydantic
+перед записью объекта. Полное пошаговое руководство см. в разделе
+[Валидация с помощью Pydantic](../../integrations/sqlalchemy.md#pydantic-validation).
 
 ::: starlette_admin.contrib.sqla.ext.pydantic.ModelView
 
-## Поля
+## Поля (Fields)
 
 ::: starlette_admin.contrib.sqla.fields.MultiplePKField
 
@@ -68,7 +66,6 @@ translation_date: '2026-08-23'
 
 !!! note
     Конкретные классы фильтров (`EqualFilter`, `ContainsFilter`, `BetweenFilter` и так далее)
-    здесь не перечислены. Они один к одному повторяют фильтры, не зависящие от бэкенда,
-    описанные в разделе [Фильтры](../filters.md); специфичное для SQLAlchemy поведение,
-    о котором стоит знать, рассмотрено в разделе
-    [SQLAlchemy](../../integrations/sqlalchemy.md#filter-registry).
+    здесь не перечисляются. Они один к одному повторяют фильтры, не зависящие от backend,
+    задокументированные в разделе [Фильтры](../filters.md); специфика поведения, связанная
+    с SQLAlchemy, описана в разделе [SQLAlchemy](../../integrations/sqlalchemy.md#filter-registry).

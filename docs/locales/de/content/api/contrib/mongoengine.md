@@ -3,10 +3,8 @@ title: MongoEngine Contrib API-Referenz
 description: API-Referenzdokumentation für die MongoEngine-Backend-Integration in
   starlette-admin.
 source_hash: 453c422f60aa5c89d4a1eb9a4310165bb2773263a8b6d21a791a3141f009bb8e
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-24'
 ---
 
 <!-- translation-notice:start -->
@@ -26,7 +24,7 @@ translation_date: '2026-08-24'
 # Contrib: MongoEngine
 
 Vollständige Referenz aller Attribute und Methoden des MongoEngine-Backends
-(`starlette_admin.contrib.mongoengine`), generiert aus Docstrings. Eine anwendungsorientierte
+(`starlette_admin.contrib.mongoengine`), generiert aus Docstrings. Eine aufgabenorientierte
 Einführung finden Sie unter [MongoEngine](../../integrations/mongoengine.md).
 
 ::: starlette_admin.contrib.mongoengine.admin.Admin
@@ -35,7 +33,7 @@ Einführung finden Sie unter [MongoEngine](../../integrations/mongoengine.md).
 
 ::: starlette_admin.contrib.mongoengine.view.InlineModelView
 
-## Felder
+## Fields
 
 ::: starlette_admin.contrib.mongoengine.fields.ObjectIdField
 
@@ -43,7 +41,7 @@ Einführung finden Sie unter [MongoEngine](../../integrations/mongoengine.md).
 
 ::: starlette_admin.contrib.mongoengine.fields.ImageField
 
-## Konverter
+## Converters
 
 ::: starlette_admin.contrib.mongoengine.converters.BaseMongoEngineModelConverter
 
@@ -55,6 +53,6 @@ Einführung finden Sie unter [MongoEngine](../../integrations/mongoengine.md).
 
 !!! note
     Konkrete Filterklassen (`EqualFilter`, `ArrayInFilter`, `ObjectIdEqualFilter` usw.) werden
-    hier nicht aufgelistet. Sie entsprechen den backend-unabhängigen Filtern, die in
-    [Filtern](../filters.md) dokumentiert sind; das MongoEngine-spezifische Verhalten wird in
+    hier nicht aufgeführt. Sie entsprechen den backend-unabhängigen Filtern, die unter
+    [Filters](../filters.md) dokumentiert sind; das MongoEngine-spezifische Verhalten wird in
     [MongoEngine](../../integrations/mongoengine.md#filter-registry) behandelt.

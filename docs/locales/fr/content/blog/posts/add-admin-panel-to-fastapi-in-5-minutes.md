@@ -1,9 +1,7 @@
 ---
 source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -24,22 +22,22 @@ translation_date: '2026-08-22'
 
 _2026-07-13_
 
-Vous avez livré votre API. Désormais, quelqu'un dans votre équipe doit modifier les données qui se trouvent derrière : corriger une faute de frappe dans un enregistrement, dépublier un article ou vérifier ce qu'un utilisateur a réellement soumis. Les options habituelles sont généralement coûteuses :
+Vous avez livré l'API. Maintenant, quelqu'un dans votre équipe doit modifier les données qui se trouvent derrière : corriger une coquille dans un enregistrement, dépublier un article, ou vérifier ce qu'un utilisateur a réellement soumis. Les options habituelles sont généralement coûteuses :
 
 | Option                   | L'inconvénient                                                                                             |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
 | **Frontend CRUD personnalisé** | Demande des semaines de temps de développement pour être construit et maintenu.                            |
-| **Accès direct à la base de données** | Crée un risque majeur pour la sécurité et l'intégrité des données.                                         |
-| **Django Admin / Flask Admin**         | Impose une réécriture du framework ou repose sur du WSGI synchrone, ce qui bloque votre application ASGI asynchrone. |
-| **starlette-admin**      | **Se monte instantanément dans votre application, sans aucun code frontend.**                              |
+| **Accès direct à la base de données** | Crée un risque majeur en matière de sécurité et d'intégrité des données.                                   |
+| **Django Admin / Flask Admin**         | Impose une réécriture du framework ou repose sur WSGI synchrone, ce qui bloque votre application ASGI asynchrone. |
+| **starlette-admin**      | **Se monte sur votre application instantanément, sans aucun code frontend.**                               |
 
-`starlette-admin` fonctionne avec toute application basée sur Starlette, ce qui est exactement le cas de FastAPI.
+`starlette-admin` fonctionne avec toute application basée sur Starlette, ce qui est précisément le cas de FastAPI.
 
-Ce guide vous conduit d'un fichier vide à un back office fonctionnel en cinq minutes. Vous allez construire des listes paginées, une fonctionnalité de recherche, des colonnes triables, des formulaires de création et de modification validés par vos schémas Pydantic existants, des confirmations de suppression et des exportations CSV, le tout généré directement à partir d'un modèle SQLAlchemy.
+Ce guide vous conduit d'un fichier vide à un back office fonctionnel en cinq minutes. Vous allez construire des listes paginées, une fonctionnalité de recherche, des colonnes triables, des formulaires de création et d'édition validés par vos schémas Pydantic existants, des confirmations de suppression et des exports CSV, le tout généré directement à partir d'un modèle SQLAlchemy.
 
 Le code complet et exécutable est disponible dans [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>).
 
-## Minute 1 : Installez
+## Minute 1 : Installation
 
 Vous avez besoin de trois paquets : le framework d'administration, l'ORM et FastAPI lui-même.
 
@@ -55,11 +53,11 @@ Vous avez besoin de trois paquets : le framework d'administration, l'ORM et Fast
     uv add starlette-admin sqlalchemy "fastapi[standard]"
     ```
 
-Pydantic est fourni avec FastAPI, ce qui devient important plus tard : le panneau d'administration peut réutiliser exactement les mêmes schémas que votre API utilise pour la validation.
+Pydantic est fourni avec FastAPI, ce qui deviendra important par la suite : le panneau d'administration peut réutiliser exactement les mêmes schémas que ceux que votre API utilise pour la validation.
 
-## Minutes 2 et 3 : L'application complète
+## Minutes 2 et 3 : l'application complète
 
-Créez `main.py`. Voici l'intégralité de l'application :
+Créez `main.py`. Voici l'application dans son intégralité :
 
 ```python title="main.py" hl_lines="36-38"
 from contextlib import asynccontextmanager
@@ -103,11 +101,11 @@ admin.mount_to(app)
 
 ```
 
-Remarquez ce qui est absent. Il n'y a ni templates, ni gestionnaires de routes pour les pages d'administration, ni sérialiseurs, ni configuration de champs. `starlette-admin` lit les métadonnées des colonnes SQLAlchemy et déduit toute l'interface automatiquement : des champs texte limités pour les deux colonnes `String`, une zone de texte pour le contenu `Text` et un sélecteur de date et heure pour `published_at`.
+Remarquez ce qui est absent. Il n'y a aucun template, aucun gestionnaire de routes pour les pages d'administration, aucun sérialiseur ni aucune configuration de champs. `starlette-admin` lit les métadonnées des colonnes SQLAlchemy et dérive toute l'interface automatiquement : des champs texte bornés pour les deux colonnes `String`, une zone de texte pour le contenu `Text`, et un sélecteur de date et heure pour `published_at`.
 
-Les trois lignes surlignées constituent vos seuls points d'intégration. `Admin` lie le moteur de base de données, `add_view` enregistre le modèle dans la barre latérale et `mount_to` attache le tout à votre application FastAPI existante sous le chemin `/admin`. Vos routes API restent intactes ; le panneau d'administration fonctionne simplement comme une sous-application montée.
+Les trois lignes surlignées constituent vos seuls points d'intégration. `Admin` lie le moteur de base de données, `add_view` enregistre le modèle dans la barre latérale, et `mount_to` attache le tout à votre application FastAPI existante sous le chemin `/admin`. Vos routes d'API restent intactes ; le panneau d'administration fonctionne simplement comme une sous-application montée.
 
-## Minute 4 : Exécutez-la
+## Minute 4 : Exécuter le tout
 
 === "pip"
 
@@ -124,16 +122,16 @@ Les trois lignes surlignées constituent vos seuls points d'intégration. `Admin
 Ouvrez [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) et cliquez sur **Post** dans la barre latérale. Dès l'installation, vous obtenez :
 
 - Une vue de liste paginée et triable de tous les articles.
-- Des formulaires de création et de modification équipés du widget de saisie approprié pour chaque type de colonne.
-- Une page de détail pour chaque enregistrement.
-- Des capacités de suppression groupée avec une boîte de dialogue de confirmation.
-- Des exportations CSV et Excel pour la liste en cours.
+- Des formulaires de création et d'édition équipés du widget de saisie approprié pour chaque type de colonne.
+- Une page de vue détaillée pour chaque enregistrement.
+- Des capacités de suppression par lot avec boîte de dialogue de confirmation.
+- Des exports CSV et Excel pour la liste courante.
 
-Votre API continue de servir le trafic normalement. Consultez [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) pour vérifier que tout est intact.
+Votre API continue de servir le trafic normalement. Vérifiez [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) pour vous assurer que tout est intact.
 
-## Minute 5 : Donnez-lui une apparence faite main
+## Minute 5 : Donner l'impression d'un développement sur mesure
 
-La vue par défaut fournit une interface CRUD complète, mais un véritable back office mérite d'être adapté : votre ordre de champs, votre disposition de formulaire et votre comportement de recherche. La spécialisation de `ModelView` est là où `starlette-admin` révèle tout son potentiel. Remplacez l'appel à `add_view` par une vue configurée :
+La vue par défaut offre une interface CRUD complète, mais un véritable back office mérite d'être personnalisé : votre ordre de champs, votre disposition de formulaire et votre comportement de recherche. Le fait de dériver de `ModelView` est là où `starlette-admin` révèle tout son potentiel. Remplacez l'appel à `add_view` par une vue configurée :
 
 ```python title="main.py" hl_lines="8 9-13 17 22"
 from starlette_admin import ComputedField, SlugField
@@ -166,14 +164,14 @@ admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
 
 Quatre améliorations puissantes interviennent dans cette seule classe :
 
-- **`SlugField(populate_from="title")`** : génère le slug automatiquement pendant que l'opérateur saisit le titre, sans aucun JavaScript personnalisé de votre part.
-- **`ComputedField`** : affiche une valeur qui n'existe pas dans la base de données. Le nombre de mots est calculé via une simple fonction Python au moment du rendu.
-- **`form_layout`** : organise le formulaire en lignes logiques : titre et slug côte à côte, contenu sur toute la largeur et date de publication en dessous.
+- **`SlugField(populate_from="title")`** : génère le slug automatiquement pendant que l'opérateur saisit le titre, sans nécessiter la moindre ligne de JavaScript personnalisé de votre part.
+- **`ComputedField`** : affiche une valeur qui n'existe pas dans la base de données. Le nombre de mots est calculé au moment du rendu via une simple fonction Python.
+- **`form_layout`** : organise le formulaire en rangées logiques : titre et slug côte à côte, contenu sur toute la largeur, et date de publication en dessous.
 - **`search_auto_submit`** : filtre la liste dynamiquement pendant que l'opérateur saisit du texte, sur toutes les colonnes définies dans `searchable_fields`.
 
-## Rejeter les données invalides : utilisez le schéma que vous avez déjà
+## Rejeter les données invalides : utilisez le schéma que vous possédez déjà
 
-Les opérateurs font des erreurs, ce qui signifie que le panneau d'administration doit appliquer vos règles côté serveur. L'avantage, c'est que vous avez déjà écrit ces règles. Chaque projet FastAPI valide ses corps de requête avec des modèles Pydantic ; quelque part dans votre code se trouve donc un schéma semblable à celui-ci :
+Les opérateurs font des erreurs, ce qui signifie que le panneau d'administration doit appliquer vos règles côté serveur. L'avantage, c'est que vous les avez déjà écrites. Chaque projet FastAPI valide ses corps de requêtes avec des modèles Pydantic ; il existe donc quelque part dans votre codebase un schéma qui ressemble à ceci :
 
 ```python title="main.py"
 from pydantic import BaseModel, Field, field_validator
@@ -197,7 +195,7 @@ class PostIn(BaseModel):
 
 ```
 
-Plutôt que d'écrire deux fois la logique de validation, confiez au panneau d'administration votre modèle existant. L'extension `ext.pydantic` fournit un `ModelView` qui traite chaque soumission de formulaire via un modèle Pydantic avant qu'elle n'atteigne la base de données. Orientez votre import de `ModelView` vers l'extension, conservez `Admin` tel quel et transmettez le schéma :
+Plutôt que d'écrire la logique de validation deux fois, confiez au panneau d'administration votre modèle existant. L'extension `ext.pydantic` fournit un `ModelView` qui traite chaque soumission de formulaire à travers un modèle Pydantic avant qu'elle n'atteigne la base de données. Orientez votre import de `ModelView` vers l'extension, conservez `Admin` tel quel, et passez le schéma :
 
 ```python title="main.py" hl_lines="1 9"
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
@@ -213,15 +211,15 @@ admin.add_view(
 
 ```
 
-Le corps de `PostView` reste exactement identique ; seule sa classe de base change grâce au nouvel import.
+Le corps de `PostView` reste strictement identique ; seule sa classe de base change grâce au nouvel import.
 
-L'intégration est transparente. Chaque contrainte s'applique lors de la création et de la modification : les bornes de longueur, l'expression régulière du slug et le `field_validator` personnalisé. Chaque erreur Pydantic est reliée directement à son champ de formulaire correspondant et s'affiche en ligne, reproduisant parfaitement un formulaire fait main. Veillez à garder `id` optionnel dans le schéma afin que les formulaires de création, qui ne comportent pas d'ID initialement, puissent toujours être validés.
+L'intégration est transparente. Chaque contrainte s'applique lors de la création comme de l'édition : les bornes de longueur, l'expression régulière du slug et le `field_validator` personnalisé. Chaque erreur Pydantic est renvoyée directement vers son champ de formulaire correspondant et s'affiche en incrustation, reproduisant fidèlement le comportement d'un formulaire développé à la main. Veillez à garder `id` optionnel dans le schéma afin que les formulaires de création, qui n'ont pas d'ID initialement, puissent continuer à être validés.
 
-Vous établissez ainsi une source unique de vérité. Lorsque votre schéma API reçoit une nouvelle règle, le panneau d'administration l'applique dès la requête suivante, sans nécessiter aucune modification de code côté administration.
+Vous établissez ainsi une source unique de vérité. Lorsque votre schéma d'API reçoit une nouvelle règle, le panneau d'administration l'applique dès la requête suivante, sans nécessiter aucune modification de code côté administration.
 
-## Une minute de plus ? Donnez un auteur à vos articles
+## Une minute à perdre ? Ajoutez un auteur aux articles
 
-Les données réelles reposent sur des relations, et le panneau d'administration les gère selon la même approche sans configuration. Ajoutez un modèle `User` et liez-le à `Post` :
+Les données réelles reposent sur des relations, et le panneau d'administration les gère selon la même approche sans configuration. Ajoutez un modèle `User` et reliez-le à `Post` :
 
 ```python title="main.py"
 from sqlalchemy import ForeignKey
@@ -249,7 +247,7 @@ class Post(Base):
 
 ```
 
-Enregistrez le modèle utilisateur en suivant le même principe piloté par le schéma. `EmailStr` et `HttpUrl` fournissent automatiquement la validation de format, et `email-validator` est déjà inclus avec `fastapi[standard]` :
+Enregistrez le modèle utilisateur en suivant le même schéma piloté par validation. `EmailStr` et `HttpUrl` fournissent automatiquement la validation de format, et `email-validator` est déjà inclus avec `fastapi[standard]` :
 
 ```python title="main.py" hl_lines="11"
 from pydantic import EmailStr, HttpUrl
@@ -266,7 +264,7 @@ admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
 
 ```
 
-Comme il n'y a rien à configurer cette fois, le `ModelView` de l'extension est utilisé directement, sans spécialisation.
+Comme il n'y a rien à configurer cette fois-ci, l'extension `ModelView` est utilisée directement, sans dérivation.
 
 Enfin, rendez l'auteur obligatoire en ajoutant deux lignes à `PostIn` :
 
@@ -280,29 +278,29 @@ class PostIn(BaseModel):
 
 ```
 
-`user: User` n'a pas de valeur par défaut, ce qui signifie qu'un article sans auteur est rejeté comme n'importe quelle autre erreur de validation. Le type est la classe `User` de SQLAlchemy elle-même, car le panneau d'administration résout l'identifiant sélectionné en une instance ORM avant que la validation ne s'exécute. C'est précisément pourquoi `arbitrary_types_allowed` est requis (`ConfigDict` est importé depuis `pydantic`).
+`user: User` ne possède pas de valeur par défaut, ce qui signifie qu'un article sans auteur est rejeté comme n'importe quelle autre erreur de validation. Le type est la classe SQLAlchemy `User` elle-même car le panneau d'administration résout l'ID sélectionné en une instance ORM avant que la validation ne s'exécute. C'est précisément pourquoi `arbitrary_types_allowed` est requis (`ConfigDict` est importé depuis `pydantic`).
 
-Ajoutez ensuite `"user"` à `PostView.fields` et à `form_layout` afin que l'auteur apparaisse dans le formulaire d'article. Ce champ n'est pas un menu déroulant standard. Il s'agit d'une liste de sélection dotée d'une autocomplétion côté serveur qui recherche vos utilisateurs pendant la saisie de l'opérateur, et la page de détail de l'utilisateur renvoie vers chaque article associé.
+Ajoutez ensuite `"user"` à `PostView.fields` ainsi qu'à `form_layout` afin que l'auteur apparaisse dans le formulaire d'article. Ce champ n'est pas une simple liste déroulante standard. Il s'agit d'un champ de sélection doté d'une autocomplétion côté serveur qui recherche vos utilisateurs pendant la saisie, et la page de détail de chaque utilisateur renvoie vers tous ses articles associés.
 
 !!! note
-`create_all` ne modifie pas les tables existantes ; vous devrez donc supprimer `blog.db` avant de redémarrer pour prendre en compte la nouvelle colonne `user_id`.
+`create_all` ne modifie pas les tables existantes : vous devrez donc supprimer `blog.db` avant de redémarrer pour prendre en compte la nouvelle colonne `user_id`.
 
-## Avant le déploiement
+## Avant de déployer
 
 !!! warning
-Le paramètre `secret_key` signe le cookie de session utilisé pour la protection CSRF et les messages flash. Remplacez la valeur provisoire par une valeur longue et aléatoire issue de vos paramètres avant le déploiement, et veillez à la charger depuis vos variables d'environnement plutôt qu'à la coder en dur dans le code source.
+Le paramètre `secret_key` signe le cookie de session utilisé pour la protection CSRF et les messages flash. Remplacez la valeur provisoire par une longue valeur aléatoire issue de vos paramètres avant le déploiement, et veillez à la charger depuis vos variables d'environnement plutôt qu'à la coder en dur dans le code source.
 
 !!! note
-`Base.metadata.create_all(engine)` dans le lifespan est une commodité pour le démarrage rapide. Dans un projet de production, vos tables sont gérées par des migrations (comme Alembic). Supprimez cet appel et pointez `Admin` directement vers votre moteur existant. `starlette-admin` ne modifie jamais votre schéma ; il se contente de lire et d'écrire des lignes.
+`Base.metadata.create_all(engine)` dans le lifespan est une commodité propre au démarrage rapide. Dans un projet de production, vos tables sont gérées par des migrations (comme Alembic). Supprimez cet appel et pointez `Admin` directement vers votre moteur existant. `starlette-admin` ne modifie jamais votre schéma ; il se contente de lire et d'écrire des lignes.
 
-## Cette approche passe à l'échelle au-delà de la démonstration
+## Cela dépasse largement la démonstration
 
-Tout ce qui précède utilise deux modèles, mais ces mêmes mécanismes de `ModelView` peuvent prendre en charge un back office de grande envergure. Vous pouvez facilement mettre en œuvre le téléversement de fichiers et d'images, [l'authentification avec accès basé sur les rôles](../../user-guide/auth.md), [des filtres personnalisés](../../user-guide/filters.md), [des actions de ligne et des actions groupées](../../user-guide/actions.md) et une [i18n](../../user-guide/i18n.md) complète. Chaque fois que le comportement intégré s'avère insuffisant, chaque requête et chaque étape du cycle de vie offre un hook de substitution. C'est exactement ainsi que sont construits des schémas comme [la suppression logique avec une vue corbeille](soft-deletes-trash-view.md).
+Tout ce qui précède n'utilise que deux modèles, mais ces mêmes mécanismes de `ModelView` peuvent soutenir un back office de grande ampleur. Vous pouvez facilement mettre en œuvre l'upload de fichiers et d'images, [l'authentification avec contrôle d'accès par rôles](../../user-guide/auth.md), [les filtres personnalisés](../../user-guide/filters.md), [les actions sur ligne et par lot](../../user-guide/actions.md) et une [internationalisation i18n](../../user-guide/i18n.md) complète. Chaque fois que le comportement intégré s'avère insuffisant, chaque requête et chaque étape du cycle de vie propose un hook de substitution. C'est exactement de cette manière que sont construits des motifs comme [les suppressions douces avec vue corbeille](soft-deletes-trash-view.md).
 
 ---
 
-## Prochaines étapes
+## Pour aller plus loin
 
-- **[Concepts](../../getting-started/concepts.md) :** le vocabulaire derrière ce que vous venez de construire, pour que la suite de la documentation se lise aisément.
-- **[Vues](../../user-guide/views.md) :** une exploration approfondie de chaque option de `ModelView`, y compris les hooks de permission.
-- **[Suppressions logiques et vue corbeille pour FastAPI](soft-deletes-trash-view.md) :** la première recette avancée, construite directement sur les hooks de substitution présentés ici.
+- **[Concepts](../../getting-started/concepts.md) :** le vocabulaire sous-jacent à ce que vous venez de construire, pour que la suite de la documentation se lise aisément.
+- **[Views](../../user-guide/views.md) :** un examen approfondi de toutes les options de `ModelView`, y compris les hooks de permissions.
+- **[Soft Deletes and a Trash View for FastAPI](soft-deletes-trash-view.md) :** la première recette avancée, construite directement sur les hooks de substitution présentés ici.

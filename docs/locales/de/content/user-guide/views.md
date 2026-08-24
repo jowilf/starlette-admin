@@ -1,12 +1,10 @@
 ---
-title: Views
-description: Erfahren Sie, wie Sie Listen- und Detail-Views in starlette-admin konfigurieren,
-  einschließlich Suche, Sortierung und Paginierung.
+title: Ansichten
+description: Erfahren Sie, wie Sie Listen- und Detailansichten in starlette-admin
+  konfigurieren, einschließlich Suche, Sortierung und Paginierung.
 source_hash: 33fc39d0f563908c141e8f5f8dc89dfdff925d4b959ed1d032ee685346daae57
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -23,13 +21,13 @@ translation_date: '2026-08-23'
     [Lesen Sie die ursprüngliche englische Version](https://jowilf.github.io/starlette-admin/user-guide/views/)
 <!-- translation-notice:end -->
 
-# Views
+# Ansichten
 
-`starlette-admin` baut seine Sidebar aus drei Arten von Views auf: `ModelView` stellt ein Datenbankmodell bereit, `CustomView` rendert eine eigenständige Seite, und `Link` fügt einen Hyperlink hinzu.
+`starlette-admin` baut seine Sidebar aus drei Arten von View auf: `ModelView` stellt ein Datenbankmodell bereit, `CustomView` rendert eine eigenständige Seite, und `Link` fügt einen Hyperlink hinzu.
 
 ## ModelView
 
-Eine `ModelView`-Unterklasse ist die Art und Weise, wie Sie ein Datenbankmodell im Admin bereitstellen. Klassenattribute und Methoden-Overrides dieser View definieren, wie die Ressource aussieht, sich verhält und mit Daten umgeht.
+Eine `ModelView`-Unterklasse ist die Art, wie Sie ein Datenbankmodell im Admin bereitstellen. Klassenattribute und Methoden-Overrides dieser View definieren, wie die Ressource aussieht, sich verhält und mit Daten umgeht.
 
 Jedes Beispiel in diesem Abschnitt verwendet das folgende SQLAlchemy-Setup:
 
@@ -65,7 +63,7 @@ class Post(Base):
 
 ### Grundlegende Verwendung
 
-Um das `Post`-Modell bereitzustellen, subclassen Sie `ModelView` und konfigurieren seine Attribute.
+Um das Modell `Post` bereitzustellen, leiten Sie von `ModelView` ab und konfigurieren dessen Attribute.
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
@@ -75,7 +73,7 @@ class PostView(ModelView):
     fields = ["id", "title", "content", "published", "created_at"]
 ```
 
-Eine View-Klasse tut nichts, bis Sie sie bei einer `Admin`-Instanz registrieren:
+Eine View-Klasse hat keine Wirkung, bis Sie sie bei einer `Admin`-Instanz registrieren:
 
 ```python
 from sqlalchemy import create_engine
@@ -88,30 +86,30 @@ admin = Admin(engine, title="Blog Admin", secret_key="change-me")
 admin.add_view(PostView(Post))
 ```
 
-Sehen Sie sich [examples/01-quickstart](https://github.com/jowilf/starlette-admin/tree/main/examples/01-quickstart) für ein lauffähiges Admin an, das auf dieselbe Weise mit einem `Post`-Modell gebaut wurde.
+Unter [examples/01-quickstart](https://github.com/jowilf/starlette-admin/tree/main/examples/01-quickstart) finden Sie einen lauffähigen Admin, der auf dieselbe Weise um ein `Post`-Modell herum aufgebaut wurde.
 
-Das Registrieren einer View erzeugt paginierte, sortierbare und durchsuchbare Interfaces zum Auflisten, Anzeigen, Erstellen, Bearbeiten und Löschen von Datensätzen. Sie schreiben keine Routen und keine Templates.
+Durch die Registrierung einer View werden paginierte, sortierbare und durchsuchbare Oberflächen für das Auflisten, Anzeigen, Erstellen, Bearbeiten und Löschen von Datensätzen generiert. Sie müssen weder Routen noch Templates schreiben.
 
 !!! note
-    Sie importieren `ModelView` aus dem Contrib-Paket Ihres Backends, etwa `starlette_admin.contrib.sqla`, `.beanie`, `.mongoengine`, `.sqlmodel` oder `.tortoise`. **Jedes unten beschriebene Attribut ist über alle Backends hinweg identisch**, sodass Sie später ein SQLAlchemy-Modell gegen ein MongoEngine-Dokument austauschen können, ohne Ihre View-Logik zu ändern.
+    Sie importieren `ModelView` aus dem contrib-Paket Ihres Backends, etwa `starlette_admin.contrib.sqla`, `.beanie`, `.mongoengine`, `.sqlmodel` oder `.tortoise`. **Jedes unten beschriebene Attribut ist über alle Backends hinweg identisch**, sodass Sie später ein SQLAlchemy-Modell gegen ein MongoEngine-Dokument austauschen können, ohne Ihre View-Logik zu ändern.
 
 ### Zentrale Konfiguration
 
 #### Benennung und Routing
 
-Standardmäßig leitet das Admin das URL-Routing und die UI-Labels vom Klassennamen des Modells ab. Für das `Post`-Modell verwendet es:
+Standardmäßig leitet der Admin URL-Routing und UI-Beschriftungen aus dem Klassennamen des Modells ab. Für das Modell `Post` verwendet er:
 
 * **Key:** `post` (URL: `/admin/post/list`)
 * **Menu label:** `Posts` (Sidebar-Eintrag)
 * **Display name:** `Post` (UI-Schaltflächen wie **New Post**)
 
-Wenn die abgeleiteten Werte falsch sind, überschreiben Sie sie bei der Registrierung oder im Konstruktor.
+Wenn die abgeleiteten Werte nicht passen, überschreiben Sie sie bei der Registrierung oder im Konstruktor.
 
 | Attribut | Beschreibung | Beispiel-Override | Resultierende UI oder URL |
 | --- | --- | --- | --- |
 | **`key`** | Der interne Slug und die Basis-URL-Route. | `key="blog-post"` | `/admin/blog-post/list` |
-| **`menu_label`** | Das Pluralnomen, das in der Sidebar verwendet wird. | `menu_label="Blog Posts"` | **Sidebar:** Blog Posts |
-| **`display_name`** | Das Singularnomen, das in Aktionen und Formularen verwendet wird. | `display_name="Article"` | **Schaltflächen:** New Article |
+| **`menu_label`** | Der Pluralbegriff, der in der Sidebar verwendet wird. | `menu_label="Blog Posts"` | **Sidebar:** Blog Posts |
+| **`display_name`** | Der Singularbegriff, der in Aktionen und Formularen verwendet wird. | `display_name="Article"` | **Buttons:** New Article |
 
 ```python
 admin.add_view(
@@ -119,11 +117,11 @@ admin.add_view(
 )
 ```
 
-#### Feldauswahl und Anpassung
+#### Feldauswahl und Anpassung {#field-selection-and-customization}
 
-Die `fields`-Liste legt fest, welche Modellattribute auf der Listenseite, der Detailseite und in den Formularen erscheinen. Lassen Sie sie weg, um jedes Modellattribut bereitzustellen.
+Die Liste `fields` legt fest, welche Modellattribute in der Listenansicht, auf der Detailseite und in den Formularen erscheinen. Lassen Sie sie weg, um jedes Modellattribut bereitzustellen.
 
-Mischen Sie String-Namen und explizite `BaseField`-Instanzen, um Widgets, Validierung und Labels zu steuern:
+Mischen Sie Zeichenkettennamen mit expliziten `BaseField`-Instanzen, um Widgets, Validierung und Beschriftungen zu steuern:
 
 ```python
 from starlette_admin.fields import (
@@ -145,11 +143,11 @@ class PostView(ModelView):
 ```
 
 !!! note
-    Das Admin erkennt den Primärschlüssel für Sie. Definieren Sie `pk_attr` nur dann, wenn die Erkennung fehlschlägt, etwa bei einem benutzerdefinierten Backend ohne Primärschlüssel aus einem einzelnen Feld.
+    Der Admin erkennt den Primärschlüssel automatisch für Sie. Definieren Sie `pk_attr` nur dann, wenn die Erkennung fehlschlägt, etwa bei einem Custom-Backend ohne Primärschlüssel aus einem einzelnen Feld.
 
-#### Kontextuelle Feldsichtbarkeit
+#### Kontextabhängige Feldsichtbarkeit
 
-Felder gehören oft auf die Liste oder Detailseite, aber nicht in ein Erstellungsformular, etwa Zeitstempel und systemverwaltete Status. Verwenden Sie die Attribute `exclude_fields_from_*`, um ein Feld auf bestimmten Oberflächen auszublenden:
+Felder gehören oft auf die Liste oder Detailseite, aber nicht in ein Erstellungsformular – etwa Zeitstempel und systemverwaltete Status. Verwenden Sie die Attribute `exclude_fields_from_*`, um ein Feld auf bestimmten Oberflächen auszublenden:
 
 ```python
 class PostView(ModelView):
@@ -163,15 +161,15 @@ class PostView(ModelView):
 Die verfügbaren Ausschlussattribute enden auf `_create`, `_edit`, `_list`, `_detail`, `_export` und `_import`.
 
 !!! important
-    Damit Benutzer den Primärschlüssel beim Erstellen eines Datensatzes setzen können, was standardmäßig deaktiviert ist, setzen Sie `show_pk_in_forms = True`.
+    Um Benutzern zu erlauben, den Primärschlüssel beim Erstellen eines Datensatzes selbst festzulegen – standardmäßig deaktiviert –, setzen Sie `show_pk_in_forms = True`.
 
 #### Formularlayout
 
-Standardmäßig rendert `fields` Ihre Erstellungs- und Bearbeitungsformulare als flache, vertikale Liste. Um das Interface neu zu organisieren, ohne Ihre Datendefinitionen anzufassen, verwenden Sie das Attribut `form_layout`.
+Standardmäßig rendert `fields` Ihre Erstellungs- und Bearbeitungsformulare als flache, vertikale Liste. Um die Oberfläche umzugestalten, ohne Ihre Datendefinitionen anzufassen, verwenden Sie das Attribut `form_layout`.
 
 **Die Tuple-Kurzschreibweise**
 
-Für ein einfaches Raster müssen Sie keine Widget-Klassen importieren. Gruppieren Sie Feldnamen in einem Tuple, um sie nebeneinander in einer Zeile zu rendern.
+Für ein einfaches Raster müssen Sie keine Widget-Klassen importieren. Gruppieren Sie Feldnamen in einem Tuple, um sie nebeneinander in einer Zeile darzustellen.
 
 ```python
 class ProductView(ModelView):
@@ -186,10 +184,10 @@ class ProductView(ModelView):
 
 **Fortgeschrittene Layout-Widgets**
 
-Wenn Ihre Formulare wachsen, strukturieren Sie sie mit Layout-Widgets. Die Tuple-Kurzschreibweise funktioniert darin:
+Wenn Ihre Formulare wachsen, strukturieren Sie sie mit Layout-Widgets. Die Tuple-Kurzschreibweise funktioniert auch darin:
 
 * **`PanelWidget` oder `FieldsetWidget`:** Gruppieren Sie verwandte Felder unter einer Überschrift oder machen Sie einen Abschnitt einklappbar.
-* **`TabsWidget`:** Trennen Sie unterschiedliche Datenkategorien, etwa Versanddetails und SEO-Metadaten, die nicht gleichzeitig sichtbar sein müssen.
+* **`TabsWidget`:** Trennen Sie klar unterscheidbare Datenkategorien – etwa Versanddetails und SEO-Metadaten –, die nicht gleichzeitig sichtbar sein müssen.
 
 ```python
 from starlette_admin import TabsWidget
@@ -218,13 +216,13 @@ class ProductView(ModelView):
     ]
 ```
 
-Sehen Sie sich [Formularlayouts](../advanced/form-layout.md) für mehrspaltige Zeilen mit expliziten Breiten, Tabs, statischen Inhalten und Access-Control-Verhalten an.
+Informationen zu mehrspaltigen Zeilen mit expliziten Breiten, Tabs, statischen Inhalten und Zugriffssteuerungsverhalten finden Sie unter [Formularlayouts](../advanced/form-layout.md).
 
 ### Funktionen der Datentabelle
 
-#### Suchen und Sortieren
+#### Suche und Sortierung {#search-and-sort}
 
-Steuern Sie, wie Benutzer Daten finden und ordnen, mit `searchable_fields` und `sortable_fields`.
+Steuern Sie mit `searchable_fields` und `sortable_fields`, wie Benutzer Daten finden und ordnen.
 
 ```python
 class PostView(ModelView):
@@ -234,11 +232,11 @@ class PostView(ModelView):
     fields_default_sort = [("created_at", True)]  # Sort newest first
 ```
 
-* **`searchable_fields`**: Aktiviert den Filter-Builder und das globale Suchfeld. Die globale Suche führt eine Volltext-Query gegen diese Felder aus.
-* **`sortable_fields`**: Beschränkt, nach welchen Spaltenüberschriften Benutzer sortieren können. Eine Sortier-Query für ein anderes Feld, die über URL-Parameter übergeben wird, wird ignoriert.
-* **`fields_default_sort`**: Legt den initialen Tabellenzustand fest. Übergeben Sie einen nackten String für eine aufsteigende Sortierung, ein Tuple mit `True` für eine absteigende Sortierung oder ein Tuple mit `False` für eine explizit aufsteigende Sortierung. Verketten Sie mehrere Elemente für eine mehrspaltige Sortierung.
+* **`searchable_fields`**: Aktiviert den Filter-Builder und das globale Suchfeld. Die globale Suche führt eine Volltextabfrage über diese Felder aus.
+* **`sortable_fields`**: Beschränkt, nach welchen Spaltenüberschriften Benutzer sortieren können. Eine über URL-Parameter übergebene Sortierabfrage für ein anderes Feld wird ignoriert.
+* **`fields_default_sort`**: Legt den Anfangszustand der Tabelle fest. Übergeben Sie einen bloßen String für aufsteigende Sortierung, ein Tuple mit `True` für absteigende Sortierung oder ein Tuple mit `False` für eine explizit aufsteigende Sortierung. Verketten Sie mehrere Einträge für eine Sortierung über mehrere Spalten.
 
-#### Paginierung und UI-Steuerelemente
+#### Paginierung und UI-Steuerelemente {#pagination-and-ui-controls}
 
 Feinjustieren Sie das Layout der Listenseite mit diesen Attributen:
 
@@ -252,15 +250,15 @@ class PostView(ModelView):
     row_click_navigate = False
 ```
 
-* **`page_size` und `page_size_options`**: Das Default-Limit der Paginierung und die Auswahlmöglichkeiten des Dropdown-Menüs.
-* **`show_goto_page`**: Fügt ein „Go to Page“-Eingabefeld für große Datenmengen hinzu.
-* **`search_auto_submit`**: Filtert, während der Benutzer tippt.
-* **`show_detail_search`**: Fügt ein Suchfeld auf der Detailseite hinzu, um Inline-Beziehungstabellen zu filtern.
-* **`row_click_navigate`**: Öffnet die Detailseite, wenn der Benutzer irgendwo in einer Tabellenzeile klickt. Es ist standardmäßig aktiviert. Setzen Sie es auf `False`, um Zeilen inert zu halten, sodass Benutzer stattdessen über die Zeilenaktionen navigieren. Zeilen sind niemals anklickbar für Benutzer, deren `can_view_detail`-Prüfung fehlschlägt.
+* **`page_size` und `page_size_options`**: Das Standard-Paginierungslimit und die Auswahlmöglichkeiten im Dropdown.
+* **`show_goto_page`**: Fügt ein „Zu Seite springen“-Eingabefeld für große Datenmengen hinzu.
+* **`search_auto_submit`**: Filtert bereits während der Eingabe.
+* **`show_detail_search`**: Fügt der Detailseite ein Suchfeld hinzu, um eingebettete Beziehungstabellen zu filtern.
+* **`row_click_navigate`**: Öffnet die Detailseite, wenn der Benutzer irgendwo in einer Tabellenzeile klickt. Es ist standardmäßig aktiviert. Setzen Sie es auf `False`, um Zeilen inert zu halten, sodass Benutzer stattdessen über die Zeilenaktionen navigieren. Zeilen sind für Benutzer, deren `can_view_detail`-Prüfung fehlschlägt, niemals anklickbar.
 
 #### Inline-Bearbeitung
 
-Sie können Benutzern erlauben, bestimmte Felder direkt aus der Listenseite heraus zu ändern, ohne das vollständige Bearbeitungsformular zu öffnen.
+Sie können Benutzern ermöglichen, bestimmte Felder direkt aus der Listenansicht zu ändern, ohne das vollständige Bearbeitungsformular zu öffnen.
 
 Verwenden Sie das Attribut `inline_editable_fields`, um zu deklarieren, welche Spalten dies unterstützen. Ein Klick auf eine aktivierte Zelle öffnet dann ein Popover für eine schnelle Aktualisierung.
 
@@ -273,13 +271,13 @@ class PostView(ModelView):
 ```
 
 !!! note "Sicherheit und Zugriff"
-    Die Inline-Bearbeitung ist standardmäßig deaktiviert. Wenn Sie sie aktivieren, schränkt die bestehende `can_edit`-Berechtigung der View sie weiterhin ein.
+    Inline-Bearbeitung ist standardmäßig deaktiviert. Wenn Sie sie aktivieren, schränkt die bestehende `can_edit`-Berechtigung der View sie weiterhin ein.
 
-Konfigurationsdetails, Validierungsverhalten und die vollständige Matrix der unterstützten Feldtypen finden Sie im Leitfaden [Inline Edit](inline-edit.md).
+Konfigurationsdetails, Validierungsverhalten und die vollständige Matrix der unterstützten Feldtypen finden Sie in der Anleitung [Inline-Bearbeitung](inline-edit.md).
 
 ### Relationale Daten
 
-Das Admin behandelt Datenbeziehungen für Sie. Für das Many-to-One-Setup zwischen `Post` und `Author` fügen Sie das Beziehungsattribut zu Ihrer `fields`-Liste hinzu. Solange beide Modelle registrierte Views haben, rendert die UI die richtigen Widgets.
+Der Admin übernimmt die Handhabung von Datenbeziehungen für Sie. Für die Many-to-One-Beziehung zwischen `Post` und `Author` fügen Sie das Beziehungsattribut zu Ihrer `fields`-Liste hinzu. Solange beide Modelle registrierte Views haben, rendert die UI die passenden Widgets.
 
 ```python
 class AuthorView(ModelView):
@@ -294,7 +292,7 @@ admin.add_view(AuthorView(Author))
 admin.add_view(PostView(Post))
 ```
 
-#### Manuelle Beziehungsdeklaration
+#### Manuelle Deklaration von Beziehungen
 
 Deklarieren Sie `HasOne`- oder `HasMany`-Felder selbst nur dann, wenn die Ziel-View unter einem benutzerdefinierten `key` registriert ist.
 
@@ -317,11 +315,11 @@ admin.add_view(PostView(Post, key="post-article"))
 
 ### Objektdarstellung
 
-Wenn das Admin einen Datensatz als einzelnen Wert anzeigen muss, greift es auf den Primärschlüssel zurück. Ein `Post`, der mit `Author #3` verknüpft ist, wird dann als „3“ in Beziehungsspalten gerendert, was dem Benutzer fast nichts sagt. Zwei optionale Methoden, definiert am **Modell** statt an der View, ersetzen diesen Default durch etwas Sinnvolles. Beide akzeptieren den aktuellen `Request` und können synchron oder asynchron sein.
+Wenn der Admin einen Datensatz als einzelnen Wert anzeigen muss, greift er auf den Primärschlüssel zurück. Ein mit `Author #3` verknüpfter `Post` wird dann in Beziehungsspalten als „3“ dargestellt, was dem Benutzer kaum etwas verrät. Zwei optionale Methoden, definiert am **Modell** statt an der View, ersetzen diesen Standard durch etwas Aussagekräftiges. Beide akzeptieren den aktuellen `Request` und können synchron oder asynchron sein.
 
 #### `__admin_repr__`
 
-Gibt einen einfachen String zurück, der überall dort verwendet wird, wo der Datensatz als Text erscheint: Beziehungsspalten auf der Liste und der Detailseite, Breadcrumbs und Bestätigungsnachrichten von Aktionen.
+Gibt einen einfachen String zurück, der überall dort verwendet wird, wo der Datensatz als Text erscheint: in Beziehungsspalten auf der Listen- und Detailseite, in Breadcrumbs und in Bestätigungsmeldungen von Aktionen.
 
 ```python
 class Author(Base):
@@ -334,11 +332,11 @@ class Author(Base):
         return self.name
 ```
 
-Mit dieser Methode an Ort und Stelle wird der Autor eines Posts als „Gabriel Garcia Marquez“ statt als „3“ gerendert.
+Mit dieser Methode wird der Autor eines Posts als „Gabriel Garcia Marquez“ statt als „3“ dargestellt.
 
 #### `__admin_select2_repr__`
 
-Gibt ein HTML-Snippet zurück, das die Optionen in den `select2`-Dropdown-Menüs rendert, die von Beziehungsformularfeldern verwendet werden, sodass Sie Auswahlmöglichkeiten mit Bildern, Badges oder sekundärem Text anreichern können. Ohne diese Methode greift das Admin auf die escapte Ausgabe von `__admin_repr__` zurück. Ohne beide Methoden greift es auf eine generierte Zusammenfassung der Nicht-Beziehungsfelder des Datensatzes zurück.
+Gibt ein HTML-Snippet zurück, das die Optionen in den `select2`-Dropdowns der Beziehungsformularfelder rendert, sodass Sie Auswahlmöglichkeiten mit Bildern, Badges oder ergänzendem Text anreichern können. Ohne diese Methode greift der Admin auf die maskierte Ausgabe von `__admin_repr__` zurück. Ohne beide Methoden greift er auf eine automatisch generierte Zusammenfassung der Nicht-Beziehungsfelder des Datensatzes zurück.
 
 ```python
 from jinja2 import Template
@@ -366,13 +364,13 @@ class Author(Base):
     Der zurückgegebene Wert muss gültiges HTML sein.
 
 !!! warning
-    Escapen Sie Datenbankwerte, um Cross-Site-Scripting-Angriffe (XSS) zu verhindern. Rendern Sie das Snippet mit Jinja2 und `autoescape=True`, wie oben gezeigt, oder escapen Sie jeden Wert selbst mit `html.escape`. Weitere Informationen finden Sie in der [OWASP-Dokumentation](https://owasp.org/www-community/attacks/xss/).
+    Maskieren Sie Datenbankwerte, um Cross-Site-Scripting-Angriffe (XSS) zu verhindern. Rendern Sie das Snippet mit Jinja2 und `autoescape=True`, wie oben gezeigt, oder maskieren Sie jeden Wert selbst mit `html.escape`. Weitere Informationen finden Sie in der [OWASP-Dokumentation](https://owasp.org/www-community/attacks/xss/).
 
-### Sicherheit und Autorisierung
+### Sicherheit und Autorisierung {#security-and-authorization}
 
-Beschränken Sie den Zugriff, indem Sie Berechtigungsmethoden Ihrer `ModelView` überschreiben. Jede gibt einen booleschen Wert zurück, und die Basisimplementierungen geben alle `True` zurück.
+Beschränken Sie den Zugriff, indem Sie die Berechtigungsmethoden Ihrer `ModelView` überschreiben. Jede gibt einen booleschen Wert zurück, und die Basisimplementierungen geben alle `True` zurück.
 
-Dieses Muster lässt sich direkt in Ihren `AuthProvider` einfügen. Im folgenden Beispiel liest jede Prüfung eine `roles`-Liste aus dem `admin_user` der Session:
+Dieses Muster lässt sich direkt in Ihren `AuthProvider` integrieren. Im folgenden Beispiel liest jede Prüfung eine `roles`-Liste aus dem `admin_user` der Session:
 
 ```python
 from starlette.requests import Request
@@ -397,14 +395,14 @@ class PostView(ModelView):
         return "read:post" in request.state.admin_user.roles
 ```
 
-Mehr zur Konfiguration Ihres `AuthProvider` und zum Befüllen des `admin_user`-Objekts finden Sie unter [Authentifizierung](auth.md).
+Weitere Informationen zur Konfiguration Ihres `AuthProvider` und zum Befüllen des `admin_user`-Objekts finden Sie unter [Authentifizierung](auth.md).
 
 !!! note
-    Überschreiben Sie nur die Methoden, die Sie einschränken möchten. Diejenigen, die Sie unangetastet lassen, gewähren weiterhin Zugriff.
+    Überschreiben Sie nur die Methoden, die Sie einschränken möchten. Die übrigen gewähren weiterhin Zugriff.
 
-### Lifecycle-Hooks
+### Lifecycle-Hooks {#lifecycle-hooks}
 
-Verwenden Sie Lifecycle-Hooks, um Seiteneffekte auszuführen oder Daten direkt vor oder nach einer Datenbanktransaktion zu verändern.
+Verwenden Sie Lifecycle-Hooks, um Seiteneffekte auszuführen oder Daten unmittelbar vor oder nach einer Datenbanktransaktion zu verändern.
 
 ```python
 from typing import Any
@@ -427,7 +425,7 @@ Die verfügbaren Hooks sind `before_create`, `after_create`, `after_create_commi
 
 #### Committed-Hooks
 
-`after_create_committed`, `after_edit_committed` und `after_delete_committed` werden erst ausgeführt, nachdem die Datenbanktransaktion committet hat. Verwenden Sie sie für Seiteneffekte, die nicht eintreten dürfen, wenn ein Schreibvorgang zurückgerollt wird, etwa das Senden von E-Mails oder das Einreihen von Background-Jobs:
+`after_create_committed`, `after_edit_committed` und `after_delete_committed` werden erst ausgeführt, nachdem die Datenbanktransaktion committet wurde. Verwenden Sie sie für Seiteneffekte, die bei einem Rollback eines Schreibvorgangs nicht stattfinden dürfen – etwa den Versand von E-Mails oder das Einreihen von Hintergrundjobs:
 
 ```python
 class PostView(ModelView):
@@ -436,22 +434,22 @@ class PostView(ModelView):
 ```
 
 !!! warning
-    Bis diese Hooks ausgeführt werden, ist die Session des Requests committet und geschlossen. Schreiben Sie nicht über `request.state.session` in die Datenbank innerhalb dieser Hooks. Verwenden Sie externe I/O oder öffnen Sie eine neue Datenbank-Session.
+    Zu dem Zeitpunkt, an dem diese Hooks ausgeführt werden, ist die Session der Anfrage bereits committed und geschlossen. Schreiben Sie innerhalb dieser Hooks nicht über `request.state.session` in die Datenbank. Nutzen Sie externe I/O oder öffnen Sie eine neue Datenbank-Session.
 
 !!! important
-    In `after_delete_committed` ist `obj` von jeder Session abgekoppelt. Attribute, die vor dem Löschen geladen wurden, bleiben lesbar, aber das Lesen eines nie geladenen Attributs schlägt fehl, weil die Zeile weg ist.
+    In `after_delete_committed` ist `obj` von jeder Session detached. Vor dem Löschen geladene Attribute bleiben lesbar, aber das Lesen eines nie geladenen Attributs schlägt fehl, da die Zeile nicht mehr existiert.
 
-!!! note "Backend-Unterstützung"
-    Nur Backends, die den Commit bis zum Ende des Requests aufschieben, emittieren diese Hooks. Heute ist das das SQLAlchemy-Backend.
+!!! note "Unterstützung durch Backends"
+    Nur Backends, die den Commit bis zum Ende der Anfrage verzögern, emittieren diese Hooks. Derzeit ist das das SQLAlchemy-Backend.
 
 !!! tip
-    Für Logik, die sich über mehrere Views erstreckt, etwa ein Audit-Log, verwenden Sie stattdessen [Events](../advanced/events.md).
+    Für Logik, die sich über mehrere Views erstreckt – etwa ein Audit-Log –, verwenden Sie stattdessen [Events](../advanced/events.md).
 
 ### UI-Anpassung
 
-#### Organisation der Sidebar
+#### Organisation der Sidebar {#sidebar-organization}
 
-Gruppieren Sie verwandte Views in einem einklappbaren Ordner mit `DropDown`. Ein Ordner kann `ModelView`-, `CustomView`- und `Link`-Einträge mischen.
+Gruppieren Sie verwandte Views mit `DropDown` in einem einklappbaren Ordner. Ein Ordner kann `ModelView`-, `CustomView`- und `Link`-Einträge mischen.
 
 ```python
 from starlette_admin import DropDown, Link
@@ -476,7 +474,7 @@ admin.add_view(
 
 #### Exporter und Importer
 
-Die Attribute `exporters` und `importers` legen fest, welche Formate für den Datentransfer verfügbar sind. Sehen Sie sich den Leitfaden [Export & Import](export-import.md) für die integrierten Optionen und für das Schreiben eigener Exporter und Importer an.
+Die Attribute `exporters` und `importers` legen fest, welche Formate für den Datentransfer verfügbar sind. Informationen zu den integrierten Optionen und zum Schreiben eigener Implementierungen finden Sie in der Anleitung [Export & Import](export-import.md).
 
 ```python
 class PostView(ModelView):
@@ -486,15 +484,15 @@ class PostView(ModelView):
 
 ### Aktionen, Inline-Formulare und Templates
 
-`ModelView` bietet drei weitere Funktionssets für komplexe Fälle, jedes mit seinem eigenen Leitfaden:
+`ModelView` bietet drei weitere Funktionsgruppen für komplexe Fälle, jeweils mit eigener Anleitung:
 
-* **Aktionen und Zeilenaktionen:** Die Attribute `actions` und `row_actions` fügen benutzerdefinierte Massen- und zeilenweise Operationen jenseits von CRUD hinzu. Sehen Sie sich [Actions](actions.md) an.
-* **Inline-Formulare:** Das Attribut `inlines` verschachtelt die Erstellungs- und Bearbeitungsformulare eines verwandten Modells innerhalb der Eltern-View. Sehen Sie sich [Inline Forms](inline-forms.md) an.
-* **Templates und Assets:** Ersetzen Sie die Standardseiten durch Ihre eigenen Jinja-Templates über `list_template`, `detail_template`, `create_template` oder `edit_template`. Sehen Sie sich [Templates](../advanced/templates.md) an.
+* **Aktionen und Zeilenaktionen:** Die Attribute `actions` und `row_actions` fügen benutzerdefinierte Batch- und zeilenweise Operationen jenseits von CRUD hinzu. Siehe [Aktionen](actions.md).
+* **Inline-Formulare:** Das Attribut `inlines` bettet die Erstellungs- und Bearbeitungsformulare eines verwandten Modells in die übergeordnete View ein. Siehe [Inline-Formulare](inline-forms.md).
+* **Templates und Assets:** Ersetzen Sie die Standardseiten durch Ihre eigenen Jinja-Templates über `list_template`, `detail_template`, `create_template` oder `edit_template`. Siehe [Templates](../advanced/templates.md).
 
 ## CustomView
 
-Nicht jede Admin-Seite entspricht einem Datenbankmodell. `CustomView` erstellt eine eigenständige Sidebar-Seite, die aus Widgets, benutzerdefinierten Templates oder benutzerdefinierten Routen gebaut ist.
+Nicht jede Admin-Seite lässt sich auf ein Datenbankmodell abbilden. `CustomView` erstellt eine eigenständige Sidebar-Seite auf Basis von Widgets, eigenen Templates oder eigenen Routen.
 
 ```python
 from starlette_admin import CustomView, StatWidget
@@ -509,11 +507,11 @@ admin.add_view(
 )
 ```
 
-Sehen Sie sich [Custom Views](custom-views.md) für den vollständigen Widget-Katalog, Dashboard-Anleitungen und benutzerdefinierte Routen an.
+Informationen zum vollständigen Widget-Katalog, zu Dashboard-Anleitungen und zu eigenen Routen finden Sie unter [Eigene Views](custom-views.md).
 
 ## Link
 
-`Link` fügt der Sidebar einen Hyperlink hinzu, der Benutzer zu einer Live-Seite, externen Dokumentation oder einem anderen internen Tool führt.
+`Link` fügt der Sidebar einen Hyperlink hinzu, der Benutzer zu einer Live-Site, externen Dokumentation oder einem anderen internen Tool führt.
 
 ```python
 from starlette_admin import Link
@@ -529,18 +527,18 @@ admin.add_link(
 ```
 
 * **`label`** und **`icon`**: Der Text und das Icon des Sidebar-Eintrags.
-* **`url`** und **`target`**: Das Ziel und das Anchor-Target-Attribut.
+* **`url`** und **`target`**: Das Ziel und das Zielattribut des Ankers.
 
-`admin.add_link(link)` ist ein dünner Wrapper um `admin.add_view(link)`. Verwenden Sie, was in Ihrer Codebasis besser lesbar ist. Sie können auch einen `Link` innerhalb eines `DropDown` verschachteln, wie gezeigt unter [Organisation der Sidebar](#organisation-der-sidebar).
+`admin.add_link(link)` ist ein schlanker Wrapper um `admin.add_view(link)`. Verwenden Sie, was in Ihrer Codebase besser lesbar ist. Sie können einen `Link` auch in ein `DropDown` verschachteln, wie unter [Organisation der Sidebar](#sidebar-organization) gezeigt.
 
 ---
 
-## Was kommt als Nächstes
+## Nächste Schritte
 
-* **[Fields](fields.md)**: Der vollständige Katalog der Feldtypen.
-* **[Form Layouts](../advanced/form-layout.md)**: Ordnen Sie Erstellungs- und Bearbeitungsformulare mit Zeilen, Panels, Fieldsets und Tabs an.
-* **[Custom Views](custom-views.md)**: Bauen Sie Dashboards und eigenständige Seiten mit Widgets, Templates und benutzerdefinierten Routen.
-* **[Actions & Row Actions](actions.md)**: Fügen Sie Massen- und zeilenweise Operationen jenseits von CRUD hinzu.
-* **[Inline Edit](inline-edit.md)**: Erlauben Sie Benutzern, ein einzelnes Feld einer Zeile direkt von der Listenseite zu bearbeiten.
-* **[Inline Forms](inline-forms.md)**: Verschachteln Sie die Erstellungs- und Bearbeitungsformulare eines verwandten Modells innerhalb einer Eltern-View.
-* **[Templates](../advanced/templates.md)**: Tauschen Sie Ihre eigenen Jinja-Templates ein und injizieren Sie benutzerdefinierte Assets.
+* **[Felder](fields.md)**: Der vollständige Katalog der Feldtypen.
+* **[Formularlayouts](../advanced/form-layout.md)**: Arrangieren Sie Erstellungs- und Bearbeitungsformulare mit Zeilen, Panels, Fieldsets und Tabs.
+* **[Eigene Views](custom-views.md)**: Erstellen Sie Dashboards und eigenständige Seiten mit Widgets, Templates und eigenen Routen.
+* **[Aktionen & Zeilenaktionen](actions.md)**: Fügen Sie Batch- und zeilenweise Operationen jenseits von CRUD hinzu.
+* **[Inline-Bearbeitung](inline-edit.md)**: Ermöglichen Sie Benutzern, ein einzelnes Feld einer Zeile direkt auf der Listenseite zu bearbeiten.
+* **[Inline-Formulare](inline-forms.md)**: Betten Sie die Erstellungs- und Bearbeitungsformulare eines verwandten Modells in eine übergeordnete View ein.
+* **[Templates](../advanced/templates.md)**: Tauschen Sie die Jinja-Templates gegen eigene aus und binden Sie eigene Assets ein.

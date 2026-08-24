@@ -1,16 +1,14 @@
 ---
 title: Autenticación
-description: Implemente la autenticación en starlette-admin mediante AuthProvider
-  o intégrelo con OAuth para proteger su panel de control.
+description: Implemente autenticación en starlette-admin usando AuthProvider o integre
+  con OAuth para proteger su panel de administración.
 source_hash: 0d55840abab5be403a7df83cdd20bf17ea575bd61f49aaeafcddfb76b3e76054
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -31,7 +29,7 @@ Usted protege la interfaz de administración implementando un único método:
 async def authenticate(request) -> AdminUser | None
 ```
 
-Cada solicitud protegida del panel de administración pasa por este método. Cuando devuelve un `AdminUser`, la solicitud queda autenticada. Cuando devuelve `None`, la solicitud no está autenticada y entra en acción el flujo de inicio de sesión u OAuth que usted haya configurado.
+Cada solicitud protegida del panel pasa por este método. Cuando devuelve un `AdminUser`, la solicitud queda autenticada. Cuando devuelve `None`, la solicitud no está autenticada y el flujo de inicio de sesión o de OAuth que usted configuró toma el control.
 
 En caso de éxito, el `AdminUser` devuelto se almacena en:
 
@@ -48,20 +46,20 @@ request.state.is_anonymous = True
 Las rutas públicas y parcialmente protegidas pueden entonces distinguir entre solicitudes autenticadas y no autenticadas sin iniciar un flujo de inicio de sesión.
 
 
-## Elegir un proveedor de autenticación
+## Elija un proveedor de autenticación
 
 | Proveedor | Cuándo usarlo | Qué debe implementar |
 | --- | --- | --- |
-| `AuthProvider` | Si desea la página de inicio de sesión integrada y usted mismo verifica las credenciales. | `login()`, `logout()`, `authenticate()` |
-| `OAuthProvider` | Si desea un flujo de redirección OAuth2 u OIDC, como Auth0, Okta o Google. | `redirect_to_provider()`, `handle_callback()`, `authenticate()` |
+| `AuthProvider` | Usted quiere la página de inicio de sesión integrada y verifica las credenciales por su cuenta. | `login()`, `logout()`, `authenticate()` |
+| `OAuthProvider` | Usted quiere un flujo de redirección OAuth2 u OIDC, como Auth0, Okta o Google. | `redirect_to_provider()`, `handle_callback()`, `authenticate()` |
 
 Ambos heredan de `BaseAuthProvider` y comparten el mismo contrato. `authenticate()` se ejecuta en cada solicitud. Lo que devuelve se convierte en `request.state.admin_user`, y cuando devuelve `None`, el framework establece `request.state.is_anonymous = True`.
 
 ## `AuthProvider`: página de inicio de sesión integrada
 
-Use este proveedor cuando desee que el framework genere y gestione el formulario de inicio de sesión mientras usted verifica las credenciales. El framework se encarga de la plantilla, del manejo de la solicitud POST y de la redirección.
+Use este proveedor cuando quiera que el framework renderice y gestione el formulario de inicio de sesión mientras usted verifica las credenciales. El framework se encarga de la plantilla, del manejo del POST y de la redirección.
 
-Este es un ejemplo completo:
+Aquí tiene un ejemplo completo:
 
 ```python
 from sqlalchemy import create_engine
@@ -109,18 +107,18 @@ admin.mount_to(app)
 
 ### Métodos obligatorios
 
-Un `AuthProvider` implementa tres métodos. `SessionMiddleware` es obligatorio en este caso, porque mantiene el estado de sesión iniciada del usuario entre solicitudes.
+Un `AuthProvider` implementa tres métodos. Aquí es necesario `SessionMiddleware`, ya que persiste el estado de sesión iniciada del usuario entre solicitudes.
 
 #### `login()`
 
-Este método procesa el envío del formulario. Recibe el `username`, la `password`, un booleano `remember_me` y la `request` actual.
+Este método gestiona el envío del formulario. Recibe el `username`, el `password`, un booleano `remember_me` y el `request` actual.
 
-* **En caso de éxito:** escriba un identificador, como el ID o el nombre del usuario, en `request.session`. Después, devuelva `None` para que el framework redirija a `next` o al índice del panel de administración, o devuelva una `Response` para redirigir a otro lugar.
-* **En caso de fallo:** lance `LoginFailed("message")` para mostrar un error sobre el formulario, o lance `FormValidationError({"username": "..."})` para marcar un campo específico como no válido.
+* **En caso de éxito:** Escriba un identificador, como un ID de usuario o un nombre de usuario, en `request.session`. Luego devuelva `None` para que el framework redirija a `next` o al índice del panel, o devuelva una `Response` para redirigir a otro lugar.
+* **En caso de fallo:** Lance `LoginFailed("message")` para mostrar un error encima del formulario, o lance `FormValidationError({"username": "..."})` para marcar un campo específico como inválido.
 
 #### `authenticate()`
 
-Este método se ejecuta en *cada* solicitud dirigida a una ruta protegida del panel de administración. Recibe el objeto `request`.
+Este método se ejecuta en *cada* solicitud a una ruta protegida del panel. Recibe el objeto `request`.
 
 * Lea el identificador que guardó en `request.session` durante `login()`.
 * Busque el usuario en su base de datos.
@@ -129,26 +127,26 @@ Este método se ejecuta en *cada* solicitud dirigida a una ruta protegida del pa
 
 #### `logout()`
 
-Este método procesa el cierre de sesión. Recibe el objeto `request`, y usted borra los datos del usuario de `request.session` para revocar el acceso. Devuelva `None` para la redirección predeterminada al índice del panel de administración, o devuelva una `Response` para redirigir a otro lugar.
+Este método gestiona el cierre de sesión. Recibe el objeto `request`, y usted debe borrar los datos del usuario de `request.session` para revocar el acceso. Devuelva `None` para la redirección predeterminada al índice del panel, o devuelva una `Response` para redirigir a otro lugar.
 
-## `OAuthProvider`: flujo de redirección OAuth2/OIDC
+## `OAuthProvider`: flujo de redirección OAuth2/OIDC {#oauthprovider-oauth2oidc-redirect-flow}
 
 
 Use `OAuthProvider` cuando delegue la autenticación en un proveedor de identidad externo como Auth0, Okta, Google o Microsoft Entra ID.
 
-`AuthProvider` gestiona un formulario de nombre de usuario y contraseña dentro del panel de administración. `OAuthProvider`, en cambio, utiliza un flujo basado en redirección:
+`AuthProvider` gestiona un formulario de usuario y contraseña dentro del panel. `OAuthProvider`, en cambio, utiliza un flujo basado en redirecciones:
 
-1. Redirija al usuario al proveedor de identidad.
+1. Redirija al usuario hacia el proveedor de identidad.
 2. El proveedor autentica al usuario.
 3. El proveedor redirige de vuelta a su aplicación.
-4. Su aplicación intercambia la devolución de llamada por la identidad del usuario.
+4. Su aplicación intercambia el callback por la identidad del usuario.
 5. `authenticate()` restaura al usuario desde la sesión.
 
-### Configuración de la URL de devolución de llamada (obligatoria)
+### Configuración de la URL de callback (obligatoria)
 
-Antes de implementar `OAuthProvider`, registre la URL de devolución de llamada de su aplicación en el panel de control de su proveedor de identidad. Por seguridad, los proveedores de OAuth solo redirigen a URL previamente aprobadas.
+Antes de implementar `OAuthProvider`, registre la URL de callback de su aplicación en el panel de su proveedor de identidad. Por seguridad, los proveedores de OAuth solo redirigen a URLs previamente aprobadas.
 
-#### Ejemplo de URL de devolución de llamada
+#### Ejemplo de URL de callback
 
 ```text
 https://your-domain.com/admin/oauth/callback
@@ -161,48 +159,48 @@ http://localhost:8000/admin/oauth/callback
 ```
 
 !!! important
-    Su URL de devolución de llamada exacta depende de su configuración. Se construye a partir del `route_name` que usted usa al montar `Admin`, más el `callback_path` del proveedor.
+    Su URL de callback exacta depende de su configuración. Se construye a partir del `route_name` que usted usa al montar `Admin`, más el `callback_path` del proveedor.
 
     La configuración predeterminada usa:
 
     * `route_name="admin"`
     * `callback_path="oauth/callback"`
 
-    lo que produce esta URL de devolución de llamada:
+    lo cual produce esta URL de callback:
 
     ```text
     /admin/oauth/callback
     ```
 
-    Una vez desplegada, se convierte en:
+    Una vez desplegado, se convierte en:
 
     ```text
     https://your-domain.com/admin/oauth/callback
     ```
 
-    Si cambia el prefijo de montaje o la ruta de devolución de llamada del proveedor, la URL cambia con ellos y usted debe actualizarla en la configuración de su proveedor de OAuth.
+    Si cambia el prefijo de montaje o la ruta de callback del proveedor, la URL cambia con ellos, y usted deberá actualizarla en la configuración de su proveedor de OAuth.
 
 ### Métodos obligatorios
 
-Un `OAuthProvider` usa el mismo patrón basado en sesión que `AuthProvider`, pero divide el inicio de sesión en una redirección y una devolución de llamada.
+Un `OAuthProvider` usa el mismo patrón basado en sesión que `AuthProvider`, pero divide el inicio de sesión en una redirección y un callback.
 
 #### `redirect_to_provider()`
 
-Este método inicia el flujo de OAuth. Recibe la `request` y una `callback_url` generada, y debe devolver una `Response` que redirija el navegador del usuario a su proveedor de identidad.
+Este método inicia el flujo de OAuth. Recibe el `request` y un `callback_url` generado, y debe devolver una `Response` que redirija el navegador del usuario hacia su proveedor de identidad.
 
 #### `handle_callback()`
 
-Este método se ejecuta cuando el navegador regresa del proveedor con un código de autorización. Recibe la `request`. Intercambie el código por un token de acceso, obtenga el perfil del usuario y almacene su identidad en `request.session`.
+Este método se ejecuta cuando el navegador regresa del proveedor con un código de autorización. Recibe el `request`. Intercambie el código por un token de acceso, obtenga el perfil del usuario y almacene su identidad en `request.session`.
 
 #### `authenticate()`
 
-Al igual que con `AuthProvider`, este método lee lo que `handle_callback()` haya almacenado en la sesión. Devuelva un `AdminUser` cuando la sesión contenga datos de usuario válidos, o `None` cuando no los contenga.
+Al igual que con `AuthProvider`, este método lee lo que `handle_callback()` almacenó en la sesión. Devuelva un `AdminUser` cuando la sesión contenga datos válidos del usuario, o `None` cuando no los contenga.
 
 #### `logout()`
 
-Borre los datos de la sesión. Para cerrar también la sesión del usuario en el proveedor de identidad (cierre de sesión iniciado por el RP en OIDC), sobrescriba este método y devuelva una `Response` de redirección que apunte al endpoint de cierre de sesión del proveedor en lugar de devolver `None`.
+Borre los datos de la sesión. Para cerrar también la sesión del usuario en el proveedor de identidad (cierre de sesión RP-initiated de OIDC), sobrescriba este método y devuelva una `Response` de redirección que apunte al endpoint de fin de sesión del proveedor en lugar de devolver `None`.
 
-Este es un ejemplo completo:
+Aquí tiene un ejemplo completo:
 
 ```python
 import os
@@ -276,7 +274,7 @@ admin = Admin(
 admin.mount_to(app)
 ```
 
-## Registrar el proveedor
+## Registre el proveedor
 
 Después de implementar un proveedor de autenticación, adjúntelo a la instancia de `Admin`.
 
@@ -287,14 +285,14 @@ admin = Admin(
 admin.mount_to(app)
 ```
 
-Esa única línea es toda la integración. `Admin` monta el `AuthMiddleware` del proveedor delante de cada ruta del panel de administración y añade las rutas del proveedor (inicio de sesión, cierre de sesión y la devolución de llamada para `OAuthProvider`) dentro del prefijo del panel de administración.
+Esa única línea constituye toda la integración. `Admin` monta el `AuthMiddleware` del proveedor antes de cada ruta del panel y añade las rutas del proveedor (inicio de sesión, cierre de sesión y el callback de `OAuthProvider`) dentro del prefijo del panel.
 
 ## Comprobaciones de permisos
 
-La autenticación responde a la pregunta «¿Quién es esta persona?». Los permisos responden a la pregunta «¿Qué puede hacer?». Los permisos pertenecen a la vista. El acceso basado en roles consta de tres pasos:
+La autenticación responde a «¿Quién es?». Los permisos responden a «¿Qué puede hacer?». Los permisos pertenecen a la vista. El control de acceso basado en roles consta de tres pasos:
 
 1. Herede de `AdminUser`, una dataclass sencilla, para añadir una lista `roles`.
-2. Devuelva esa subclase desde el método `authenticate()` de su proveedor, rellenada a partir de su almacén de usuarios.
+2. Devuelva esa subclase desde el método `authenticate()` de su proveedor, poblada desde su almacén de usuarios.
 3. Lea `request.state.admin_user.roles` en los hooks de permisos de la vista.
 
 ```python
@@ -383,15 +381,15 @@ class ArticleView(ModelView):
         return await super().is_action_allowed(request, name)
 ```
 
-Registre `MyAuthProvider` como cualquier otro proveedor, con `admin = Admin(engine, auth_provider=MyAuthProvider(), secret_key=SECRET)`. Cada hook anterior tiene entonces acceso a `request.state.admin_user.roles`.
+Registre `MyAuthProvider` como cualquier otro proveedor, con `admin = Admin(engine, auth_provider=MyAuthProvider(), secret_key=SECRET)`. Cada hook anterior tendrá entonces acceso a `request.state.admin_user.roles`.
 
-`is_accessible()`, disponible en cada `BaseView`, oculta la vista completa, incluida su entrada en la barra lateral. `can_create`, `can_edit`, `can_delete`, `can_export`, `can_import` y `can_view_detail` controlan las operaciones individuales en una `ModelView`. `can_access_field` oculta campos específicos, e `is_action_allowed` e `is_row_action_allowed` restringen las acciones por lotes y las acciones de fila. Cuando una acción de fila depende del registro en lugar del usuario, por ejemplo para ocultar `publish` en un artículo ya publicado, sobrescriba en su lugar `is_row_action_allowed_for_obj(request, name, obj)`. Este método recibe el objeto subyacente de la fila y recurre a `is_row_action_allowed` como alternativa.
+`is_accessible()`, disponible en todas las `BaseView`, oculta toda la vista, incluida su entrada en la barra lateral. `can_create`, `can_edit`, `can_delete`, `can_export`, `can_import` y `can_view_detail` controlan operaciones individuales en una `ModelView`. `can_access_field` oculta campos específicos, e `is_action_allowed` e `is_row_action_allowed` restringen las acciones masivas y por fila. Cuando una acción por fila depende del registro en lugar del usuario, como ocultar `publish` en un artículo que ya está publicado, sobrescriba `is_row_action_allowed_for_obj(request, name, obj)` en su lugar. Este método recibe el objeto subyacente de la fila y recurre a `is_row_action_allowed`.
 
-Para la referencia completa de la API, consulte [Views](views.md) y [Actions](actions.md). Una versión funcional completa con `can_export`, `can_import` y una acción de fila se encuentra en [`examples/03-auth`](https://github.com/jowilf/starlette-admin/tree/main/examples/03-auth).
+Para la referencia completa de la API, consulte [Views](views.md) y [Actions](actions.md). Una versión funcional completa con `can_export`, `can_import` y una acción por fila está disponible en [`examples/03-auth`](https://github.com/jowilf/starlette-admin/tree/main/examples/03-auth).
 
 ## `@login_not_required`
 
-Algunas rutas permanecen públicas incluso en un panel de administración bloqueado, como un formulario de autorregistro o una comprobación de estado. Decore el endpoint y `AuthMiddleware` dejará pasar la solicitud sin comprobar un resultado válido de `authenticate()`:
+Algunas rutas permanecen públicas incluso en un panel de administración bloqueado, como un formulario de autorregistro o un health check. Decore el endpoint, y `AuthMiddleware` dejará pasar la solicitud sin comprobar si hay un resultado válido de `authenticate()`:
 
 ```python
 from starlette.requests import Request
@@ -421,29 +419,29 @@ Tanto `@route` como `@login_not_required` etiquetan la función con un atributo 
 
 ## `allow_routes`
 
-`allow_routes` le ofrece la misma exención a nivel de nombre de ruta en lugar de a nivel de función. Úselo cuando no sea propietario de la definición del endpoint, o cuando desee tener la lista de exenciones en un solo lugar:
+`allow_routes` le ofrece la misma exención a nivel de nombre de ruta en lugar de a nivel de función. Úselo cuando no controle la definición del endpoint, o cuando quiera tener la lista de exenciones en un solo lugar:
 
 ```python
 provider = MyAuthProvider(allow_routes=["register"])
 ```
 
-La cadena es el nombre de la ruta: ya sea el nombre del método, o el valor que usted pasó al parámetro `name=` en `@route`, como `name="register"` en el ejemplo anterior. `AuthMiddleware` siempre permite `"login"` y `"static"`, además de las rutas personalizadas que usted indique.
+La cadena es el nombre de la ruta: ya sea el nombre del método, o el valor que usted pasó al parámetro `name=` en `@route`, como `name="register"` en el ejemplo anterior. `AuthMiddleware` siempre permite `"login"` y `"static"`, además de las rutas personalizadas que usted liste.
 
 ## `AdminUser`
 
-Todo lo que `authenticate()` devuelva rellena `request.state.admin_user`. La barra superior lee dos campos de este:
+Lo que `authenticate()` devuelve puebla `request.state.admin_user`. La barra superior lee dos campos de él:
 
-| Atributo | Tipo | Predeterminado | Descripción |
+| Atributo | Tipo | Valor predeterminado | Descripción |
 | --- | --- | --- | --- |
-| `username` | `str` | `"Administrator"` (traducible) | El nombre que se muestra en el menú de usuario de la barra superior. |
-| `photo_url` | `str | None` | `None` | La URL de la imagen de avatar. Muestra un icono de marcador de posición cuando no se establece. |
+| `username` | `str` | `"Administrator"` (traducible) | El nombre mostrado en el menú de usuario de la barra superior. |
+| `photo_url` | `str | None` | `None` | La URL de la imagen de avatar. Muestra un icono de marcador de posición cuando no está definida. |
 
-`AdminUser` es una `@dataclass` sencilla, por lo que heredar de ella para incluir roles, un ID de inquilino o cualquier otra cosa que sus hooks de permisos necesiten es el patrón previsto. El ejemplo de `MyAdminUser` anterior lo muestra en la práctica.
+`AdminUser` es una `@dataclass` sencilla, por lo que heredar de ella para transportar roles, un ID de inquilino o cualquier otra cosa que sus hooks de permisos necesiten es el patrón previsto. El ejemplo de `MyAdminUser` anterior lo muestra en la práctica.
 
 ---
 
 **¿Qué sigue?**
 
-* [Security](security.md): CSRF, claves secretas y lo que el framework protege automáticamente.
+* [Security](security.md): CSRF, claves secretas y qué protege el framework automáticamente.
 * [Views](views.md): `can_create`, `can_edit`, `can_delete` y la lista completa de hooks de permisos.
-* [Actions](actions.md): `is_action_allowed` e `is_row_action_allowed` para las acciones por lotes y las acciones de fila.
+* [Actions](actions.md): `is_action_allowed` e `is_row_action_allowed` para acciones masivas y por fila.

@@ -2,10 +2,8 @@
 title: Validators-API-Referenz
 description: API-Referenzdokumentation für Formularfeld-Validatoren in starlette-admin.
 source_hash: 42e3fab8cab328d3c9f6ee206f8e80a246ccb8d84625a9da35ee0afd4f8bd644
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,7 +22,9 @@ translation_date: '2026-08-23'
 
 # Validators
 
-Integrierte Feldvalidatoren, die über `BaseField(validators=[...])` an jedes Feld angehängt und von `BaseField.validate` ausgeführt werden. Einen Überblick über den Validierungsablauf finden Sie unter [Fields](../user-guide/fields.md).
+Eingebaute Feld-Validatoren, die über `BaseField(validators=[...])` an beliebige
+Felder angehängt und von `BaseField.validate` ausgeführt werden. Einen Überblick
+über den Validierungsablauf finden Sie unter [Fields](../user-guide/fields.md).
 
 ::: starlette_admin.validators.length
 
@@ -60,7 +60,7 @@ Integrierte Feldvalidatoren, die über `BaseField(validators=[...])` an jedes Fe
 
 ::: starlette_admin.validators.items
 
-## Datei-Validatoren
+## File validators
 
 ::: starlette_admin.validators.file_size
 

@@ -1,12 +1,10 @@
 ---
 title: Champs personnalisés
 description: Apprenez à créer des types de champs personnalisés dans starlette-admin
-  pour gérer des types de données spécialisés et des widgets d'interface personnalisés.
+  pour gérer des types de données spécialisés et des widgets UI sur mesure.
 source_hash: 5daa493733490d2421b0bacf11a0669eaad36b82cccc3dd0be3f7709e5681eb2
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,7 +23,7 @@ translation_date: '2026-08-22'
 
 # Champs personnalisés
 
-Les champs intégrés couvrent la plupart des colonnes que vous rencontrerez, mais lorsqu'aucun d'entre eux ne convient, vous pouvez créer le vôtre en héritant de [`BaseField`](../api/fields.md#starlette_admin.fields.BaseField). Un champ se compose de trois méthodes qui déplacent les données entre votre modèle et le navigateur, plus un ensemble de chemins de template qui assurent son rendu. Héritez directement de `BaseField`, ou étendez le champ intégré le plus proche de vos besoins (tel que `StringField` ou `EnumField`) et ne remplacez que les parties qui diffèrent.
+Les champs intégrés couvrent la plupart des colonnes que vous rencontrerez, mais lorsqu'aucun d'entre eux ne convient, vous pouvez créer le vôtre en dérivant de [`BaseField`](../api/fields.md#starlette_admin.fields.BaseField). Un champ se compose de trois méthodes qui font circuler les données entre votre modèle et le navigateur, plus un ensemble de chemins de templates qui le rendent. Dérivez directement de `BaseField`, ou étendez le champ intégré le plus proche de vos besoins (par exemple `StringField` ou `EnumField`) et ne remplacez que les parties qui diffèrent.
 
 ## Exemple minimal
 
@@ -54,7 +52,7 @@ class StatusBadgeField(EnumField):
 
 ```
 
-Pointez votre instance `Admin` vers le répertoire de templates, puis utilisez le champ dans votre vue :
+Pointez votre instance d'`Admin` vers le répertoire des templates, puis utilisez ce champ dans votre vue :
 
 ```python
 from starlette_admin.contrib.sqla import Admin, ModelView
@@ -71,25 +69,25 @@ class EmployeeView(ModelView):
     ]
 ```
 
-Comme `StatusBadgeField` hérite de `EnumField` plutôt que de `BaseField`, elle hérite de `choices`, de la validation du formulaire par rapport à ces choix et du template par défaut `fields/form/enum.html` pour les formulaires de création et de modification. Rien de tout cela n'a besoin de changer, donc la classe ne remplace que les attributs de rendu pour la page de liste et la page de détail.
+Comme `StatusBadgeField` dérive de `EnumField` plutôt que de `BaseField`, elle hérite de `choices`, de la validation du formulaire contre ces choix et du template par défaut `fields/form/enum.html` pour les formulaires de création et d'édition. Rien de tout cela n'a besoin de changer : la classe ne remplace donc que les attributs de rendu pour la liste et le détail.
 
-Le reste de cette page décrit quoi remplacer lorsqu'un champ nécessite plus qu'un simple changement de template. Pour le code complet fonctionnel, ainsi qu'un second champ (`AvatarNameField`) qui remplace effectivement les méthodes de données, consultez [`examples/advanced/05-custom-fields`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/05-custom-fields).
+Le reste de cette page décrit quoi remplacer lorsqu'un champ a besoin de plus qu'un simple changement de template. Pour le code complet fonctionnel, ainsi qu'un second champ (`AvatarNameField`) qui remplace effectivement les méthodes de données, consultez [`examples/advanced/05-custom-fields`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/05-custom-fields).
 
 ## Les trois méthodes de données
 
 | Méthode | Appelée lorsque | Signature |
 | --- | --- | --- |
-| `parse_form_data` | Un formulaire de création/modification est soumis | `async def parse_form_data(self, request: Request, form_data: FormData) -> Any` |
-| `parse_obj` | Lecture d'une valeur depuis une instance de modèle pour l'affichage | `async def parse_obj(self, request: Request, obj: Any) -> Any` |
-| `serialize_value` | Mise en forme d'une valeur pour le frontend (liste, détail, API, exportation) | `async def serialize_value(self, request: Request, value: Any) -> Any` |
+| `parse_form_data` | Un formulaire de création/édition est soumis | `async def parse_form_data(self, request: Request, form_data: FormData) -> Any` |
+| `parse_obj` | Lecture d'une valeur depuis une instance de modèle pour affichage | `async def parse_obj(self, request: Request, obj: Any) -> Any` |
+| `serialize_value` | Formatage d'une valeur pour le frontend (liste, détail, API, export) | `async def serialize_value(self, request: Request, value: Any) -> Any` |
 
-`StatusBadgeField` ne remplace aucune d'entre elles, car `EnumField` analyse déjà la valeur soumise par rapport à `choices` et lit la chaîne brute depuis `obj.status`. Le badge est une présentation posée sur cette chaîne. Remplacez ces trois méthodes lorsque la valeur elle-même doit être calculée ou restructurée plutôt que simplement re-rendue.
+`StatusBadgeField` ne remplace aucune d'entre elles, car `EnumField` analyse déjà la valeur soumise par rapport à `choices` et lit la chaîne brute depuis `obj.status`. Le badge n'est qu'une présentation posée par-dessus cette chaîne. Remplacez ces trois méthodes lorsque la valeur elle-même doit être calculée ou restructurée plutôt que simplement re-rendue.
 
 !!! tip "Hooks ou héritage"
-    Pour une modification ponctuelle d'un seul champ, vous avez rarement besoin d'une sous-classe. Passez plutôt les [hooks `getter`, `formatter` et `parser`](../user-guide/fields.md#calculer-mettre-en-forme-et-analyser-les-valeurs) comme arguments du constructeur, afin de gérer la lecture, la mise en forme pour l'affichage et l'analyse de la saisie.
-    **Quand hériter :** uniquement lorsque vous avez besoin de la même logique dans plusieurs vues, ou lorsque vous devez modifier les templates.
+    Pour une modification ponctuelle d'un seul champ, une sous-classe est rarement nécessaire. Passez plutôt les [hooks `getter`, `formatter` et `parser`](../user-guide/fields.md#computing-formatting-and-parsing-values) comme arguments du constructeur, afin de gérer respectivement la lecture, le formatage d'affichage et l'analyse de l'entrée.
+    **Quand dériver :** uniquement lorsque vous avez besoin de la même logique dans plusieurs vues, ou lorsque vous devez modifier les templates.
 
-`parse_form_data` reçoit le `FormData` brut (de `starlette.datastructures`) provenant de la requête et renvoie les données que `view.create()` ou `view.edit()` doit recevoir pour ce champ. L'implémentation par défaut lit `form_data.get(self.id)` et la renvoie inchangée. La plupart des champs ont seulement besoin d'ajouter une conversion de type :
+`parse_form_data` reçoit le `FormData` brut (issu de `starlette.datastructures`) de la requête et renvoie la donnée que `view.create()` ou `view.edit()` doit recevoir pour ce champ. L'implémentation par défaut lit `form_data.get(self.id)` et la renvoie inchangée. La plupart des champs ont seulement besoin d'ajouter une conversion de type :
 
 ```python
 async def parse_form_data(self, request: Request, form_data: FormData) -> bool:
@@ -97,7 +95,7 @@ async def parse_form_data(self, request: Request, form_data: FormData) -> bool:
     return raw in ("on", "true", "yes")
 ```
 
-`parse_obj` reçoit l'instance de modèle et renvoie la valeur à afficher. L'implémentation par défaut renvoie `getattr(obj, self.name, None)`. Remplacez-la pour les champs qui ne correspondent pas à un unique attribut du modèle, comme celui qui combine deux colonnes. `AvatarNameField`, par exemple, combine une chaîne `name` avec l'avatar téléversé de la ligne :
+`parse_obj` reçoit l'instance de modèle et renvoie la valeur à afficher. L'implémentation par défaut renvoie `getattr(obj, self.name, None)`. Remplacez-la pour les champs qui ne correspondent pas à un unique attribut du modèle, comme un champ combinant deux colonnes. `AvatarNameField`, par exemple, combine une chaîne `name` avec l'avatar téléversé de la ligne :
 
 ```python
 async def parse_obj(self, request: Request, obj: Any) -> Any:
@@ -106,7 +104,7 @@ async def parse_obj(self, request: Request, obj: Any) -> Any:
     return {"name": name, "avatar_key": avatar_key, "initials": self._initials(name)}
 ```
 
-`serialize_value` reçoit ce que `parse_obj` (ou la couche ORM) a produit et le met en forme pour la requête courante. Il est appelé séparément pour la page de liste, la page de détail, l'API JSON et les exportations de données ; branchez donc sur `request.state.action` lorsque la forme doit différer selon le contexte. `AvatarNameField` n'a besoin de l'image de l'avatar que sur la page de liste et revient à du texte brut partout ailleurs :
+`serialize_value` reçoit ce que `parse_obj` (ou la couche ORM) a produit et le formate pour la requête courante. Elle est appelée séparément pour la page de liste, la page de détail, l'API JSON et les exports de données ; branchez donc sur `request.state.action` lorsque la forme doit différer selon le contexte. `AvatarNameField` n'a besoin de l'image d'avatar que sur la page de liste et retombe sur du texte simple partout ailleurs :
 
 ```python
 async def serialize_value(self, request: Request, value: Any) -> Any:
@@ -119,23 +117,23 @@ async def serialize_value(self, request: Request, value: Any) -> Any:
 ```
 
 !!! warning
-    Ce que `serialize_value` renvoie pour `RequestAction.LIST` et `RequestAction.RELATION_LOOKUP` est injecté directement dans une réponse JSON ; il doit donc être sérialisable en JSON.
+    Ce que `serialize_value` renvoie pour `RequestAction.LIST` et `RequestAction.RELATION_LOOKUP` va directement dans une réponse JSON ; il doit donc être sérialisable en JSON.
 
-## Chemins de template
+## Chemins des templates
 
-Chaque champ porte les attributs de template ci-dessous. Chacun est un chemin que le loader Jinja2 du panneau d'administration résout : il vérifie d'abord votre `templates_dir`, si vous en avez défini un, puis revient au répertoire intégré `starlette_admin/templates/`. Consultez [Templates](templates.md) pour plus de détails.
+Chaque champ porte les attributs de template ci-dessous. Chacun est un chemin que le loader Jinja2 de l'admin résout : il vérifie d'abord votre `templates_dir`, si vous en avez défini un, puis retombe sur le répertoire intégré `starlette_admin/templates/`. Consultez [Templates](templates.md) pour les détails.
 
-| Attribut | Valeur par défaut | Rendu pour |
+| Attribut | Défaut | Rendu pour |
 | --- | --- | --- |
 | `list_template` | `"fields/list/text.html"` | La valeur de colonne de chaque ligne sur la page de liste |
 | `detail_template` | `"fields/detail/text.html"` | La page de détail en lecture seule |
-| `form_template` | `"fields/form/input.html"` | Le champ de saisie du formulaire de création/modification |
+| `form_template` | `"fields/form/input.html"` | Le champ de saisie du formulaire de création/édition |
 | `null_template` | `"fields/detail/_null.html"` | Les pages de liste et de détail lorsque la valeur est `None` |
 | `empty_template` | `"fields/detail/_empty.html"` | Les pages de liste et de détail lorsque la valeur est une liste ou un tuple vide |
 
-Les cinq templates reçoivent l'instance `field` et la valeur `data` courante. Pour `list_template` et `detail_template`, `data` n'est jamais `None` ni vide, car ces cas sont dirigés vers `null_template` ou `empty_template` avant l'inclusion du template spécifique au type. Le `form_template` reçoit également `error` (le message d'une `FormValidationError`, si une erreur s'est produite) et `action` (`RequestAction.CREATE`, `RequestAction.EDIT` ou `RequestAction.INLINE_EDIT` lorsqu'il est rendu dans la fenêtre contextuelle d'[édition en ligne](../user-guide/inline-edit.md) de la page de liste). Ce sont tous trois des actions de formulaire, donc `action.is_form()` renvoie `True`. Le code d'un champ qui a besoin de la représentation sous forme de formulaire doit se baser sur cela plutôt que sur `action == RequestAction.EDIT`.
+Les cinq templates reçoivent l'instance `field` et la valeur `data` courante. Pour `list_template` et `detail_template`, `data` n'est jamais `None` ni vide, car ces cas sont redirigés vers `null_template` ou `empty_template` avant l'inclusion du template spécifique au type. Le `form_template` reçoit également `error` (le message d'une `FormValidationError`, si une erreur s'est produite) et `action` (`RequestAction.CREATE`, `RequestAction.EDIT` ou `RequestAction.INLINE_EDIT` lorsqu'il est rendu dans la fenêtre contextuelle d'[édition en ligne](../user-guide/inline-edit.md) de la page de liste). Ces trois valeurs sont des actions de formulaire, si bien que `action.is_form()` renvoie `True`. Le code d'un champ qui a besoin de la représentation sous forme de formulaire devrait se baser sur cela plutôt que sur `action == RequestAction.EDIT`.
 
-Remplacez `null_template` et `empty_template` lorsqu'une valeur manquante doit avoir une apparence différente des libellés par défaut atténués `-null-` et `-empty-`, par exemple une icône d'état vide ou un badge « Non renseigné » assorti au style propre du champ :
+Remplacez `null_template` et `empty_template` lorsqu'une valeur manquante doit avoir une apparence différente des étiquettes par défaut atténuées `-null-` et `-empty-`, par exemple une icône d'état vide ou un badge « Non renseigné » assorti au style propre au champ :
 
 ```python
 @dataclass
@@ -150,7 +148,7 @@ class StatusBadgeField(EnumField):
 <span class="badge">Unknown</span>
 ```
 
-Comme `null_template` et `empty_template` sont de simples attributs de champ comme `list_template`, ils sont partagés entre la liste, le détail et toute autre vue qui rend ce champ, telle que le tableau en ligne d'une vue liée.
+Comme `null_template` et `empty_template` sont de simples attributs de champ au même titre que `list_template`, ils sont partagés entre la liste, le détail et toute autre vue qui rend ce champ, comme le tableau en ligne d'une vue liée.
 
 `StatusBadgeField` assigne le même template à `list_template` et à `detail_template`, car le même badge fonctionne dans les deux contextes :
 
@@ -159,7 +157,7 @@ Comme `null_template` et `empty_template` sont de simples attributs de champ com
 
 ```
 
-`AvatarNameField` ne remplace que `list_template`. La variable `data` dans ce template est le dictionnaire construit par `parse_obj` puis remodelé par `serialize_value`, plutôt qu'une simple chaîne :
+`AvatarNameField` ne remplace que `list_template`. Dans ce template, la variable `data` est le dictionnaire construit par `parse_obj` puis remodelé par `serialize_value`, et non une simple chaîne :
 
 ```html title="templates/employee/avatar_name.html"
 <span class="avatar avatar-xs me-2"
@@ -170,21 +168,21 @@ Comme `null_template` et `empty_template` sont de simples attributs de champ com
 
 ```
 
-La classe `inline-edit-value` est le marqueur d'activation du soulignement de l'[édition en ligne](../user-guide/inline-edit.md). Elle est inerte tant que le champ n'est pas éditable en ligne ; l'appliquer au nom et non à l'avatar ne coûte donc rien ici, tout en gardant cet indicateur correctement délimité si le champ devient un jour éditable.
+La classe `inline-edit-value` est le marqueur opt-in pour le soulignement de l'[édition en ligne](../user-guide/inline-edit.md). Elle est inerte tant que le champ n'est pas éditable en ligne ; l'appliquer ici au nom et pas à l'avatar n'a donc aucun coût, tout en gardant cette affordance correctement délimitée si le champ devient éditable un jour.
 
-Remplacer `list_template` et `detail_template` tout en conservant le `form_template` par défaut est exactement ce que fait `StatusBadgeField` en étendant `EnumField`. Le `fields/form/enum.html` par défaut rend un menu déroulant `<select>` peuplé à partir de `field.choices`, si bien que la modification d'un statut fonctionne sans autre changement.
+Remplacer `list_template` et `detail_template` tout en conservant le `form_template` par défaut est exactement ce que fait `StatusBadgeField` en étendant `EnumField`. Le `fields/form/enum.html` par défaut rend un menu déroulant `<select>` alimenté par `field.choices`, si bien que l'édition d'un statut fonctionne sans modification supplémentaire.
 
-## Enregistrement dans le registre de conversion
+## Enregistrement auprès du registre de conversion
 
-La liste `fields = [...]` d'une vue accepte aussi bien des noms d'attributs simples que des objets champ. Tout élément qui n'est pas déjà un `BaseField` passe par un **registre de conversion** qui associe le type de colonne à une classe de champ. Chaque backend ORM fournit son propre registre (`starlette_admin.contrib.sqla.converters.ModelConverter` et les équivalents pour `beanie`, `mongoengine` et `tortoise`), tous construits sur la même base :
+La liste `fields = [...]` d'une vue accepte aussi bien des noms d'attributs simples que des objets champ. Tout élément qui n'est pas déjà un `BaseField` passe par un **registre de conversion** qui associe le type de colonne à une classe de champ. Chaque backend ORM fournit son propre registre (`starlette_admin.contrib.sqla.converters.ModelConverter` et leurs équivalents pour `beanie`, `mongoengine` et `tortoise`), tous construits sur la même base :
 
 ```python
 from starlette_admin.converters import BaseModelConverter, converts
 ```
 
-Le décorateur `@converts(*types)` marque une méthode comme convertisseur pour une ou plusieurs clés de type. `BaseModelConverter.__init__` parcourt l'instance à la recherche de ces méthodes décorées et construit son dictionnaire `converters` à partir d'elles. Pour le backend SQLAlchemy, les clés de type sont les **noms** des types de colonnes (`"String"`, `"Integer"`, `"Enum"`, etc.), car SQLAlchemy n'a pas de classe de base commune unique entre les dialectes.
+Le décorateur `@converts(*types)` marque une méthode comme convertisseur pour une ou plusieurs clés de type. `BaseModelConverter.__init__` parcourt l'instance à la recherche de ces méthodes décorées et construit son dictionnaire `converters` à partir d'elles. Pour le backend SQLAlchemy, les clés de type sont les **noms** des types de colonnes (`"String"`, `"Integer"`, `"Enum"`, etc.), car SQLAlchemy n'a pas de classe de base commune à tous les dialectes.
 
-Héritez du convertisseur du backend pour ajouter vos propres correspondances. Cet exemple route chaque colonne `Enum` vers `StatusBadgeField` au lieu du `EnumField` par défaut :
+Dérivez du convertisseur du backend pour ajouter vos propres correspondances. Cet exemple route chaque colonne `Enum` vers `StatusBadgeField` au lieu du `EnumField` par défaut :
 
 ```python
 from typing import Any
@@ -203,7 +201,7 @@ class MyModelConverter(ModelConverter):
         )
 ```
 
-Passez la sous-classe à `ModelView(converter=...)` afin que les noms de champs sous forme de chaîne dans `fields = [...]` soient résolus via votre convertisseur plutôt que via le convertisseur par défaut :
+Passez la sous-classe à `ModelView(converter=...)` afin que les noms de champs textuels dans `fields = [...]` soient résolus via votre convertisseur plutôt que via celui par défaut :
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
@@ -216,7 +214,7 @@ class EmployeeView(ModelView):
 admin.add_view(EmployeeView(Employee, converter=MyModelConverter()))
 ```
 
-Si vous construisez toujours les champs explicitement, comme dans l'exemple minimal ci-dessus, vous pouvez vous passer du registre de conversion. Vous n'en avez besoin que lorsque vous souhaitez qu'une entrée telle que `fields = ["status"]` produise un `StatusBadgeField` à partir du type de colonne sous-jacent.
+Si vous construisez toujours explicitement vos champs, comme dans l'exemple minimal ci-dessus, vous pouvez vous passer du registre de conversion. Vous ne le nécessitez que lorsque vous voulez qu'une entrée telle que `fields = ["status"]` produise un `StatusBadgeField` à partir du type de colonne sous-jacent.
 
 ---
 
@@ -224,4 +222,4 @@ Si vous construisez toujours les champs explicitement, comme dans l'exemple mini
 
 * **[Fields](../user-guide/fields.md) :** La référence complète des champs intégrés et le tableau des attributs de `BaseField`.
 * **[Templates](templates.md) :** Comment le loader de templates résout `list_template`, `detail_template`, `form_template`, `null_template` et `empty_template`.
-* **[Extension Points](extension-points.md) :** Toutes les autres surfaces extensibles de `starlette-admin`.
+* **[Extension Points](extension-points.md) :** Toutes les autres surfaces enfichables de `starlette-admin`.

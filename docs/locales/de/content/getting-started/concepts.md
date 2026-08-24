@@ -4,10 +4,8 @@ description: Verstehen Sie die architektonischen Designprinzipien von starlette-
   einschließlich deklarativer Views, URL-basiertem Zustand und backend-agnostischen
   Modellen.
 source_hash: 3928a168b4a3ffb7f57c78a8e7eed9fd92a949aa93c59339e49c29cb8ccb8a8c
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -26,13 +24,13 @@ translation_date: '2026-08-23'
 
 # Kernkonzepte
 
-Nachdem Sie den Quickstart abgeschlossen haben, indem Sie eine `PostView` geschrieben und eine Admin-Instanz gemountet haben, lernen Sie die architektonischen Designprinzipien des Frameworks kennen. Diese Kernkonzepte bilden die Grundlage für die restliche Dokumentation.
+Nachdem Sie den Quickstart abgeschlossen haben, indem Sie eine `PostView` geschrieben und eine Admin-Instanz eingebunden haben, lernen Sie die architektonischen Designprinzipien des Frameworks kennen. Diese Kernkonzepte bilden die Grundlage für die gesamte übrige Dokumentation.
 
 ## Eine Klasse pro Ressource
 
-Jede Ressource, die das Admin-Panel verwaltet, wird über eine einzelne, dedizierte Klasse bereitgestellt. Wenn Sie `ModelView` subclassen und auf ein Datenbankmodell verweisen, generieren Sie automatisch paginierte, sortierbare und filterbare Views für alle Standard-CRUD-Operationen (Liste, Detail, Erstellen, Bearbeiten und Löschen).
+Jede Ressource, die die Admin-Oberfläche verwaltet, wird über eine einzelne, dedizierte Klasse bereitgestellt. Wenn Sie `ModelView` ableiten und auf ein Datenbankmodell verweisen, werden automatisch paginierte, sortierbare und filterbare Views für alle Standard-CRUD-Operationen (Liste, Detail, Erstellen, Bearbeiten und Löschen) generiert.
 
-Dies eliminiert die Notwendigkeit, benutzerdefinierte Routen oder HTML-Templates zu schreiben. Alles, was bestimmt, wie eine Ressource aussieht, validiert und sich verhält, befindet sich innerhalb dieser einzelnen View-Klasse.
+Dadurch entfällt die Notwendigkeit, eigene Routen oder HTML-Templates zu schreiben. Alles, was das Aussehen, die Validierung und das Verhalten einer Ressource bestimmt, befindet sich innerhalb dieser einzelnen View-Klasse.
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
@@ -44,9 +42,9 @@ class PostView(ModelView):
 
 ## Dieselbe View, jedes Backend
 
-Views kommunizieren mit Ihren Daten über eine anpassbare Backend-Schicht. Ob Ihre Anwendung SQLAlchemy, SQLModel, Beanie, MongoEngine oder Tortoise ORM verwendet, die Konfigurations-API bleibt exakt dieselbe.
+Views kommunizieren mit Ihren Daten über eine anpassungsfähige Backend-Schicht. Ob Ihre Anwendung SQLAlchemy, SQLModel, Beanie, MongoEngine oder Tortoise ORM verwendet – die Konfigurations-API bleibt exakt identisch.
 
-Felder, Filter, Berechtigungen und Lifecycle-Hooks funktionieren konsistent, unabhängig davon, wo sich Ihre Daten befinden. Das Wissen, das Sie zu einem Backend erwerben, lässt sich direkt auf die anderen übertragen. Der Austausch Ihrer zugrunde liegenden Datenquelle erfordert nur eine Aktualisierung Ihrer Import-Statements.
+Felder, Filter, Berechtigungen und Lifecycle-Hooks funktionieren konsistent, unabhängig davon, wo Ihre Daten liegen. Das Wissen, das Sie für ein Backend erwerben, lässt sich direkt auf die anderen übertragen. Der Austausch Ihrer zugrunde liegenden Datenquelle erfordert lediglich eine Anpassung Ihrer Import-Anweisungen.
 
 ```python
 # For SQLAlchemy backends
@@ -56,26 +54,26 @@ from starlette_admin.contrib.sqla import ModelView
 from starlette_admin.contrib.beanie import ModelView
 ```
 
-## URL-basierter Listenzustand
+## URL-basierter Listen-Zustand
 
-Sortierung, Filterung, Paginierung und Suchkriterien synchronisieren sich direkt mit dem URL-Querystring. Da der Server Listenzustände vollständig aus diesen URL-Parametern rendert, ist jeder View-Zustand von Natur aus als Lesezeichen speicherbar und teilbar.
+Sortierung, Filterung, Paginierung und Suchkriterien synchronisieren sich direkt mit dem URL-Query-String. Da der Server die Listen-Zustände vollständig aus diesen URL-Parametern rendert, ist jeder View-Zustand von Natur aus als Lesezeichen speicherbar und teilbar.
 
-Wenn Sie einen bestimmten administrativen Link an einen Kollegen senden, sieht dieser exakt dieselben gefilterten Zeilen und dieselbe Sortierkonfiguration wie Sie.
+Wenn Sie einen bestimmten Verwaltungslink an einen Kollegen senden, sieht dieser exakt dieselben gefilterten Zeilen und dieselbe Sortierkonfiguration wie Sie.
 
 ```text
 /admin/post/list?page=2&order_by=published_at%20desc&q=release
 
 ```
 
-## Felder wissen, wie sie sich selbst rendern
+## Felder wissen selbst, wie sie sich rendern
 
-Felder sind selbstrendernde Komponenten. Jeder Feldtyp verwaltet seine eigene Anzeigelogik in drei unterschiedlichen Kontexten: einer Zelle innerhalb einer Listentabelle, einer Zeile innerhalb einer Detailview und einem Eingabeelement innerhalb eines Formulars.
+Felder sind selbstrendernde Komponenten. Jeder Feldtyp verwaltet seine eigene Anzeigelogik in drei unterschiedlichen Kontexten: als Zelle innerhalb einer Listentabelle, als Zeile innerhalb einer Detailansicht und als Eingabeelement innerhalb eines Formulars.
 
-Wenn Sie eine View erstellen, deklarieren Sie Feldinstanzen oder übergeben Attributnamen, die das Backend automatisch Feldern zuordnet. Wählen Sie den Typ, der zu Ihrem Datenmodell passt, und das Framework übernimmt das Rendering:
+Beim Aufbau einer View deklarieren Sie Feldinstanzen oder übergeben Attributnamen, die das Backend automatisch Feldern zuordnet. Wählen Sie den Typ, der zu Ihrem Datenmodell passt, und das Framework übernimmt das Rendering:
 
-* `StringField` für Textstrings
+* `StringField` für Textzeichenketten
 * `IntegerField` für numerische Daten
-* `ImageField` für Dateiuploads
+* `ImageField` für Datei-Uploads
 
 ```python
 from starlette_admin import StringField, IntegerField
@@ -90,11 +88,11 @@ class ProductView(ModelView):
 
 ## Deklarative Formularlayouts
 
-Standardmäßig rendert das Attribut `fields` Ihre Create- und Edit-Formulare als flache, vertikale Liste. Um das User Interface umzustrukturieren, ohne Ihre zugrunde liegenden Datendefinitionen zu verändern, verwenden Sie das Attribut `form_layout`.
+Standardmäßig rendert das Attribut `fields` Ihre Erstellen- und Bearbeiten-Formulare als flache, vertikale Liste. Um die Benutzeroberfläche umzustrukturieren, ohne Ihre zugrunde liegenden Datendefinitionen zu verändern, verwenden Sie das Attribut `form_layout`.
 
 ### Die Tuple-Kurzschreibweise
 
-Für grundlegende Grid-Layouts gruppieren Sie Feldnamen in einem Tuple, um sie nebeneinander in einer einzigen Zeile zu rendern. Dies vermeidet die Notwendigkeit, komplexe Widget-Klassen zu importieren.
+Für einfache Grid-Layouts gruppieren Sie Feldnamen in einem Tuple, um sie nebeneinander in einer einzigen Zeile darzustellen. Dies erspart Ihnen den Import komplexer Widget-Klassen.
 
 ```python
 class ProductView(ModelView):
@@ -109,10 +107,10 @@ class ProductView(ModelView):
 
 ### Fortgeschrittene Layout-Widgets
 
-Wenn Ihre Formulare komplexer werden, können Sie sie mithilfe von Layout-Widgets strukturieren. Die Tuple-Kurzschreibweise funktioniert nativ innerhalb dieser Komponenten:
+Wenn Ihre Formulare an Komplexität zunehmen, können Sie sie mithilfe von Layout-Widgets strukturieren. Die Tuple-Kurzschreibweise funktioniert auch innerhalb dieser Komponenten:
 
-* **`PanelWidget` oder `FieldsetWidget`:** Verwenden Sie diese Komponenten, um verwandte Felder unter einer klaren Überschrift zu gruppieren oder um Abschnitte einklappbar zu machen.
-* **`TabsWidget`:** Verwenden Sie diese Komponente, wenn eine Ressource unterschiedliche Datenkategorien hat (wie Versand- versus SEO-Metadaten), die nicht gleichzeitig sichtbar sein müssen.
+* **`PanelWidget` oder `FieldsetWidget`:** Verwenden Sie diese Komponenten, um verwandte Felder unter einer gemeinsamen Überschrift zu gruppieren.
+* **`TabsWidget`:** Verwenden Sie diese Komponente, wenn eine Ressource unterschiedliche Datenkategorien besitzt (etwa Versanddaten gegenüber SEO-Metadaten), die nicht gleichzeitig sichtbar sein müssen.
 
 ```python
 from starlette_admin import TabsWidget
@@ -143,9 +141,9 @@ class ProductView(ModelView):
 
 ## Filter sind an Feldtypen gebunden
 
-Filterfunktionen werden direkt auf Datentypen abgebildet, sodass Benutzer nur relevante Query-Optionen sehen. Ein `StringField` bietet kontextbezogene Textoptionen wie *enthält*, *beginnt mit*, *ist gleich* und *ist null*. Ein Integer-Feld bietet numerische Einschränkungen wie *größer als* oder *zwischen*.
+Die Filterfunktionen sind direkt an Datentypen gekoppelt, sodass Benutzer nur relevante Abfrageoptionen sehen. Ein `StringField` bietet kontextbezogene Textoptionen wie *enthält*, *beginnt mit*, *ist gleich* und *ist null*. Ein Ganzzahlfeld bietet numerische Einschränkungen wie *größer als* oder *zwischen*.
 
-Sie können diese Defaults auf einem einzelnen Feld einschränken oder überschreiben, indem Sie den Parameter `filters` verwenden, oder Sie können benutzerdefinierte Filter für einzigartige Datentypen registrieren.
+Sie können diese Standardwerte auf Feldebene einschränken oder überschreiben, indem Sie den Parameter `filters` verwenden, oder Sie registrieren eigene Filter für besondere Datentypen.
 
 ```python
 from starlette_admin import IntegerField
@@ -160,9 +158,9 @@ class OrderView(ModelView):
 
 ## Bringen Sie Ihre eigene Authentifizierung mit
 
-Das Framework bleibt vollständig agnostisch gegenüber Ihrem Benutzerschema, indem es auf ein integriertes Benutzermodell verzichtet. Authentifizierung erfordert die Implementierung einer einzigen Methode: `authenticate(request)`.
+Das Framework bleibt hinsichtlich Ihres Benutzerschemas vollständig agnostisch, da es kein eingebautes Benutzermodell mitliefert. Die Authentifizierung erfordert die Implementierung einer einzigen Methode: `authenticate(request)`.
 
-Verbinden Sie diese Methode mit Ihrer bestehenden Authentifizierungsinfrastruktur, z. B. einer lokalen Datenbanktabelle, einem OAuth-Provider oder einem Upstream-Single-Sign-on-(SSO)-Proxy-Header. Die Rückgabe eines `AdminUser`-Objekts gewährt Zugriff auf das Interface. Die Rückgabe von `None` verweigert den Zugriff.
+Verbinden Sie diese Methode mit Ihrer bestehenden Authentifizierungsinfrastruktur, etwa einer lokalen Datenbanktabelle, einem OAuth-Provider oder einem Upstream-Single-Sign-on-(SSO)-Proxy-Header. Die Rückgabe eines `AdminUser`-Objekts gewährt Zugriff auf die Oberfläche. Die Rückgabe von `None` verweigert den Zugriff.
 
 ```python
 from starlette.requests import Request
@@ -178,9 +176,9 @@ class MyAuthProvider(BaseAuthProvider):
 
 ## Aktionen laufen auf ausgewählten Zeilen
 
-Massenaktionen operieren auf mehreren Zeilen, die aus der oberen Toolbar ausgewählt wurden, und Zeilenaktionen werden inline auf einzelnen Datensätzen ausgeführt. Wenn Sie eine View-Methode mit `@action` oder `@row_action` dekorieren, wird die Methode automatisch im User Interface verfügbar gemacht, ohne manuelle Routenregistrierung.
+Sammelaktionen (Batch-Aktionen) operieren auf mehreren Zeilen, die über die obere Symbolleiste ausgewählt wurden, während Zeilenaktionen inline auf einzelnen Datensätzen ausgeführt werden. Wenn Sie eine View-Methode mit `@action` oder `@row_action` dekorieren, wird die Methode automatisch in der Benutzeroberfläche verfügbar gemacht – ganz ohne manuelle Routenregistrierung.
 
-Statt einen Message-String aus der Aktionsmethode zurückzugeben, lösen Sie Benutzerbenachrichtigungen direkt mithilfe der integrierten `flash()`-Utility aus.
+Statt eine Nachrichtenzeichenkette aus der Aktionsmethode zurückzugeben, lösen Sie Benutzerbenachrichtigungen direkt mithilfe der integrierten `flash()`-Utility-Funktion aus.
 
 ```python
 from typing import Any
@@ -205,11 +203,11 @@ class ArticleView(ModelView):
 
 ## Nativer Datenexport und -import
 
-Jede Listenseite verfügt über einen Exportdialog, der es Benutzern ermöglicht, den Umfang (ausgewählte Zeilen oder die aktuelle Seite), Felder, Format und Dateinamen auszuwählen. Aktive Filter und Suchbegriffe bleiben erhalten, was bedeutet, dass die exportierte Datei exakt dem entspricht, was auf dem Bildschirm erscheint.
+Jede Listenseite verfügt über einen Exportdialog, in dem Benutzer den Umfang (ausgewählte Zeilen oder die aktuelle Seite), die Felder, das Format und den Dateinamen auswählen können. Aktive Filter und Suchbegriffe bleiben erhalten, sodass die exportierte Datei exakt dem entspricht, was auf dem Bildschirm angezeigt wird.
 
-Das Framework unterstützt nativ die Formate CSV, JSON und PDF. Für zusätzliche Formate wie Excel (`xlsx`) integriert sich das Framework mit `tablib`, um jeden kompatiblen Dateityp zu unterstützen. Formate werden als einfache Extension-Strings deklariert. Die Zugriffskontrolle wird auf granularer Ebene mithilfe des Hooks `can_export` verwaltet.
+Das Framework unterstützt nativ die Formate CSV, JSON und PDF. Für weitere Formate wie Excel (`xlsx`) bindet sich das Framework an `tablib`, um jeden kompatiblen Dateityp zu unterstützen. Formate werden als einfache Erweiterungszeichenketten deklariert. Die Zugriffssteuerung erfolgt auf granularer Ebene über den Hook `can_export`.
 
-Der Import-Assistent nimmt sicher Massendaten in denselben Formaten auf. Der Assistent validiert den Upload zunächst in einem Vorschau-Schritt, hebt Fehler zeilenweise hervor, bevor er irgendwelche Datenbank-Schreibvorgänge durchführt, und unterstützt optionale Primärschlüssel-Upserts. Sie können den Zugriff auf diese Funktion einschränken, indem Sie den Hook `can_import` verwenden.
+Der Import-Assistent nimmt Massendaten sicher in denselben Formaten entgegen. Der Assistent validiert den Upload zunächst in einem Vorschau-Schritt und markiert Fehler zeilenweise, bevor irgendwelche Datenbank-Schreibvorgänge durchgeführt werden; optional unterstützte Primärschlüssel-Upserts sind ebenfalls möglich. Den Zugriff auf diese Funktion können Sie über den Hook `can_import` einschränken.
 
 ```python
 from starlette.requests import Request
@@ -226,11 +224,11 @@ class OrderView(ModelView):
         return request.state.user.is_admin
 ```
 
-## Flexibler Dateispeicher
+## Flexible Dateispeicherung
 
-Medienverwaltung über `FileField` und `ImageField` basiert auf einer zugrunde liegenden `Storage`-Abstraktionsschicht. Verwenden Sie `LocalStorage` für lokale Festplatten-Schreibvorgänge, oder installieren die optionale S3-Integration, indem Sie `pip install starlette-admin[s3]` ausführen.
+Die Medienverwaltung über `FileField` und `ImageField` basiert auf einer zugrunde liegenden `Storage`-Abstraktionsschicht. Verwenden Sie `LocalStorage` für Schreibvorgänge auf der lokalen Festplatte oder installieren Sie die optionale S3-Integration durch Ausführen von `pip install starlette-admin[s3]`.
 
-Das Feld koordiniert automatisch Uploads, Backend-Validierung und Frontend-Rendering, nachdem Sie es auf Ihre gewählte Storage-Konfiguration verweisen.
+Sobald Sie das Feld auf Ihre gewählte Speicherkonfiguration verweisen, koordiniert es automatisch Datei-Uploads, Backend-Validierung und Frontend-Rendering.
 
 ```python
 from starlette_admin import FileField, ImageField
@@ -247,11 +245,11 @@ class AuthorView(ModelView):
     ]
 ```
 
-## Benutzerdefinierte Views und Dashboard-Widgets
+## Eigene Views und Dashboard-Widgets
 
-Seiten, die nicht explizit an ein Datenbankmodell gebunden sind, wie Metrik-Dashboards oder benutzerdefinierte Berichte, werden mithilfe von `CustomView` erstellt. Inhalte werden mithilfe eines Parameters `widget` befüllt. Dieser Parameter akzeptiert entweder eine statische `BaseWidget`-Instanz oder einen dynamischen Callable, der ausgeführt wird, wenn der Inhalt vom eingehenden Request abhängt.
+Seiten, die nicht explizit an ein Datenbankmodell gebunden sind – etwa Metrik-Dashboards oder individuelle Berichte –, erstellen Sie mit `CustomView`. Der Inhalt wird über einen Parameter `widget` befüllt. Dieser Parameter akzeptiert entweder eine statische `BaseWidget`-Instanz oder eine dynamische aufrufbare Funktion, wenn der Inhalt von der eingehenden Anfrage abhängt.
 
-Sie können komplexe User Interfaces zusammenstellen, indem Sie Layout-Primitives und Widgets zur Datenvisualisierung in einer sauberen Hierarchie anordnen.
+Komplexe Benutzeroberflächen setzen Sie zusammen, indem Sie Layout-Primitives und Widgets zur Datenvisualisierung in einer sauberen Hierarchie anordnen.
 
 ```python
 from starlette.requests import Request
@@ -280,12 +278,12 @@ dashboard = CustomView(
 )
 ```
 
-## Events und Methoden-Hooks
+## Ereignisse und Methoden-Hooks
 
-Das Framework bietet zwei unterschiedliche Erweiterungspunkte, um Code während Create-, Update- und Delete-Zyklen auszuführen:
+Das Framework stellt zwei unterschiedliche Erweiterungspunkte bereit, um Code während der Erstell-, Aktualisierungs- und Löschzyklen auszuführen:
 
 1. **Lifecycle-Methoden:** Für Logik, die auf eine bestimmte Entität beschränkt ist, überschreiben Sie lokale Methoden wie `before_create` direkt in Ihrer View-Klasse.
-2. **Event-Listener:** Für globale Belange wie Audit-Logs, Cache-Invalidierung oder Webhooks abonnieren Sie das System `admin.events`.
+2. **Event-Listener:** Für übergreifende Belange wie Audit-Logs, Cache-Invalidierung oder Webhooks abonnieren Sie das System `admin.events`.
 
 Beide Muster werden an identischen Ausführungspunkten ausgelöst, sodass Sie den Ansatz wählen können, der am besten zu Ihrer Anwendungsarchitektur passt.
 
@@ -315,7 +313,7 @@ admin.events.on(AdminEvent.AFTER_CREATE, log_create)
 
 **Wie geht es weiter**
 
-* **[Views](../user-guide/views.md):** Jede Konfigurationsoption von `ModelView`.
+* **[Views](../user-guide/views.md):** Alle Konfigurationsoptionen von `ModelView`.
 * **[Fields](../user-guide/fields.md):** Der vollständige Katalog der Feldtypen.
-* **[Formularlayouts](../advanced/form-layout.md):** Gestalten Sie Create- und Edit-Formulare mit Zeilen, Panels und Tabs.
-* **[Actions](../user-guide/actions.md):** Massen- und Zeilenaktionen im Detail.
+* **[Form Layouts](../advanced/form-layout.md):** Gestalten Sie Erstellen- und Bearbeiten-Formulare mit Zeilen, Panels und Tabs.
+* **[Actions](../user-guide/actions.md):** Batch- und Zeilenaktionen im Detail.

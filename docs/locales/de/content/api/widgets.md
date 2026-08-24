@@ -1,12 +1,10 @@
 ---
 title: Widgets-API-Referenz
-description: Vollständige API-Referenz für Dashboard- und Formularlayout-Widgets in
-  starlette-admin.
+description: Vollständige API-Referenz für Dashboard- und Formular-Layout-Widgets
+  in starlette-admin.
 source_hash: da6469e2d30b13afb7827dac861073c091225333cce9307a41dc3c1ff24913e5
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -25,28 +23,28 @@ translation_date: '2026-08-23'
 
 # Widgets
 
-Vollständige Referenz der Attribute und Methoden des Widget-Systems, generiert aus Docstrings. Eine aufgabenorientierte Einführung finden Sie unter [Benutzerdefinierte Views & Widgets](../user-guide/custom-views.md) und [Formularlayouts](../advanced/form-layout.md).
+Vollständige Referenz aller Attribute und Methoden des Widget-Systems, generiert aus den Docstrings. Eine aufgabenorientierte Einführung finden Sie unter [Custom Views & Widgets](../user-guide/custom-views.md) und [Form Layouts](../advanced/form-layout.md).
 
-Widgets sind kombinierbare, renderbare Bausteine, mit denen sich UI-Elemente dynamisch erstellen lassen. Jede unten aufgeführte Widget-Klasse kann direkt aus `starlette_admin` importiert werden.
+Widgets sind zusammensetzbare, renderbare Bausteine, mit denen sich UI-Elemente dynamisch konstruieren lassen. Jede unten aufgeführte Widget-Klasse kann direkt aus `starlette_admin` importiert werden.
 
-Das Widget-System erfüllt je nach Kontext zwei Hauptaufgaben:
+Das Widget-System erfüllt je nach Kontext zwei Hauptfunktionen:
 
-* **Dashboards & benutzerdefinierte Seiten:** Wird als `widget`-Attribut von [`CustomView`](views.md#starlette_admin.views.CustomView) verwendet, um eigenständige Interfaces und Metrik-Boards zu erstellen.
-* **Formularlayouts:** Wird als `form_layout`-Attribut von [`BaseModelView`](views.md#starlette_admin.views.BaseModelView) verwendet, um Eingaben auf Erstellungs-/Bearbeitungsformularen anzuordnen und zu gruppieren.
+* **Dashboards & Custom Pages:** Wird als `widget`-Attribut von [`CustomView`](views.md#starlette_admin.views.CustomView) verwendet, um eigenständige Oberflächen und Metrik-Übersichten zu erstellen.
+* **Form Layouts:** Wird als `form_layout`-Attribut von [`BaseModelView`](views.md#starlette_admin.views.BaseModelView) verwendet, um Eingabefelder auf Create-/Edit-Formularen anzuordnen und zu gruppieren.
 
 ---
 
 ## Basisklasse
 
-Alle Widgets erben von einer gemeinsamen Basisklasse, die das Standard-Interface für Rendering und Asset-Sammlung definiert.
+Alle Widgets erben von einer gemeinsamen Basisklasse, die die standardmäßige Rendering-Schnittstelle und das Asset-Erfassungsinterface definiert.
 
 ::: starlette_admin.widgets.BaseWidget
 
 ---
 
-## Content-Widgets
+## Content Widgets
 
-Content-Widgets fungieren als Blattknoten Ihres UI-Baums. Statt andere Widgets zu enthalten, zeigen sie Live-Daten an. Jedes Content-Widget akzeptiert einen asynchronen Callback, der einmal pro Request aufgerufen wird, sodass die gerenderten Werte immer aktuell sind.
+Content Widgets bilden die Blattknoten Ihres UI-Baums. Statt andere Widgets zu enthalten, zeigen sie Live-Daten an. Jedes Content Widget akzeptiert eine asynchrone Callback-Funktion, die einmal pro Request aufgerufen wird – so sind die gerenderten Werte stets aktuell.
 
 ::: starlette_admin.widgets.StatWidget
 ::: starlette_admin.widgets.ChartWidget
@@ -57,11 +55,11 @@ Content-Widgets fungieren als Blattknoten Ihres UI-Baums. Statt andere Widgets z
 
 ---
 
-## Layout-Widgets
+## Layout Widgets
 
-Layout-Widgets sind Container, die dazu dienen, ihre `children` (also Content-Widgets, Formularfelder oder andere Layout-Widgets) anzuordnen.
+Layout Widgets sind Container, mit denen sich ihre `children` anordnen lassen (dies können Content Widgets, Formularfelder oder weitere Layout Widgets sein).
 
-**Automatisches Asset-Management:** Layout-Widgets durchlaufen ihren Baum rekursiv, um `additional_css_links` und `additional_js_links` ihrer Kinder zu sammeln. So laden tief verschachtelte Komponenten automatisch die benötigten CSS/JS-Assets, ganz ohne manuelle Verdrahtung.
+**Automatisches Asset-Management:** Layout Widgets durchlaufen ihren Baum rekursiv und sammeln `additional_css_links` und `additional_js_links` ihrer Kinder ein. Dadurch laden auch tief verschachtelte Komponenten ihre benötigten CSS/JS-Assets automatisch, ohne dass eine manuelle Verdrahtung erforderlich ist.
 
 ::: starlette_admin.widgets.RowWidget
 ::: starlette_admin.widgets.CardRowWidget
@@ -73,16 +71,16 @@ Layout-Widgets sind Container, die dazu dienen, ihre `children` (also Content-Wi
 
 ---
 
-## Responsives Sizing
+## Responsive Größenanpassung
 
-Hilfsklassen zur Steuerung responsiven Grid-Verhaltens, von Spaltenbreiten und Breakpoints über verschiedene Bildschirmgrößen hinweg.
+Utility-Klassen zur Steuerung responsiver Grid-Verhalten, Spaltenbreiten und Breakpoints über verschiedene Bildschirmgrößen hinweg.
 
 ::: starlette_admin.widgets.Breakpoints
 ::: starlette_admin.widgets.Col
 
 ---
 
-## Formularlayout-Referenzen
+## Formular-Layout-Referenzen
 
 Spezialisierte Widgets, die ausschließlich im Kontext von Modellformularen verwendet werden, um auf bestimmte Datenbankfelder zu verweisen.
 
@@ -90,11 +88,11 @@ Spezialisierte Widgets, die ausschließlich im Kontext von Modellformularen verw
 
 ---
 
-## Shorthand & Normalisierung
+## Kurzschreibweise & Normalisierung
 
-Damit Ihr Layout-Code sauber und gut lesbar bleibt, akzeptieren Container-Widgets einfache Python-Typen anstelle expliziter Widget-Klasseninstanziierungen. Während der Initialisierung (`__post_init__`) lösen Container diese Shorthand-Werte automatisch in ihre entsprechenden Widget-Pendants auf.
+Damit Ihr Layout-Code übersichtlich und gut lesbar bleibt, akzeptieren Container-Widgets einfache Python-Typen anstelle expliziter Widget-Instanziierungen. Während der Initialisierung (`__post_init__`) lösen Container diese Kurzschreibweisen automatisch in die entsprechenden Widget-Klassen auf.
 
-**Unterstützte Shorthands:**
+**Unterstützte Kurzschreibweisen:**
 
 * `str`: Wird zu einer Feldreferenz (`FieldRef`) aufgelöst.
 * `tuple`: Wird zu einer nebeneinander angeordneten Zeile (`RowWidget`) aufgelöst.

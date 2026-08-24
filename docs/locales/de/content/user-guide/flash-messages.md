@@ -1,12 +1,10 @@
 ---
-title: Flash-Nachrichten
+title: Flash-Meldungen
 description: Senden Sie flüchtige Erfolgs-, Warn- oder Fehlermeldungen an Benutzer,
   nachdem Aktionen in starlette-admin abgeschlossen wurden.
 source_hash: 597d52f90701d02e1620bfc199dbd2bdebc85f958d6f79d8458d1f8d50a0f9ec
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -23,11 +21,11 @@ translation_date: '2026-08-23'
     [Lesen Sie die ursprüngliche englische Version](https://jowilf.github.io/starlette-admin/user-guide/flash-messages/)
 <!-- translation-notice:end -->
 
-# Flash-Nachrichten
+# Flash-Meldungen
 
-Flash-Nachrichten geben Benutzern temporäres, einmaliges Feedback, nachdem sie eine Aktion ausgeführt haben, etwa „Post erfolgreich erstellt“ oder „Ungültiger Dateityp“. Eine Nachricht überlebt einen einzelnen HTTP-Redirect, und das Admin-Panel verwirft sie nach der Anzeige.
+Flash-Meldungen geben Benutzern temporäres, einmaliges Feedback, nachdem sie eine Aktion ausgeführt haben, etwa „Beitrag erfolgreich erstellt“ oder „Ungültiger Dateityp“. Eine Meldung übersteht genau eine HTTP-Weiterleitung und wird vom Admin nach der Anzeige verworfen.
 
-`flash()` stellt eine Nachricht in die Warteschlange des aktuellen Requests. Das Admin-Panel rendert die Nachricht auf der nächsten Seite, die der Benutzer sieht, und leert dann die Warteschlange. Dieses Muster stammt von Flask-Admin.
+`flash()` stellt eine Meldung in die Warteschlange des aktuellen Requests. Der Admin rendert die Meldung auf der nächsten Seite, die der Benutzer sieht, und leert anschließend die Warteschlange. Dieses Muster stammt von Flask-Admin.
 
 
 ```python
@@ -44,9 +42,9 @@ class PostView(BaseModelView):
 
 ```
 
-## Nachrichten-Kategorien
+## Meldungskategorien
 
-Jede Flash-Nachricht benötigt eine Kategorie. Die Kategorie legt die Farbe des Banners im Standard-Theme fest, sodass Benutzer den Schweregrad auf einen Blick erkennen können.
+Jede Flash-Meldung benötigt eine Kategorie. Die Kategorie legt die Farbe des Banners im Standard-Theme fest, sodass Benutzer den Schweregrad auf einen Blick erkennen können.
 
 ```python
 from starlette_admin.flash import flash
@@ -58,25 +56,25 @@ flash(request, "Upload failed: file too large.", category="error")
 
 ```
 
-Das Argument `category` hat als Defaultwert `"info"`. Es muss genau einer der Werte `success`, `info`, `warning` oder `error` sein. Jeder andere Wert löst einen `ValueError` aus.
+Das Argument `category` ist standardmäßig `"info"`. Es muss exakt einer der Werte `success`, `info`, `warning` oder `error` sein. Jeder andere Wert löst einen `ValueError` aus.
 
-## Integrierte CRUD-Nachrichten
+## Eingebaute CRUD-Meldungen
 
-Sie müssen `flash()` für Standard-CRUD-Operationen nicht aufrufen. Das Admin-Panel zeigt automatisch eine `success`-Nachricht an, wenn diese Aktionen abgeschlossen sind:
+Für Standard-CRUD-Operationen müssen Sie `flash()` nicht selbst aufrufen. Der Admin zeigt automatisch eine `success`-Meldung an, sobald diese Aktionen abgeschlossen sind:
 
-| Aktion | Standardnachricht |
+| Aktion | Standardmeldung |
 | --- | --- |
 | **Create** | `The item "<repr>" was added successfully.` |
 | **Edit** | `The item "<repr>" was changed successfully.` |
 | **Delete (single)** | `The item "<repr>" was successfully deleted.` |
 | **Delete (bulk)** | `%(count)d items were successfully deleted.` |
 
-!!! note "Worauf `<repr>` aufgelöst wird"
-    Die automatischen Nachrichten verwenden die Zeilendarstellung, die `view.repr()` definiert, nicht den Klassennamen des Modells. Beim Erstellen eines Posts erscheint beispielsweise die Flash-Nachricht *„The item 'My First Post' was added successfully“* statt einer generischen *„Post was added successfully“*.
+!!! note "Worauf sich `<repr>` bezieht"
+    Die automatischen Meldungen verwenden die Zeilendarstellung, die `view.repr()` definiert, nicht den Klassennamen des Modells. Beim Anlegen eines Beitrags erscheint beispielsweise *„The item 'My First Post' was added successfully"* statt eines generischen *„Post was added successfully"*.
 
-## Flash-Nachrichten in benutzerdefinierten Aktionen verwenden
+## Verwendung von Flash-Meldungen in eigenen Aktionen
 
-Handler für benutzerdefinierte Aktionen (`@action` und `@row_action`) geben standardmäßig `None` zurück. Um dem Benutzer Feedback zu geben, rufen Sie `flash()` auf, bevor der Handler zurückkehrt.
+Handler für eigene Aktionen (`@action` und `@row_action`) geben standardmäßig `None` zurück. Um dem Benutzer Feedback zu geben, rufen Sie `flash()` auf, bevor der Handler zurückkehrt.
 
 ```python
 from starlette.requests import Request
@@ -99,12 +97,12 @@ class PostView(BaseModelView):
 
 ```
 
-* **Wenn Sie `flash()` weglassen:** Die Aktion wird trotzdem ausgeführt, aber der Benutzer erhält nach dem Redirect der Seite keine visuelle Bestätigung.
-* **Wenn die Aktion fehlschlägt:** Wenn Ihre benutzerdefinierte Aktion ein `ActionFailed` auslöst, fängt das Admin-Panel die Exception ab und zeigt den Exception-String als Fehlerbanner an. Rufen Sie `flash()` nicht in einem `ActionFailed`-Zweig auf, da der Request keinen Redirect durchführt.
+* **Wenn Sie `flash()` weglassen:** Die Aktion läuft weiterhin durch, aber der Benutzer erhält nach der Weiterleitung keine visuelle Bestätigung.
+* **Wenn die Aktion fehlschlägt:** Wenn Ihre eigene Aktion `ActionFailed` auslöst, fängt der Admin die Exception ab und zeigt deren Text als Fehlerbanner an. Rufen Sie in einem `ActionFailed`-Zweig kein `flash()` auf, da der Request nicht weitergeleitet wird.
 
-## Nachrichten in benutzerdefinierten Templates rendern
+## Rendern von Meldungen in eigenen Templates
 
-Das Basis-Template des Admin-Panels holt die Flash-Nachrichten für Sie ab und rendert sie. Sie müssen sie nur selbst abrufen, wenn Sie eine vollständig [benutzerdefinierte View](custom-views.md) erstellen.
+Das Basis-Template des Admins holt die Flash-Meldungen ab und rendert sie für Sie. Sie müssen sie nur dann selbst abrufen, wenn Sie eine vollständig [eigene View](custom-views.md) erstellen.
 
 ```python
 from starlette_admin.flash import get_flashed_messages
@@ -114,17 +112,17 @@ messages = get_flashed_messages(request)
 
 ```
 
-Das Lesen der Flash-Warteschlange ist **destruktiv**. Der erste Aufruf von `get_flashed_messages(request)` holt die Nachrichten ab und leert die Warteschlange. Spätere Aufrufe innerhalb desselben Requests geben eine leere Liste zurück, `[]`.
+Der Lesezugriff auf die Flash-Warteschlange ist **destruktiv**. Der erste Aufruf von `get_flashed_messages(request)` holt die Meldungen ab und leert die Warteschlange. Weitere Aufrufe innerhalb desselben Requests geben eine leere Liste zurück, `[]`.
 
-!!! important "Halten Sie Nachrichten kurz"
-    Flash-Nachrichten werden in einem signierten, `httponly`-Cookie namens `admin_flash` gespeichert, nicht in der Server-Session. Browser begrenzen die Cookie-Größe auf etwa 4 KB, verwenden Sie Flash-Nachrichten daher nur für kurzes Feedback. Vermeiden Sie lange Strings und große Daten-Payloads. Der Cookie-basierte Ansatz bedeutet auch, dass Flash-Nachrichten ohne `SessionMiddleware` funktionieren.
+!!! important "Halten Sie Meldungen kurz"
+    Flash-Meldungen werden in einem signierten, `httponly`-Cookie namens `admin_flash` gespeichert, nicht in der Server-Session. Browser begrenzen die Cookie-Größe auf etwa 4 KB, verwenden Sie Flash-Meldungen daher ausschließlich für kurzes Feedback. Vermeiden Sie lange Zeichenketten und große Daten-Payloads. Der Cookie-basierte Ansatz bedeutet außerdem, dass Flash-Meldungen auch ohne `SessionMiddleware` funktionieren.
 
-> Sehen Sie sich [examples/09-actions](https://github.com/jowilf/starlette-admin/tree/main/examples/09-actions) für eine lauffähige App an, die `flash()` aus Hooks und benutzerdefinierten Aktionen aufruft.
+> Sehen Sie sich [examples/09-actions](https://github.com/jowilf/starlette-admin/tree/main/examples/09-actions) für eine lauffähige App an, die `flash()` aus Hooks und eigenen Aktionen aufruft.
 
 ---
 
 ## Was kommt als Nächstes
 
-* **[Actions](actions.md)**: Geschäftslogik über Massen- oder Zeilenaktionen auslösen.
-* **[Security](security.md)**: Erfahren Sie, wie `secret_key` sowohl das Flash-Cookie als auch CSRF-Tokens absichert.
-* **[Templates](../advanced/templates.md)**: Flash-Banner in Ihren eigenen Layouts rendern.
+* **[Aktionen](actions.md)**: Lösen Sie Geschäftslogik über Bulk- oder Zeilenaktionen aus.
+* **[Sicherheit](security.md)**: Erfahren Sie, wie `secret_key` sowohl das Flash-Cookie als auch CSRF-Tokens absichert.
+* **[Templates](../advanced/templates.md)**: Rendern Sie Flash-Banner in Ihren eigenen Layouts.

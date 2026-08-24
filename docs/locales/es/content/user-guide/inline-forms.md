@@ -1,16 +1,14 @@
 ---
 title: Formularios en línea
 description: Gestione modelos relacionados directamente dentro de los formularios
-  de creación y edición de un modelo padre mediante InlineModelView.
+  de creación y edición de un modelo padre usando InlineModelView.
 source_hash: 0c7d60efcf81de737f205968caea2030a08bf37d63452dce2d0cc29b93309e22
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -25,11 +23,11 @@ translation_date: '2026-08-22'
 
 # Formularios en línea
 
-Los formularios en línea permiten a los usuarios gestionar registros relacionados directamente desde la página de creación o edición de un modelo padre. Son adecuados para modelos hijos que solo tienen sentido junto a su modelo padre, como los comentarios de un artículo o las tareas de un proyecto, y le evitan tener que construir una vista de administración separada para el modelo hijo.
+Los formularios en línea permiten a los usuarios gestionar registros relacionados directamente desde la página de creación o edición de un modelo padre. Son adecuados para modelos hijos que solo tienen sentido junto a su modelo padre, como comentarios de un artículo o tareas de un proyecto, y le evitan tener que construir una vista de administración separada para el modelo hijo.
 
-Consulte [examples/06-inline-forms](https://github.com/jowilf/starlette-admin/tree/main/examples/06-inline-forms) para ver una aplicación ejecutable que cubre los tres patrones de esta página: clave externa detectada automáticamente, clave externa explícita y clave externa compuesta.
+Consulte [examples/06-inline-forms](https://github.com/jowilf/starlette-admin/tree/main/examples/06-inline-forms) para ver una aplicación ejecutable que cubre los tres patrones de esta página: clave foránea detectada automáticamente, clave foránea explícita y clave foránea compuesta.
 
-## Un inline mínimo
+## Un formulario en línea mínimo
 
 ```python hl_lines="40-43"
 from sqlalchemy import ForeignKey, Integer, String, Text
@@ -86,26 +84,26 @@ Configurar esto requiere dos pasos: definir una subclase de `InlineModelView` pa
 
 Las páginas de creación y edición de `ArticleView` ahora muestran un formset de `Comments` debajo de los campos propios del artículo. El formset comienza con una fila vacía (`extra = 1`) e incluye los controles de añadir y eliminar que el backend de SQLAlchemy configura por usted.
 
-Tenga en cuenta que `CommentInline` nunca define `fk_attr`. El backend de SQLAlchemy inspecciona `Article.comments` e infiere `Comment.article_id` como la clave externa, porque es la única relación que apunta a `Comment`. Defina `fk_attr` usted mismo solo cuando esa inferencia sea ambigua o cuando la relación no esté declarada en el modelo ORM. Consulte [Claves externas explícitas y compuestas](#claves-externas-explicitas-y-compuestas).
+Tenga en cuenta que `CommentInline` nunca define `fk_attr`. El backend de SQLAlchemy inspecciona `Article.comments` e infiere `Comment.article_id` como la clave foránea, porque es la única relación que apunta a `Comment`. Defina `fk_attr` usted mismo solo cuando esa inferencia sea ambigua, o cuando la relación no esté declarada en el modelo ORM. Consulte [Claves foráneas explícitas y compuestas](#explicit-and-composite-foreign-keys).
 
 ## Referencia de `InlineModelView`
 
 | Atributo | Tipo | Valor predeterminado | Descripción |
 | --- | --- | --- | --- |
-| `model` | Clase de modelo ORM | `None` | El modelo relacionado que este inline gestiona. Obligatorio. |
-| `fk_attr` | `str | tuple[str, ...]` | `""` | Nombre del campo de clave externa en el modelo inline que apunta al padre. Una tupla declara una clave externa compuesta. Opcional en el backend de SQLAlchemy, que la detecta automáticamente a partir de la relación del padre cuando se omite. |
-| `extra` | `int` | `0` | Número de filas vacías que se muestran en los formularios de creación y edición, además de las filas existentes. |
-| `allow_delete` | `bool` | `True` | Mostrar una casilla de verificación o un botón de eliminación en cada fila existente. |
-| `inline_template` | `str` | `"inline.html"` | Plantilla utilizada para mostrar el formset. |
-| `collapsible` | `bool` | `True` | Indica si los usuarios pueden expandir y contraer el formset. |
+| `model` | Clase del modelo ORM | `None` | El modelo relacionado que gestiona este inline. Obligatorio. |
+| `fk_attr` | `str | tuple[str, ...]` | `""` | Nombre del campo de clave foránea en el modelo inline que apunta al padre. Una tupla declara una clave foránea compuesta. Opcional en el backend de SQLAlchemy, que lo detecta automáticamente a partir de la relación del padre cuando se omite. |
+| `extra` | `int` | `0` | Número de filas vacías mostradas en los formularios de creación y edición, además de las filas existentes. |
+| `allow_delete` | `bool` | `True` | Mostrar una casilla o botón de eliminación en cada fila existente. |
+| `inline_template` | `str` | `"inline.html"` | Plantilla utilizada para renderizar el formset. |
+| `collapsible` | `bool` | `True` | Si los usuarios pueden expandir y contraer el formset. |
 | `collapsed` | `bool` | `False` | Estado inicial contraído. Se aplica solo cuando `collapsible=True`. |
 
 
-El constructor lanza una excepción `ValueError` cuando deja `fk_attr` vacío y el backend no puede resolver la relación de forma inequívoca.
+El constructor lanza una excepción `ValueError` cuando deja `fk_attr` vacío y el backend no puede resolver la relación sin ambigüedad.
 
-## Formsets plegables
+## Formsets contraíbles
 
-De forma predeterminada (`collapsible = True`), cada `InlineModelView` muestra su formset con un encabezado que los usuarios pueden seleccionar para contraer los registros hijos que no necesiten. Defina `collapsed = True` para que el formset comience cerrado en lugar de abierto:
+De forma predeterminada (`collapsible = True`), cada `InlineModelView` renderiza su formset con un encabezado que los usuarios pueden seleccionar para contraer los registros hijos que no necesiten. Defina `collapsed = True` para que el formset comience cerrado en lugar de abierto:
 
 ```python
 class CommentInline(InlineModelView):
@@ -115,7 +113,7 @@ class CommentInline(InlineModelView):
     collapsed = True
 ```
 
-Defina `collapsible = False` para excluir por completo el formset del comportamiento plegable, de modo que siempre se muestre expandido sin ningún control:
+Defina `collapsible = False` para excluir por completo un formset de este comportamiento, de modo que siempre se renderice expandido y sin interruptor:
 
 ```python
 class CommentInline(InlineModelView):
@@ -125,9 +123,9 @@ class CommentInline(InlineModelView):
     collapsible = False
 ```
 
-## Claves externas explícitas y compuestas
+## Claves foráneas explícitas y compuestas {#explicit-and-composite-foreign-keys}
 
-Defina `fk_attr` usted mismo cuando el padre tenga más de una relación con el mismo modelo hijo, cuando la relación no esté declarada en el modelo ORM o cuando la clave externa sea compuesta:
+Defina `fk_attr` usted mismo cuando el padre tenga más de una relación con el mismo modelo hijo, cuando la relación no esté declarada en el modelo ORM, o cuando la clave foránea sea compuesta:
 
 ```python hl_lines="40-44 89-92"
 from sqlalchemy import ForeignKey, ForeignKeyConstraint, Integer, String
@@ -229,19 +227,19 @@ class OrderView(ModelView):
     inlines = [OrderLineInline]
 ```
 
-Tenga en cuenta que `OrderLineInline` no necesita `fk_attr`, aunque la clave primaria de `OrderLine` sea compuesta (`order_store_id`, `order_seq`, `line_no`). El backend de SQLAlchemy resuelve la clave externa compuesta a partir de la restricción `ForeignKeyConstraint` entre `Order` y `OrderLine`, y rellena ambas columnas en las filas nuevas. Pase una `tuple[str, ...]` a `fk_attr` solo cuando la introspección de restricciones no encuentre ninguna coincidencia.
+Tenga en cuenta que `OrderLineInline` no necesita `fk_attr`, aunque la clave primaria de `OrderLine` sea compuesta (`order_store_id`, `order_seq`, `line_no`). El backend de SQLAlchemy resuelve la clave foránea compuesta a partir de la `ForeignKeyConstraint` entre `Order` y `OrderLine` y rellena ambas columnas en las filas nuevas. Pase una `tuple[str, ...]` a `fk_attr` solo cuando la introspección de restricciones no encuentre ninguna coincidencia.
 
 ## Validación
 
-Cada fila enviada se valida por sí misma, a través de las mismas rutas `create` y `edit` que utiliza un `ModelView` independiente. La administración guarda primero el padre y luego procesa cada fila inline por turnos. Un error tipográfico en el campo `author` de un comentario no impide que se procesen los demás comentarios. Cuando una fila no supera la validación, sus errores se asocian a esa fila, y el formulario vuelve a mostrarla en su lugar con los valores enviados para que los usuarios puedan corregirla y volver a enviarla.
+Cada fila enviada se valida de forma independiente, a través de las mismas rutas `create` y `edit` que utiliza un `ModelView` autónomo. La administración guarda primero el padre y luego procesa cada fila inline por turnos. Un error tipográfico en el campo `author` de un comentario no impide que se procesen los demás comentarios. Cuando una fila falla la validación, sus errores se asocian a esa fila, y el formulario vuelve a renderizarla en su lugar con los valores enviados para que los usuarios puedan corregirla y volver a enviarla.
 
 !!! important
-    En el backend de SQLAlchemy, toda la solicitud es todo-o-nada. El padre y cada fila inline comparten la misma sesión con ámbito de solicitud, y esa sesión solo confirma cuando la solicitud completa tiene éxito. Si alguna fila no supera la validación, la respuesta devuelve un error y la sesión se revierte, de modo que el padre y todas las filas inline se revierten juntas, incluidas las filas que superaron la validación. Considere los errores por fila en la interfaz como una lista de lo que hay que corregir, no como un registro de lo que se guardó.
+    En el backend de SQLAlchemy, toda la solicitud es todo-o-nada. El padre y cada fila inline comparten la misma sesión con ámbito de solicitud, y esa sesión solo confirma cuando la solicitud completa tiene éxito. Si alguna fila falla la validación, la respuesta devuelve un error y la sesión se revierte, de modo que el padre y todas las filas inline se deshacen juntas, incluidas las filas que pasaron la validación. Considere los errores por fila en la interfaz como una lista de qué corregir, no como un registro de qué se guardó.
 
 ---
 
-## Próximos pasos
+## ¿Qué sigue?
 
-* **[SQLAlchemy](../integrations/sqlalchemy.md):** Cómo la introspección de relaciones permite la detección automática de claves externas.
-* **[Vistas personalizadas](custom-views.md):** Cree páginas más allá del flujo de trabajo estándar de creación, edición y lista.
-* **[Eventos](../advanced/events.md):** Reaccione a los cambios inline después de guardar los registros.
+* **[SQLAlchemy](../integrations/sqlalchemy.md):** Cómo la introspección de relaciones permite la detección automática de claves foráneas.
+* **[Custom Views](custom-views.md):** Cree páginas más allá del flujo de trabajo estándar de creación, edición y listado.
+* **[Events](../advanced/events.md):** Reaccione a los cambios inline después de guardar los registros.

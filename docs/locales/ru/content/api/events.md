@@ -1,11 +1,9 @@
 ---
 title: Справочник API событий
-description: Справочная документация по системе событий и хукам в starlette-admin.
+description: Справочная документация по системе событий и hook'ам в starlette-admin.
 source_hash: 38b33892f675bf13798c334f941f806a503dc542816e56e5593ee7eb99103312
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,7 +22,7 @@ translation_date: '2026-08-23'
 
 # События
 
-Полный справочник атрибутов и методов системы событий, сгенерированный из докстрингов. Пошаговое руководство по работе с событиями см. в разделе [События](../advanced/events.md).
+Полный справочник атрибутов и методов системы событий, сгенерированный из docstring. Пошаговое руководство с примерами использования см. в разделе [События](../advanced/events.md).
 
 ## Шина событий
 

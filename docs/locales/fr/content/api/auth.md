@@ -1,12 +1,10 @@
 ---
-title: Référence de l'API d'authentification
+title: Référence de l'API Auth
 description: Documentation de référence de l'API pour AuthProvider et les fonctionnalités
   d'authentification de starlette-admin.
 source_hash: fe8d6f5e171d8274eb0063833be99c4933d6c2053a67d08ca7c21128cb2e2047
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->

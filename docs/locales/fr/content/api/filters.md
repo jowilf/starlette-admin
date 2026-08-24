@@ -3,10 +3,8 @@ title: Référence de l'API des filtres
 description: Documentation de référence de l'API pour les filtres de requêtes de base
   de données dans starlette-admin.
 source_hash: c26f3e6379afdc4268934bf0f05b895ebb00f0517dd9834b6fbc337c4f192231
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,14 +23,14 @@ translation_date: '2026-08-22'
 
 # Filtres
 
-Référence complète des attributs et méthodes du système de filtres, générée à partir des docstrings. Pour un guide orienté tâches, consultez [Filtres](../user-guide/filters.md) et
+Référence complète des attributs et méthodes du système de filtres, générée à partir des docstrings.
+Pour un parcours orienté tâches, consultez [Filtres](../user-guide/filters.md) et
 [Filtres personnalisés](../advanced/custom-filters.md).
 
 Les classes ci-dessous sont indépendantes du backend : elles déclarent le `name`, le `label` et le
 `data_type` d'un filtre, mais pas sa logique de requête. Chaque backend ORM (`contrib.sqla`, `contrib.beanie`,
-`contrib.mongoengine`, `contrib.tortoise`) les spécialise pour ajouter l'implémentation concrète de la méthode `apply()` propre à ce
-backend. Consultez la [page d'intégration](../integrations/sqlalchemy.md) correspondante pour obtenir les classes de filtres concrètes,
-importables.
+`contrib.mongoengine`, `contrib.tortoise`) en dérive des sous-classes afin d'ajouter l'implémentation concrète de la méthode `apply()`
+pour ce backend. Consultez la page d'[intégration](../integrations/sqlalchemy.md) correspondante pour obtenir les classes de filtres concrètes et importables.
 
 ## Types fondamentaux
 
@@ -94,7 +92,7 @@ importables.
 
 ::: starlette_admin.filters.boolean.IsFalseFilter
 
-## Date et heure
+## Dates et heures
 
 ::: starlette_admin.filters.date.DateEqualFilter
 
@@ -112,7 +110,7 @@ importables.
 
 ::: starlette_admin.filters.date.DateInFutureFilter
 
-## Enum
+## Enumérations
 
 ::: starlette_admin.filters.enum.InFilter
 

@@ -1,11 +1,9 @@
 ---
-title: Events-API-Referenz
+title: Events API-Referenz
 description: API-Referenzdokumentation für das Event-System und die Hooks in starlette-admin.
 source_hash: 38b33892f675bf13798c334f941f806a503dc542816e56e5593ee7eb99103312
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -22,9 +20,9 @@ translation_date: '2026-08-23'
     [Lesen Sie die ursprüngliche englische Version](https://jowilf.github.io/starlette-admin/api/events/)
 <!-- translation-notice:end -->
 
-# Events
+# Ereignisse
 
-Vollständige Referenz der Attribute und Methoden des Event-Systems, generiert aus den Docstrings. Eine aufgabenorientierte Einführung finden Sie unter [Events](../advanced/events.md).
+Vollständige Referenz aller Attribute und Methoden des Event-Systems, generiert aus den Docstrings. Eine aufgabenorientierte Einführung finden Sie unter [Events](../advanced/events.md).
 
 ## Event-Bus
 
@@ -38,7 +36,7 @@ Vollständige Referenz der Attribute und Methoden des Event-Systems, generiert a
 
 ::: starlette_admin.events.AdminEvent
 
-## Event-Kontexte
+## Ereignis-Kontexte
 
 ::: starlette_admin.events.EventContext
 

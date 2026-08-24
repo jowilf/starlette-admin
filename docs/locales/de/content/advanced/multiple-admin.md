@@ -1,12 +1,10 @@
 ---
 title: Mehrere Admin-Instanzen
-description: Binden Sie mehrere isolierte Admin-Dashboards für verschiedene Benutzerrollen
-  oder Domänen an eine einzige FastAPI-Anwendung an.
+description: Binden Sie mehrere isolierte Admin-Dashboards in eine einzige FastAPI-Anwendung
+  ein – für verschiedene Benutzerrollen oder Domänen.
 source_hash: 8b8c561c0c44bf9cb942e4e0d074f7a7e10c1e1fadb7339f4c76acce70d3a9a2
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -25,7 +23,7 @@ translation_date: '2026-08-23'
 
 # Mehrere Admin-Instanzen
 
-Jede `Admin`-Instanz, die Sie konstruieren, ist eine eigenständige Starlette-Subanwendung. Binden Sie so viele an, wie Sie benötigen, jeweils mit ihrem eigenen `base_url`, `route_name`, Authentifizierungsprovider und ihren Views.
+Jede `Admin`-Instanz, die Sie konstruieren, ist eine eigenständige Starlette-Subanwendung. Binden Sie so viele ein, wie Sie benötigen – jede mit ihrer eigenen `base_url`, ihrem eigenen `route_name`, ihrem eigenen Authentifizierungsprovider und ihren eigenen Views.
 
 ```python
 from sqlalchemy import create_engine
@@ -107,11 +105,11 @@ root_admin.mount_to(app)
 
 ```
 
-In diesem Beispiel zeigt `/staff` eine Anmeldeseite mit `StaffAuth` im Hintergrund und `/root` eine separate Seite, die auf `SuperAdminAuth` basiert. Die Anmeldung bei einer Instanz gewährt keinen Zugriff auf die andere: Jede `SessionMiddleware` signiert ihr Cookie mit ihrem eigenen `secret_key`, sodass jede `Admin`-Instanz nur die Sessiondaten liest, die ihr eigener Authentifizierungsprovider geschrieben hat.
+In diesem Beispiel zeigt `/staff` eine Anmeldeseite, die von `StaffAuth` bereitgestellt wird, während `/root` eine separate Seite mit `SuperAdminAuth` anbietet. Die Anmeldung bei dem einen gewährt keinen Zugriff auf den anderen: Jede `SessionMiddleware` signiert ihr Cookie mit ihrem eigenen `secret_key`, sodass jede `Admin`-Instanz ausschließlich die Session-Daten liest, die ihr eigener Authentifizierungsprovider geschrieben hat.
 
 ## `base_url` und `route_name`
 
-`base_url` und `route_name` sind Konstruktorparameter der Klassen `Admin` und `BaseAdmin` in `starlette_admin/base.py`. Ihr Defaultwert ist `/admin` bzw. `"admin"`:
+`base_url` und `route_name` sind Konstruktorparameter der Klassen `Admin` und `BaseAdmin` in `starlette_admin/base.py`. Ihre Standardwerte sind `/admin` und `"admin"`:
 
 ```python
 def __init__(
@@ -124,21 +122,21 @@ def __init__(
 
 ```
 
-* **`base_url`** legt das Pfadpräfix fest, unter dem das Admin-Panel eingebunden wird. Es geht direkt in den internen Aufruf `app.mount(self.base_url, app=admin_app, name=self.route_name)` ein und muss daher pro Instanz eindeutig sein. Andernfalls verdeckt ein Mount den anderen.
-* **`route_name`** ist der Name, unter dem Starlette den Mount registriert. Jede URL, die das Admin-Panel generiert, für Listen, Details, Bearbeitungen, Exporte und statische Assets, stammt aus `request.url_for(route_name + ":list", ...)`, und jedes Seiten-Template liest `request.app.state.ROUTE_NAME`, um das richtige Präfix für den Linkaufbau zu erhalten.
+* **`base_url`** legt das Pfadpräfix fest, unter dem die Admin-Oberfläche eingebunden wird. Es geht direkt in den internen Aufruf `app.mount(self.base_url, app=admin_app, name=self.route_name)` ein und muss daher pro Instanz eindeutig sein. Andernfalls verdeckt eine Einbindung die andere.
+* **`route_name`** ist der Name, unter dem Starlette die Einbindung registriert. Jede vom Admin generierte URL – für Listen, Details, Bearbeitungen, Exporte und statische Assets – entsteht über `request.url_for(route_name + ":list", ...)`, und jedes Seiten-Template liest `request.app.state.ROUTE_NAME`, um das richtige Präfix für die Link-Erzeugung zu erhalten.
 
-`mount_to` erstellt für jede Admin-Instanz eine neue Starlette-Subanwendung, sodass Middleware, Routen und Template-Globals isoliert bleiben. `Admin` ist kein prozessweiter Singleton: Konstruieren Sie so viele unabhängige Instanzen, wie Ihre Anwendung benötigt.
+`mount_to` erzeugt für jede Admin-Instanz eine neue Starlette-Subanwendung, sodass Middleware, Routen und Template-Globals isoliert bleiben. `Admin` ist kein prozessweiter Singleton: Konstruieren Sie so viele unabhängige Instanzen, wie Ihre Anwendung benötigt.
 
 !!! warning
-    Vergeben Sie jedem `Admin` einen eigenen `route_name`. Der Router von Starlette löst `url_for("admin:list", ...)` durch Abgleich des Mount-**Namens** auf, daher bleiben zwei Admins, die sich einen `route_name` teilen, in der Elternanwendung mit zwei Mounts unter demselben Namen zurück, und `url_for` löst zu dem Mount auf, den Starlette zuerst findet. Jeder interne Link im zweiten Admin, einschließlich Bearbeitungslinks, statischer Assets und Export-Endpoints, zeigt dann stillschweigend auf das `base_url` des ersten Admins.
+    Vergeben Sie jeder `Admin`-Instanz einen eigenen `route_name`. Der Router von Starlette löst `url_for("admin:list", ...)` durch Abgleich des Mount-**Namens** auf. Teilen sich zwei Admins denselben `route_name`, enthält die Parent-Anwendung zwei Mounts unter demselben Namen, und `url_for` liefert denjenigen zurück, den Starlette zuerst findet. Dadurch zeigen sämtliche internen Links des zweiten Admins – darunter Edit-Links, statische Assets und Export-Endpoints – stillschweigend auf die `base_url` des ersten Admins.
 
-## Views teilen oder separate Views definieren
+## Geteilte Views vs. separate Views
 
-`add_view` nimmt eine View-Instanz entgegen und verändert sie während des Setups. Bei einem `BaseModelView` bindet dieses Setup interne Callbacks an das Admin-Panel, bei dem die View registriert wird, einschließlich der Art, wie `HasOne`- und `HasMany`-Felder Links zu verwandten Datensätzen auflösen.
+`add_view` nimmt eine View-Instanz entgegen und verändert sie während des Setups. Bei einem `BaseModelView` bindet dieses Setup interne Callbacks an den Admin, bei dem die View registriert ist – einschließlich der Art und Weise, wie `HasOne`- und `HasMany`-Felder Links zu verwandten Datensätzen auflösen.
 
-Registrieren Sie dieselbe View-**Instanz** auf zwei Admins, überschreibt der zweite `add_view`-Aufruf diese Callbacks, sodass Beziehungslinks auf den Seiten des ersten Admins gegen die Views und URLs des zweiten Admins aufgelöst werden.
+Registrieren Sie dieselbe View-**Instanz** auf zwei Admins, überschreibt der zweite `add_view`-Aufruf diese Callbacks. Die Relationslinks auf den Seiten des ersten Admins werden dann gegen die Views und URLs des zweiten Admins aufgelöst.
 
-Um dies zu vermeiden, geben Sie jedem Admin eine frische Instanz der `ModelView`-**Klasse**. Die Klasse enthält keinen adminspezifischen Zustand, nur die Instanzen tun dies:
+Um dies zu vermeiden, geben Sie jedem Admin eine frische Instanz der `ModelView`-**Klasse**. Die Klasse selbst enthält keinen admin-spezifischen Zustand – nur die Instanzen tun dies:
 
 ```python
 staff_admin.add_view(ModelView(Order))
@@ -146,7 +144,7 @@ root_admin.add_view(ModelView(Order))  # separate instance of the same class; th
 
 ```
 
-Wenn beide Admins unterschiedliches Verhalten benötigen, etwa unterschiedliche Sichtbarkeitsregeln oder `can_delete`-Berechtigungen, schreiben Sie stattdessen für jeden eine Subklasse, statt eine gemeinsame Instanz zur Laufzeit zu patchen:
+Wenn die beiden Admins unterschiedliches Verhalten benötigen – etwa unterschiedliche Sichtbarkeitsregeln oder `can_delete`-Berechtigungen – schreiben Sie für jeden eine eigene Subklasse, statt eine geteilte Instanz zur Laufzeit zu patchen:
 
 ```python
 class StaffOrderView(ModelView):
@@ -170,5 +168,5 @@ root_admin.add_view(RootOrderView(Order))
 ## Wie es weitergeht
 
 * **[Authentifizierung](../user-guide/auth.md):** Der vollständige Vertrag von `AuthProvider` und `OAuthProvider`.
-* **[Erweiterungspunkte](extension-points.md):** Alle weiteren austauschbaren Schnittstellen, die die Klasse `Admin` bietet.
+* **[Erweiterungspunkte](extension-points.md):** Alle weiteren pluggable Oberflächen der `Admin`-Klasse.
 * **[Quickstart](../getting-started/quickstart.md):** Das grundlegende Setup mit einem einzelnen Admin, auf dem dieser Leitfaden aufbaut.

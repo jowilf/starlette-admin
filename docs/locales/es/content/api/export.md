@@ -3,14 +3,12 @@ title: Referencia de la API de exportación
 description: Documentación de referencia de la API para los exportadores de datos
   en starlette-admin.
 source_hash: 140539516051b84e0745b8f35c2b2097574357706a3002d4bf73bc9c8f780da0
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -23,9 +21,9 @@ translation_date: '2026-08-22'
     [Leer la versión original en inglés](https://jowilf.github.io/starlette-admin/api/export/)
 <!-- translation-notice:end -->
 
-# Exportación
+# Export
 
-Referencia completa de atributos y métodos del sistema de exportación, generada a partir de las docstrings. Para una guía orientada a tareas, consulte [Exportación e importación](../user-guide/export-import.md).
+Referencia completa de atributos y métodos del sistema de exportación, generada a partir de las docstrings. Para una guía orientada a tareas, consulte [Export & Import](../user-guide/export-import.md).
 
 ::: starlette_admin.export.ExportConfig
 

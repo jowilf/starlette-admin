@@ -1,11 +1,9 @@
 ---
 title: Export-API-Referenz
-description: API-Referenzdokumentation für Daten-Exporter in starlette-admin.
+description: API-Referenzdokumentation für Datenexporteure in starlette-admin.
 source_hash: 140539516051b84e0745b8f35c2b2097574357706a3002d4bf73bc9c8f780da0
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,7 +22,7 @@ translation_date: '2026-08-23'
 
 # Export
 
-Vollständige Referenz für Attribute und Methoden des Export-Systems, generiert aus Docstrings. Eine aufgabenorientierte Anleitung finden Sie unter [Export & Import](../user-guide/export-import.md).
+Vollständige Referenz aller Attribute und Methoden des Exportsystems, generiert aus den Docstrings. Eine aufgabenorientierte Anleitung finden Sie unter [Export & Import](../user-guide/export-import.md).
 
 ::: starlette_admin.export.ExportConfig
 

@@ -1,9 +1,7 @@
 ---
 source_hash: d0594ec094733ff9a9b13d38f4b41a9088a8fd35e54d762f918681da30ddbd29
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -22,13 +20,13 @@ translation_date: '2026-08-23'
 
 # Entwickler-Blog
 
-Dieser Abschnitt bietet fortgeschrittene Muster und praktische Techniken für den Aufbau von Admin-Interfaces mit `starlette-admin`. Diese Artikel konzentrieren sich auf Implementierungen aus der Praxis, die über die Standard-Referenzdokumentation hinausgehen.
+Dieser Abschnitt bietet fortgeschrittene Muster und praxisnahe Techniken für den Aufbau von Admin-Oberflächen mit `starlette-admin`. Diese Artikel konzentrieren sich auf Implementierungen aus der Praxis, die über die Standard-Referenzdokumentation hinausgehen.
 
-## Einen neuen Beitrag veröffentlichen
+## Veröffentlichen eines neuen Beitrags
 
-Die Zensical-Plattform stützt sich derzeit auf einen manuell gepflegten statischen Index für Bloginhalte. Um einen neuen Artikel zu veröffentlichen, führen Sie die folgenden Schritte aus:
+Die Zensical-Plattform basiert derzeit auf einem manuell gepflegten statischen Index für Blog-Inhalte. Um einen neuen Artikel zu veröffentlichen, führen Sie die folgenden Schritte durch:
 
-1. **Inhalte erstellen:** Schreiben Sie Ihren Beitrag und speichern Sie die Markdown-Datei im Verzeichnis `blog/posts/`.
+1. **Inhalt erstellen:** Schreiben Sie Ihren Beitrag und speichern Sie die Markdown-Datei im Verzeichnis `blog/posts/`.
 2. **Index aktualisieren:** Fügen Sie der Tabelle **Veröffentlichte Artikel** unten eine neue Zeile hinzu, einschließlich des Veröffentlichungsdatums und eines relativen Links zu Ihrer Datei.
 3. **Konfiguration aktualisieren:** Registrieren Sie den Pfad des neuen Beitrags in der Datei `zensical.toml`.
 
@@ -36,5 +34,5 @@ Die Zensical-Plattform stützt sich derzeit auf einen manuell gepflegten statisc
 
 | Datum | Artikeltitel |
 | --- | --- |
-| 2026-07-13 | [Ein Admin-Panel zu FastAPI in 5 Minuten mit starlette-admin hinzufügen](posts/add-admin-panel-to-fastapi-in-5-minutes.md) |
-| 2026-07-10 | [Soft-Deletes und eine Papierkorb-View mit FastAPI & starlette-admin](posts/soft-deletes-trash-view.md) |
+| 2026-07-13 | [Add an Admin Panel to FastAPI in 5 Minutes with starlette-admin](posts/add-admin-panel-to-fastapi-in-5-minutes.md) |
+| 2026-07-10 | [Soft Deletes and a Trash View with FastAPI & starlette-admin](posts/soft-deletes-trash-view.md) |

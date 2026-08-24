@@ -1,9 +1,7 @@
 ---
 source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -20,28 +18,28 @@ translation_date: '2026-08-23'
     [Lesen Sie die ursprüngliche englische Version](https://jowilf.github.io/starlette-admin/blog/posts/add-admin-panel-to-fastapi-in-5-minutes/)
 <!-- translation-notice:end -->
 
-# In 5 Minuten ein Admin-Panel zu FastAPI mit starlette-admin hinzufügen
+# Fügen Sie mit starlette-admin in 5 Minuten ein Admin-Panel zu FastAPI hinzu
 
 _2026-07-13_
 
-Sie haben die API ausgeliefert. Jetzt muss jemand in Ihrem Team die Daten dahinter bearbeiten: einen Tippfehler in einem Datensatz korrigieren, einen Beitrag unveröffentlichen oder prüfen, was ein Benutzer tatsächlich abgeschickt hat. Die üblichen Optionen sind meist kostspielig:
+Sie haben die API ausgeliefert. Jetzt muss jemand in Ihrem Team die Daten dahinter bearbeiten: einen Tippfehler in einem Datensatz korrigieren, einen Beitrag zurückziehen oder prüfen, was ein Benutzer tatsächlich übermittelt hat. Die üblichen Optionen sind meist kostspielig:
 
 | Option                   | Der Nachteil                                                                                               |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| **Eigenes CRUD-Frontend** | Beansprucht Wochen an Entwicklerzeit für Aufbau und Pflege.                                                |
-| **Direkter Datenbankzugriff**  | Schafft ein erhebliches Sicherheits- und Datenintegritätsrisiko.                                           |
-| **Django Admin / Flask Admin**         | Erzwingt ein Framework-Rewrite oder stützt sich auf synchrones WSGI, was Ihre asynchrone ASGI-Anwendung blockiert. |
-| **starlette-admin**      | **Lässt sich sofort in Ihre App einbinden, ganz ohne Frontend-Code.**                                       |
+| **Eigenes CRUD-Frontend** | Beansprucht Wochen an Entwicklerzeit für Aufbau und Wartung.                                                       |
+| **Direkter Datenbankzugriff**  | Schafft ein erhebliches Sicherheits- und Datenintegritätsrisiko.                                                   |
+| **Django Admin / Flask Admin**         | Erzwingt eine Neuentwicklung mit anderem Framework oder setzt auf synchrones WSGI, was Ihre asynchrone ASGI-Anwendung blockiert. |
+| **starlette-admin**      | **Lässt sich sofort in Ihre App einbinden – ganz ohne Frontend-Code.**                                                  |
 
-`starlette-admin` funktioniert mit jeder auf Starlette basierenden Anwendung, und genau das ist FastAPI.
+`starlette-admin` funktioniert mit jeder auf Starlette basierenden Anwendung – und genau das ist FastAPI.
 
-Diese Anleitung führt Sie in fünf Minuten von einer leeren Datei zu einem funktionierenden Backoffice. Sie bauen paginierte Listen, Suchfunktionalität, sortierbare Spalten, Erstellungs- und Bearbeitungsformulare, die von Ihren vorhandenen Pydantic-Schemas validiert werden, Löschbestätigungen und CSV-Exporte, alles direkt aus einem SQLAlchemy-Datenbankmodell generiert.
+Diese Anleitung führt Sie in fünf Minuten von einer leeren Datei zu einer funktionierenden Back-Office-Anwendung. Sie bauen paginierte Listen, Suchfunktionalität, sortierbare Spalten, Erstellungs- und Bearbeitungsformulare, die durch Ihre vorhandenen Pydantic-Schemas validiert werden, Löschbestätigungen sowie CSV-Exporte – alles direkt aus einem SQLAlchemy-Modell generiert.
 
-Der vollständige, lauffähige Code ist verfügbar unter [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>).
+Der vollständige, lauffähige Code ist unter [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>) verfügbar.
 
-## Minute 1: Installieren
+## Minute 1: Installation
 
-Sie benötigen drei Pakete: das Admin-Framework, das ORM und FastAPI selbst.
+Sie benötigen drei Pakete: das Admin-Framework, die ORM und FastAPI selbst.
 
 === "pip"
 
@@ -55,9 +53,9 @@ Sie benötigen drei Pakete: das Admin-Framework, das ORM und FastAPI selbst.
     uv add starlette-admin sqlalchemy "fastapi[standard]"
     ```
 
-Pydantic wird mit FastAPI mitgeliefert, was später wichtig wird: Das Admin-Panel kann exakt dieselben Schemas wiederverwenden, die Ihre API für die Validierung verwendet.
+Pydantic wird mit FastAPI mitgeliefert, was später wichtig wird: Das Admin-Panel kann dieselben Schemas wiederverwenden, die auch Ihre API zur Validierung nutzt.
 
-## Minute 2 und 3: Die komplette App
+## Minuten 2 und 3: Die vollständige App
 
 Erstellen Sie `main.py`. Das ist die gesamte Anwendung:
 
@@ -103,9 +101,9 @@ admin.mount_to(app)
 
 ```
 
-Beachten Sie, was fehlt. Es gibt keine Templates, keine Route-Handler für die Admin-Seiten, keine Serialisierer und keine Feldkonfigurationen. `starlette-admin` liest die SQLAlchemy-Spaltenmetadaten und leitet das gesamte Interface automatisch ab: begrenzte Texteingaben für die beiden `String`-Spalten, eine Textarea für den `Text`-Inhalt und einen Datetime-Picker für `published_at`.
+Beachten Sie, was fehlt: keine Templates, keine Route-Handler für die Admin-Seiten, keine Serialisierer und keine Feldkonfigurationen. `starlette-admin` liest die Spalten-Metadaten von SQLAlchemy und leitet die gesamte Oberfläche automatisch ab: Texteingaben mit Längenbegrenzung für die beiden `String`-Spalten, eine Textarea für den `Text`-Inhalt und eine Datums-Zeit-Auswahl für `published_at`.
 
-Die drei hervorgehobenen Zeilen sind Ihre einzigen Integrationspunkte. `Admin` bindet die Datenbank-Engine, `add_view` registriert das Datenbankmodell in der Seitenleiste, und `mount_to` hängt alles unter dem Pfad `/admin` an Ihre vorhandene FastAPI-Anwendung an. Ihre API-Routen bleiben unberührt; das Admin-Panel läuft einfach als eingebundene Sub-Anwendung.
+Die drei hervorgehobenen Zeilen sind Ihre einzigen Integrationspunkte. `Admin` bindet die Database-Engine, `add_view` registriert das Modell in der Seitenleiste, und `mount_to` hängt alles unter dem Pfad `/admin` an Ihre bestehende FastAPI-App an. Ihre API-Routen bleiben unberührt; das Admin-Panel läuft einfach als eingebundene Sub-Anwendung.
 
 ## Minute 4: Ausführen
 
@@ -124,16 +122,16 @@ Die drei hervorgehobenen Zeilen sind Ihre einzigen Integrationspunkte. `Admin` b
 Öffnen Sie [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) und klicken Sie in der Seitenleiste auf **Post**. Ab Werk erhalten Sie:
 
 - Eine paginierte, sortierbare Listenansicht aller Beiträge.
-- Erstellungs- und Bearbeitungsformulare mit dem passenden Eingabe-Widget pro Spaltentyp.
-- Eine Detailseite für jeden Datensatz.
+- Erstellungs- und Bearbeitungsformulare mit dem passenden Eingabe-Widget je Spaltentyp.
+- Eine Detailansicht für jeden Datensatz.
 - Massenlöschung mit Bestätigungsdialog.
 - CSV- und Excel-Exporte für die aktuelle Liste.
 
-Ihre API bedient den Traffic weiterhin normal. Prüfen Sie unter [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs), ob alles intakt ist.
+Ihre API bedient weiterhin normal den Datenverkehr. Prüfen Sie unter [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs), dass alles intakt ist.
 
-## Minute 5: Handgemacht wirken lassen
+## Minute 5: Individuell statt Standard
 
-Die Standard-View bietet ein vollständiges CRUD-Interface, aber ein echtes Backoffice verdient Feinschliff: Ihre Feldreihenfolge, Ihr Formularlayout und Ihr Suchverhalten. Beim Ableiten von `ModelView` entfaltet `starlette-admin` sein volles Potenzial. Ersetzen Sie den `add_view`-Aufruf durch eine konfigurierte View:
+Die Standardansicht bietet eine vollständige CRUD-Oberfläche, doch ein echtes Back Office verdient Feinschliff: Ihre Feldreihenfolge, Ihr Formularlayout und Ihr Suchverhalten. Hier entfaltet `starlette-admin` durch die Ableitung von `ModelView` sein volles Potenzial. Ersetzen Sie den `add_view`-Aufruf durch eine konfigurierte View:
 
 ```python title="main.py" hl_lines="8 9-13 17 22"
 from starlette_admin import ComputedField, SlugField
@@ -164,16 +162,16 @@ admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
 
 ```
 
-Vier mächtige Verbesserungen passieren in dieser einen Klasse:
+Vier leistungsstarke Verbesserungen entstehen in dieser einzigen Klasse:
 
-- **`SlugField(populate_from="title")`**: Generiert den Slug automatisch, während der Operator den Titel tippt, ganz ohne benutzerdefiniertes JavaScript Ihrerseits.
-- **`ComputedField`**: Rendert einen Wert, der nicht in der Datenbank existiert. Die Wortanzahl wird zur Renderzeit über einen einfachen Python-Callable berechnet.
-- **`form_layout`**: Ordnet das Formular in logische Zeilen an: Titel und Slug nebeneinander, Inhalt in voller Breite und darunter das Veröffentlichungsdatum.
+- **`SlugField(populate_from="title")`**: Erzeugt den Slug automatisch, während der Operator den Titel eingibt – ganz ohne eigenen JavaScript-Code.
+- **`ComputedField`**: Stellt einen Wert dar, der nicht in der Datenbank existiert. Die Wortanzahl wird beim Rendern über einen einfachen Python-Callable berechnet.
+- **`form_layout`**: Gliedert das Formular in logische Zeilen: Titel und Slug nebeneinander, Inhalt in voller Breite, darunter das Veröffentlichungsdatum.
 - **`search_auto_submit`**: Filtert die Liste dynamisch, während der Operator über alle in `searchable_fields` definierten Spalten hinweg tippt.
 
-## Ungültige Daten ablehnen: Das vorhandene Schema verwenden
+## Schlechte Daten ablehnen: Nutzen Sie das Schema, das Sie bereits haben
 
-Operatoren machen Fehler, daher muss das Admin-Panel Ihre Regeln serverseitig durchsetzen. Der Vorteil: Diese Regeln haben Sie bereits geschrieben. Jedes FastAPI-Projekt validiert seine Requestbodies mit Pydantic-Modellen, also gibt es irgendwo in Ihrer Codebasis ein Schema, das so aussieht:
+Operatoren machen Fehler – das Admin-Panel muss daher Ihre Regeln serverseitig durchsetzen. Der Vorteil: Diese Regeln haben Sie bereits geschrieben. Jedes FastAPI-Projekt validiert seine Request-Bodies mit Pydantic-Modellen, sodass sich irgendwo in Ihrem Codebase ein Schema wie das folgende findet:
 
 ```python title="main.py"
 from pydantic import BaseModel, Field, field_validator
@@ -197,7 +195,7 @@ class PostIn(BaseModel):
 
 ```
 
-Statt die Validierungslogik doppelt zu schreiben, geben Sie dem Admin-Panel Ihr vorhandenes Modell. Die Erweiterung `ext.pydantic` stellt eine `ModelView` bereit, die jede Formularübermittlung durch ein Pydantic-Modell schickt, bevor sie die Datenbank erreicht. Richten Sie Ihren `ModelView`-Import auf die Erweiterung, lassen Sie `Admin` unverändert und übergeben Sie das Schema:
+Statt die Validierungslogik doppelt zu schreiben, übergeben Sie dem Admin-Panel Ihr vorhandenes Modell. Die Erweiterung `ext.pydantic` stellt eine `ModelView` bereit, die jede Formularübermittlung durch ein Pydantic-Modell schickt, bevor sie die Datenbank erreicht. Richten Sie Ihren `ModelView`-Import auf die Erweiterung, belassen Sie `Admin`, wie es ist, und übergeben Sie das Schema:
 
 ```python title="main.py" hl_lines="1 9"
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
@@ -215,13 +213,13 @@ admin.add_view(
 
 Der Körper von `PostView` bleibt exakt derselbe; nur seine Basisklasse ändert sich durch den neuen Import.
 
-Die Integration ist nahtlos. Jede Constraint greift beim Erstellen und Bearbeiten: die Längengrenzen, der Slug-Regex und der benutzerdefinierte `field_validator`. Jeder Pydantic-Fehler wird direkt auf sein entsprechendes Formularfeld zurückgemappt und inline gerendert, wie bei einem handgebauten Formular. Achten Sie darauf, `id` im Schema optional zu halten, damit Erstellungsformulare, die anfangs keine ID haben, weiterhin validieren können.
+Die Integration verläuft nahtlos. Jede Einschränkung greift beim Erstellen und Bearbeiten: die Längengrenzen, der Slug-Regex und der benutzerdefinierte `field_validator`. Jeder Pydantic-Fehler wird direkt dem entsprechenden Formularfeld zugeordnet und inline dargestellt – ganz wie bei einem handgebauten Formular. Achten Sie darauf, `id` im Schema optional zu halten, damit Erstellungsformulare, die zunächst keine ID besitzen, dennoch valide sind.
 
-Damit etablieren Sie eine einzige Quelle der Wahrheit. Wenn Ihr API-Schema eine neue Regel erhält, setzt das Admin-Panel sie beim nächsten Request durch, ohne dass Änderungen am Admin-seitigen Code nötig sind.
+Damit etablieren Sie eine einzige Quelle der Wahrheit. Wenn Ihr API-Schema eine neue Regel erhält, setzt das Admin-Panel diese beim nächsten Request durch – ohne jegliche Änderungen am Admin-seitigen Code.
 
-## Eine Minute übrig? Beiträgen einen Autor geben
+## Noch eine Minute übrig? Geben Sie den Beiträgen einen Autor
 
-Echte Daten leben von Beziehungen, und das Admin-Panel behandelt sie mit demselben Zero-Konfigurations-Ansatz. Fügen Sie ein `User`-Datenbankmodell hinzu und verknüpfen Sie es mit `Post`:
+Echte Daten beruhen auf Beziehungen, und das Admin-Panel behandelt sie nach demselben Zero-Configuration-Ansatz. Fügen Sie ein `User`-Modell hinzu und verknüpfen Sie es mit `Post`:
 
 ```python title="main.py"
 from sqlalchemy import ForeignKey
@@ -249,7 +247,7 @@ class Post(Base):
 
 ```
 
-Registrieren Sie das Benutzer-Datenbankmodell nach demselben schemagetriebenen Muster. `EmailStr` und `HttpUrl` liefern die Formatvalidierung automatisch, und `email-validator` ist bereits in `fastapi[standard]` enthalten:
+Registrieren Sie das Benutzermodell nach demselben schema-getriebenen Muster. `EmailStr` und `HttpUrl` liefern die Formatvalidierung automatisch, und `email-validator` ist bereits in `fastapi[standard]` enthalten:
 
 ```python title="main.py" hl_lines="11"
 from pydantic import EmailStr, HttpUrl
@@ -266,7 +264,7 @@ admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
 
 ```
 
-Da es diesmal nichts zu konfigurieren gibt, wird die Erweiterungs-`ModelView` direkt ohne Ableitung verwendet.
+Da diesmal nichts zu konfigurieren ist, kommt die Erweiterung `ModelView` direkt ohne Subklasse zum Einsatz.
 
 Machen Sie abschließend den Autor verpflichtend, indem Sie zwei Zeilen zu `PostIn` hinzufügen:
 
@@ -280,9 +278,9 @@ class PostIn(BaseModel):
 
 ```
 
-`user: User` hat keinen Defaultwert, das heißt, ein Beitrag ohne Autor wird abgelehnt wie jeder andere Validierungsfehler auch. Der Typ ist die SQLAlchemy-Klasse `User` selbst, weil das Admin-Panel die ausgewählte ID vor dem Start der Validierung zu einer ORM-Instanz auflöst. Genau deshalb ist `arbitrary_types_allowed` erforderlich (`ConfigDict` wird aus `pydantic` importiert).
+`user: User` hat keinen Standardwert, d. h. ein Beitrag ohne Autor wird abgelehnt wie jeder andere Validierungsfehler auch. Der Typ ist die SQLAlchemy-Klasse `User` selbst, weil das Admin-Panel die ausgewählte ID vor der Validierung zu einer ORM-Instanz auflöst. Genau deshalb ist `arbitrary_types_allowed` erforderlich (`ConfigDict` wird aus `pydantic` importiert).
 
-Fügen Sie als Nächstes `"user"` zu `PostView.fields` und `form_layout` hinzu, damit der Autor im Beitragsformular erscheint. Dieses Feld ist kein normales Dropdown-Menü. Es ist ein Select-Eingabefeld mit serverseitiger Autovervollständigung, das Ihre Benutzer durchsucht, während der Operator tippt, und die Benutzer-Detailseite verlinkt zurück zu jedem zugehörigen Beitrag.
+Fügen Sie als Nächstes `"user"` zu `PostView.fields` und `form_layout` hinzu, damit der Autor im Beitragsformular erscheint. Dieses Feld ist kein gewöhnliches Dropdown. Es handelt sich um ein Select-Eingabefeld mit serverseitiger Autovervollständigung, das Ihre Benutzer während der Eingabe durchsucht, und die Benutzer-Detailseite verlinkt zurück zu jedem zugehörigen Beitrag.
 
 !!! note
 `create_all` ändert bestehende Tabellen nicht, daher müssen Sie `blog.db` löschen, bevor Sie neu starten, um die neue Spalte `user_id` zu übernehmen.
@@ -290,19 +288,19 @@ Fügen Sie als Nächstes `"user"` zu `PostView.fields` und `form_layout` hinzu, 
 ## Vor dem Deployment
 
 !!! warning
-Der Parameter `secret_key` signiert das Session-Cookie, das für CSRF-Schutz und Flash-Nachrichten verwendet wird. Ersetzen Sie den Platzhalter vor dem Deployment durch einen langen, zufälligen Wert aus Ihren Einstellungen, und stellen Sie sicher, dass Sie ihn aus Ihren Umgebungsvariablen laden, statt ihn in den Quellcode zu hardcoden.
+Der Parameter `secret_key` signiert das Session-Cookie, das für den CSRF-Schutz und Flash-Messages verwendet wird. Ersetzen Sie den Platzhalter vor dem Deployment durch einen langen, zufälligen Wert aus Ihrer Konfiguration, und laden Sie ihn unbedingt aus Ihren Umgebungsvariablen, statt ihn fest in den Quellcode zu schreiben.
 
 !!! note
-`Base.metadata.create_all(engine)` im Lifespan ist eine Annehmlichkeit für den Schnellstart. In einem Produktionsprojekt werden Ihre Tabellen von Migrationen verwaltet (z. B. Alembic). Entfernen Sie diesen Aufruf und richten Sie den `Admin` direkt auf Ihre vorhandene Engine. `starlette-admin` modifiziert niemals Ihr Schema; es liest und schreibt nur Zeilen.
+`Base.metadata.create_all(engine)` im lifespan ist eine Annehmlichkeit für den Schnellstart. In einem Produktionsprojekt werden Ihre Tabellen durch Migrationen verwaltet (z. B. mit Alembic). Entfernen Sie diesen Aufruf und richten Sie `Admin` direkt auf Ihre vorhandene Engine. `starlette-admin` modifiziert niemals Ihr Schema; es liest und schreibt ausschließlich Zeilen.
 
-## Das skaliert über die Demo hinaus
+## Das skaliert weit über die Demo hinaus
 
-Alles oben nutzt zwei Datenbankmodelle, aber genau diese `ModelView`-Mechanik kann ein riesiges Backoffice tragen. Sie können problemlos Datei- und Bild-Uploads implementieren, [Authentifizierung mit rollenbasierter Zugriffskontrolle](../../user-guide/auth.md), [benutzerdefinierte Filter](../../user-guide/filters.md), [Zeilen- und Massenaktionen](../../user-guide/actions.md) und umfassendes [i18n](../../user-guide/i18n.md). Wann immer das integrierte Verhalten nicht ausreicht, bietet jeder Query- und Lifecycle-Schritt einen Override-Hook. Genau so entstehen Muster wie [Soft-Deletes mit einer Papierkorb-View](soft-deletes-trash-view.md).
+Alles oben Genannte nutzt zwei Modelle, doch genau diese `ModelView`-Mechaniken tragen auch ein umfangreiches Back Office. Datei- und Bild-Uploads lassen sich ebenso leicht implementieren wie [Authentifizierung mit rollenbasierter Zugriffskontrolle](../../user-guide/auth.md), [benutzerdefinierte Filter](../../user-guide/filters.md), [Zeilen- und Massenaktionen](../../user-guide/actions.md) und umfassendes [i18n](../../user-guide/i18n.md). Wo das eingebaute Verhalten nicht ausreicht, bietet jeder Query- und Lifecycle-Schritt einen Override-Hook. Genau mit dieser Flexibilität werden Muster wie [Soft Deletes mit einer Trash-View](soft-deletes-trash-view.md) umgesetzt.
 
 ---
 
-## Was kommt als Nächstes
+## Wie es weitergeht
 
-- **[Konzepte](../../getting-started/concepts.md):** Das Vokabular hinter dem, was Sie gerade gebaut haben, damit sich der Rest der Dokumentation flüssig liest.
-- **[Views](../../user-guide/views.md):** Ein Deep Dive in jede `ModelView`-Option inklusive Berechtigungs-Hooks.
-- **[Soft-Deletes und eine Papierkorb-View für FastAPI](soft-deletes-trash-view.md):** Das erste fortgeschrittene Rezept, direkt auf den hier eingeführten Override-Hooks aufbauend.
+- **[Konzepte](../../getting-started/concepts.md):** Das Vokabular hinter dem, was Sie gerade gebaut haben – damit sich die restliche Dokumentation flüssig liest.
+- **[Views](../../user-guide/views.md):** Ein tiefgehender Blick auf jede `ModelView`-Option einschließlich Permission-Hooks.
+- **[Soft Deletes und eine Trash-View für FastAPI](soft-deletes-trash-view.md):** Das erste fortgeschrittene Rezept, direkt auf den hier eingeführten Override-Hooks aufbauend.

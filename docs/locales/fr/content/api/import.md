@@ -1,12 +1,10 @@
 ---
-title: Référence de l'API d'importation
+title: Référence de l'API d'import
 description: Documentation de référence de l'API pour les importateurs de données
   dans starlette-admin.
 source_hash: 409c6701cef3bc9c390dce5d55998329be5427bacf9267f441480939e9905ed7
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -23,9 +21,9 @@ translation_date: '2026-08-22'
     [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/api/import/)
 <!-- translation-notice:end -->
 
-# Importation
+# Import
 
-Référence complète des attributs et méthodes du système d'importation, générée à partir des docstrings. Pour un guide orienté tâches, consultez [Exportation et importation](../user-guide/export-import.md).
+Référence complète des attributs et méthodes du système d'import, générée à partir des docstrings. Pour un guide orienté tâches, consultez [Export & Import](../user-guide/export-import.md).
 
 ::: starlette_admin.importers.ImportConfig
 

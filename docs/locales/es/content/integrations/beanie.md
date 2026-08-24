@@ -3,14 +3,12 @@ title: Integración con Beanie
 description: Integre Beanie ODM con starlette-admin para crear una interfaz de administración
   extensible para sus colecciones de MongoDB en FastAPI.
 source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -29,9 +27,9 @@ Beanie modela los documentos de MongoDB como modelos Pydantic asíncronos. El m�
 
 **Características principales:**
 
-- Soporte nativo para los operadores de consulta y el filtrado de MongoDB.
-- Traducción automática de los errores de validación de Pydantic en errores específicos por campo en la interfaz del formulario.
-- Integración integrada para la búsqueda de texto completo de MongoDB.
+- Soporte nativo para operadores de consulta de MongoDB y filtrado.
+- Traducción automática de errores de validación de Pydantic en errores de formulario específicos por campo.
+- Integración incorporada para la búsqueda de texto completo de MongoDB.
 
 ## Instalación
 
@@ -49,7 +47,7 @@ Beanie modela los documentos de MongoDB como modelos Pydantic asíncronos. El m�
 
 ## Ejemplo mínimo
 
-Debe inicializar Beanie antes de que cualquier solicitud llegue a la interfaz de administración. Envolver la lógica de conexión dentro del context manager `lifespan` de su aplicación principal es la mejor manera de garantizar que se cumpla este requisito previo.
+Debe inicializar Beanie antes de que cualquier solicitud llegue a la interfaz de administración. Envolver la lógica de conexión dentro del context manager `lifespan` de su aplicación principal es el mejor enfoque para garantizar que se cumpla este requisito previo.
 
 ```python
 from contextlib import asynccontextmanager
@@ -91,7 +89,7 @@ if __name__ == "__main__":
 
 ```
 
-La clase `ModelView` acepta directamente la clase `Document` de Beanie. Deriva automáticamente la lista de campos, los formularios y los filtros a partir de los campos del documento.
+El `ModelView` acepta directamente la clase `Document` de Beanie. Deriva automáticamente la lista de campos, los formularios y los filtros a partir de los campos del documento.
 
 ## Clases principales
 
@@ -103,10 +101,10 @@ La clase `beanie.Admin` hereda de `BaseAdmin` y no requiere ninguna configuraci�
 
 La clase `beanie.ModelView` proporciona la capa de integración entre su base de datos y la interfaz de usuario. Gestiona automáticamente varias operaciones:
 
-- **Población de campos:** genera automáticamente los campos a partir de la definición del documento si usted no los especifica explícitamente.
-- **Filtrado de campos internos:** excluye el campo interno `revision_id` de Beanie de las listas y los formularios de forma predeterminada.
-- **Resolución de relaciones:** ejecuta las lecturas de la base de datos con `fetch_links=True` y `nesting_depth=1`, lo que garantiza que las referencias `Link` se resuelvan en sus objetos relacionados en lugar de devolver referencias sin procesar de la base de datos.
-- **Gestión de errores:** traduce los errores de validación de Pydantic en errores específicos por campo en el formulario, señalando directamente al usuario la entrada incorrecta.
+- **Población de campos:** Genera automáticamente los campos a partir de la definición del documento si usted no los especifica explícitamente.
+- **Filtrado de campos internos:** Excluye el campo interno `revision_id` de Beanie de las listas y los formularios de forma predeterminada.
+- **Resolución de relaciones:** Ejecuta lecturas de base de datos con `fetch_links=True` y `nesting_depth=1`, lo que garantiza que las referencias `Link` se resuelvan en sus objetos relacionados en lugar de devolver referencias crudas de la base de datos.
+- **Manejo de errores:** Traduce los errores de validación de Pydantic en errores de formulario específicos por campo, señalando directamente al usuario la entrada incorrecta.
 
 ```python
 from starlette_admin.contrib.beanie import ModelView
@@ -120,29 +118,29 @@ class BookView(ModelView):
 
 ## El campo `BeanieObjectIdField`
 
-Beanie utiliza `PydanticObjectId` para las claves primarias. El panel de administración representa automáticamente estas claves, así como cualquier referencia ObjectId sin procesar, mediante un campo dedicado llamado `BeanieObjectIdField`.
+Beanie utiliza `PydanticObjectId` para las claves primarias. El panel de administración representa automáticamente estas claves, así como cualquier referencia cruda a ObjectId, mediante un campo dedicado llamado `BeanieObjectIdField`.
 
-Aunque se renderiza y valida exactamente igual que un campo `StringField` estándar, mantiene su propio espacio en el registro de filtros. Esta separación garantiza que los filtros específicos de ObjectId se apliquen únicamente a los campos ObjectId, y no a todos los campos de texto estándar de su aplicación. Estos filtros especializados convierten de forma segura las cadenas en objetos `PydanticObjectId` válidos antes de consultar la base de datos.
+Aunque se renderiza y valida exactamente igual que un `StringField` estándar, mantiene su propio espacio en el registro de filtros. Esta separación garantiza que los filtros específicos de ObjectId se apliquen únicamente a los campos ObjectId, y no a todos los campos de texto estándar de su aplicación. Estos filtros especializados convierten de forma segura las cadenas en objetos válidos de `PydanticObjectId` antes de consultar la base de datos.
 
-## Registro de filtros
+## Registro de filtros {#filter-registry}
 
 Cada tipo de campo recibe un conjunto predeterminado de filtros del `BeanieFilterRegistry`.
 
-- **Coincidencia de cadenas:** el filtro de igualdad utiliza expresiones regulares que no distinguen mayúsculas de minúsculas para mantener la coherencia con otras búsquedas de texto como «Contains» o «Starts with».
-- **Operaciones con arrays:** el registro proporciona soporte integrado para el filtrado basado en arrays, lo que permite que las operaciones «Is one of» sobre campos con valores de lista (como `TagsField`) funcionen desde el primer momento.
-- **Claves primarias:** el campo `id` se reasigna automáticamente al `_id` nativo de MongoDB al construir los fragmentos de consulta.
+- **Coincidencia de cadenas:** El filtro de igualdad utiliza expresiones regulares sin distinción entre mayúsculas y minúsculas para mantener la coherencia con otras búsquedas de texto como «Contiene» o «Comienza con».
+- **Operaciones sobre arreglos:** El registro ofrece soporte integrado para el filtrado basado en arreglos, lo que permite que las operaciones «Es uno de» sobre campos con valores de lista (como `TagsField`) funcionen desde el primer momento.
+- **Claves primarias:** El campo `id` se reasigna automáticamente al `_id` nativo de MongoDB al construir los fragmentos de consulta.
 
 ## Búsqueda de texto completo
 
 Cuando los usuarios interactúan con el cuadro de búsqueda en una página de lista, el panel de administración comprueba si la colección de MongoDB tiene un índice de texto existente y ajusta su estrategia de consulta en consecuencia:
 
-- **Índice de texto presente:** la consulta utiliza el operador `$text` nativo de MongoDB. Esto proporciona capacidades reales de búsqueda de texto completo, incluida la tokenización, la derivación léxica (stemming) y la clasificación por relevancia.
-- **Sin índice de texto:** el sistema recurre a una búsqueda mediante expresiones regulares que no distingue mayúsculas de minúsculas en todos los campos marcados como `searchable`. Aunque esto no requiere configuración alguna, no puede clasificar los resultados por relevancia ni utilizar índices estándar.
+- **Índice de texto presente:** La consulta utiliza el operador nativo `$text` de MongoDB. Esto proporciona capacidades reales de búsqueda de texto completo, incluyendo tokenización, stemming y clasificación por relevancia.
+- **Sin índice de texto:** El sistema recurre a una búsqueda mediante expresiones regulares sin distinción entre mayúsculas y minúsculas en todos los campos marcados como `searchable`. Aunque esto no requiere ninguna configuración, no puede clasificar los resultados por relevancia ni utilizar índices estándar.
 
-El panel de administración detecta los índices de texto existentes, pero no los crea. Debe definir el índice en su documento de Beanie para habilitar la búsqueda de texto nativa. Por ejemplo, puede lograrlo añadiendo `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` a su modelo.
+El panel de administración detecta los índices de texto existentes, pero no los crea. Debe definir el índice en su documento de Beanie para habilitar la búsqueda nativa de texto. Por ejemplo, puede lograrlo añadiendo `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` a su modelo.
 
 !!! note
-Si habilita un índice de texto, puede establecer `full_text_override_order_by = True` en su subclase de `ModelView` para ordenar los resultados de búsqueda según la puntuación de relevancia de MongoDB en lugar del ordenamiento predeterminado por columna.
+Si habilita un índice de texto, puede establecer `full_text_override_order_by = True` en su subclase de `ModelView` para ordenar los resultados de búsqueda según la puntuación de relevancia de MongoDB en lugar del ordenamiento predeterminado por columnas.
 
 ## Ejemplo completo funcional
 
@@ -267,13 +265,13 @@ Inicie el servidor de desarrollo de FastAPI:
     uv run -- fastapi dev
     ```
 
-Navegue a [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) en su navegador para ver e interactuar con el panel de control de administración.
+Navegue a [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) en su navegador para ver e interactuar con el panel de administración.
 
-> **Ejemplo avanzado:** [`examples/15-beanie`](https://github.com/jowilf/starlette-admin/tree/main/examples/15-beanie) en el repositorio contiene un ejemplo completamente funcional que incluye vistas en línea, eventos y acciones por lotes personalizadas.
+> **Ejemplo avanzado:** [`examples/15-beanie`](https://github.com/jowilf/starlette-admin/tree/main/examples/15-beanie) en el repositorio contiene un ejemplo totalmente equipado que incluye vistas inline, eventos y acciones personalizadas por lotes.
 
 ## Qué leer a continuación
 
-- **[Vistas](../user-guide/views.md)**: explore las opciones de configuración de `BaseModelView`, independientes del backend.
-- **[Filtros](../user-guide/filters.md):** el constructor de filtros y cómo se integran los filtros específicos de cada ORM.
-- **[MongoEngine](mongoengine.md):** otro backend de MongoDB integrado en starlette-admin.
-- **[SQLAlchemy](sqlalchemy.md):** el backend relacional integrado en starlette-admin.
+- **[Views](../user-guide/views.md)**: Explore las opciones de configuración de `BaseModelView` independientes del backend.
+- **[Filters](../user-guide/filters.md):** El constructor de filtros y cómo se integran los filtros específicos de cada ORM.
+- **[MongoEngine](mongoengine.md):** Otro backend de MongoDB incluido en starlette-admin.
+- **[SQLAlchemy](sqlalchemy.md):** El backend relacional incluido en starlette-admin.

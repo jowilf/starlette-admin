@@ -1,16 +1,14 @@
 ---
 title: Filtros personalizados
-description: Amplíe el constructor de consultas integrado creando filtros y operadores
-  de base de datos personalizados en starlette-admin.
+description: Extienda el constructor de consultas integrado creando filtros de base
+  de datos y operadores personalizados en starlette-admin.
 source_hash: ac118a53b1d95372b17388cb1ce13241e53cd4b2983158208affa0fedb2e2446
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -25,11 +23,11 @@ translation_date: '2026-08-22'
 
 # Filtros personalizados
 
-Cree una subclase de `BaseFilter` cuando necesite un operador que el conjunto integrado no cubre: una comprobación específica del dominio como "_es divisible por_", una condición calculada como "_creado este mes_", o soporte para un tipo de campo que el registro predeterminado omite. Esta página explica cómo funciona internamente un filtro y muestra las dos formas de registrarlo: ya sea creando una subclase del `FilterRegistry` de su backend para cubrir todos los tipos de campo coincidentes, o pasando el filtro a la lista `filters=` de un solo campo. Para los detalles del día a día, incluidos los filtros predeterminados por tipo de campo, las anulaciones manuales y el formato de URL, consulte la [Guía de filtros](../user-guide/filters.md).
+Cree una subclase de `BaseFilter` cuando necesite un operador que el conjunto integrado no cubre: una comprobación específica del dominio como "_es divisible por_", una condición calculada como "_creado este mes_", o soporte para un tipo de campo que el registro predeterminado omite. Esta página explica cómo funciona un filtro internamente y muestra las dos formas de registrarlo: ya sea creando una subclase del `FilterRegistry` de su backend para cubrir todos los tipos de campo coincidentes, o pasando el filtro a la lista `filters=` de un solo campo. Para los detalles del día a día, incluidos los filtros predeterminados por tipo de campo, las anulaciones manuales y el formato de URL, consulte la [Guía de filtros](../user-guide/filters.md).
 
 ## La interfaz `BaseFilter`
 
-Todos los filtros, ya sean integrados o personalizados, implementan dos métodos:
+Cada filtro, ya sea integrado o personalizado, implementa dos métodos:
 
 ```python
 from typing import Any
@@ -53,7 +51,7 @@ class MyFilter(BaseFilter):
         raise NotImplementedError()
 ```
 
-* **`parse_value(raw)`** convierte la cadena sin procesar de la URL al tipo que espera `apply()`, como un `Decimal`, una `date` o una lista. La implementación predeterminada pasa la cadena sin cambios, lo cual es adecuado para filtros `STRING` y `ENUM`, pero no para datos numéricos o temporales. También es su punto de validación: lance `FilterValidationError` para valores que se analizan pero siguen siendo inaceptables, como entradas fuera de rango o mal formadas.
+* **`parse_value(raw)`** convierte la cadena sin procesar de la URL al tipo que espera `apply()`, como un `Decimal`, un `date` o una lista. El valor predeterminado pasa la cadena sin cambios, lo cual es adecuado para los filtros `STRING` y `ENUM`, pero no para datos numéricos o temporales. También es su hook de validación: lance `FilterValidationError` para valores que se analizan pero siguen siendo inaceptables, como entradas fuera de rango o malformadas.
 * **`apply(ctx)`** es el único método abstracto. Recibe un `FilterApplyContext` que contiene `query`, `field_name`, `value`, `value2`, `request` y `view`, y devuelve un fragmento de consulta para su backend.
 
 ## Cómo se analizan los valores sin procesar de la URL
@@ -81,19 +79,19 @@ class GreaterThanFilter(BaseFilter):
         return _parse_number(raw)
 ```
 
-Así, `?filter=price__gt=50` y `?filter=price__gt=50.5` llegan a `GreaterThanFilter.apply()` como números de Python (`50` como `int`, `50.5` como `float`) en lugar de las cadenas `"50"` y `"50.5"`. `apply()` pasa ese valor analizado directamente al objeto de consulta, y el driver de la base de datos gestiona la coerción final contra el tipo real de la columna, como `Decimal` o `Numeric`.
+De este modo, `?filter=price__gt=50` y `?filter=price__gt=50.5` llegan a `GreaterThanFilter.apply()` como números de Python (`50` como `int`, `50.5` como `float`) en lugar de las cadenas `"50"` y `"50.5"`. `apply()` pasa ese valor analizado directamente al objeto de consulta, y el driver de la base de datos realiza la coerción final contra el tipo real de la columna, como `Decimal` o `Numeric`.
 
-| `data_type` | Valor de ejemplo en la URL | Valor de Python analizado | Analizado por |
+| `data_type` | Valor sin procesar de ejemplo en la URL | Valor de Python analizado | Analizado por |
 | --- | --- | --- | --- |
-| `number` | `50`, `-3`, `50.5` | `int(50)`, `int(-3)`, `float(50.5)` | `filters.numeric._parse_number` (intenta `int()` y recurre a `float()`) |
+| `number` | `50`, `-3`, `50.5` | `int(50)`, `int(-3)`, `float(50.5)` | `filters.numeric._parse_number` (intenta `int()`, recurre a `float()`) |
 | `date` | `2026-01-01` | `date(2026, 1, 1)` | `filters.date._parse_temporal` usando `date.fromisoformat()` |
 | `datetime` | `2026-01-01T14:30:00` | `datetime(2026, 1, 1, 14, 30)` | `filters.date._parse_temporal` usando `datetime.fromisoformat()` |
 | `time` | `14:30:00` | `time(14, 30)` | `filters.date._parse_temporal` usando `time.fromisoformat()` |
-| `array` | `ACTIVE,OUT_OF_STOCK` | `["ACTIVE", "OUT_OF_STOCK"]` | `filters.array._parse_array` (divide por comillas no entrecomilladas) |
-| `string`, `enum` | `admin` | `"admin"` | Predeterminado de `BaseFilter.parse_value` (se pasa sin cambios) |
+| `array` | `ACTIVE,OUT_OF_STOCK` | `["ACTIVE", "OUT_OF_STOCK"]` | `filters.array._parse_array` (divide por comas sin comillas) |
+| `string`, `enum` | `admin` | `"admin"` | valor predeterminado de `BaseFilter.parse_value` (se pasa sin cambios) |
 | `none` | *(ningún valor en la URL)* | *(nunca se llama)* | N/A |
 
-Cuando un valor no se puede analizar, como `price__gt=abc` o `created_at__eq=not-a-date`, `parse_value()` lanza una `FilterValidationError`. El manejador de solicitudes la captura y devuelve `HTTP 400` antes de ejecutar cualquier consulta a la base de datos:
+Cuando un valor no se puede analizar, como `price__gt=abc` o `created_at__eq=not-a-date`, `parse_value()` lanza una excepción `FilterValidationError`. El manejador de solicitudes la captura y devuelve `HTTP 400` antes de ejecutar cualquier consulta a la base de datos:
 
 ```text
 GET /admin/product/list?filter=price__gt=abc
@@ -103,13 +101,13 @@ Returns: 400 Bad Request: Invalid 'filter' parameter: 'abc' is not a valid numbe
 
 Los filtros sin valor, aquellos con `data_type=none` como `is_null`, `is_true` o `in_past`, omiten este paso. `parse_value` nunca se ejecuta para ellos, razón por la cual `field__is_null` no necesita `=valor` en la URL: no hay ninguna cadena de entrada que convertir.
 
-## Poner un filtro personalizado a disposición
+## Cómo hacer disponible un filtro personalizado
 
 Puede registrar un filtro personalizado en una vista de dos maneras. Elija la que coincida con el alcance que desea.
 
 ### Por instancia de campo (alcance reducido)
 
-Pase el filtro a la lista `filters=` del campo objetivo, ya sea junto con los valores predeterminados o en lugar de ellos. Consulte [Anular filtros para un campo específico](../user-guide/filters.md#anular-los-filtros-de-un-campo-especifico) para ver el mismo patrón con filtros integrados. Utilice esta opción cuando el filtro solo tenga sentido para un campo.
+Pase el filtro a la lista `filters=` del campo objetivo, ya sea junto con los valores predeterminados o en lugar de ellos. Consulte [Anular filtros para un campo específico](../user-guide/filters.md#overriding-filters-for-a-specific-field) para ver el mismo patrón con filtros integrados. Utilice esta opción cuando el filtro solo tenga sentido para un campo concreto.
 
 ### En todo el registro (todos los tipos de campo coincidentes)
 
@@ -141,7 +139,7 @@ class SqlaFilterRegistry(FilterRegistry):
     # ... one method per field type
 ```
 
-Para cambiar los filtros disponibles para un tipo de campo en toda una vista, cree una subclase del registro del backend, anule o añada un método `@filters` y devuelva una instancia de su subclase desde `get_filter_registry()`:
+Para cambiar los filtros disponibles para un tipo de campo en toda una vista, cree una subclase del registro del backend, anule o añada un método `@filters`, y devuelva una instancia de su subclase desde `get_filter_registry()`:
 
 ```python
 class ProductFilterRegistry(SqlaFilterRegistry):
@@ -155,16 +153,16 @@ class ProductView(ModelView):
         return ProductFilterRegistry()
 ```
 
-Declare estos métodos de dos maneras posibles, según si desea reemplazar los filtros existentes o ampliarlos:
+Declare estos métodos de una de dos formas, dependiendo de si desea reemplazar los filtros existentes o ampliarlos:
 
-* **Anular:** vuelva a declarar `@filters(StringField)` en su subclase y devuelva exactamente las clases que desea. Esto reemplaza la lista de la clase padre, así que incluya cualquier filtro integrado que desee conservar.
-* **Ampliar:** declare `@filters(IntegerField)` cuando el registro padre solo registre el `NumberField` más general. Como `IntegerField` es una subclase de `NumberField`, el orden de resolución de métodos (MRO) resuelve `IntegerField` hacia su nuevo método, mientras que `DecimalField`, otra subclase de `NumberField` sin registro propio, sigue heredando el `numeric_filters` del padre sin cambios.
+* **Anular:** Vuelva a declarar `@filters(StringField)` en su subclase y devuelva exactamente las clases que desea. Esto reemplaza la lista de la clase padre, así que incluya cualquier filtro integrado que desee conservar.
+* **Ampliar:** Declare `@filters(IntegerField)` cuando el registro padre solo registre el `NumberField` más general. Como `IntegerField` hereda de `NumberField`, el orden de resolución de métodos (MRO) resuelve `IntegerField` hacia su nuevo método, mientras que `DecimalField`, otra subclase de `NumberField` sin registro propio, sigue heredando el `numeric_filters` del padre sin cambios.
 
-Esta es una subclase de Python común, por lo que no muta ningún estado global. Cada llamada a `ProductFilterRegistry()` construye un registro independiente, y sus cambios quedan limitados a las vistas que lo devuelven. Todas las demás vistas conservan los valores predeterminados del backend.
+Se trata de una subclase de Python común y corriente, por lo que no muta ningún estado global. Cada llamada a `ProductFilterRegistry()` construye un registro independiente, y sus cambios permanecen limitados a las vistas que lo devuelven. Todas las demás vistas conservan los valores predeterminados del backend.
 
 ## Ejemplo completo con SQLAlchemy
 
-El `DivisibleByFilter` siguiente toma un valor, el divisor contra el que se comprueba la columna. Una subclase de `SqlaFilterRegistry` lo aplica a todos los `IntegerField` de `ProductView`, en lugar de adjuntarlo a campos individuales:
+El `DivisibleByFilter` que aparece a continuación toma un valor, el divisor contra el cual se comprobará la columna. Una subclase de `SqlaFilterRegistry` lo aplica a cada `IntegerField` de `ProductView`, en lugar de adjuntarlo a campos individuales:
 
 ```python
 import uuid
@@ -281,24 +279,24 @@ admin.add_view(ProductView(Product, icon="fa fa-product"))
 admin.mount_to(app)
 ```
 
-Consulte [examples/02-filters](https://github.com/jowilf/starlette-admin/tree/main/examples/02-filters) para ver una aplicación ejecutable con una subclase personalizada de `BaseFilter` registrada de la misma manera.
+Consulte [examples/02-filters](https://github.com/jowilf/starlette-admin/tree/main/examples/02-filters) para ver una aplicación ejecutable con una subclase de `BaseFilter` personalizada registrada de la misma manera.
 
-La opción `lot_size__divisible_by` aparece ahora como un filtro para `IntegerField("lot_size")`, sin necesidad de declarar explícitamente `filters=` en el campo. Por ejemplo, `lot_size__divisible_by=6` coincide con los productos cuyo tamaño de lote es múltiplo de 6:
+La opción `lot_size__divisible_by` ahora aparece como un filtro para `IntegerField("lot_size")`, sin necesidad de una declaración explícita de `filters=` en el campo. Por ejemplo, `lot_size__divisible_by=6` coincide con los productos cuyo tamaño de lote es múltiplo de 6:
 
 ```text
 http://127.0.0.1:8000/admin/product/list?filter=lot_size__divisible_by=6&sort=id__asc
 ```
 
 !!! tip
-    Utilice una subclase de `FilterRegistry` cuando un filtro sea lo bastante genérico como para aplicarse a todos los campos de un tipo determinado en una vista. Utilice la lista `filters=` por campo cuando la lógica pertenezca únicamente a un campo. La [Guía de filtros](../user-guide/filters.md#anular-los-filtros-de-un-campo-especifico) contiene ejemplos del patrón por campo.
+    Utilice una subclase de `FilterRegistry` cuando un filtro sea lo suficientemente genérico como para aplicarse a todos los campos de un tipo determinado en una vista. Utilice la lista `filters=` por campo cuando la lógica pertenezca únicamente a un campo. La [Guía de filtros](../user-guide/filters.md#overriding-filters-for-a-specific-field) contiene ejemplos del patrón por campo.
 
 ## Opciones dinámicas con `get_choices`
 
-De forma predeterminada, la entrada de valor de un filtro sigue su `data_type`: un cuadro de texto simple para `STRING`, un cuadro numérico para `NUMBER`, etc. Anule `get_choices(request)` cuando el valor deba provenir de un menú desplegable alimentado con una lista de pares `(value, label)` por solicitud. Un filtro «es uno de» sobre un campo de relación es el caso típico: el valor que se envía de vuelta es una clave externa, pero el selector debería mostrar un nombre legible.
+Por defecto, la entrada de valor de un filtro sigue su `data_type`: un cuadro de texto simple para `STRING`, un cuadro numérico para `NUMBER`, y así sucesivamente. Anule `get_choices(request)` cuando el valor deba provenir de un menú desplegable alimentado con una lista por solicitud de pares `(value, label)`. Un filtro «es uno de» sobre un campo de relación es el caso típico: el valor que se envía de vuelta es una clave foránea, pero el selector debería mostrar un nombre legible.
 
-`get_choices` recibe la `Request` actual y devuelve una secuencia de pares `(value, label)`, o `None` (el valor predeterminado) para mantener la entrada simple. Un resultado no vacío tiene prioridad tanto sobre la entrada simple como sobre cualquier opción que el propio campo proporcione, como hace `EnumField`.
+`get_choices` recibe el `Request` actual y devuelve una secuencia de pares `(value, label)`, o `None` (el valor predeterminado) para mantener la entrada simple. Un resultado no vacío tiene prioridad tanto sobre la entrada simple como sobre cualquier opción que el propio campo proporcione, como hace `EnumField`.
 
-El ejemplo siguiente, tomado de [examples/advanced/07-hr](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/07-hr), añade un par «es uno de» e «is not one of» al campo `department` de la lista de `Employee`. Como `department` es un `RelationField`, el registro predeterminado solo le asigna comprobaciones de nulos: no existe una forma genérica de comparar una fila relacionada con una cadena sin procesar. `get_choices` enumera todos los `Department` por nombre para el menú desplegable, y `parse_value` convierte los valores enviados de vuelta a enteros para que `apply` pueda buscar directamente por la clave externa `Department.id` en lugar de unirse a través de la relación y comparar nombres:
+El siguiente ejemplo, tomado de [examples/advanced/07-hr](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/07-hr), añade un par «es uno de» e «is not one of» al campo `department` de la lista `Employee`. `department` es un `RelationField`, por lo que el registro predeterminado solo le asigna comprobaciones de nulos: no existe una forma genérica de comparar una fila relacionada con una cadena sin procesar. `get_choices` enumera cada `Department` por nombre para el menú desplegable, y `parse_value` convierte los valores enviados de vuelta a enteros para que `apply` pueda buscar directamente por la clave foránea `Department.id` en lugar de realizar un join a través de la relación y comparar nombres:
 
 ```python
 # examples/advanced/07-hr/filters.py
@@ -357,15 +355,15 @@ class DepartmentNotInFilter(_DepartmentChoicesMixin, NotInFilter):
 
 Algunos aspectos que debe tener en cuenta sobre este patrón:
 
-* **El mixin se sitúa antes de la clase base del filtro en el MRO.** `_DepartmentChoicesMixin` aparece primero en `class DepartmentInFilter(_DepartmentChoicesMixin, InFilter)`, por lo que sus métodos `get_choices` y `parse_value` anulan los que cada filtro heredaría de otro modo. `super().parse_value(raw)` todavía llega a `InFilter.parse_value`, que divide el valor sin procesar en una lista antes de que el mixin lo convierta a enteros.
-* **`get_choices` se ejecuta en cada solicitud**, no una sola vez al importar, por lo que el menú desplegable siempre refleja las filas actuales. Un `Department` recién añadido aparece en el constructor de filtros de inmediato, sin reiniciar el servidor ni invalidar cachés.
-* **Los pares `(value, label)` y el tipo de salida de `parse_value` deben coincidir.** El menú desplegable envía de vuelta el `value` que el usuario eligió, por lo que `parse_value` lo convierte en lo que espera `apply`. Aquí `Department.id` ya es un `int`, por lo que el `parse_value` del mixin lo reafirma y lanza un error de validación ante cualquier otra cosa.
-* **`InFilter` y `NotInFilter` ya tienen por defecto `data_type = FilterDataType.ENUM`**, una selección múltiple, por lo que ninguna de las dos subclases necesita anular `data_type`. Anular `get_choices` es suficiente para poblar esa selección múltiple con departamentos en lugar de dejarla vacía.
+* **El mixin se sitúa antes de la clase base del filtro en el MRO.** `_DepartmentChoicesMixin` aparece primero en `class DepartmentInFilter(_DepartmentChoicesMixin, InFilter)`, de modo que sus métodos `get_choices` y `parse_value` anulan los que cada filtro heredaría de otro modo. `super().parse_value(raw)` todavía llega a `InFilter.parse_value`, que divide el valor sin procesar en una lista antes de que el mixin lo convierta a enteros.
+* **`get_choices` se ejecuta en cada solicitud**, no una sola vez en el momento de la importación, por lo que el menú desplegable siempre refleja las filas actuales. Un `Department` recién añadido aparece en el constructor de filtros de inmediato, sin reiniciar el servidor ni invalidar cachés.
+* **Los pares `(value, label)` y el tipo de salida de `parse_value` deben ser coherentes.** El menú desplegable envía de vuelta el `value` que el usuario seleccionó, por lo que `parse_value` lo convierte en aquello que espera `apply`. Aquí `Department.id` ya es un `int`, por lo que el `parse_value` del mixin reafirma ese tipo y lanza un error de validación ante cualquier otra cosa.
+* **`InFilter` y `NotInFilter` ya tienen por defecto `data_type = FilterDataType.ENUM`**, una selección múltiple, por lo que ninguna de las dos subclases necesita anular `data_type`. Basta con anular `get_choices` para poblar esa selección múltiple con departamentos en lugar de dejarla vacía.
 
 ---
 
-## Próximos pasos
+## ¿Qué sigue?
 
 * **[Filtros](../user-guide/filters.md):** Conozca los filtros predeterminados por tipo de campo, el formato de URL y la anulación mediante `filters=`.
 * **[SQLAlchemy](../integrations/sqlalchemy.md):** Explore el backend de SQLAlchemy utilizado en el ejemplo de esta página.
-* **[Puntos de extensión](extension-points.md):** Vea la lista completa de métodos que puede anular en `ModelView`.
+* **[Puntos de extensión](extension-points.md):** Consulte la lista completa de métodos que puede anular en `ModelView`.

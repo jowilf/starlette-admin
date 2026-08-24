@@ -1,12 +1,10 @@
 ---
 title: Référence de l'API Contrib SQLAlchemy
-description: Documentation de référence de l'API pour l'intégration du backend SQLAlchemy
-  dans starlette-admin.
+description: Documentation de référence de l'API pour l'intégration backend SQLAlchemy
+  de starlette-admin.
 source_hash: c966b22ba523b8451e3c0168394e068bf412475140a3d5427bc0c70d2c6d971d
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,8 +23,8 @@ translation_date: '2026-08-22'
 
 # Contrib : SQLAlchemy
 
-Référence complète des attributs et des méthodes du backend SQLAlchemy (`starlette_admin.contrib.sqla`),
-générée à partir des docstrings. Pour un guide orienté tâches, consultez
+Référence complète des attributs et méthodes du backend SQLAlchemy (`starlette_admin.contrib.sqla`),
+générée à partir des docstrings. Pour un guide orienté vers les tâches, consultez la page
 [SQLAlchemy](../../integrations/sqlalchemy.md).
 
 ::: starlette_admin.contrib.sqla.admin.Admin
@@ -37,9 +35,9 @@ générée à partir des docstrings. Pour un guide orienté tâches, consultez
 
 ## Validation Pydantic
 
-L'extension `ext.pydantic` valide les données du formulaire par rapport à un modèle Pydantic avant
-d'écrire l'enregistrement. Consultez [Validation Pydantic](../../integrations/sqlalchemy.md#validation-pydantic) pour
-le guide complet.
+L'extension `ext.pydantic` valide les données du formulaire à l'aide d'un modèle Pydantic avant
+l'enregistrement. Consultez [Validation Pydantic](../../integrations/sqlalchemy.md#pydantic-validation)
+pour le guide complet.
 
 ::: starlette_admin.contrib.sqla.ext.pydantic.ModelView
 
@@ -68,7 +66,7 @@ le guide complet.
 ::: starlette_admin.contrib.sqla.exceptions.NotSupportedValue
 
 !!! note
-    Les classes concrètes de filtres (`EqualFilter`, `ContainsFilter`, `BetweenFilter`, etc.) ne sont pas
-    énumérées ici. Elles correspondent un à un aux filtres indépendants du backend documentés dans
-    [Filtres](../filters.md) ; les comportements spécifiques à SQLAlchemy qu'il est utile de connaître sont
-    traités dans [SQLAlchemy](../../integrations/sqlalchemy.md#registre-de-filtres).
+    Les classes de filtres concrètes (`EqualFilter`, `ContainsFilter`, `BetweenFilter`, etc.) ne sont
+    pas énumérées ici. Elles reprennent à l'identique les filtres indépendants du backend documentés dans
+    [Filtres](../filters.md) ; le comportement spécifique à SQLAlchemy qu'il est utile de connaître est
+    couvert dans [SQLAlchemy](../../integrations/sqlalchemy.md#filter-registry).

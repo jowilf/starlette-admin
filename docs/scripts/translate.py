@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import datetime
 import hashlib
 import json
 import os
@@ -21,6 +20,7 @@ from i18n import (
     NOTICE_LINK_LABEL,
     NOTICE_TITLE,
     REGISTRY_PATH,
+    TRANSLATIONS_PROMPT_PATH,
     I18nError,
     dump_document,
     en_page_url,
@@ -49,12 +49,16 @@ MAX_JOBS = 8
 _print_lock = threading.Lock()
 
 
-def _read_prompt(code: str) -> str:
-    path = LOCALES_DIR / code / "llm_prompt.md"
-    content = path.read_text(encoding="utf-8").strip()
-    if not content:
-        raise I18nError(f"{path} is empty")
-    return content
+def _read_prompt(code: str, name: str | None = None) -> str:
+    """Load the shared translation prompt with the target locale filled in."""
+    if not TRANSLATIONS_PROMPT_PATH.is_file():
+        raise I18nError(f"{TRANSLATIONS_PROMPT_PATH} is missing")
+    template = TRANSLATIONS_PROMPT_PATH.read_text(encoding="utf-8").strip()
+    if not template:
+        raise I18nError(f"{TRANSLATIONS_PROMPT_PATH} is empty")
+    return template.replace("{name}", name or _locale_name(code)).replace(
+        "{code}", code
+    )
 
 
 def _locale_name(code: str) -> str:
@@ -145,7 +149,6 @@ def _compose_document(
     translated: str,
     source_hash: str,
     prompt_hash_value: str,
-    model: str,
     code: str,
     rel: str,
 ) -> str:
@@ -154,8 +157,6 @@ def _compose_document(
     meta["source_hash"] = source_hash
     meta["prompt_hash"] = prompt_hash_value
     meta["machine_translated"] = True
-    meta["translation_model"] = model
-    meta["translation_date"] = datetime.date.today().isoformat()
     return dump_document(
         meta, insert_notice(body, "info", code, en_url=en_page_url(rel))
     )
@@ -181,7 +182,7 @@ def _translate_one(
             return ("skipped-orphan", 0, 0)
     source_bytes = en_path.read_bytes()
     digest = hashlib.sha256(source_bytes).hexdigest()
-    prompt_digest = prompt_hash(code)
+    prompt_digest = prompt_hash()
 
     def attempt() -> tuple[str, int, int]:
         response = _chat(system_prompt, source_bytes.decode("utf-8"), model, reasoning)
@@ -190,7 +191,7 @@ def _translate_one(
         return content, prompt, completion
 
     translated, prompt, completion = _with_retries(attempt, rel)
-    document = _compose_document(translated, digest, prompt_digest, model, code, rel)
+    document = _compose_document(translated, digest, prompt_digest, code, rel)
     loc_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = loc_path.with_name(loc_path.name + ".tmp")
     tmp_path.write_text(document, encoding="utf-8")
@@ -327,39 +328,6 @@ def _cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
-STARTER_PROMPT = """\
-# Translation guidelines for {name} ({code})
-
-## Style
-
-Describe here the tone, register and formality expected for this language
-(for example: formal address, neutral technical writing, active voice,
-sentence-length conventions).
-
-- Never use em dashes in the translation; recast the sentence with commas,
-  parentheses, colons or separate sentences instead.
-
-## Structural rules
-
-- Translate prose only. Never alter code blocks, inline code, identifiers,
-  CLI flags, URLs, link targets, anchors, HTML attributes, or admonition
-  markers (`!!! xxx "..."` and collapsible `??? xxx "..."`): translate only
-  the quoted admonition titles and their body text.
-- Preserve the Markdown structure exactly: same headings, same number of
-  sections, same tables, same list shapes. Output nothing except the
-  translated document.
-- Copy any YAML front matter verbatim, translating only the values of
-  `title` and `description`.
-- Apply the glossary below consistently.
-
-## Glossary
-
-| English         | Translation |
-| --------------- | ----------- |
-| starlette-admin | keep as-is  |
-"""
-
-
 def _cmd_init(args: argparse.Namespace) -> int:
     code = args.locale
     if code == "en":
@@ -375,17 +343,16 @@ def _cmd_init(args: argparse.Namespace) -> int:
     if base.exists():
         raise I18nError(f"{base} already exists")
     name = args.name or code
-    starter_prompt = STARTER_PROMPT.format(name=name, code=code)
+    system_prompt = _read_prompt(code, name)
     model = args.model or os.environ.get("OPENROUTER_MODEL") or DEFAULT_MODEL
     reasoning = args.reasoning or os.environ.get("OPENROUTER_REASONING") or None
 
     # Translate the AI notice first: it needs one LLM round-trip, and doing
     # it before anything is written keeps a failed init free of side effects.
     # Notices must always be translated, so there is no English fallback here.
-    notice = _translate_notice(code, name, starter_prompt, model, reasoning)
+    notice = _translate_notice(code, name, system_prompt, model, reasoning)
 
     base.mkdir(parents=True)
-    (base / "llm_prompt.md").write_text(starter_prompt, encoding="utf-8")
     notice_data = {
         "skip": [],
         "nav": load_en_nav(),
@@ -408,9 +375,8 @@ def _cmd_init(args: argparse.Namespace) -> int:
     print(f"initialized locale '{code}' in {base} (model={model})")
     print(f"wrote localized notice into {base / 'nav.json'}")
     print("next steps:")
-    print(f"  1. edit {base / 'llm_prompt.md'} (style rules + glossary)")
-    print(f"  2. review {base / 'nav.json'} labels and notice (or run --nav later)")
-    print(f"  3. OPENROUTER_API_KEY=... python docs/scripts/translate.py {code}")
+    print(f"  1. review {base / 'nav.json'} labels and notice (or run --nav later)")
+    print(f"  2. OPENROUTER_API_KEY=... python docs/scripts/translate.py {code}")
     return 0
 
 

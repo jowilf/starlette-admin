@@ -1,11 +1,9 @@
 ---
-title: Справочник API хранилища
-description: Справочная документация по файловому и объектному хранилищу в starlette-admin.
+title: Справочник API Storage
+description: Справочная документация по API файлового и объектного хранилища в starlette-admin.
 source_hash: 65de79708e217f1821dbd59e69af05bc601aec34845a986d5a8ad20f2b6d806b
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -22,10 +20,10 @@ translation_date: '2026-08-23'
     [Читать оригинал на английском](https://jowilf.github.io/starlette-admin/api/storage/)
 <!-- translation-notice:end -->
 
-# Хранилище
+# Storage
 
-Полный справочник атрибутов и методов бэкендов файлового хранилища, сгенерированный из докстрингов.
-Пошаговое руководство по задачам см. в разделе [Файловое хранилище](../user-guide/file-storage.md).
+Полный справочник атрибутов и методов backend'ов файлового хранилища, сгенерированный из docstring.
+Пошаговое руководство с примерами использования см. в разделе [File Storage](../user-guide/file-storage.md).
 
 ::: starlette_admin.storage.base.FileInfo
 

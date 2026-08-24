@@ -1,16 +1,14 @@
 ---
 title: Inicio rápido
 description: Cree una interfaz de administración CRUD completamente funcional para
-  FastAPI y Starlette en minutos con nuestra guía de inicio rápido completa.
+  FastAPI y Starlette en cuestión de minutos con nuestra guía de inicio rápido completa.
 source_hash: 19c9639af6caf311e19b134a5042588a3329ca1c3eeb005f000e63d8ac92c7bc
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -25,7 +23,7 @@ translation_date: '2026-08-22'
 
 # Inicio rápido
 
-Cree una interfaz de administración CRUD completamente funcional para un blog en minutos, con formularios, listas, búsqueda, importación y exportación generados automáticamente directamente a partir de sus modelos de datos.
+Cree una interfaz de administración CRUD completamente funcional para un blog en cuestión de minutos, con formularios, listas, búsqueda, importación y exportación generados automáticamente a partir de sus modelos de datos.
 
 ## Instalación
 
@@ -97,7 +95,7 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.mount_to(app)
 ```
 
-## Ejecutar la aplicación
+## Ejecute la aplicación
 
 Inicie el servidor de desarrollo:
 
@@ -113,9 +111,9 @@ Inicie el servidor de desarrollo:
     uv run -- fastapi dev
     ```
 
-Abra un navegador y vaya a [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin).
+Abra un navegador y acceda a [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin).
 
-En la barra lateral, seleccione **Posts** y, a continuación, seleccione **Create**. Ahora puede acceder a las páginas de lista paginada, detalle, creación, edición y eliminación. El sistema genera automáticamente todas estas interfaces a partir de la definición de su modelo.
+En la barra lateral, seleccione **Posts** y, a continuación, **Create**. Ahora puede acceder a las páginas de lista paginada, detalle, creación, edición y eliminación. El sistema genera automáticamente todas estas interfaces a partir de la definición de su modelo.
 
 ## Cómo funciona
 
@@ -136,7 +134,7 @@ class Post(Base):
     )
 ```
 
-Este código utiliza SQLAlchemy 2.0 estándar. El paquete starlette-admin lee los metadatos de columna mapeados a estos atributos para determinar el campo HTML exacto que debe generar. Por ejemplo, crea un campo de texto para `str`, una casilla de verificación para `bool` y un selector de fecha y hora para `datetime`.
+Este código utiliza SQLAlchemy 2.0 estándar. El paquete starlette-admin lee los metadatos de las columnas mapeadas a estos atributos para determinar el campo HTML exacto que debe generar. Por ejemplo, crea un campo de texto para `str`, una casilla de verificación para `bool` y un selector de fecha y hora para `datetime`.
 
 ### La vista
 
@@ -146,10 +144,10 @@ class PostView(ModelView):
     searchable_fields = ("title", "content")
 ```
 
-`PostView` actúa como el objeto central de este recurso. El atributo `fields` controla qué columnas aparecen en la lista y en el formulario, mientras que `searchable_fields` habilita la barra de búsqueda. Toda la configuración sobre cómo se ve y se comporta `Post` en el panel de administración reside en esta única clase.
+`PostView` actúa como el objeto central de este recurso. El atributo `fields` controla qué columnas aparecen en la lista y en el formulario, mientras que `searchable_fields` habilita la barra de búsqueda. Toda la configuración relativa al aspecto y comportamiento de `Post` en el panel de administración reside en esta única clase.
 
 !!! note
-    El ejemplo importa `ModelView` desde `starlette_admin.contrib.sqla` porque depende de SQLAlchemy. Si utiliza otro backend, como Beanie, MongoEngine o Tortoise ORM, debe importar `ModelView` desde el paquete contrib correspondiente. La API de configuración se mantiene consistente en todos los backends admitidos.
+    El ejemplo importa `ModelView` desde `starlette_admin.contrib.sqla` porque se basa en SQLAlchemy. Si utiliza otro backend, como Beanie, MongoEngine o Tortoise ORM, debe importar `ModelView` desde el paquete contrib correspondiente. La API de configuración se mantiene consistente en todos los backends compatibles.
 
 ### El admin
 
@@ -162,14 +160,14 @@ admin.mount_to(app)
 La clase `Admin` conecta el motor de base de datos con la interfaz de usuario.
 
 * `add_view` registra su vista en la barra lateral. El parámetro opcional `icon` acepta cualquier clase válida de [Font Awesome](https://fontawesome.com/icons).
-* `mount_to` adjunta la aplicación de administración a su aplicación FastAPI o Starlette en la ruta `/admin`.
+* `mount_to` adjunta la aplicación de administración a su aplicación de FastAPI o Starlette en la ruta `/admin`.
 
 !!! warning
-    El parámetro `secret_key` firma las cookies para los datos de sesión, incluidos los mensajes flash y la protección CSRF. En entornos de producción, debe reemplazar el valor del ejemplo por una cadena larga, aleatoria y generada de forma segura. Nunca utilice un valor de marcador de posición en un despliegue real.
+    El parámetro `secret_key` firma las cookies de los datos de sesión, incluidos los mensajes flash y la protección CSRF. En entornos de producción, debe reemplazar el valor del ejemplo por una cadena larga, aleatoria y generada de forma segura. Nunca utilice un valor de marcador de posición en un despliegue real.
 
-## Añadir un segundo modelo
+## Añada un segundo modelo
 
-Puede registrar un número ilimitado de modelos. Por ejemplo, para añadir un modelo `Tag` y su vista correspondiente, defina las clases y llame a `add_view` nuevamente:
+Puede registrar un número ilimitado de modelos. Por ejemplo, para añadir un modelo `Tag` y su vista correspondiente, defina las clases y llame de nuevo a `add_view`:
 
 ```python
 class Tag(Base):
@@ -188,12 +186,12 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.add_view(TagView(Tag, icon="fa fa-tag"))
 ```
 
-Actualice la ventana del navegador para ver tanto **Posts** como **Tags** en la barra lateral. Cada recurso cuenta ahora con sus propias páginas de lista, creación, edición y eliminación completamente funcionales.
+Actualice la ventana del navegador para ver tanto **Posts** como **Tags** en la barra lateral. Cada recurso cuenta ahora con sus propias páginas de lista, creación, edición y eliminación totalmente funcionales.
 
 ---
 
 ## Próximos pasos
 
-* **[Conceptos](concepts.md):** Aprenda la terminología de los conceptos presentados aquí para navegar mejor por la Guía de usuario.
+* **[Concepts](concepts.md):** Aprenda la terminología de los conceptos presentados aquí para navegar mejor por la Guía de usuario.
 * **[Admin](../user-guide/admin.md):** Descubra todas las opciones de `Admin(...)`, incluyendo marca, temas, autenticación, seguridad e internacionalización.
 * **[Views](../user-guide/views.md):** Explore todas las opciones de configuración de `ModelView` disponibles para personalizar la presentación de sus datos.

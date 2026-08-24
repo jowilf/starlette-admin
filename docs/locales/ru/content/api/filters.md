@@ -1,11 +1,9 @@
 ---
-title: Справочник по API фильтров
+title: Справочник API фильтров
 description: Справочная документация по фильтрам запросов к базе данных в starlette-admin.
 source_hash: c26f3e6379afdc4268934bf0f05b895ebb00f0517dd9834b6fbc337c4f192231
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,17 +22,16 @@ translation_date: '2026-08-23'
 
 # Фильтры
 
-Полный справочник атрибутов и методов системы фильтрации, сгенерированный из докстрингов.
-Пошаговое руководство по работе с фильтрами см. в разделах [Фильтры](../user-guide/filters.md)
-и [Пользовательские фильтры](../advanced/custom-filters.md).
+Полный справочник атрибутов и методов системы фильтрации, сгенерированный из docstring. Пошаговое руководство с практическими примерами см. в разделах [Фильтры](../user-guide/filters.md) и
+[Пользовательские фильтры](../advanced/custom-filters.md).
 
-Приведённые ниже классы не зависят от бэкенда: они объявляют `name`, `label` и
-`data_type` фильтра, но не логику выполнения запроса. Каждый ORM-бэкенд (`contrib.sqla`, `contrib.beanie`,
-`contrib.mongoengine`, `contrib.tortoise`) наследует их и добавляет собственную реализацию метода `apply()` для этого
-бэкенда. Конкретные классы фильтров, доступные для импорта, см. на соответствующей странице
+Приведённые ниже классы не зависят от конкретного backend'а: они объявляют `name`, `label` и
+`data_type` фильтра, но не логику формирования запроса. Каждая ORM-интеграция (`contrib.sqla`, `contrib.beanie`,
+`contrib.mongoengine`, `contrib.tortoise`) наследует их и добавляет собственную реализацию метода `apply()` для своего
+backend'а. Конкретные классы фильтров, доступные для импорта, описаны на соответствующей странице
 [интеграции](../integrations/sqlalchemy.md).
 
-## Основные типы
+## Базовые типы
 
 ::: starlette_admin.filters.base.FilterDataType
 
@@ -52,7 +49,7 @@ translation_date: '2026-08-23'
 
 ::: starlette_admin.filters.registry.filters
 
-## Общие
+## Универсальные
 
 ::: starlette_admin.filters.generic.EqualFilter
 

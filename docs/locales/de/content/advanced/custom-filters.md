@@ -1,12 +1,10 @@
 ---
 title: Benutzerdefinierte Filter
-description: Erweitern Sie den integrierten Query-Builder, indem Sie benutzerdefinierte
+description: Erweitern Sie den integrierten Query Builder, indem Sie benutzerdefinierte
   Datenbankfilter und Operatoren in starlette-admin erstellen.
 source_hash: ac118a53b1d95372b17388cb1ce13241e53cd4b2983158208affa0fedb2e2446
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-24'
 ---
 
 <!-- translation-notice:start -->
@@ -25,11 +23,11 @@ translation_date: '2026-08-24'
 
 # Benutzerdefinierte Filter
 
-Erstellen Sie eine Unterklasse von `BaseFilter`, wenn Sie einen Operator benötigen, den der integrierte Satz nicht abdeckt: eine domänenspezifische Prüfung wie „_ist teilbar durch_“, eine berechnete Bedingung wie „_in diesem Monat erstellt_“ oder Unterstützung für einen Feldtyp, den die Default-Registry überspringt. Diese Seite erklärt, wie ein Filter intern funktioniert, und zeigt die zwei Möglichkeiten, einen zu registrieren: entweder durch Erstellen einer Unterklasse des `FilterRegistry` Ihres Backends, um jeden passenden Feldtyp abzudecken, oder durch Übergeben des Filters an die `filters=`-Liste eines einzelnen Felds. Für die Einzelheiten im Alltag, einschließlich der Defaultfilter pro Feldtyp, manueller Overrides und des URL-Formats, siehe den [Filter-Leitfaden](../user-guide/filters.md).
+Subklassen Sie `BaseFilter`, wenn Sie einen Operator benötigen, den der eingebaute Satz nicht abdeckt: eine domänenspezifische Prüfung wie „_ist teilbar durch_", eine berechnete Bedingung wie „_in diesem Monat erstellt_" oder Unterstützung für einen Feldtyp, den die Standard-Registry überspringt. Diese Seite erklärt, wie ein Filter intern funktioniert, und zeigt die beiden Möglichkeiten zur Registrierung: entweder durch Subclassing der `FilterRegistry` Ihres Backends, um alle passenden Feldtypen abzudecken, oder durch Übergeben des Filters an die `filters=`-Liste eines einzelnen Felds. Für die Details des täglichen Gebrauchs, einschließlich der Standardfilter pro Feldtyp, manueller Overrides und des URL-Formats, siehe den [Filters-Leitfaden](../user-guide/filters.md).
 
 ## Die `BaseFilter`-Schnittstelle
 
-Jeder Filter, ob integriert oder benutzerdefiniert, implementiert zwei Methoden:
+Jeder Filter, ob eingebaut oder benutzerdefiniert, implementiert zwei Methoden:
 
 ```python
 from typing import Any
@@ -53,7 +51,7 @@ class MyFilter(BaseFilter):
         raise NotImplementedError()
 ```
 
-* **`parse_value(raw)`** wandelt den rohen URL-String in den Typ um, den `apply()` erwartet, z. B. ein `Decimal`, ein `date` oder eine Liste. Der Default gibt den String unverändert weiter, was für `STRING`- und `ENUM`-Filter passt, aber nicht für numerische oder zeitliche Daten. Es ist auch Ihr Validierungs-Hook: Werfen Sie `FilterValidationError` für Werte, die sich zwar parsen lassen, aber trotzdem unzulässig sind, etwa außerhalb des Bereichs liegende oder fehlerhaft formatierte Eingaben.
+* **`parse_value(raw)`** wandelt den rohen URL-String in den Typ um, den `apply()` erwartet, etwa ein `Decimal`, ein `date` oder eine Liste. Die Standardimplementierung gibt den String unverändert weiter, was für `STRING`- und `ENUM`-Filter geeignet ist, jedoch nicht für numerische oder zeitbezogene Daten. Sie dient außerdem als Validierungs-Hook: Werfen Sie `FilterValidationError` für Werte, die zwar geparst werden können, aber dennoch unzulässig sind, etwa außerhalb des zulässigen Bereichs liegende oder fehlerhaft formatierte Eingaben.
 * **`apply(ctx)`** ist die einzige abstrakte Methode. Sie erhält einen `FilterApplyContext`, der `query`, `field_name`, `value`, `value2`, `request` und `view` enthält, und gibt ein Query-Fragment für Ihr Backend zurück.
 
 ## Wie rohe URL-Werte geparst werden
@@ -81,19 +79,19 @@ class GreaterThanFilter(BaseFilter):
         return _parse_number(raw)
 ```
 
-So erreichen `?filter=price__gt=50` und `?filter=price__gt=50.5` `GreaterThanFilter.apply()` als Python-Zahlen (`50` als `int`, `50.5` als `float`) statt als die Strings „50“ und „50.5“. `apply()` übergibt den geparsten Wert direkt an das Query-Objekt, und der Datenbanktreiber übernimmt die abschließende Umwandlung gegen den tatsächlichen Typ der Spalte, etwa `Decimal` oder `Numeric`.
+So erreichen `?filter=price__gt=50` und `?filter=price__gt=50.5` `GreaterThanFilter.apply()` als Python-Zahlen (`50` als `int`, `50.5` als `float`) und nicht als die Strings `"50"` und `"50.5"`. `apply()` übergibt diesen geparsten Wert direkt an das Query-Objekt, und der Datenbanktreiber übernimmt die abschließende Umwandlung in den tatsächlichen Typ der Spalte, etwa `Decimal` oder `Numeric`.
 
-| `data_type` | Beispiel für rohen URL-Wert | Geparster Python-Wert | Geparst von |
+| `data_type` | Beispielhafter roher URL-Wert | Geparster Python-Wert | Geparst von |
 | --- | --- | --- | --- |
 | `number` | `50`, `-3`, `50.5` | `int(50)`, `int(-3)`, `float(50.5)` | `filters.numeric._parse_number` (versucht `int()`, fällt auf `float()` zurück) |
 | `date` | `2026-01-01` | `date(2026, 1, 1)` | `filters.date._parse_temporal` mit `date.fromisoformat()` |
 | `datetime` | `2026-01-01T14:30:00` | `datetime(2026, 1, 1, 14, 30)` | `filters.date._parse_temporal` mit `datetime.fromisoformat()` |
 | `time` | `14:30:00` | `time(14, 30)` | `filters.date._parse_temporal` mit `time.fromisoformat()` |
-| `array` | `ACTIVE,OUT_OF_STOCK` | `["ACTIVE", "OUT_OF_STOCK"]` | `filters.array._parse_array` (splittet an Kommas außerhalb von Anführungszeichen) |
-| `string`, `enum` | `admin` | `"admin"` | `BaseFilter.parse_value` Default (unverändert durchgereicht) |
-| `none` | *(kein Wert in der URL)* | *(wird nie aufgerufen)* | N/A |
+| `array` | `ACTIVE,OUT_OF_STOCK` | `["ACTIVE", "OUT_OF_STOCK"]` | `filters.array._parse_array` (teilt an nicht in Anführungszeichen gesetzten Kommas) |
+| `string`, `enum` | `admin` | `"admin"` | `BaseFilter.parse_value` Standard (unverändert durchgereicht) |
+| `none` | *(kein Wert in der URL vorhanden)* | *(wird nie aufgerufen)* | N/A |
 
-Wenn ein Wert nicht geparst werden kann, etwa `price__gt=abc` oder `created_at__eq=not-a-date`, wirft `parse_value()` ein `FilterValidationError`. Der Request-Handler fängt es ab und gibt `HTTP 400` zurück, bevor irgendeine Datenbank-Query ausgeführt wird:
+Wenn sich ein Wert nicht parsen lässt, etwa bei `price__gt=abc` oder `created_at__eq=not-a-date`, wirft `parse_value()` einen `FilterValidationError`. Der Request-Handler fängt ihn ab und gibt `HTTP 400` zurück, bevor irgendeine Datenbankabfrage ausgeführt wird:
 
 ```text
 GET /admin/product/list?filter=price__gt=abc
@@ -101,19 +99,19 @@ Returns: 400 Bad Request: Invalid 'filter' parameter: 'abc' is not a valid numbe
 
 ```
 
-Wertlose Filter, also solche mit `data_type=none` wie `is_null`, `is_true` oder `in_past`, überspringen diesen Schritt. `parse_value` läuft für sie nie, weshalb `field__is_null` kein `=value` in der URL benötigt: Es gibt keinen Eingabe-String, der umgewandelt werden müsste.
+Wertlose Filter – diejenigen mit `data_type=none` wie `is_null`, `is_true` oder `in_past` – überspringen diesen Schritt. Für sie läuft `parse_value` nie, weshalb `field__is_null` kein `=value` in der URL benötigt: Es gibt keinen Eingabe-String, der umgewandelt werden müsste.
 
 ## Einen benutzerdefinierten Filter verfügbar machen
 
-Sie können einen benutzerdefinierten Filter auf zwei Arten bei einer View registrieren. Wählen Sie die Variante, die zum gewünschten Geltungsbereich passt.
+Sie können einen benutzerdefinierten Filter auf zwei Arten bei einer View registrieren. Wählen Sie die Variante, die dem gewünschten Geltungsbereich entspricht.
 
 ### Pro Feldinstanz (schmaler Geltungsbereich)
 
-Übergeben Sie den Filter an die `filters=`-Liste des Zielfelds, entweder zusätzlich zu den Defaults oder an deren Stelle. Siehe [Filter für ein bestimmtes Feld überschreiben](../user-guide/filters.md#overriding-filters-for-a-specific-field) für dasselbe Muster mit integrierten Filtern. Verwenden Sie dies, wenn der Filter nur für ein einzelnes Feld sinnvoll ist.
+Übergeben Sie den Filter an die `filters=`-Liste des Zielfelds, entweder zusätzlich zu den Standardfiltern oder an deren Stelle. Siehe [Overriding filters for a specific field](../user-guide/filters.md#overriding-filters-for-a-specific-field) für dasselbe Muster mit eingebauten Filtern. Verwenden Sie dies, wenn der Filter nur für ein einzelnes Feld sinnvoll ist.
 
-### Registrierungsweit (für alle passenden Feldtypen)
+### Registrierungsweit (jeder passende Feldtyp)
 
-Jedes Backend liefert eine `FilterRegistry`-Unterklasse mit: `SqlaFilterRegistry` für SQLAlchemy, `BeanieFilterRegistry` für Beanie, `MongoEngineFilterRegistry` für MongoEngine und `TortoiseFilterRegistry` für Tortoise ORM. Jede davon definiert die Defaultfilter eines unterstützten Feldtyps in einer Methode, die mit `@filters(FieldType, ...)` dekoriert ist:
+Jedes Backend liefert eine `FilterRegistry`-Subklasse mit: `SqlaFilterRegistry` für SQLAlchemy, `BeanieFilterRegistry` für Beanie, `MongoEngineFilterRegistry` für MongoEngine und `TortoiseFilterRegistry` für Tortoise ORM. Jede davon definiert die Standardfilter für einen unterstützten Feldtyp in einer Methode, die mit `@filters(FieldType, ...)` dekoriert ist:
 
 ```python
 # starlette_admin/contrib/sqla/filters.py
@@ -141,7 +139,7 @@ class SqlaFilterRegistry(FilterRegistry):
     # ... one method per field type
 ```
 
-Um die für einen Feldtyp verfügbaren Filter über eine ganze View hinweg zu ändern, erstellen Sie eine Unterklasse der Registry des Backends, überschreiben oder ergänzen eine `@filters`-Methode und geben aus `get_filter_registry()` eine Instanz Ihrer Unterklasse zurück:
+Um die für einen Feldtyp verfügbaren Filter über eine gesamte View hinweg zu ändern, subklassen Sie die Registry des Backends, überschreiben bzw. ergänzen eine `@filters`-Methode und geben aus `get_filter_registry()` eine Instanz Ihrer Subklasse zurück:
 
 ```python
 class ProductFilterRegistry(SqlaFilterRegistry):
@@ -157,14 +155,14 @@ class ProductView(ModelView):
 
 Deklarieren Sie diese Methoden auf eine von zwei Arten, je nachdem, ob Sie die vorhandenen Filter ersetzen oder erweitern möchten:
 
-* **Override:** Deklarieren Sie `@filters(StringField)` in Ihrer Unterklasse erneut und geben Sie genau die Klassen zurück, die Sie möchten. Damit ersetzen Sie die Liste der Elternklasse, schließen Sie also auch alle integrierten Filter ein, die Sie behalten möchten.
-* **Extend:** Deklarieren Sie `@filters(IntegerField)`, wenn die Registry der Elternklasse nur den allgemeineren `NumberField` registriert. Da `IntegerField` eine Unterklasse von `NumberField` ist, löst die Method Resolution Order (MRO) `IntegerField` auf Ihre neue Methode auf, während `DecimalField`, ein anderer `NumberField`-Nachkomme ohne eigene Registrierung, weiterhin unverändert die `numeric_filters` der Elternklasse erbt.
+* **Override:** Deklarieren Sie `@filters(StringField)` in Ihrer Subklasse erneut und geben Sie genau die Klassen zurück, die Sie möchten. Dies ersetzt die Liste der Elternklasse, daher müssen Sie alle eingebauten Filter einschließen, die Sie behalten möchten.
+* **Extend:** Deklarieren Sie `@filters(IntegerField)`, wenn die Eltern-Registry nur den allgemeineren `NumberField` registriert. Da `IntegerField` eine Subklasse von `NumberField` ist, löst die Method Resolution Order (MRO) `IntegerField` auf Ihre neue Methode auf, während `DecimalField`, eine weitere `NumberField`-Subklasse ohne eigene Registrierung, weiterhin unverändert die `numeric_filters` der Elternklasse erbt.
 
-Es handelt sich um eine gewöhnliche Python-Unterklasse, daher wird kein globaler Zustand verändert. Jeder Aufruf von `ProductFilterRegistry()` baut eine unabhängige Registry auf, und Ihre Änderungen bleiben auf die Views beschränkt, die diese Instanz zurückgeben. Alle anderen Views behalten die Defaults des Backends.
+Dies ist eine gewöhnliche Python-Subklasse, daher verändert sie keinen globalen Zustand. Jeder Aufruf von `ProductFilterRegistry()` erzeugt eine unabhängige Registry, und Ihre Änderungen bleiben auf die Views beschränkt, die sie zurückgeben. Alle anderen Views behalten die Backend-Standards bei.
 
 ## Vollständiges SQLAlchemy-Beispiel
 
-Der folgende `DivisibleByFilter` nimmt einen Wert entgegen, den Divisor, gegen den die Spalte geprüft wird. Eine `SqlaFilterRegistry`-Unterklasse wendet ihn auf jedes `IntegerField` von `ProductView` an, statt ihn an einzelne Felder anzuhängen:
+Der folgende `DivisibleByFilter` nimmt einen Wert entgegen, den Divisor, gegen den die Spalte geprüft werden soll. Eine `SqlaFilterRegistry`-Subklasse wendet ihn auf jedes `IntegerField` in `ProductView` an, statt ihn an einzelne Felder zu hängen:
 
 ```python
 import uuid
@@ -281,24 +279,24 @@ admin.add_view(ProductView(Product, icon="fa fa-product"))
 admin.mount_to(app)
 ```
 
-Siehe [examples/02-filters](https://github.com/jowilf/starlette-admin/tree/main/examples/02-filters) für eine lauffähige App mit einer benutzerdefinierten `BaseFilter`-Unterklasse, die auf dieselbe Weise registriert ist.
+Unter [examples/02-filters](https://github.com/jowilf/starlette-admin/tree/main/examples/02-filters) finden Sie eine lauffähige App mit einer benutzerdefinierten `BaseFilter`-Subklasse, die auf dieselbe Weise registriert ist.
 
-Die Option `lot_size__divisible_by` erscheint nun als Filter für `IntegerField("lot_size")`, ganz ohne explizite `filters=`-Deklaration am Feld. Zum Beispiel passt `lot_size__divisible_by=6` auf Produkte, deren Losgröße ein Vielfaches von 6 ist:
+Die Option `lot_size__divisible_by` erscheint nun als Filter für `IntegerField("lot_size")`, ohne explizite `filters=`-Deklaration am Feld. Beispielsweise matcht `lot_size__divisible_by=6` Produkte, deren Losgröße ein Vielfaches von 6 ist:
 
 ```text
 http://127.0.0.1:8000/admin/product/list?filter=lot_size__divisible_by=6&sort=id__asc
 ```
 
 !!! tip
-    Verwenden Sie eine `FilterRegistry`-Unterklasse, wenn ein Filter generisch genug ist, um auf jedes Feld eines bestimmten Typs in einer View angewendet zu werden. Verwenden Sie die `filters=`-Liste pro Feld, wenn die Logik nur zu einem einzigen Feld gehört. Der [Filter-Leitfaden](../user-guide/filters.md#overriding-filters-for-a-specific-field) enthält Beispiele für das Muster pro Feld.
+    Verwenden Sie eine `FilterRegistry`-Subklasse, wenn ein Filter generisch genug ist, um auf jedes Feld eines bestimmten Typs in einer View angewendet zu werden. Verwenden Sie die pro-Feld-`filters=`-Liste, wenn die Logik nur zu einem einzigen Feld gehört. Der [Filters-Leitfaden](../user-guide/filters.md#overriding-filters-for-a-specific-field) enthält Beispiele für das Pro-Feld-Muster.
 
 ## Dynamische Auswahlmöglichkeiten mit `get_choices`
 
-Standardmäßig folgt die Werteingabe eines Filters seinem `data_type`: ein einfaches Textfeld für `STRING`, ein Zahlenfeld für `NUMBER` usw. Überschreiben Sie `get_choices(request)`, wenn der Wert stattdessen aus einem Dropdown-Menü kommen soll, das mit einer Liste von `(value, label)`-Paaren pro Request gefüllt wird. Ein „is one of“-Filter über ein Beziehungsfeld ist der typische Fall: Der zurückgesendete Wert ist ein Fremdschlüssel, aber die Auswahl sollte einen lesbaren Namen zeigen.
+Standardmäßig folgt das Werteingabefeld eines Filters seinem `data_type`: ein einfaches Textfeld für `STRING`, ein Zahlenfeld für `NUMBER` usw. Überschreiben Sie `get_choices(request)`, wenn der Wert stattdessen aus einem Dropdown stammen soll, das mit einer pro Request generierten Liste von `(value, label)`-Paaren gefüllt wird. Ein „is one of"-Filter über ein Relationsfeld ist der typische Fall: Der zurückgesendete Wert ist ein Fremdschlüssel, aber die Auswahl sollte einen lesbaren Namen anzeigen.
 
-`get_choices` erhält den aktuellen `Request` und gibt eine Sequenz von `(value, label)`-Paaren oder `None` (den Default) zurück, um die einfache Eingabe beizubehalten. Ein nicht leeres Ergebnis hat Vorrang vor beiden: der einfachen Eingabe und allen Choices, die das Feld selbst liefert, wie es bei `EnumField` der Fall ist.
+`get_choices` erhält den aktuellen `Request` und gibt eine Sequenz von `(value, label)`-Paaren zurück oder `None` (der Standard), um das einfache Eingabefeld beizubehalten. Ein nicht leeres Ergebnis hat Vorrang vor dem einfachen Eingabefeld sowie vor allen Auswahlmöglichkeiten, die das Feld selbst bereitstellt, wie es bei `EnumField` der Fall ist.
 
-Das folgende Beispiel aus [examples/advanced/07-hr](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/07-hr) fügt dem `department`-Feld der Employee-Liste ein Paar aus „is one of“ und „is not one of“ hinzu. `department` ist ein `RelationField`, daher liefert die Default-Registry dafür nur Null-Checks: Es gibt keine generische Möglichkeit, eine verwandte Zeile mit einem rohen String zu vergleichen. `get_choices` listet jede `Department` nach Name für das Dropdown-Menü auf, und `parse_value` wandelt die zurückgesendeten Werte in Ganzzahlen um, damit `apply` direkt auf dem Fremdschlüssel `Department.id` matchen kann, statt über die Beziehung zu joinen und Namen zu vergleichen:
+Das folgende Beispiel aus [examples/advanced/07-hr](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/07-hr) fügt dem `department`-Feld in der `Employee`-Liste ein „is one of"- und „is not one of"-Paar hinzu. `department` ist ein `RelationField`, daher stellt ihm die Standard-Registry nur Null-Prüfungen bereit: Es gibt keine generische Möglichkeit, eine verknüpfte Zeile mit einem Rohtext zu vergleichen. `get_choices` listet jede `Department` nach Name für das Dropdown auf, und `parse_value` wandelt die zurückgesendeten Werte in Ganzzahlen um, sodass `apply` direkt auf dem Fremdschlüssel `Department.id` matchen kann, statt über die Beziehung zu joinen und Namen zu vergleichen:
 
 ```python
 # examples/advanced/07-hr/filters.py
@@ -355,17 +353,17 @@ class DepartmentNotInFilter(_DepartmentChoicesMixin, NotInFilter):
         return ~Employee.department_id.in_(ctx.value)
 ```
 
-Ein paar Dinge, die Sie bei diesem Muster beachten sollten:
+Einige Anmerkungen zu diesem Muster:
 
-* **Der Mixin steht in der MRO vor der Basisklasse des Filters.** `_DepartmentChoicesMixin` kommt zuerst in `class DepartmentInFilter(_DepartmentChoicesMixin, InFilter)`, daher überschreiben sein `get_choices` und sein `parse_value` diejenigen, die jeder Filter sonst erben würde. `super().parse_value(raw)` erreicht dennoch `InFilter.parse_value`, das den Rohwert in eine Liste aufteilt, bevor der Mixin ihn in Ganzzahlen umwandelt.
-* **`get_choices` läuft bei jedem Request**, nicht einmalig zur Importzeit, daher spiegelt das Dropdown-Menü immer die aktuellen Zeilen wider. Eine neu hinzugefügte `Department` erscheint sofort im Filter-Builder, ohne Serverneustart und ohne Cache, den man invalidieren müsste.
-* **Die `(value, label)`-Paare und der Ausgabetyp von `parse_value` müssen zusammenpassen.** Das Dropdown-Menü sendet den vom Benutzer gewählten `value` zurück, daher wandelt `parse_value` ihn in das um, was `apply` erwartet. `Department.id` ist hier bereits ein `int`, daher stellt der `parse_value` des Mixins das lediglich erneut sicher und wirft bei allem anderen einen Validierungsfehler.
-* **`InFilter` und `NotInFilter` haben bereits den Default `data_type = FilterDataType.ENUM`**, eine Mehrfachauswahl, daher braucht keine der beiden Unterklassen ein `data_type`-Override. Das Überschreiben von `get_choices` genügt, um diese Mehrfachauswahl mit Departments statt leer zu füllen.
+* **Der Mixin steht in der MRO vor der Basisfilter-Klasse.** `_DepartmentChoicesMixin` kommt zuerst in `class DepartmentInFilter(_DepartmentChoicesMixin, InFilter)`, daher überschreiben sein `get_choices` und sein `parse_value` diejenigen, die jeder Filter sonst erben würde. `super().parse_value(raw)` erreicht dennoch `InFilter.parse_value`, das den Rohwert in eine Liste aufteilt, bevor der Mixin ihn in Ganzzahlen umwandelt.
+* **`get_choices` wird bei jedem Request ausgeführt**, nicht einmalig beim Import, daher spiegelt das Dropdown stets die aktuellen Zeilen wider. Eine neu hinzugefügte `Department` erscheint sofort im Filter Builder, ohne Serverneustart und ohne Cache, der ungültig gemacht werden müsste.
+* **Die `(value, label)`-Paare und der Ausgabetyp von `parse_value` müssen übereinstimmen.** Das Dropdown sendet den vom Benutzer gewählten `value` zurück, daher wandelt `parse_value` ihn in das um, was `apply` erwartet. `Department.id` ist hier bereits ein `int`, daher stellt der Mixin dies in seinem `parse_value` erneut sicher und wirft einen Validierungsfehler bei allem anderen.
+* **`InFilter` und `NotInFilter` haben bereits standardmäßig `data_type = FilterDataType.ENUM`**, eine Mehrfachauswahl, daher benötigt keine der beiden Subklassen ein `data_type`-Override. Das Überschreiben von `get_choices` genügt, um diese Mehrfachauswahl mit Departments zu füllen, statt sie leer zu lassen.
 
 ---
 
-## Nächste Schritte
+## Was kommt als Nächstes?
 
-* **[Filter](../user-guide/filters.md):** Erfahren Sie mehr über die Defaultfilter pro Feldtyp, das URL-Format und das `filters=`-Override.
-* **[SQLAlchemy](../integrations/sqlalchemy.md):** Erkunden Sie das in diesem Seitenbeispiel verwendete SQLAlchemy-Backend.
-* **[Erweiterungspunkte](extension-points.md):** Sehen Sie sich die vollständige Liste der Methoden an, die Sie auf `ModelView` überschreiben können.
+* **[Filters](../user-guide/filters.md):** Erfahren Sie mehr über die Standardfilter pro Feldtyp, das URL-Format und das `filters=`-Override.
+* **[SQLAlchemy](../integrations/sqlalchemy.md):** Erkunden Sie das in diesem Beispiel verwendete SQLAlchemy-Backend.
+* **[Extension points](extension-points.md):** Sehen Sie sich die vollständige Liste der Methoden an, die Sie in `ModelView` überschreiben können.

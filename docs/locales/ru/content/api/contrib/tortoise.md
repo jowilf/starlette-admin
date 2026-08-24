@@ -1,11 +1,9 @@
 ---
-title: Справочник API модуля contrib для Tortoise ORM
-description: Справочная документация по API интеграции бэкенда Tortoise ORM в starlette-admin.
+title: Справочник API Contrib для Tortoise ORM
+description: Справочная документация по API интеграции backend'а Tortoise ORM в starlette-admin.
 source_hash: 64e4327c8b219a5ce961ab0f5a300132bb286dd74a34ad5ec50a110445af46bd
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,9 +22,9 @@ translation_date: '2026-08-23'
 
 # Contrib: Tortoise ORM
 
-Полный справочник атрибутов и методов для бэкенда Tortoise ORM
-(`starlette_admin.contrib.tortoise`), сгенерированный из докстрингов.
-Пошаговое руководство см. в разделе [Tortoise ORM](../../integrations/tortoise.md).
+Полный справочник атрибутов и методов backend'а Tortoise ORM
+(`starlette_admin.contrib.tortoise`), сгенерированный из docstring. Пошаговое
+руководство по использованию см. в разделе [Tortoise ORM](../../integrations/tortoise.md).
 
 ::: starlette_admin.contrib.tortoise.admin.Admin
 
@@ -34,19 +32,19 @@ translation_date: '2026-08-23'
 
 ::: starlette_admin.contrib.tortoise.view.InlineModelView
 
-## Поля
+## Fields
 
 ::: starlette_admin.contrib.tortoise.fields.BackwardHasOne
 
-## Конвертеры
+## Converters
 
 ::: starlette_admin.contrib.tortoise.converters.BaseTortoiseModelConverter
 
 ::: starlette_admin.contrib.tortoise.converters.ModelConverter
 
 !!! note
-    Конкретные классы фильтров (`ContainsFilter`, `EnumInFilter`, `RelationIsNullFilter` и так далее)
-    здесь не перечислены. Они повторяют не зависящие от бэкенда фильтры, описанные в разделе
-    [Фильтры](../filters.md); специфичное для Tortoise поведение (поиск без учёта регистра,
-    приведение перечислений, проверки на NULL в исходных столбцах ключей) рассматривается в
+    Конкретные классы фильтров (`ContainsFilter`, `EnumInFilter`, `RelationIsNullFilter` и т. д.)
+    здесь не перечисляются. Они повторяют не зависящие от backend'а фильтры, описанные в разделе
+    [Filters](../filters.md); специфичное для Tortoise поведение (поиск без учёта регистра,
+    приведение enum, проверки на NULL по «сырым» ключевым столбцам) рассматривается в разделе
     [Tortoise ORM](../../integrations/tortoise.md#filter-registry).

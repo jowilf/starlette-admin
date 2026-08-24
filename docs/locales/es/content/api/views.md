@@ -1,16 +1,14 @@
 ---
-title: Referencia de la API de vistas
+title: Referencia de la API de Views
 description: Documentación de referencia de la API para ModelView, CustomView y Link
   en starlette-admin.
 source_hash: 38859e9f37ece4d46c4fb18d8b26d357f9de6f5334cc205694cf2289e20d1427
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -23,9 +21,10 @@ translation_date: '2026-08-22'
     [Leer la versión original en inglés](https://jowilf.github.io/starlette-admin/api/views/)
 <!-- translation-notice:end -->
 
-# Vistas
+# Views
 
-Referencia completa de los atributos y métodos de las clases de vistas, generada a partir de sus docstrings. Para una guía orientada a tareas, consulte [Vistas](../user-guide/views.md) y [Vistas personalizadas y widgets](../user-guide/custom-views.md).
+Referencia completa de atributos y métodos de las clases de vistas, generada a partir de sus docstrings. Para un recorrido orientado a tareas, consulte [Views](../user-guide/views.md) y
+[Custom Views & Widgets](../user-guide/custom-views.md).
 
 ::: starlette_admin.views.BaseView
 

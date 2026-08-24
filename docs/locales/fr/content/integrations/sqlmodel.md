@@ -1,12 +1,10 @@
 ---
 title: Intégration de SQLModel
 description: Créez un tableau de bord d'administration complet pour vos applications
-  FastAPI SQLModel à l'aide de starlette-admin.
+  FastAPI avec SQLModel à l'aide de starlette-admin.
 source_hash: 96c8764bbc647c696f3ec02784bf0b7a9b05d3f1b051c40e8783b36bb49e612e
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,12 +23,12 @@ translation_date: '2026-08-22'
 
 # Intégration de SQLModel
 
-[SQLModel](https://sqlmodel.tiangolo.com/) combine les tables SQLAlchemy avec la validation Pydantic dans une seule classe de modèle. Comme les modèles SQLModel sont des modèles SQLAlchemy sous le capot, le module `starlette_admin.contrib.sqlmodel` sert de fine couche d'encapsulation autour du [backend SQLAlchemy](sqlalchemy.md) existant.
+[SQLModel](https://sqlmodel.tiangolo.com/) combine les tables SQLAlchemy avec la validation Pydantic dans une seule classe de modèle. Comme les modèles SQLModel reposent en réalité sur des modèles SQLAlchemy, le module `starlette_admin.contrib.sqlmodel` constitue une fine couche d'encapsulation du [backend SQLAlchemy](sqlalchemy.md) existant.
 
-Plutôt que d'implémenter un système séparé, cette intégration hérite directement du backend SQLAlchemy principal de toute la détection automatique des champs, de la gestion des clés primaires, du traitement des relations, du filtrage et du middleware de session. Elle introduit une couche de validation robuste qui fait passer les données soumises via le formulaire par les validateurs Pydantic natifs de votre modèle (tels que `Field(min_length=...)` ou des méthodes personnalisées `@field_validator`) avant toute écriture en base de données. Les exceptions `ValidationError` qui en résultent sont automatiquement traduites en erreurs de formulaire par champ dans l'interface utilisateur.
+Plutôt que d'implémenter un système distinct, cette intégration hérite directement du backend SQLAlchemy principal de toute la détection automatique des champs, de la gestion des clés primaires, du traitement des relations, du filtrage et du middleware de session. Elle introduit une couche de validation robuste qui soumet les données des formulaires aux validateurs Pydantic natifs de votre modèle (tels que `Field(min_length=...)` ou des méthodes personnalisées `@field_validator`) avant toute écriture en base de données. Les exceptions `ValidationError` qui en résultent sont automatiquement traduites en erreurs de formulaire par champ dans l'interface.
 
 !!! note
-    Tout ce qui est documenté sur la [page SQLAlchemy](sqlalchemy.md) s'applique sans modification. Cela inclut les moteurs synchrones et asynchrones, les fournisseurs `sessionmaker`, le cycle de vie de session avec un commit par requête, les champs de relation et le registre des filtres.
+    Tout ce qui est documenté sur la [page SQLAlchemy](sqlalchemy.md) s'applique sans modification. Cela inclut les moteurs synchrones et asynchrones, les providers `sessionmaker`, le cycle de vie de session à un commit par requête, les champs de relation et le registre des filtres.
 
 ## Installation
 
@@ -79,11 +77,11 @@ La classe `ModelView` accepte directement la classe de table SQLModel et dérive
 
 ### `sqlmodel.Admin`
 
-La classe `sqlmodel.Admin` est la classe `sqla.Admin` réexportée. Elle utilise le même constructeur, acceptant un `Engine`, un `AsyncEngine`, un `sessionmaker` ou un `async_sessionmaker` comme argument obligatoire `session_provider`. Elle insère également le même middleware de session qui alimente `request.state.session` à chaque requête.
+La classe `sqlmodel.Admin` est la classe `sqla.Admin` ré-exportée. Elle utilise le même constructeur, qui accepte une instance `Engine`, `AsyncEngine`, `sessionmaker` ou `async_sessionmaker` comme argument requis `session_provider`. Elle insère également le même middleware de session qui peuple `request.state.session` à chaque requête.
 
 ### `sqlmodel.ModelView`
 
-La classe `sqlmodel.ModelView` hérite de tout ce que fournit `sqla.ModelView` et ajoute une couche de validation. Sa méthode `validate()` appelle `self.model.model_validate(data)` avant d'écrire l'enregistrement, ce qui garantit que les soumissions de formulaire sont vérifiées par les validateurs Pydantic du modèle au lieu de reposer strictement sur les contraintes de colonnes SQLAlchemy. Les champs de fichier et les champs de relation sont volontairement exclus de cet appel de validation, car ils se situent en dehors de la surface de validation Pydantic du modèle.
+La classe `sqlmodel.ModelView` hérite de tout ce que fournit `sqla.ModelView` et ajoute une couche de validation. Sa méthode `validate()` appelle `self.model.model_validate(data)` avant d'écrire l'enregistrement, ce qui garantit que les soumissions de formulaires sont contrôlées par les validateurs Pydantic du modèle au lieu de reposer strictement sur les contraintes de colonnes SQLAlchemy. Les champs de fichiers et les champs de relation sont volontairement exclus de cet appel de validation, car ils se situent en dehors de la surface de validation Pydantic du modèle.
 
 ```python
 from starlette_admin.contrib.sqlmodel import ModelView
@@ -96,7 +94,7 @@ class ArticleView(ModelView):
 
 ### `sqlmodel.InlineModelView`
 
-Les vues intégrées permettent aux utilisateurs de modifier des lignes liées directement dans le formulaire parent. La classe hérite de la détection des clés étrangères et de la gestion de session de la classe `InlineModelView` SQLAlchemy et applique la même validation Pydantic à chaque ligne intégrée.
+Les vues inline permettent aux utilisateurs de modifier les lignes associées directement dans le formulaire parent. La classe hérite de la détection des clés étrangères et de la gestion des sessions de la classe SQLAlchemy `InlineModelView`, et applique la même validation Pydantic à chaque ligne inline.
 
 ```python
 from starlette_admin.contrib.sqlmodel import InlineModelView, ModelView
@@ -132,7 +130,7 @@ class Author(SQLModel, table=True):
     articles: list["Article"] = Relationship(back_populates="author")
 ```
 
-Une entrée telle qu'un `full_name` de moins de deux caractères ou une adresse e-mail invalide échouera à la validation. Ces échecs sont renvoyés sous forme d'erreurs de formulaire par champ avant qu'une opération `INSERT` ou `UPDATE` n'atteigne la base de données.
+Une saisie telle qu'un `full_name` de moins de deux caractères ou une adresse e-mail invalide échouera à la validation. Ces échecs sont renvoyés sous forme d'erreurs de formulaire par champ avant que toute opération `INSERT` ou `UPDATE` n'atteigne la base de données.
 
 !!! note
     Le type `EmailStr` nécessite le paquet `email-validator`, installable via `pip install "pydantic[email]"`.
@@ -155,7 +153,7 @@ Cette section fournit une intégration SQLModel complète et exécutable avec `s
     uv add starlette-admin sqlmodel "fastapi[standard]"
     ```
 
-Le paquet `fastapi[standard]` inclut la CLI FastAPI, ce qui vous permet de démarrer le serveur de développement en exécutant `fastapi dev`.
+Le paquet `fastapi[standard]` inclut le FastAPI CLI, qui vous permet de démarrer le serveur de développement en exécutant `fastapi dev`.
 
 ### 2. Créer l'application
 
@@ -234,9 +232,9 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.mount_to(app)
 ```
 
-Soumettre un `title` de moins de trois caractères ou un `name` de moins de deux caractères entraîne le réaffichage du formulaire avec l'erreur attachée au champ concerné.
+Soumettre un `title` de moins de trois caractères ou un `name` de moins de deux caractères entraîne un nouvel affichage du formulaire avec l'erreur attachée au champ concerné.
 
-### 3. Démarrer le serveur
+### 3. Lancer le serveur
 
 Démarrez le serveur de développement FastAPI :
 
@@ -252,12 +250,12 @@ Démarrez le serveur de développement FastAPI :
     uv run -- fastapi dev
     ```
 
-Accédez à [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) dans votre navigateur pour afficher le tableau de bord d'administration et interagir avec lui.
+Rendez-vous sur [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) dans votre navigateur pour consulter et interagir avec le tableau de bord d'administration.
 
-> **Exemple avancé :** [`examples/14-sqlmodel`](https://github.com/jowilf/starlette-admin/tree/main/examples/14-sqlmodel) dans le dépôt contient un exemple de CMS complet qui inclut des relations, des vues intégrées, des actions, des filtres, des événements et des exportations.
+> **Exemple avancé :** [`examples/14-sqlmodel`](https://github.com/jowilf/starlette-admin/tree/main/examples/14-sqlmodel) dans le dépôt contient un exemple de CMS complet incluant les relations, les vues inline, les actions, les filtres, les événements et les exports.
 
 ## Pour aller plus loin
 
-* **[SQLAlchemy](sqlalchemy.md) :** le backend sur lequel repose cette intégration, couvrant les moteurs, les sessions, les transactions et le registre des filtres.
-* **[Vues](../user-guide/views.md) :** explorez les options de configuration de `BaseModelView`, indépendamment du backend.
-* **[Filtres](../user-guide/filters.md) :** découvrez le générateur de filtres et la manière dont les filtres spécifiques aux ORM s'y intègrent.
+* **[SQLAlchemy](sqlalchemy.md) :** le backend sur lequel repose cette intégration, couvrant les engines, les sessions, les transactions et le registre des filtres.
+* **[Views](../user-guide/views.md) :** explorez les options de configuration de `BaseModelView` indépendamment du backend.
+* **[Filters](../user-guide/filters.md) :** découvrez le constructeur de filtres et comment les filtres spécifiques aux ORM s'y intègrent.

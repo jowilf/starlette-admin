@@ -1,12 +1,10 @@
 ---
 title: Felder
-description: Umfassende Referenz für alle integrierten Felder in starlette-admin,
-  um Ihre Datenbankspalten auf UI-Komponenten abzubilden.
+description: Umfassende Referenz für alle integrierten Felder von starlette-admin
+  zur Abbildung Ihrer Datenbankspalten auf UI-Komponenten.
 source_hash: 3c9c4a5f2b25717d80f8f6130fa12fdb5e0ae0ff8ef86c4c692b63f3a6f4bada
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -25,34 +23,34 @@ translation_date: '2026-08-23'
 
 # Felder
 
-Felder sind die Bausteine Ihrer Views. Unter der Haube sind sie schlichte Python-Dataclasses: Jedes Attribut, das Sie an einen Feldkonstruktor übergeben, wird zu einem Dataclass-Feld, und jeder Feldtyp erbt von `BaseField`, sodass Sie ihn inspizieren, als Subklasse implementieren oder direkt instanziieren können.
+Felder sind die Bausteine Ihrer Views. Im Hintergrund sind sie schlichte Python-Dataclasses: Jedes Attribut, das Sie an einen Feldkonstruktor übergeben, wird zu einem Dataclass-Feld, und jeder Feldtyp erbt von `BaseField`. Sie können ihn daher inspizieren, als Unterklasse implementieren oder direkt instanziieren.
 
 ## Gemeinsame Attribute
 
 Jeder Feldtyp erbt diese Konfigurationsattribute von `BaseField`.
 
-| Attribut | Typ | Defaultwert | Beschreibung |
+| Attribut | Typ | Standardwert | Beschreibung |
 | --- | --- | --- | --- |
-| `name` | `str` | **Erforderlich** | Der Attributname auf Ihrem Modell. |
-| `label` | `str | None` | `name` in Title-Case | Der Spaltenkopf und das Formularlabel. |
+| `name` | `str` | **Erforderlich** | Der Attributname Ihres Modells. |
+| `label` | `str | None` | In Title Case geschriebener `name` | Der Spaltenkopf und das Formularlabel. |
 | `help_text` | `str | None` | `None` | Hinweistext unterhalb des Formulareingabefelds. |
-| `required` | `bool` | `False` | Erfordert einen Wert in Formularen, sowohl auf dem Client als auch auf dem Server. |
-| `validators` | `list[Validator]` | `[]` | Serverseitige Validatoren, die gegen den eingereichten Wert laufen. Siehe [Validierung](#validierung). |
-| `disabled` | `bool` | `False` | Graut das Eingabefeld in Formularen aus und sperrt es. |
-| `read_only` | `bool` | `False` | Zeigt das Feld, blockiert aber Änderungen. |
-| `default` | `Any | Callable` | `None` | Der Vorbelegungswert im Erstellen-Formular. |
-| `getter` | `Callable | None` | `None` | Ersetzt den Modellattribut-Zugriff beim Lesen des Werts. Siehe [Werte berechnen, formatieren und parsen](#werte-berechnen-formatieren-und-parsen). |
-| `formatter` | `dict[RequestAction, Callable] | None` | `None` | Anzeigeformatierung pro Aktion, die die Serialisierung für diese Aktion ersetzt. Siehe [Werte berechnen, formatieren und parsen](#werte-berechnen-formatieren-und-parsen). |
-| `parser` | `dict[RequestAction, Callable] | None` | `None` | Eingabeparsing pro Aktion, das das Standard-Parsing des Felds ersetzt. Siehe [Werte berechnen, formatieren und parsen](#werte-berechnen-formatieren-und-parsen). |
-| `searchable` | `bool` | `True` | Wird einbezogen, wenn der Suchparameter `q` matcht. |
-| `orderable` | `bool` | `True` | Fügt einen Sortierlink im Listenkopf hinzu. |
-| `copy_to_clipboard` | `bool` | `False` | Fügt neben dem Wert auf der Detailseite eine Kopierschaltfläche hinzu. |
-| `filters` | `list | None` | `None` | Explizite Überschreibung für die Filter der Listenseite. |
+| `required` | `bool` | `False` | Fordert einen Wert im Formular an, sowohl clientseitig als auch serverseitig. |
+| `validators` | `list[Validator]` | `[]` | Serverseitige Validators, die gegen den eingereichten Wert laufen. Siehe [Validierung](#validierung). |
+| `disabled` | `bool` | `False` | Graut das Eingabefeld aus und sperrt es in Formularen. |
+| `read_only` | `bool` | `False` | Zeigt das Feld an, blockiert aber Änderungen. |
+| `default` | `Any | Callable` | `None` | Der Vorbelegungswert im Erstellungsformular. |
+| `getter` | `Callable | None` | `None` | Ersetzt den Modellattribut-Zugriff beim Auslesen des Werts. Siehe [Werte berechnen, formatieren und parsen](#computing-formatting-and-parsing-values). |
+| `formatter` | `dict[RequestAction, Callable] | None` | `None` | Anzeigeformatierung pro Action, die die Serialisierung für diese Action ersetzt. Siehe [Werte berechnen, formatieren und parsen](#computing-formatting-and-parsing-values). |
+| `parser` | `dict[RequestAction, Callable] | None` | `None` | Eingabeparsing pro Action, das das Standardparsing des Felds ersetzt. Siehe [Werte berechnen, formatieren und parsen](#computing-formatting-and-parsing-values). |
+| `searchable` | `bool` | `True` | Wird einbezogen, wenn der Suchparameter `q` übereinstimmt. |
+| `orderable` | `bool` | `True` | Fügt im Listenkopf einen Sortierlink hinzu. |
+| `copy_to_clipboard` | `bool` | `False` | Fügt auf der Detailseite eine Kopierschaltfläche neben dem Wert hinzu. |
+| `filters` | `list | None` | `None` | Explizite Überschreibung der Filter der Listenseite. |
 | `extra` | `dict[str, Any]` | `{}` | Ein Dictionary für Ihre eigenen Metadaten. |
 
 ### Sichtbarkeitssteuerung
 
-Verwenden Sie diese booleschen Flags, alle standardmäßig `False`, um zu steuern, wo ein Feld erscheint:
+Verwenden Sie diese booleschen Flags – standardmäßig alle auf `False` – um zu steuern, wo ein Feld erscheint:
 
 * `exclude_from_list`
 * `exclude_from_detail`
@@ -61,7 +59,7 @@ Verwenden Sie diese booleschen Flags, alle standardmäßig `False`, um zu steuer
 * `exclude_from_export`
 * `exclude_from_import`
 
-### Defaultwerte definieren
+### Standardwerte definieren
 
 Das Attribut `default` akzeptiert einen statischen Wert, eine aufrufbare Funktion ohne Argumente oder eine request-bezogene Funktion:
 
@@ -69,33 +67,33 @@ Das Attribut `default` akzeptiert einen statischen Wert, eine aufrufbare Funktio
 from datetime import datetime
 from starlette_admin import DateTimeField, StringField
 
-StringField("status", default="draft")  # Static value
-DateTimeField("created_at", default=datetime.utcnow)  # Zero-arg callable
+StringField("status", default="draft")  # Statischer Wert
+DateTimeField("created_at", default=datetime.utcnow)  # Aufrufbare Funktion ohne Argumente
 StringField(
     "locale", default=lambda request: request.state.admin_user.locale
-)  # Request-aware
+)  # Request-bezogen
 ```
 
-### Werte berechnen, formatieren und parsen
+### Werte berechnen, formatieren und parsen {#computing-formatting-and-parsing-values}
 
-Jedes Feld akzeptiert drei aufrufbare Hooks, `getter`, `formatter` und `parser`, die Daten abfangen und transformieren, während sie zwischen Ihrem Modell und dem UI wandern. Jeder davon akzeptiert eine synchrone oder eine asynchrone Funktion.
+Jedes Feld akzeptiert drei aufrufbare Hooks – `getter`, `formatter` und `parser` – die Daten abfangen und transformieren, während sie zwischen Ihrem Modell und der UI ausgetauscht werden. Jeder Hook akzeptiert eine synchrone oder eine asynchrone Funktion.
 
-#### `getter`: benutzerdefinierte Werte lesen
+#### `getter`: eigene Werte lesen
 
-Der Hook `getter` ersetzt den Standardzugriff via `getattr()`, wenn das Feld eine Modellinstanz liest. Das Feld ruft `getter(request, obj)` auf und zeigt den Rückgabewert an.
+Der Hook `getter` ersetzt den standardmäßigen `getattr()`-Zugriff, wenn das Feld eine Modellinstanz liest. Das Feld ruft `getter(request, obj)` auf und zeigt den Rückgabewert an.
 
 ```python
 from starlette_admin import StringField
 
-# Displays a related author's email instead of a direct column value
+# Zeigt die E-Mail-Adresse eines verknüpften Autors statt eines direkten Spaltenwerts an
 StringField("author_email", getter=lambda request, obj: obj.author.email)
 ```
 
-Da `getter`-Werte selten einer physischen Datenbankspalte entsprechen, passen sie am besten zu einer schreibgeschützten Anzeige. [`ComputedField`](#computedfield) ist ein integriertes Kürzel für genau diese Kombination.
+Da `getter`-Werte selten einer physischen Datenbankspalte entsprechen, passen sie am besten zu einer reinen Anzeige ohne Bearbeitungsmöglichkeit. [`ComputedField`](#computedfield) ist ein integriertes Kürzel für genau diese Kombination.
 
 #### `formatter`: Anzeigeausgabe transformieren
 
-Der Hook `formatter` legt fest, wie ein gespeicherter Wert auf bestimmten Seiten gerendert wird. Er bildet eine `RequestAction`, etwa `LIST`, `DETAIL` oder `EXPORT`, auf eine `(request, value) -> value`-Funktion ab.
+Der Hook `formatter` legt fest, wie ein gespeicherter Wert auf bestimmten Seiten gerendert wird. Er bildet eine `RequestAction`, etwa `LIST`, `DETAIL` oder `EXPORT`, auf eine aufrubare Funktion `(request, value) -> value` ab.
 
 ```python
 from starlette_admin import RequestAction, StringField
@@ -103,7 +101,7 @@ from starlette_admin import RequestAction, StringField
 StringField(
     "api_key",
     formatter={
-        # Mask the key on list views; show the full key on detail/export views
+        # Schlüssel in Listenviews maskieren; vollen Schlüssel in Detail-/Exportviews anzeigen
         RequestAction.LIST: lambda request, value: (
             f"{value[:4]}..." if value else "unset"
         ),
@@ -113,15 +111,15 @@ StringField(
 
 **Formatierungsverhalten, das Sie beachten sollten:**
 
-* **Nulls erreichen den Formatter:** Anders als bei der Standardserialisierung erhalten Formatter auch `None`-Werte, sodass Sie Fallback-Text liefern können, etwa `"unset"` oben.
-* **Serialisierung wird umgangen:** Ein passender Formatter ersetzt die Methoden `serialize_value` und `serialize_none_value` des Felds. Der Rückgabewert wird unverändert verwendet, sodass der Formatter vollständig für die finale Ausgabe verantwortlich ist.
-* **JSON-Anforderung:** Für die Aktionen `LIST` und `RELATION_LOOKUP` zurückgegebene Werte müssen JSON-serialisierbar bleiben.
+* **Nullwerte erreichen den Formatter:** Anders als bei der standardmäßigen Serialisierung erhalten Formatter auch `None`-Werte, sodass Sie Fallback-Texte liefern können, etwa `"unset"` im Beispiel oben.
+* **Serialisierung wird umgangen:** Ein passender Formatter ersetzt die Methoden `serialize_value` und `serialize_none_value` des Felds. Der Rückgabewert wird unverändert verwendet, sodass der Formatter vollständig für die endgültige Ausgabe verantwortlich ist.
+* **JSON-Anforderung:** Für die Actions `LIST` und `RELATION_LOOKUP` zurückgegebene Werte müssen JSON-serialisierbar bleiben.
 
 #### `parser`: eingehende Daten verarbeiten
 
-Der Hook `parser` überschreibt das Standard-Parsing des Felds für eingereichte oder importierte Daten. Er bildet eine `RequestAction` auf eine `(request, raw) -> value`-Funktion ab.
+Der Hook `parser` überschreibt das standardmäßige Parsing des Felds für eingereichte oder importierte Daten. Er bildet eine `RequestAction` auf eine aufrufbare Funktion `(request, raw) -> value` ab.
 
-* **Formulare (`CREATE`, `EDIT`, `INLINE_EDIT`):** `raw` ist die eingereichte Formulareingabe, bzw. eine Liste, wenn `multiple=True`.
+* **Formulare (`CREATE`, `EDIT`, `INLINE_EDIT`):** `raw` ist die eingereichte Formulareingabe bzw. eine Liste, wenn `multiple=True`.
 * **Importe (`IMPORT`):** `raw` ist der unverarbeitete Zellwert aus der Datei.
 
 ```python
@@ -130,7 +128,7 @@ from starlette_admin import IntegerField, RequestAction
 IntegerField(
     "price",
     parser={
-        # Strip currency symbols during import and convert to integer cents
+        # Währungssymbole beim Import entfernen und in ganzzahlige Cents umwandeln
         RequestAction.IMPORT: lambda request, raw: int(
             float(str(raw).strip("$")) * 100
         ),
@@ -138,19 +136,19 @@ IntegerField(
 )
 ```
 
-Nach dem Parsing durchläuft der zurückgegebene Wert die übliche Validierungskette, erst `required` und dann `validators`, genau so, als hätte das Feld die Daten selbst geparst.
+Nach dem Parsing durchläuft der zurückgegebene Wert die übliche Validierungskette – zunächst `required`, dann `validators` – genau so, als hätte das Feld die Daten selbst geparst.
 
-!!! tip "Hooks oder eine Subklasse?"
-    Für eine einmalige Anpassung an einem einzelnen Feld brauchen Sie selten eine Subklasse. Übergeben Sie diese Hooks als Konstruktorargumente, um das Lesen, die Anzeigeformatierung und das Eingabeparsing zu handhaben. [Implementieren Sie eine Subklasse des Felds](../advanced/custom-fields.md), wenn Sie die Logik über mehrere Views hinweg wiederverwenden oder wenn Sie die HTML-Rendering-Templates ändern möchten.
+!!! tip "Hooks oder eine Unterklasse?"
+    Für eine einmalige Anpassung an einem einzelnen Feld benötigen Sie selten eine Unterklasse. Übergeben Sie diese Hooks als Konstruktorargumente, um das Lesen, die Anzeigeformatierung und das Eingabeparsing abzudecken. [Leiten Sie eine Unterklasse vom Feld ab](../advanced/custom-fields.md), wenn Sie die Logik über mehrere Views hinweg wiederverwenden möchten oder wenn Sie die HTML-Rendering-Templates ändern müssen.
 
 ### Validierung
 
-Serverseitige Validierung läuft bei jedem Feld, wenn ein Erstellen- oder Bearbeiten-Formular eingereicht wird, sodass fehlerhafte Daten nie die Datenbank erreichen.
+Die serverseitige Validierung läuft bei jedem Feld, wenn ein Erstellungs- oder Bearbeitungsformular abgesendet wird, sodass fehlerhafte Daten niemals die Datenbank erreichen.
 
 Der Lebenszyklus ist festgelegt:
 
-1. **Leere Werte:** Wenn ein eingereichter Wert leer ist, etwa `None`, `""` oder eine leere Collection, wird nur das Flag `required` geprüft. Die Validatoren werden übersprungen.
-2. **Gefüllte Werte:** Wenn Daten vorhanden sind, läuft jede Funktion in der Liste `validators` der Reihe nach gegen den geparsten Wert.
+1. **Leere Werte:** Ist ein eingereichter Wert leer – etwa `None`, `""` oder eine leere Sammlung –, wird nur das Flag `required` geprüft. Die Validators werden übersprungen.
+2. **Gefüllte Werte:** Sind Daten vorhanden, wird jede aufrufbare Funktion in der Liste `validators` der Reihe nach gegen den geparsten Wert ausgeführt.
 
 #### Signatur eines Validators
 
@@ -158,12 +156,12 @@ Ein Validator erhält vier Argumente: `(request, field, value, form_values)`.
 
 * **`request`:** Das aktuelle Starlette-Request-Objekt.
 * **`field`:** Die gerade validierte Feldinstanz.
-* **`value`:** Der für dieses Feld eingereichte geparste Wert.
-* **`form_values`:** Ein Dictionary mit allen geparsten Formulardaten, nach Feldnamen verschlüsselt, damit Sie andere Felder prüfen können.
+* **`value`:** Der für dieses Feld eingereichte, geparste Wert.
+* **`form_values`:** Ein Dictionary mit allen geparsten Formulardaten, verschlüsselt nach Feldnamen, damit Sie andere Felder prüfen können.
 
-Um einen Wert abzulehnen, werfen Sie eine `ValueError`. Das Admin-Panel fängt den ersten Fehler eines Felds ab, überspringt die restlichen Validatoren dieses Felds und sammelt alle Fehler, um sie neben den zugehörigen Eingabefeldern anzuzeigen.
+Um einen Wert zurückzuweisen, lösen Sie einen `ValueError` aus. Der Admin fängt den ersten Fehler eines Felds ab, überspringt die übrigen Validators dieses Felds und sammelt alle Fehler, um sie neben den jeweiligen Eingabefeldern anzuzeigen.
 
-#### Integrierte Validatoren
+#### Integrierte Validators
 
 Das Modul [`starlette_admin.validators`](../api/validators.md) stellt Standardregeln bereit:
 
@@ -175,9 +173,9 @@ StringField("title", validators=[length(min=3, max=100)])
 IntegerField("price", validators=[number_range(min=0)])
 ```
 
-#### Benutzerdefinierte und asynchrone Validierung
+#### Eigene und asynchrone Validierung
 
-Schreiben Sie benutzerdefinierte Validatoren als synchrone oder asynchrone Funktionen. Sie erhalten den `request`, sodass sie die Datenbank abfragen können, um komplexe Constraints zu prüfen.
+Schreiben Sie eigene Validators als synchrone oder asynchrone Funktionen. Da sie den `request` erhalten, können sie die Datenbank abfragen, um komplexe Constraints zu prüfen.
 
 ```python
 async def unique_slug(request, field, value, form_values):
@@ -188,7 +186,7 @@ async def unique_slug(request, field, value, form_values):
 StringField("slug", validators=[unique_slug])
 ```
 
-Mit dem Argument `form_values` kann ein Validator auf Feldebene auch eine Regel erzwingen, die von einem anderen eingereichten Feld abhängt.
+Über das Argument `form_values` kann ein Validator auf Feldebene auch eine Regel durchsetzen, die von einem anderen eingereichten Feld abhängt.
 
 ```python
 def not_before_start(request, field, value, form_values):
@@ -202,13 +200,13 @@ DateField("end_date", validators=[not_before_start])
 
 #### Kontextspezifische Validierungsregeln
 
-* **Beziehungsfelder:** `HasOne` und `HasMany` erhalten während der Validierung die Primärschlüssel der referenzierten Datensätze.
-* **Dateifelder:** Die Validierung läuft einmal pro `UploadFile` in der Payload. Siehe [Datei- & Medienfelder](#datei-medienfelder).
-* **Feldübergreifende Validierung:** Verwenden Sie `form_values` für eine einfache Abhängigkeit. Für eine Regel, die sich über das gesamte Formular erstreckt, überschreiben Sie stattdessen die Methode `validate()` Ihrer View. Validierung auf View-Ebene läuft erst, nachdem jedes Feld seine eigene Validierungskette passiert hat.
+* **Relationsfelder:** `HasOne` und `HasMany` erhalten während der Validierung die Primärschlüssel der verknüpften Datensätze.
+* **Dateifelder:** Die Validierung läuft einmal pro `UploadFile` in der Payload. Siehe [Datei- & Medienfelder](#file-media-fields).
+* **Feldübergreifende Validierung:** Verwenden Sie `form_values` für eine einfache Abhängigkeit. Für eine Regel, die sich über das gesamte Formular erstreckt, überschreiben Sie stattdessen die Methode `validate()` Ihrer View. Die Validierung auf View-Ebene läuft erst, nachdem jedes Feld seine eigene Validierungskette durchlaufen hat.
 
 ### Benutzerdefinierte Metadaten speichern
 
-`extra` ist ein schlichtes `dict`, das `starlette-admin` nie liest oder schreibt. Verwenden Sie es, um eigene Daten an eine Feldinstanz anzuhängen, etwa für ein benutzerdefiniertes Template, einen Hook in Ihrer [BaseAdmin](../api/admin.md#starlette_admin.base.BaseAdmin)-Subklasse oder jeden anderen Integrationspunkt, ohne das Feld als Subklasse zu implementieren:
+`extra` ist ein gewöhnliches `dict`, das `starlette-admin` weder liest noch beschreibt. Nutzen Sie es, um eigene Daten an eine Feldinstanz anzuhängen – etwa für ein eigenes Template, einen Hook in Ihrer [BaseAdmin](../api/admin.md#starlette_admin.base.BaseAdmin)-Unterklasse oder jeden anderen Integrationspunkt –, ohne vom Feld abzuleiten:
 
 ```python
 from starlette_admin import StringField
@@ -236,7 +234,7 @@ class PostView(ModelView):
     ]
 ```
 
-| Zusätzliches Attribut | Typ | Defaultwert | Beschreibung |
+| Zusätzliches Attribut | Typ | Standardwert | Beschreibung |
 | --- | --- | --- | --- |
 | `maxlength` und `minlength` | `int | None` | `None` | HTML-Längenbeschränkungen. |
 | `placeholder` | `str | None` | `None` | Platzhaltertext des Eingabefelds. |
@@ -244,7 +242,7 @@ class PostView(ModelView):
 
 ### TinyMCEEditorField
 
-Erweitert `TextAreaField` um einen WYSIWYG-Editor aus der TinyMCE-Bibliothek. Er benötigt das Extra-Paket `tinymce`.
+Erweitert `TextAreaField` um einen WYSIWYG-Editor aus der TinyMCE-Bibliothek. Es wird das Zusatzpaket `tinymce` benötigt.
 
 ```python
 from starlette_admin import TinyMCEEditorField
@@ -253,7 +251,7 @@ TinyMCEEditorField("content", height=400, toolbar="undo redo | bold italic")
 ```
 
 !!! note
-    Die Attribute `height`, `menubar`, `statusbar` und `toolbar` steuern das UI des Editors. Übergeben Sie jede andere native TinyMCE-Konfiguration über `extra_options`.
+    Die Attribute `height`, `menubar`, `statusbar` und `toolbar` steuern die Benutzeroberfläche des Editors. Übergeben Sie jede andere native TinyMCE-Konfiguration über `extra_options`.
 
 ### Formatierte Textfelder
 
@@ -267,22 +265,22 @@ Diese `StringField`-Varianten rendern einen passenden HTML-Eingabetyp und format
 * `IPAddressField` (`type="text"`)
 
 !!! note
-    `EmailField`, `URLField`, `UUIDField` und `IPAddressField` fügen jeweils einen passenden Validator hinzu (`email`, `url`, `uuid` und `ip_address` aus [`starlette_admin.validators`](../api/validators.md)), wenn Sie `validators` leer lassen. Übergeben Sie Ihre eigenen `validators`, um dies zu überschreiben.
+    `EmailField`, `URLField`, `UUIDField` und `IPAddressField` fügen jeweils einen passenden Validator hinzu (`email`, `url`, `uuid` bzw. `ip_address` aus [`starlette_admin.validators`](../api/validators.md)), wenn Sie `validators` leer lassen. Übergeben Sie eigene `validators`, um dies zu überschreiben.
 
-    `UUIDField` setzt standardmäßig `copy_to_clipboard=True`. `IPAddressField` akzeptiert `ipv4`, standardmäßig `True`, und `ipv6`, standardmäßig `False`, was steuert, welche Adressfamilien sein Standardvalidator akzeptiert.
+    `UUIDField` setzt standardmäßig `copy_to_clipboard=True`. `IPAddressField` akzeptiert `ipv4` (standardmäßig `True`) und `ipv6` (standardmäßig `False`), womit gesteuert wird, welche Adressfamilien sein Standardvalidator akzeptiert.
 
 ### PasswordField
 
-Rendert in Formularen ein `<input type="password">`-Element, um zu verschleiern, was die Person tippt.
+Rendert in Formularen ein `<input type="password">`-Element, um die Eingaben des Benutzers zu verschleiern.
 
 !!! danger
-    `PasswordField` maskiert die Eingabe nur in Erstellen- und Bearbeiten-Formularen. Es überschreibt nicht die Anzeige-Templates, daher werden Werte auf Listen- und Detailseiten als **Klartext** gerendert, und es protokolliert rohe eingereichte Werte auf `DEBUG`-Ebene.
+    `PasswordField` maskiert die Eingabe nur in Erstellungs- und Bearbeitungsformularen. Es überschreibt nicht die Anzeige-Templates, sodass Werte auf Listen- und Detailseiten als **Klartext** gerendert werden; zudem werden eingereichte Rohwerte auf `DEBUG`-Ebene protokolliert.
 
-    Setzen Sie `exclude_from_list = True` und `exclude_from_detail = True` auf Passwortfeldern und deaktivieren Sie das `DEBUG`-Logging in der Produktion.
+    Setzen Sie bei Passwortfeldern `exclude_from_list = True` und `exclude_from_detail = True` und deaktivieren Sie das `DEBUG`-Logging in Produktionsumgebungen.
 
 ## Numerische Felder
 
-Numerische Felder handhaben Integer, Floats und Dezimalzahlen.
+Numerische Felder verarbeiten Ganzzahlen, Gleitkommazahlen und Dezimalzahlen.
 
 ```python
 from starlette_admin import DecimalField, FloatField, IntegerField
@@ -299,15 +297,15 @@ class ProductView(ModelView):
 
 | Zusätzliches Attribut | Gilt für | Beschreibung |
 | --- | --- | --- |
-| `min` und `max` | Integer, Decimal | Minimaler und maximal zulässiger Wert. |
-| `step` | Integer, Decimal | Die Inkrement-Schrittweite. |
+| `min` und `max` | Integer, Decimal | Minimal und maximal zulässige Werte. |
+| `step` | Integer, Decimal | Die Schrittwerte-Beschränkung. |
 
 !!! note
-    `FloatField` funktioniert anders: Es rendert als schlichtes Texteingabefeld, wandelt die Eingabe in einen `float` um und unterstützt weder `min`, `max` noch `step`.
+    `FloatField` funktioniert anders: Es rendert als einfaches Texteingabefeld, wandelt die Eingabe in einen `float` um und unterstützt weder `min`, `max` noch `step`.
 
-## Datums- & Zeitfelder
+## Datums- und Zeitfelder
 
-Diese Felder verwenden die nativen Datums- und Zeitauswahldialoge des Browsers, gestützt auf die passenden Typen der Standardbibliothek (`datetime.date`, `datetime.datetime` und `datetime.time`).
+Diese Felder nutzen die nativen Datums- und Zeitauswahldialoge des Browsers und basieren auf den entsprechenden Typen der Standardbibliothek (`datetime.date`, `datetime.datetime` und `datetime.time`).
 
 ```python
 from starlette_admin import DateField, DateTimeField, TimeField
@@ -322,23 +320,23 @@ class EventView(ModelView):
     ]
 ```
 
-| Zusätzliches Attribut | Typ | Defaultwert | Beschreibung |
+| Zusätzliches Attribut | Typ | Standardwert | Beschreibung |
 | --- | --- | --- | --- |
 | `output_format` | `str | None` | `None` | Babel-Anzeigeformat: `"short"`, `"medium"`, `"long"`, `"full"` oder ein eigenes Muster. |
-| `search_format` | `str | None` | ORM-spezifisch | Format, das zum Aufbau von Datenbank-Suchqueries verwendet wird. |
+| `search_format` | `str | None` | ORM-spezifisch | Format zum Aufbau der Datenbanksuchanfragen. |
 
 !!! note
-    Wenn Zeitzonenunterstützung aktiviert ist, konvertiert `DateTimeField` für Sie zwischen der Anzeigezeitzone und der Datenbankzeitzone.
+    Wenn die Zeitzonenunterstützung aktiviert ist, konvertiert `DateTimeField` für Sie zwischen der Anzeigezeitzone und der Datenbankzeitzone.
 
 ### ArrowField
 
-Eine `DateTimeField`-Variante, gestützt auf ein `Arrow`-Objekt. Außerhalb von Bearbeiten-Formularen zeigt sie eine humanisierte relative Zeit an, etwa „vor 3 Stunden“. Sie benötigt das Paket `arrow`.
+Eine `DateTimeField`-Variante, die auf einem `Arrow`-Objekt basiert. Außerhalb von Bearbeitungsformularen zeigt sie eine verbalisierte relative Zeit an, etwa „vor 3 Stunden“. Es wird das Paket `arrow` benötigt.
 
-## Auswahl- & Collection-Felder
+## Auswahl- und Sammlungsfelder
 
 ### EnumField
 
-Das universelle Auswahlfeld. Es rendert ein `<select>`-Dropdown-Menü, bzw. ein `select2`-Multi-Select, wenn `multiple=True`. Stützen Sie es auf eine Python-`Enum`-Subklasse, eine Liste von Tupeln oder zur Request-Zeit geladene Choices.
+Das universelle Auswahlfeld. Es rendert ein `<select>`-Dropdown bzw. eine `select2`-Mehrfachauswahl, wenn `multiple=True`. Als Grundlage dienen eine Python-`Enum`-Unterklasse, eine Liste von Tupeln oder zur Laufzeit geladene Auswahlmöglichkeiten.
 
 ```python
 import enum
@@ -360,34 +358,34 @@ class PostView(ModelView):
 
 | Zusätzliches Attribut | Typ | Beschreibung |
 | --- | --- | --- |
-| `enum` | `type[Enum] | None` | Baut Choices aus einer Python-`Enum`-Klasse. |
+| `enum` | `type[Enum] | None` | Baut die Auswahlmöglichkeiten aus einer Python-`Enum`-Klasse auf. |
 | `choices` | `Sequence | None` | Statische `(value, label)`-Paare oder bloße Werte. |
-| `choices_loader` | `Callable | None` | Berechnet Choices pro Request. |
-| `multiple` | `bool` | Aktiviert Multi-Select und speichert Werte als Liste. |
+| `choices_loader` | `Callable | None` | Berechnet die Auswahlmöglichkeiten pro Request. |
+| `multiple` | `bool` | Aktiviert die Mehrfachauswahl und speichert die Werte als Liste. |
 
 !!! important
     Geben Sie genau eines von `enum`, `choices` oder `choices_loader` an.
 
-`TimeZoneField`, `CountryField` und `CurrencyField` sind `EnumField`-Subklassen, gestützt auf Babel-Locale-Daten, wofür das Extra `i18n` benötigt wird. Sie lokalisieren ihre Labels für den aktuellen Request.
+`TimeZoneField`, `CountryField` und `CurrencyField` sind `EnumField`-Unterklassen, die auf Babel-Lokalisierungsdaten basieren; dafür wird das Zusatzpaket `i18n` benötigt. Ihre Labels werden an die Sprache des aktuellen Requests angepasst.
 
 ### TagsField
 
-Ein Freitext-Tagging-Eingabefeld, aufgebaut auf `select2`. Es speichert eine `list[str]` und benötigt keine vordefinierten Choices.
+Ein Freitext-Tagging-Eingabefeld auf Basis von `select2`. Es speichert eine `list[str]` und benötigt keine vordefinierten Auswahlmöglichkeiten.
 
 ### ListField
 
-Wrappt ein anderes Feld, um eine geordnete Liste von Werten dieses Typs zu speichern. Es rendert als wiederholbare Zeilen mit Steuerelementen zum Hinzufügen und Entfernen. Der Name des gewrappten Felds wird zum Namen des `ListField`s.
+Umschließt ein anderes Feld, um eine geordnete Liste von Werten dieses Typs zu speichern. Es rendert wiederholbare Zeilen mit Steuerelementen zum Hinzufügen und Entfernen. Der Name des umschlossenen Felds wird zum Namen des `ListField`s.
 
 ```python
 from starlette_admin import ListField, StringField
 
-# Renders a repeatable list of string inputs
+# Rendert eine wiederholbare Liste von String-Eingabefeldern
 fields = [ListField(StringField("gallery_urls"))]
 ```
 
 ### CollectionField
 
-Gruppiert mehrere Unterfelder zu einem verschachtelten Objekt. Verwenden Sie es für eingebettete oder struct-artige Daten, etwa ein eingebettetes MongoDB-Dokument.
+Gruppiert mehrere Unterfelder zu einem verschachtelten Objekt. Verwenden Sie es für eingebettete oder struktartige Daten, etwa ein eingebettetes MongoDB-Dokument.
 
 ```python
 from starlette_admin import CollectionField, IntegerField, StringField
@@ -408,11 +406,11 @@ fields = [
 
 ### JSONField
 
-Rendert einen JSON-Baum und einen Code-Editor und speichert ein Python-`dict`. Übergeben Sie ein standardmäßiges JSON-Schema-Dictionary an `validation_schema` für Feedback auf Client-Seite.
+Rendert einen JSON-Baum und einen Code-Editor und speichert ein Python-`dict`. Übergeben Sie an `validation_schema` ein standardmäßiges JSON-Schema-Dictionary für clientseitiges Feedback.
 
 ### SlugField
 
-Eine `StringField`-Variante, die sich auf dem Client automatisch aus der Eingabe eines anderen Felds füllt. Eine manuelle Bearbeitung stoppt das automatische Füllen.
+Eine `StringField`-Variante, die sich clientseitig automatisch aus der Eingabe eines anderen Felds füllt. Eine manuelle Bearbeitung stoppt das automatische Ausfüllen.
 
 ```python
 from starlette_admin import SlugField, StringField
@@ -428,7 +426,7 @@ fields = [
 
 ### ComputedField
 
-Ein schreibgeschütztes, virtuelles Feld, das zur Anzeigezeit aus der Modellinstanz abgeleitet wird, ohne dass eine Datenbankspalte dahintersteht. Es baut auf dem [`getter`-Hook](#werte-berechnen-formatieren-und-parsen) auf, den jedes Feld besitzt, und ergänzt die Defaults, die eine virtuelle Spalte braucht: aus Erstellen-Formularen ausgeschlossen, schreibgeschützt, nicht durchsuchbar und nicht sortierbar.
+Ein schreibgeschütztes, virtuelles Feld, das zur Anzeigezeit aus der Modellinstanz abgeleitet wird und dem keine Datenbankspalte zugrunde liegt. Es baut auf dem [`getter`-Hook](#computing-formatting-and-parsing-values) auf, den jedes Feld besitzt, und ergänzt die Standardwerte, die eine virtuelle Spalte benötigt: aus Erstellungsformularen ausgeschlossen, schreibgeschützt, nicht durchsuchbar und nicht sortierbar.
 
 ```python
 from starlette_admin import ComputedField
@@ -442,7 +440,7 @@ fields = [
 ]
 ```
 
-Für komplexe oder wiederverwendbare Logik implementieren Sie eine Subklasse von `ComputedField` und überschreiben `parse_obj()`, statt einen Inline-`getter` zu übergeben:
+Für komplexe oder wiederverwendbare Logik leiten Sie eine Unterklasse von `ComputedField` ab und überschreiben `parse_obj()`, statt einen Inline-`getter` zu übergeben:
 
 ```python
 class FullNameField(ComputedField):
@@ -450,13 +448,13 @@ class FullNameField(ComputedField):
         return f"{obj.first_name} {obj.last_name}"
 ```
 
-`getter` und `parse_obj` erledigen dieselbe Aufgabe: Verwenden Sie `getter` für kurze Ausdrücke, und implementieren Sie eine Subklasse von `ComputedField`, wenn die Logik mehrere Zeilen umfasst oder über Views hinweg wiederverwendet wird. In Bearbeiten-Formularen erscheint das Feld weiterhin als Klartext-Anzeige, sodass die Person den aktuell berechneten Wert sieht.
+`getter` und `parse_obj` erfüllen denselben Zweck: Verwenden Sie `getter` für kurze Ausdrücke, und leiten Sie eine Unterklasse von `ComputedField` ab, wenn die Logik mehrere Zeilen umfasst oder über Views hinweg wiederverwendet wird. In Bearbeitungsformularen erscheint das Feld weiterhin als reine Textanzeige, sodass der Benutzer den aktuell berechneten Wert sieht.
 
-Jede `ComputedField`-Subklasse behält das Rendering von `StringField`. Um einen Wert zu berechnen, der als anderer Typ gerendert werden soll, etwa ein Datum, ein Badge oder ein Bild, setzen Sie `getter=` direkt auf diesem Feldtyp, zusammen mit den passenden Flags `read_only` und `exclude_from_*`.
+Jede `ComputedField`-Unterklasse behält das Rendering von `StringField` bei. Um einen Wert zu berechnen, der als anderer Typ gerendert werden soll – etwa ein Datum, ein Badge oder ein Bild –, setzen Sie direkt bei diesem Feldtyp `getter=` zusammen mit den passenden Flags `read_only` und `exclude_from_*`.
 
-## Datei- & Medienfelder
+## Datei- & Medienfelder {#file-media-fields}
 
-`FileField` rendert ein Datei-Upload-Eingabefeld, und `ImageField` ergänzt eine Bildvorschau und eine Gültigkeitsprüfung. Hängen Sie ein `storage=`-Backend an, um Uploads automatisch zu speichern und ein JSON-`FileInfo`-Dictionary in der Datenbank abzulegen. Die vollständige Konfiguration finden Sie im [File-Storage-Leitfaden](file-storage.md).
+`FileField` rendert ein Datei-Upload-Eingabefeld, und `ImageField` ergänzt eine Bildvorschau sowie eine Gültigkeitsprüfung. Hängen Sie ein `storage=`-Backend an, um Uploads automatisch zu speichern und ein JSON-`FileInfo`-Dictionary in der Datenbank abzulegen. Die vollständige Konfiguration finden Sie im [File-Storage-Leitfaden](file-storage.md).
 
 ```python
 from starlette_admin import FileField, ImageField
@@ -487,39 +485,39 @@ class ArticleView(ModelView):
     ]
 ```
 
-| Zusätzliches Attribut | Typ | Defaultwert | Beschreibung |
+| Zusätzliches Attribut | Typ | Standardwert | Beschreibung |
 | --- | --- | --- | --- |
-| `accept` | `str | None` | `None` | Kommagetrennte Liste akzeptierter Dateiendungen oder MIME-Typen, an das HTML-Attribut `accept` weitergereicht. |
+| `accept` | `str | None` | `None` | Kommagetrennte Liste akzeptierter Dateierweiterungen oder MIME-Typen, die an das HTML-Attribut `accept` übergeben wird. |
 | `multiple` | `bool` | `False` | Akzeptiert mehrere Dateien in einem Feld. |
-| `storage` | `BaseStorage | None` | `None` | Storage-Backend, das die Uploads speichert. Ohne dieses übergibt das Feld rohe Uploads an Ihr Backend. |
+| `storage` | `BaseStorage | None` | `None` | Storage-Backend, das die Uploads speichert. Ohne dieses Backend reicht das Feld die rohen Uploads an Ihr Backend weiter. |
 | `upload_folder` | `str` | `""` | Der relativ zum Storage liegende Ordner für gespeicherte Dateien. |
 | `max_size` | `int | None` | `None` | Maximal akzeptierte Uploadgröße in Bytes. |
-| `validators` | `list[Validator]` | `[]` | Benutzerdefinierte Validatoren, jeweils aufgerufen als `(request, field, upload)` einmal pro hochgeladener Datei, nach den Prüfungen `accept` und `max_size`. Werfen Sie eine `ValueError`, um abzulehnen. |
-| `thumbnail_size` | `tuple[int, int] | None` | `None` | Nur `ImageField`. Wenn gesetzt, generiert Pillow beim Speichern ein begrenztes Thumbnail, und die Listenseite verwendet es anstelle des vollständigen Bildes. |
+| `validators` | `list[Validator]` | `[]` | Eigene Validators, die jeweils als `(request, field, upload)` einmal pro hochgeladener Datei aufgerufen werden – nach den Prüfungen `accept` und `max_size`. Lösen Sie einen `ValueError` aus, um zurückzuweisen. |
+| `thumbnail_size` | `tuple[int, int] | None` | `None` | Nur `ImageField`. Wenn gesetzt, erzeugt Pillow beim Speichern eine Thumbnail in begrenzter Größe, und die Listenseite verwendet sie anstelle des vollständigen Bilds. |
 
 !!! note
-    `ImageField` stellt der `validators`-Liste eine bildbasierte Gültigkeitsprüfung mit Pillow voran. Wenn Pillow installiert ist und ein Storage konfiguriert ist, zeichnet es außerdem `width` und `height` im resultierenden `FileInfo` auf.
+    `ImageField` stellt der `validators`-Liste eine bildbezogene Gültigkeitsprüfung auf Basis von Pillow voran. Wenn Pillow installiert und ein Storage konfiguriert ist, werden außerdem `width` und `height` in der resultierenden `FileInfo` aufgezeichnet.
 
-Wenn `thumbnail_size` gesetzt ist, generiert das Admin-Panel ein Thumbnail neben dem vollständigen Bild, bewahrt das Seitenverhältnis und skaliert nie hoch, und speichert es unter seinem eigenen Schlüssel. Beispielsweise erhält `covers/cat.jpg` ein Geschwister `covers/cat.thumb.jpg`. Die Listenseite verwendet das Thumbnail automatisch. Zeilen ohne eines, sei es aus bereits vorhandenen Daten oder weil `thumbnail_size` nicht gesetzt ist, fallen auf das vollständige Bild zurück. Ein Fehler bei der Thumbnail-Generierung wird protokolliert und lässt den Upload niemals scheitern.
+Ist `thumbnail_size` gesetzt, erzeugt der Admin neben dem vollständigen Bild eine Thumbnail, wobei das Seitenverhältnis erhalten bleibt und nie hochskaliert wird; sie wird unter einem eigenen Schlüssel gespeichert. Beispielsweise erhält `covers/cat.jpg` ein Geschwister namens `covers/cat.thumb.jpg`. Die Listenseite verwendet die Thumbnail automatisch. Zeilen ohne eine solche – sei es wegen bereits vorhandener Daten oder weil `thumbnail_size` nicht gesetzt ist – greifen auf das vollständige Bild zurück. Ein Fehler bei der Thumbnail-Erzeugung wird protokolliert und lässt den Upload niemals fehlschlagen.
 
-Die Detailseite öffnet jedes `ImageField`-Bild in einem Lightbox-Dialog, sodass Betrachtende durch Bilder in voller Auflösung blättern können. Bilder, die zum selben Feld gehören (`multiple=True`), werden zu einer Galerie gruppiert.
+Auf der Detailseite öffnet sich jedes `ImageField`-Bild in einem Lightbox-Dialog, sodass Betrachter durch Bilder in voller Auflösung blättern können. Bilder, die zum selben Feld gehören (`multiple=True`), werden zu einer Galerie zusammengefasst.
 
-Sehen Sie sich [examples/04-filestorage](https://github.com/jowilf/starlette-admin/tree/main/examples/04-filestorage) für eine vollständig lauffähige App an, einschließlich eines benutzerdefinierten MIME-Type-Validators.
+Unter [examples/04-filestorage](https://github.com/jowilf/starlette-admin/tree/main/examples/04-filestorage) finden Sie eine vollständig lauffähige App, einschließlich eines eigenen MIME-Type-Validators.
 
-### Ohne einen Storage
+### Ohne Storage
 
-Ohne angehängtes `storage=` übergibt das Feld Uploads roh an Ihr Backend, statt sie zu speichern:
+Ohne angehängtes `storage=` reicht das Feld die Uploads unmittelbar an Ihr Backend weiter, statt sie selbst zu speichern:
 
-* **In Erstellen- und Bearbeiten-Formularen** ist der geparste Wert ein Tupel, `(UploadFile | list[UploadFile] | None, bool)`. Das erste Element ist die rohe Starlette-`UploadFile`, eine Liste, wenn `multiple=True`, oder `None`, wenn nichts ausgewählt wurde. Das zweite Element ist `True`, wenn die Person auf dem Bearbeiten-Formular die Löschen-Checkbox auswählt, was bedeutet, dass sie die vorhandene Datei ohne Ersatz entfernen möchte. Die `create()`- und `edit()`-Logik Ihres Backends speichert den Upload und beachtet das Löschen-Flag.
-* **Auf Listen- und Detailseiten** erwartet das Feld, dass der Wert drei Schlüssel als `dict` oder drei Attribute als Objekt bereitstellt: `url`, erforderlich, das Linkziel; `filename`, das Anzeige-Label; und `content_type`, das das Dateityp-Icon auswählt.
+* **In Erstellungs- und Bearbeitungsformularen** ist der geparste Wert ein Tupel, `(UploadFile | list[UploadFile] | None, bool)`. Das erste Element ist die rohe Starlette-`UploadFile`, eine Liste, wenn `multiple=True`, oder `None`, wenn der Benutzer nichts ausgewählt hat. Das zweite Element ist `True`, wenn der Benutzer auf dem Bearbeitungsformular das Kontrollkästchen zum Löschen anwählt – das bedeutet, dass die vorhandene Datei ohne Ersatz entfernt werden soll. Die `create()`- und `edit()`-Logik Ihres Backends speichert den Upload und beachtet das Löschflag.
+* **Auf Listen- und Detailseiten** erwartet das Feld, dass der Wert drei Schlüssel als `dict` oder drei Attribute als Objekt bereitstellt: `url` (erforderlich), das Linkziel; `filename`, das Anzeigelabel; und `content_type`, das das Dateityp-Symbol auswählt.
 
-Dieser Vertrag ist der Weg, über den die folgenden ORM-Integrationen ihre eigene Dateibehandlung in dasselbe Feld einhängen.
+Dieser Vertrag ist die Grundlage dafür, dass die folgenden ORM-Integrationen ihre eigene Dateiverarbeitung in dasselbe Feld einhängen können.
 
 ### ORM-native Dateispalten
 
-**MongoEngine** unterstützt `mongoengine.FileField` und `mongoengine.ImageField` out of the box, mit **GridFS** als Storage. Das Admin-Panel lädt für Sie in GridFS hoch, liefert daraus Dateien aus und löscht dort Dateien. Sie benötigen keine `storage=`-Konfiguration: Listen Sie das Feld namentlich auf.
+**MongoEngine** unterstützt `mongoengine.FileField` und `mongoengine.ImageField` ab Werk, mit **GridFS** als Storage. Der Admin lädt Dateien für Sie nach GridFS hoch, stellt sie von dort bereit und löscht sie dort. Sie benötigen keine `storage=`-Konfiguration: Führen Sie das Feld einfach namentlich auf.
 
-**SQLAlchemy** erhält dieselbe Behandlung durch [sqlalchemy-file](https://jowilf.github.io/sqlalchemy-file/). Deklarieren Sie dessen Spaltentypen `FileField` oder `ImageField` auf Ihren Modellen, und `starlette-admin` erkennt sie, rendert das passende Admin-Feld und registriert eine Route, um die gespeicherten Dateien auszuliefern. Sie konfigurieren den Storage über sqlalchemy-files eigenes `StorageManager`, gestützt auf Apache-Libcloud-Container, und Uploads treten der Session-Transaktion bei, sodass eine zurückgerollte Session die gespeicherte Datei verwirft.
+**SQLAlchemy** erhält dieselbe Behandlung über [sqlalchemy-file](https://jowilf.github.io/sqlalchemy-file/). Deklarieren Sie dessen Spaltentypen `FileField` oder `ImageField` in Ihren Modellen, dann erkennt `starlette-admin` sie, rendert das passende Admin-Feld und registriert eine Route, um die gespeicherten Dateien bereitzustellen. Den Storage konfigurieren Sie über sqlalchemy-files eigenen `StorageManager`, der auf Apache-Libcloud-Containern basiert; zudem gehen Uploads in die Session-Transaktion ein, sodass ein Rollback der Session auch die gespeicherte Datei verwirft.
 
 ```python
 import os
@@ -561,11 +559,11 @@ class AuthorView(ModelView):
     fields = ["id", "name", "avatar"]
 ```
 
-Sehen Sie sich [examples/13-sqlachemy-file](https://github.com/jowilf/starlette-admin/tree/main/examples/13-sqlachemy-file) für eine vollständige App mit mehreren Storages, Content-Type-Validierung und `multiple=True`-Feldern an.
+Unter [examples/13-sqlachemy-file](https://github.com/jowilf/starlette-admin/tree/main/examples/13-sqlachemy-file) finden Sie eine vollständige App mit mehreren Storages, Content-Type-Validierung und Feldern mit `multiple=True`.
 
 ## HasOne & HasMany
 
-Beziehungsfelder, die als `select2`-Eingabefelder gerendert werden, gestützt auf den Suchendpoint der referenzierten View.
+Relationsfelder, die als `select2`-Eingabefelder gerendert werden und auf dem Such-endpoint der verknüpften View basieren.
 
 ```python
 from starlette_admin import HasMany, HasOne, IntegerField, StringField
@@ -588,12 +586,12 @@ class BookView(ModelView):
     ]
 ```
 
-Der Parameter `key` zeigt auf die passende `ModelView`. Registrieren Sie beide Views auf derselben `Admin`-Instanz, damit die Schlüssel aufgelöst werden.
+Der Parameter `key` verweist auf die passende `ModelView`. Registrieren Sie beide Views auf derselben `Admin`-Instanz, damit die Schlüssel aufgelöst werden können.
 
 ---
 
-## Was kommt als Nächstes
+## Nächste Schritte
 
-* [Filter](filters.md): Den Filterbuilder auf Ihren Listenseiten anpassen.
-* [File Storage](file-storage.md): Storage-Backends für `FileField` und `ImageField` konfigurieren.
-* [Benutzerdefinierte Felder](../advanced/custom-fields.md): Ein benutzerdefiniertes Feld bauen.
+* [Filter](filters.md): Passen Sie den Filter-Builder Ihrer Listenseiten an.
+* [File Storage](file-storage.md): Konfigurieren Sie Storage-Backends für `FileField` und `ImageField`.
+* [Eigene Felder](../advanced/custom-fields.md): Bauen Sie ein benutzerdefiniertes Feld.

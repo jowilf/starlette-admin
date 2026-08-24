@@ -1,12 +1,10 @@
 ---
-title: Formulaires en ligne
+title: Formulaires inline
 description: Gérez les modèles liés directement dans les formulaires de création et
-  de modification d'un modèle parent grâce à InlineModelView.
+  d'édition d'un modèle parent grâce à InlineModelView.
 source_hash: 0c7d60efcf81de737f205968caea2030a08bf37d63452dce2d0cc29b93309e22
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -23,11 +21,11 @@ translation_date: '2026-08-22'
     [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/user-guide/inline-forms/)
 <!-- translation-notice:end -->
 
-# Formulaires en ligne
+# Formulaires inline
 
-Les formulaires en ligne permettent aux utilisateurs de gérer des enregistrements liés directement depuis la page de création ou de modification d'un modèle parent. Ils conviennent aux modèles enfants qui n'ont de sens qu'à côté de leur modèle parent, comme des commentaires sur un article ou des tâches dans un projet, et ils vous évitent de créer une vue d'administration distincte pour le modèle enfant.
+Les formulaires inline permettent aux utilisateurs de gérer des enregistrements liés directement depuis la page de création ou d'édition d'un modèle parent. Ils conviennent aux modèles enfants qui n'ont de sens qu'à côté de leur parent, comme des commentaires sur un article ou des tâches dans un projet, et vous évitent de construire une vue d'administration séparée pour le modèle enfant.
 
-Consultez [examples/06-inline-forms](https://github.com/jowilf/starlette-admin/tree/main/examples/06-inline-forms) pour une application exécutable qui couvre les trois modèles présentés sur cette page : clé étrangère détectée automatiquement, clé étrangère explicite et clé étrangère composite.
+Consultez [examples/06-inline-forms](https://github.com/jowilf/starlette-admin/tree/main/examples/06-inline-forms) pour une application exécutable couvrant les trois schémas présentés sur cette page : clé étrangère auto-détectée, clé étrangère explicite et clé étrangère composite.
 
 ## Un inline minimal
 
@@ -82,30 +80,30 @@ class ArticleView(ModelView):
     inlines = [CommentInline]
 ```
 
-Sa mise en place se fait en deux étapes : définissez une sous-classe d'`InlineModelView` pour le modèle enfant, puis ajoutez-la à la liste `inlines` du `ModelView` du parent.
+Sa mise en place se fait en deux étapes : définir une sous-classe d'`InlineModelView` pour le modèle enfant, puis l'ajouter à la liste `inlines` du `ModelView` du parent.
 
-Les pages de création et de modification d'`ArticleView` affichent désormais un formset `Comments` sous les champs propres à l'article. Le formset démarre avec une ligne vide (`extra = 1`) et inclut les contrôles d'ajout et de suppression que le backend SQLAlchemy câble pour vous.
+Les pages de création et d'édition d'`ArticleView` affichent désormais un formset `Comments` sous les champs propres à l'article. Le formset démarre avec une ligne vide (`extra = 1`) et inclut les contrôles d'ajout et de suppression que le backend SQLAlchemy met en place pour vous.
 
-Notez que `CommentInline` ne définit jamais `fk_attr`. Le backend SQLAlchemy inspecte `Article.comments` et déduit que `Comment.article_id` est la clé étrangère, car il s'agit de la seule relation qui pointe vers `Comment`. Définissez vous-même `fk_attr` uniquement lorsque cette inférence est ambiguë ou lorsque la relation n'est pas déclarée sur le modèle ORM. Consultez [Clés étrangères explicites et composites](#cles-etrangeres-explicites-et-composites).
+Notez que `CommentInline` ne définit jamais `fk_attr`. Le backend SQLAlchemy inspecte `Article.comments` et déduit que `Comment.article_id` est la clé étrangère, car il s'agit de la seule relation pointant vers `Comment`. Définissez `fk_attr` vous-même uniquement lorsque cette inférence est ambiguë, ou lorsque la relation n'est pas déclarée sur le modèle ORM. Voir [Clés étrangères explicites et composites](#clés-étrangères-explicites-et-composites).
 
-## Référence de `InlineModelView`
+## Référence d'`InlineModelView`
 
 | Attribut | Type | Valeur par défaut | Description |
 | --- | --- | --- | --- |
-| `model` | classe de modèle ORM | `None` | Le modèle lié que cet inline gère. Obligatoire. |
-| `fk_attr` | `str | tuple[str, ...]` | `""` | Nom du champ de clé étrangère du modèle inline qui pointe vers le parent. Un tuple déclare une clé étrangère composite. Facultatif sur le backend SQLAlchemy, qui le détecte automatiquement à partir de la relation du parent lorsque vous l'omettez. |
-| `extra` | `int` | `0` | Nombre de lignes vides affichées sur les formulaires de création et de modification, en plus des lignes existantes. |
+| `model` | Classe de modèle ORM | `None` | Le modèle lié que cet inline gère. Requis. |
+| `fk_attr` | `str | tuple[str, ...]` | `""` | Nom du champ de clé étrangère sur le modèle inline qui pointe vers le parent. Un tuple déclare une clé étrangère composite. Optionnel sur le backend SQLAlchemy, qui l'auto-détecte à partir de la relation du parent lorsque vous l'omettez. |
+| `extra` | `int` | `0` | Nombre de lignes vides affichées sur les formulaires de création et d'édition, en plus des lignes existantes. |
 | `allow_delete` | `bool` | `True` | Afficher une case à cocher ou un bouton de suppression sur chaque ligne existante. |
-| `inline_template` | `str` | `"inline.html"` | Template utilisé pour afficher le formset. |
-| `collapsible` | `bool` | `True` | Indique si l'utilisateur peut replier et déplier le formset. |
-| `collapsed` | `bool` | `False` | État initial replié. Ne s'applique que lorsque `collapsible=True`. |
+| `inline_template` | `str` | `"inline.html"` | Template utilisé pour rendre le formset. |
+| `collapsible` | `bool` | `True` | Indique si les peuvent réduire et étendre le formset. |
+| `collapsed` | `bool` | `False` | État initial réduit. Ne s'applique que lorsque `collapsible=True`. |
 
 
 Le constructeur lève une `ValueError` lorsque vous laissez `fk_attr` vide et que le backend ne peut pas résoudre la relation sans ambiguïté.
 
-## Formsets pliables
+## Formsets réductibles
 
-Par défaut (`collapsible = True`), chaque `InlineModelView` affiche son formset avec un en-tête sur lequel l'utilisateur peut cliquer pour replier les enregistrements enfants dont il n'a pas besoin. Définissez `collapsed = True` pour que le formset démarre replié plutôt que déplié :
+Par défaut (`collapsible = True`), chaque `InlineModelView` rend son formset avec un en-tête sur lequel les peuvent cliquer pour replier les enregistrements enfants dont ils n'ont pas besoin. Définissez `collapsed = True` pour que le formset démarre fermé plutôt qu'ouvert :
 
 ```python
 class CommentInline(InlineModelView):
@@ -115,7 +113,7 @@ class CommentInline(InlineModelView):
     collapsed = True
 ```
 
-Définissez `collapsible = False` pour désactiver complètement le repliement d'un formset ; celui-ci s'affiche alors toujours déplié, sans bouton :
+Définissez `collapsible = False` pour exclure complètement un formset de ce comportement : il sera alors toujours rendu étendu, sans bouton de basculement :
 
 ```python
 class CommentInline(InlineModelView):
@@ -125,9 +123,9 @@ class CommentInline(InlineModelView):
     collapsible = False
 ```
 
-## Clés étrangères explicites et composites
+## Clés étrangères explicites et composites {#clés-étrangères-explicites-et-composites}
 
-Définissez vous-même `fk_attr` lorsque le parent possède plusieurs relations vers le même modèle enfant, lorsque la relation n'est pas déclarée sur le modèle ORM, ou lorsque la clé étrangère est composite :
+Définissez `fk_attr` vous-même lorsque le parent possède plusieurs relations vers le même modèle enfant, lorsque la relation n'est pas déclarée sur le modèle ORM, ou lorsque la clé étrangère est composite :
 
 ```python hl_lines="40-44 89-92"
 from sqlalchemy import ForeignKey, ForeignKeyConstraint, Integer, String
@@ -229,19 +227,19 @@ class OrderView(ModelView):
     inlines = [OrderLineInline]
 ```
 
-Notez que `OrderLineInline` n'a pas besoin de `fk_attr`, même si la clé primaire d'`OrderLine` est composite (`order_store_id`, `order_seq`, `line_no`). Le backend SQLAlchemy résout la clé étrangère composite à partir de la `ForeignKeyConstraint` entre `Order` et `OrderLine` et remplit les deux colonnes sur les nouvelles lignes. Passez un `tuple[str, ...]` à `fk_attr` uniquement lorsque l'introspection des contraintes ne trouve aucune correspondance.
+Notez que `OrderLineInline` n'a pas besoin de `fk_attr`, bien que la clé primaire de `OrderLine` soit composite (`order_store_id`, `order_seq`, `line_no`). Le backend SQLAlchemy résout la clé étrangère composite à partir de la `ForeignKeyConstraint` entre `Order` et `OrderLine` et renseigne les deux colonnes sur les nouvelles lignes. Passez un `tuple[str, ...]` à `fk_attr` uniquement lorsque l'introspection des contraintes ne trouve aucune correspondance.
 
 ## Validation
 
-Chaque ligne soumise est validée indépendamment, via les mêmes chemins `create` et `edit` qu'utilise un `ModelView` autonome. L'interface d'administration enregistre d'abord le parent, puis traite chaque ligne inline à tour de rôle. Une faute de frappe dans le champ `author` d'un commentaire n'empêche pas le traitement des autres commentaires. Lorsqu'une ligne échoue à la validation, ses erreurs sont attachées à cette ligne, et le formulaire réaffiche la ligne telle quelle avec les valeurs soumises afin que l'utilisateur puisse corriger cette entrée et la soumettre à nouveau.
+Chaque ligne soumise est validée individuellement, via les mêmes chemins `create` et `edit` qu'utilise un `ModelView` autonome. L'administration enregistre d'abord le parent, puis traite chaque ligne inline tour à tour. Une erreur de saisie dans le champ `author` d'un commentaire n'empêche pas le traitement des autres commentaires. Lorsqu'une ligne échoue à la validation, ses erreurs sont rattachées à cette ligne, et le formulaire rend à nouveau la ligne sur place avec les valeurs soumises afin que les puissent corriger et resoumettre cette entrée.
 
 !!! important
-    Sur le backend SQLAlchemy, toute la requête est traitée comme un tout indivisible. Le parent et chaque ligne inline partagent la même session limitée à la requête, et cette session ne valide (commit) que lorsque toute la requête aboutit. Si une ligne échoue à la validation, la réponse renvoie une erreur et la session effectue un rollback : le parent et toutes les lignes inline reviennent alors à leur état antérieur, y compris celles qui avaient passé la validation. Considérez les erreurs par ligne dans l'interface comme une liste de points à corriger, et non comme un relevé de ce qui a été enregistré.
+    Sur le backend SQLAlchemy, toute la requête est traitée selon le principe du tout ou rien. Le parent et toutes les lignes inline partagent la même session limitée à la requête, et cette session n'est validée (commit) que si l'intégralité de la requête aboutit. Si une ligne échoue à la validation, la réponse renvoie une erreur et la session est annulée (rollback), de sorte que le parent et toutes les lignes inline reviennent ensemble à leur état initial, y compris celles qui avaient passé la validation. Considérez les erreurs par ligne affichées dans l'interface comme une liste de points à corriger, et non comme un relevé de ce qui a été enregistré.
 
 ---
 
-## Pour aller plus loin
+## Et ensuite
 
-* **[SQLAlchemy](../integrations/sqlalchemy.md) :** Comment l'introspection des relations permet la détection automatique des clés étrangères.
-* **[Vues personnalisées](custom-views.md) :** Créer des pages au-delà du workflow standard de création, de modification et de liste.
-* **[Événements](../advanced/events.md) :** Réagir aux modifications en ligne après l'enregistrement des données.
+* **[SQLAlchemy](../integrations/sqlalchemy.md):** Comment l'introspection des relations permet la détection automatique des clés étrangères.
+* **[Custom Views](custom-views.md):** Construisez des pages au-delà du flux de travail standard création, édition et liste.
+* **[Events](../advanced/events.md):** Réagissez aux modifications inline après l'enregistrement des données.

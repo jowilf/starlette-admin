@@ -3,10 +3,8 @@ title: Plugins
 description: Empaquetez des fonctionnalités et extensions d'administration réutilisables
   sous forme de plugins prêts à l'emploi pour starlette-admin.
 source_hash: c9ecd9e51a7426d12b628b06c9c664579e5f269d456e93e9d985c4d2853ac758
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,11 +23,11 @@ translation_date: '2026-08-22'
 
 # Plugins
 
-Un plugin est un package Python qui étend `starlette-admin` via un simple argument de constructeur. Un plugin peut regrouper n'importe quelle combinaison de champs, templates, ressources statiques, convertisseurs de modèles, filtres, formats d'importation/exportation, backends de stockage, abonnés d'événements, vues, routes, middlewares, ressources de thème et catalogues de traduction.
+Un plugin est un package Python qui étend `starlette-admin` via un simple argument de constructeur. Un plugin peut regrouper n'importe quelle combinaison de champs, templates, assets statiques, convertisseurs de modèles, filtres, formats d'import/export, backends de stockage, abonnés d'événements, vues, routes, middlewares, assets de thème et catalogues de traduction.
 
 ## Utiliser un plugin
 
-Passez les plugins par l'argument `plugins` lorsque vous construisez votre instance de `Admin` :
+Passez les plugins via l'argument `plugins` lorsque vous construisez votre instance `Admin` :
 
 ```python
 from starlette_admin_geospatial import GeospatialPlugin
@@ -52,7 +50,7 @@ Installez `cookiecutter` avec votre gestionnaire de packages. Consultez le [guid
 pip install cookiecutter
 ```
 
-### Génération du squelette
+### Scaffolding
 
 Exécutez le template cookiecutter depuis n'importe quel emplacement :
 
@@ -60,10 +58,10 @@ Exécutez le template cookiecutter depuis n'importe quel emplacement :
 cookiecutter gh:jowilf/starlette-admin --directory plugins/cookiecutter-starlette-admin-plugin
 ```
 
-Le template vous demande le nom du plugin, le slug du package, la version et quelques autres variables. Une fois terminé, vous obtenez un package autonome contenant :
+Le template vous demande le nom du plugin, le slug du package, la version et quelques autres variables. Une fois terminé, vous disposez d'un package autonome contenant :
 
-* Un répertoire `src/` qui héberge la classe de votre plugin et ses champs.
-* Des répertoires `templates/`, `static/` et `translations/` correctement namespacés.
+* Un répertoire `src/` hébergeant la classe de votre plugin et ses champs.
+* Des dossiers `templates/`, `static/` et `translations/` correctement namespacés.
 * Une suite de tests complète.
 * Une application exemple exécutable.
 
@@ -79,33 +77,33 @@ class MyPlugin(BasePlugin):
     name = "my-plugin"
 ```
 
-L'attribut `name` est un identifiant unique en kebab-case qui sert également de namespace pour vos templates et vos ressources statiques. Chaque template et chaque fichier statique livré par votre plugin doit se trouver sous `plugins/<name>/`.
+L'attribut `name` est un identifiant unique en kebab-case qui sert également de namespace pour vos templates et vos assets statiques. Chaque template et chaque fichier statique fourni par votre plugin doit résider sous `plugins/<name>/`.
 
-### Répertoires de ressources
+### Dossiers d'assets
 
-Un plugin peut contenir exactement trois répertoires à la racine de son package. Il n'y a rien à enregistrer, car l'administration les trouve par convention :
+Un plugin peut contenir exactement trois dossiers à la racine de son package. Rien n'est à enregistrer, car l'administration les trouve par convention :
 
-* `templates/` : les templates Jinja, qui doivent se situer sous `templates/plugins/<name>/`.
-* `static/` : les ressources statiques telles que les fichiers CSS et JS, qui doivent se situer sous `static/plugins/<name>/`.
+* `templates/` : les templates Jinja, qui doivent se trouver sous `templates/plugins/<name>/`.
+* `static/` : les assets statiques tels que les fichiers CSS et JS, qui doivent se trouver sous `static/plugins/<name>/`.
 * `translations/` : les catalogues de traduction Babel.
 
-Rester dans le namespace `plugins/<name>/` évite que vos ressources entrent en collision avec les fichiers principaux ou ceux d'autres plugins, tout en les laissant surchargeables via le `templates_dir` ou le `static_dir` de l'utilisateur.
+Rester dans le namespace `plugins/<name>/` évite que vos assets entrent en collision avec les fichiers du cœur ou ceux d'autres plugins, tout en les laissant surchargeables via le `templates_dir` ou le `static_dir` de l'utilisateur.
 
 ### Hooks déclaratifs
 
-Surchargez les hooks déclaratifs pour injecter des ressources, enregistrer des vues ou monter des routes.
+Surchargez les hooks déclaratifs pour injecter des assets, enregistrer des vues ou monter des routes.
 
 * `css_links(self, request: Request) -> Sequence[str]` : ajoute des feuilles de style à la mise en page de chaque page d'administration.
 * `js_links(self, request: Request) -> Sequence[str]` : ajoute des scripts à la mise en page de chaque page d'administration.
-* `views(self) -> Sequence[BaseView]` : renvoie les vues à enregistrer dans la barre latérale de l'administration. Renvoyez un `DropDown` pour les regrouper.
+* `views(self) -> Sequence[BaseView]` : renvoie les vues à enregistrer dans la barre latérale de l'administration. Renvoyez une `DropDown` pour les regrouper.
 * `routes(self) -> Sequence[Route | Mount]` : renvoie des endpoints headless montés sous `/plugins/<name>/`, ce qui est pratique pour les webhooks et les endpoints proxy.
 * `middlewares(self) -> Sequence[Middleware]` : ajoute des middlewares Starlette.
-* `template_globals(self) -> dict[str, Any]` : expose des variables globales Jinja, préfixées par `<name>_` afin qu'elles ne puissent pas entrer en collision.
+* `template_globals(self) -> dict[str, Any]` : expose des globals Jinja, préfixés par `<name>_` afin d'éviter toute collision.
 * `template_filters(self) -> dict[str, Callable]` : expose des filtres Jinja, préfixés par `<name>_` de la même manière.
 
 ### Le hook setup
 
-`setup(self, admin: BaseAdmin) -> None` intègre votre plugin aux registres principaux. Utilisez-le pour enregistrer des convertisseurs de modèles, des filtres, des formats d'importation et d'exportation, des backends de stockage et des abonnés d'événements. Il s'exécute après l'application des hooks déclaratifs.
+`setup(self, admin: BaseAdmin) -> None` intègre votre plugin aux registres du cœur. Utilisez-le pour enregistrer des convertisseurs de modèles, des filtres, des formats d'import et d'export, des backends de stockage et des abonnés d'événements. Il s'exécute après l'application des hooks déclaratifs.
 
 ```python
 def setup(self, admin: "BaseAdmin") -> None:
@@ -120,15 +118,15 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 Les templates des plugins rejoignent automatiquement la chaîne de loaders. Un utilisateur en surcharge un en plaçant un fichier au chemin correspondant dans son propre `templates_dir`, qui a toujours la priorité. Pour surcharger `plugins/geospatial/fields/form/point.html`, par exemple, il crée `templates_dir/plugins/geospatial/fields/form/point.html`.
 
-Afin qu'une surcharge utilisateur puisse étendre l'original en toute sécurité, chaque plugin dispose d'un préfixe de mapping `@<name>` qui fonctionne comme le préfixe `@core`. La surcharge commence par `{% extends "@geospatial/fields/form/point.html" %}` et étend le template de base du plugin sans s'inclure elle-même récursivement.
+Afin qu'une surcharge utilisateur puisse étendre l'original en toute sécurité, chaque plugin reçoit un mapping de préfixe `@<name>` qui fonctionne comme le préfixe `@core`. La surcharge commence par `{% extends "@geospatial/fields/form/point.html" %}` et étend le template de base du plugin sans s'inclure elle-même récursivement.
 
 ## Intégration JavaScript frontend
 
-Un plugin qui livre des champs personnalisés doit empaqueter ses scripts frontend conformément au contrat d'initialisation des champs. Cela garantit leur bon fonctionnement aussi bien lors des chargements de page complets que lors de l'insertion dynamique de fragments.
+Un plugin qui fournit des champs personnalisés doit empaqueter ses scripts frontend conformément au contrat d'initialisation des champs. Cela garantit leur fonctionnement aussi bien lors des chargements complets de page que lors de l'insertion dynamique de fragments.
 
-* **Ciblez localement :** effectuez vos requêtes dans l'élément `container` qui vous est fourni, jamais dans le `document` global.
+* **Ciblez localement :** effectuez vos requêtes dans l'élément `container` qui vous est fourni, jamais sur le `document` global.
 * **Soyez idempotent :** le cœur exécute l'initialiseur au chargement du DOM, puis à nouveau chaque fois qu'il insère des lignes inline ou des fragments.
-* **Utilisez les attributs data :** lisez la configuration depuis les attributs `data-*` rendus sur l'élément du champ.
+* **Utilisez les attributs data :** lisez la configuration à partir des attributs `data-*` rendus sur l'élément du champ.
 
 ```javascript title="plugins/<name>/js/slider.js"
 (function () {
@@ -153,7 +151,7 @@ Un plugin qui livre des champs personnalisés doit empaqueter ses scripts fronte
 
 Les plugins utilisent les registres publics existants plutôt qu'un chemin d'extension distinct qui leur serait propre.
 
-* **Convertisseurs** : appelez `register_converter`, depuis le backend contrib ciblé, pour associer les types de colonnes ORM à vos classes de champs. Définissez le champ lui-même comme une sous-classe ordinaire de `StringField`, stockant et affichant les géométries sous forme de texte WKT :
+* **Convertisseurs** : appelez `register_converter`, depuis le backend contrib que vous ciblez, pour associer les types de colonnes ORM à vos classes de champs. Définissez le champ lui-même comme une sous-classe ordinaire de `StringField`, stockant et affichant les géométries sous forme de texte WKT :
 
   ```python
   from dataclasses import dataclass
@@ -189,7 +187,7 @@ Les plugins utilisent les registres publics existants plutôt qu'un chemin d'ext
   register_storage(AzureBlobStorage())
   ```
 
-* **Importateurs et exportateurs** : utilisez `register_import_format` et `register_export_format`.
+* **Importeurs et Exporteurs** : utilisez `register_import_format` et `register_export_format`.
 
   ```python
   from starlette_admin.export import register_export_format
@@ -197,7 +195,7 @@ Les plugins utilisent les registres publics existants plutôt qu'un chemin d'ext
   register_export_format("pdf", PDFExporter())
   ```
 
-Un plugin peut prendre en charge plusieurs backends ORM ; importez-les donc conditionnellement dans `setup()`. Ainsi, le plugin se charge quand même si l'utilisateur n'en a installé qu'un seul :
+Un plugin peut prendre en charge plusieurs backends ORM ; importez-les donc conditionnellement dans `setup()`. Ainsi, le plugin se charge quand même lorsque l'utilisateur n'en a installé qu'un seul :
 
 ```python
 def setup(self, admin: "BaseAdmin") -> None:
@@ -213,6 +211,6 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 ## Et ensuite ?
 
-* **[Thèmes personnalisés](custom-themes.md) :** empaquetez et partagez un système visuel complet, en utilisant le même workflow cookiecutter.
+* **[Thèmes personnalisés](custom-themes.md) :** empaquetez et partagez un système visuel complet, en suivant le même workflow cookiecutter.
 * **[Événements](events.md) :** l'API d'abonnement qu'un plugin enregistre depuis son hook `setup()`.
 * **[Points d'extension](extension-points.md) :** tous les registres et classes de base auxquels un plugin peut se raccrocher.

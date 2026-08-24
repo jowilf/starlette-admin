@@ -3,14 +3,12 @@ title: Referencia de la API de autenticación
 description: Documentación de referencia de la API para AuthProvider y las funciones
   de autenticación en starlette-admin.
 source_hash: fe8d6f5e171d8274eb0063833be99c4933d6c2053a67d08ca7c21128cb2e2047
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no

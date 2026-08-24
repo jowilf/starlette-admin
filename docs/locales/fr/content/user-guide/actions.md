@@ -1,12 +1,10 @@
 ---
 title: Actions
-description: Exécutez des opérations groupées et au niveau des lignes avec des confirmations
-  et des formulaires personnalisés directement depuis la page de liste.
+description: Exécutez des opérations par lots et au niveau des lignes avec des confirmations
+  et des formulaires personnalisés directement depuis la vue en liste.
 source_hash: 91835b28170a6a3e07ed477b89c2b03aabc37254d3037ef4e47467e6ee240fca
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,38 +23,38 @@ translation_date: '2026-08-22'
 
 # Actions
 
-Les actions offrent un moyen direct de travailler sur vos enregistrements de base de données depuis l'interface d'administration, permettant aux utilisateurs d'exécuter des opérations telles que des suppressions massives, des mises à jour en bloc et des envois d'e-mails.
+Les actions vous offrent un moyen direct de manipuler vos enregistrements de base de données depuis l'interface d'administration, permettant aux utilisateurs d'exécuter des opérations comme des suppressions massives, des mises à jour groupées et des envois d'e-mails.
 
 ## Comprendre `ActionSelection`
 
-`ActionSelection` est l'objet central de l'API des actions. Au lieu d'une liste brute de clés primaires, votre handler reçoit une instance de `ActionSelection`.
+`ActionSelection` est l'objet central de l'API des actions. Au lieu d'une simple liste de clés primaires, votre handler reçoit une instance de `ActionSelection`.
 
-L'objet est résolu paresseusement (lazy) et se comporte de la même manière que l'utilisateur ait coché les lignes une par une ou utilisé « tout sélectionner parmi les résultats correspondants ». Il expose également les filtres actifs de la page de liste à votre handler.
+Cet objet se résout paresseusement et se comporte de la même manière que l'utilisateur ait coché les lignes une par une ou utilisé « tout sélectionner parmi les correspondances ». Il expose également à votre handler les filtres actifs de la page en liste.
 
 ### Référence de l'API `ActionSelection`
 
-| Méthode ou propriété      | Description                                                                                     |
-| ------------------------- | ----------------------------------------------------------------------------------------------- |
-| `await selection.rows()`  | Récupère les lignes ciblées. Elles sont récupérées une seule fois, puis mises en cache.         |
-| `await selection.pks()`   | Récupère les clés primaires des lignes ciblées.                                                 |
-| `await selection.count()` | Renvoie le nombre total de lignes ciblées par l'action.                                         |
-| `selection.is_select_all` | Booléen indiquant si l'utilisateur a choisi « tout sélectionner parmi les résultats correspondants ». |
-| `selection.filters`       | Le `FilterGroup` actif, identique à `ListParams.filters`.                                       |
-| `selection.q`             | Le terme de recherche plein texte actif, ou `None` lorsque la recherche est inactive.           |
+| Méthode ou propriété      | Description                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| `await selection.rows()`  | Récupère les lignes cibles. Chargées une seule fois, puis mises en cache.          |
+| `await selection.pks()`   | Récupère les clés primaires des lignes cibles.                                     |
+| `await selection.count()` | Retourne le nombre total de lignes ciblées par l'action.                           |
+| `selection.is_select_all` | Un booléen indiquant si l'utilisateur a choisi « tout sélectionner parmi les correspondances ». |
+| `selection.filters`       | Le `FilterGroup` actif, identique à `ListParams.filters`.                          |
+| `selection.q`             | Le terme de recherche plein texte actif, ou `None` lorsque la recherche est inactive. |
 
-## Actions groupées
+## Actions par lot
 
-Par défaut, les utilisateurs modifient un objet en le sélectionnant sur la page de liste puis en l'éditant individuellement. Pour appliquer la même modification à plusieurs objets à la fois, ajoutez une **action groupée** personnalisée.
+Par défaut, les utilisateurs modifient un objet en le sélectionnant sur la page en liste et en l'éditant individuellement. Pour appliquer la même modification à plusieurs objets à la fois, ajoutez une **action par lot** personnalisée.
 
 !!! note
-    `starlette-admin` ajoute une action groupée `delete` par défaut.
+    `starlette-admin` ajoute une action par lot `delete` par défaut.
 
-Pour ajouter une action groupée personnalisée à votre `ModelView`, écrivez une fonction async contenant votre logique et enveloppez-la avec le décorateur `@action`.
+Pour ajouter une action par lot personnalisée à votre `ModelView`, écrivez une fonction asynchrone contenant votre logique et enveloppez-la avec le décorateur `@action`.
 
 !!! important
-    Les noms des actions groupées doivent être uniques au sein d'un `ModelView`.
+    Les noms des actions par lot doivent être uniques au sein d'un même `ModelView`.
 
-### Exemple d'action groupée
+### Exemple d'action par lot
 
 ```python
 from starlette.datastructures import FormData
@@ -130,18 +128,18 @@ class ArticleView(ModelView):
 
 ## Actions globales
 
-Une action groupée standard nécessite une sélection active : le menu déroulant **Avec la sélection** n'apparaît que lorsqu'au moins une ligne est cochée. Lorsqu'une action cible l'ensemble de la collection, par exemple une synchronisation complète de la base de données, faites-en une action globale.
+Une action par lot standard nécessite une sélection active : le menu déroulant **With selected** n'apparaît que lorsqu'au moins une ligne est cochée. Lorsqu'une action cible l'ensemble de la collection, comme une synchronisation complète de la base de données, faites-en une action globale.
 
 Définissez `allow_empty_selection=True` dans le décorateur `@action`. Les actions globales s'affichent dans un menu déroulant **Actions** toujours visible et s'exécutent sans sélection de ligne.
 
 **Comportement du handler pour les actions globales :**
 
-- **Sélection vide :** l'objet `selection` peut se résoudre à zéro ligne.
-- **Sélections fortuites :** si l'utilisateur a des lignes cochées lorsqu'il déclenche une action globale, le handler reçoit quand même ces lignes. Ignorez explicitement `selection` lorsque votre logique cible l'ensemble de la collection.
+- **Sélection vide :** L'objet `selection` peut se résoudre à zéro ligne.
+- **Sélections incidentes :** Si l'utilisateur a coché des lignes au moment de déclencher une action globale, le handler reçoit quand même ces lignes. Ignorez explicitement `selection` lorsque votre logique cible l'intégralité de la collection.
 
-Tous les autres paramètres (`confirmation`, `form`, `custom_response` et `is_action_allowed`) fonctionnent exactement comme pour une action groupée standard.
+Tous les autres paramètres (`confirmation`, `form`, `custom_response` et `is_action_allowed`) fonctionnent exactement comme pour une action par lot standard.
 
-**Boutons dédiés dans la barre d'outils :** ajoutez `dedicated_button=True` pour afficher une action globale comme bouton autonome dans la barre d'outils plutôt que comme entrée du menu déroulant **Actions**. L'action d'exportation intégrée utilise cette option. Combiner `dedicated_button=True` avec une action réservée à la sélection provoque une erreur au démarrage.
+**Boutons dédiés dans la barre d'outils :** Ajoutez `dedicated_button=True` pour afficher une action globale sous forme de bouton dédié dans la barre d'outils plutôt que comme une entrée du menu déroulant **Actions**. L'action d'export intégrée utilise cette option. Combiner `dedicated_button=True` avec une action nécessitant une sélection déclenche une erreur au démarrage.
 
 ### Exemple d'action globale
 
@@ -166,11 +164,11 @@ class ArticleView(ModelView):
 
 ```
 
-### La fonctionnalité « tout sélectionner »
+### La fonctionnalité « tout sélectionner parmi les correspondances »
 
-Lorsqu'un utilisateur coche toutes les lignes de la page courante alors que d'autres lignes correspondent au filtre ailleurs, l'interface propose de sélectionner toutes les lignes correspondantes.
+Lorsqu'un utilisateur coche toutes les lignes de la page courante et que d'autres lignes correspondent au filtre ailleurs, l'interface propose de sélectionner toutes les lignes correspondantes.
 
-Cette option envoie `all=1` à l'API des actions au lieu d'une liste de clés primaires. Utilisez `selection.is_select_all` pour orienter votre logique, ou laissez `selection.rows()` résoudre les données dans tous les cas :
+Cette option envoie `all=1` à l'API des actions au lieu d'une liste de clés primaires. Utilisez `selection.is_select_all` pour adapter votre logique, ou laissez `selection.rows()` résoudre les données dans les deux cas :
 
 ```python
     @action(name="archive", text="Archive")
@@ -185,16 +183,16 @@ Cette option envoie `all=1` à l'API des actions au lieu d'une liste de clés pr
 ```
 
 !!! important "Limites de matérialisation"
-    En mode « tout sélectionner », `selection.rows()`, `pks()` et `count()` sont limités par `action_select_all_limit`, dont la valeur par défaut est 1000. Dépasser cette limite lève une exception `ActionFailed`. Un handler qui lit uniquement `selection.filters` et `selection.q` ne matérialise rien ; la limite ne s'applique donc pas.
+    En mode select-all, `selection.rows()`, `pks()` et `count()` sont plafonnés par `action_select_all_limit`, dont la valeur par défaut est 1000. Dépasser cette limite lève une exception `ActionFailed`. Un handler qui ne lit que `selection.filters` et `selection.q` ne matérialise rien, le plafond ne s'applique donc pas.
 
-## Actions de ligne
+## Actions de ligne {#row-actions}
 
-Les actions de ligne permettent aux utilisateurs d'opérer sur un seul élément directement depuis la page de liste. `starlette-admin` inclut trois actions de ligne par défaut : `view`, `edit` et `delete`.
+Les actions de ligne permettent aux utilisateurs d'intervenir sur un élément unique directement depuis la vue en liste. `starlette-admin` inclut trois actions de ligne par défaut : `view`, `edit` et `delete`.
 
-Pour ajouter une action de ligne personnalisée, écrivez votre logique et appliquez le décorateur `@row_action`. Lorsque l'action redirige simplement l'utilisateur vers une autre URL, utilisez plutôt le décorateur `@link_row_action`. Il intègre le lien dans l'attribut HTML `href` et contourne l'API des actions.
+Pour ajouter une action de ligne personnalisée, écrivez votre logique et appliquez le décorateur `@row_action`. Lorsque l'action redirige simplement l'utilisateur vers une autre URL, utilisez plutôt le décorateur `@link_row_action`. Ce dernier intègre le lien dans l'attribut HTML `href` et ne fait pas appel à l'API des actions.
 
 !!! important
-    Les noms des actions de ligne doivent être uniques au sein d'un `ModelView`.
+    Les noms des actions de ligne doivent être uniques au sein d'un même `ModelView`.
 
 ### Exemple d'action de ligne
 
@@ -255,10 +253,10 @@ class ArticleView(ModelView):
 
 ### Restreindre les actions de ligne
 
-Deux hooks déterminent si une action de ligne est disponible. Tous deux autorisent l'action par défaut.
+Deux hooks déterminent si une action de ligne est disponible. Par défaut, ils autorisent tous deux l'action.
 
-1. **`is_row_action_allowed(request, name)`** : exécuté une fois par nom d'action. Utilisez-le pour les restrictions qui ne dépendent pas de la ligne, comme le contrôle d'accès basé sur les rôles.
-2. **`is_row_action_allowed_for_obj(request, name, obj)`** : exécuté une fois par ligne, pour les actions ayant passé la première vérification. Utilisez-le pour les restrictions dépendant des données, comme masquer un bouton **Publier** sur un article déjà publié.
+1. **`is_row_action_allowed(request, name)`** : exécuté une fois par nom d'action. Utilisez-le pour des restrictions qui ne dépendent pas de la ligne, telles que le contrôle d'accès basé sur les rôles.
+2. **`is_row_action_allowed_for_obj(request, name, obj)`** : exécuté une fois par ligne, pour les actions ayant passé la première vérification. Utilisez-le pour des restrictions dépendant des données, comme masquer un bouton **Publish** sur un article déjà publié.
 
 ```python
 from typing import Any
@@ -281,24 +279,24 @@ class ArticleView(ModelView):
 ```
 
 !!! warning
-    Appelez toujours `super()` pour les noms d'actions non gérés par votre override. Sinon, vous désactivez silencieusement les vérifications de permissions des actions intégrées.
+    Appelez toujours `super()` pour les noms d'action que votre surcharge ne traite pas. Sinon, vous désactivez silencieusement les vérifications de permissions des actions intégrées.
 
 ## Configuration de l'interface pour les actions de ligne
 
 ### Types d'affichage
 
-Le paramètre `row_actions_display_type` définit la façon dont les actions apparaissent sur la page de liste. Sur la page de détail, les actions sont toujours affichées comme des boutons complets.
+Le paramètre `row_actions_display_type` définit la manière dont les actions apparaissent sur la page en liste. Sur la page de détail, les actions sont toujours affichées sous forme de boutons complets.
 
-| Type d'affichage | Description                                                                       |
-| ---------------- | ---------------------------------------------------------------------------------- |
-| `ICON_LIST`      | Affiche une liste horizontale de boutons réduits à leur icône.                     |
-| `DROPDOWN`       | Regroupe les actions dans un menu déroulant libellé.                               |
-| `KEBAB`          | Regroupe les actions dans un menu déroulant ouvert via une icône `⋮`.              |
-| `INLINE_LINKS`   | Affiche le libellé de l'action sous l'icône, séparé par un point médian.           |
+| Type d'affichage | Description                                                            |
+| ---------------- | ---------------------------------------------------------------------- |
+| `ICON_LIST`      | Affiche une liste horizontale de boutons contenant uniquement des icônes. |
+| `DROPDOWN`       | Regroupe les actions dans un menu déroulant avec étiquette.             |
+| `KEBAB`          | Regroupe les actions dans un menu déroulant ouvert via une icône `⋮`.   |
+| `INLINE_LINKS`   | Affiche l'étiquette de l'action sous l'icône, séparées par un point médian. |
 
 ### Positionnement de la colonne
 
-Par défaut, la colonne des actions est affichée avant vos colonnes de données. Pour la placer à droite du tableau, utilisez `RowActionsPosition` :
+Par défaut, la colonne des actions s'affiche avant vos colonnes de données. Pour la placer à droite du tableau, utilisez `RowActionsPosition` :
 
 ```python
 from starlette_admin.types import RowActionsPosition
@@ -312,12 +310,12 @@ class ArticleView(ModelView):
 
 Le paramètre `form` des décorateurs `@action` et `@row_action` accepte un callable, ce qui vous permet de générer le HTML au moment de la requête.
 
-Le callable peut être synchrone ou asynchrone, et il doit renvoyer une chaîne de caractères.
+Le callable peut être synchrone ou asynchrone, et il doit retourner une chaîne de caractères.
 
 - **Signature de `@action`** : `(request) -> str`
 - **Signature de `@row_action`** : `(request, obj) -> str`
 
-Utilisez un callable lorsque vous souhaitez préremplir les champs d'un formulaire avec les valeurs actuelles d'une ligne.
+Utilisez un callable lorsque vous souhaitez préremplir les champs du formulaire avec les valeurs actuelles d'une ligne.
 
 ```python
 from typing import Any
@@ -375,4 +373,4 @@ class ArticleView(ModelView):
 ```
 
 !!! important
-    Un callable de formulaire d'action de ligne est exécuté une fois par ligne sur la page de liste. Veillez à ce qu'il soit rapide et évitez d'y effectuer des requêtes en base de données. Les données de ligne dont vous avez besoin sont déjà disponibles via le paramètre `obj`.
+    Un callable de formulaire d'action de ligne est exécuté une fois par ligne sur la page en liste. Veillez à ce qu'il soit rapide et évitez d'y effectuer des requêtes en base de données. Les données de ligne dont vous avez besoin sont déjà disponibles via le paramètre `obj`.

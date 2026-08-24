@@ -1,12 +1,10 @@
 ---
 title: Filtres
 description: Ajoutez des capacités de filtrage AND/OR complexes et imbriquées à vos
-  vues d'administration à l'aide de constructeurs de requêtes sensibles aux types.
+  vues d'administration grâce à des constructeurs de requêtes sensibles aux types.
 source_hash: e42a5eccf8e516fe88adb3dcbc989e7c7707b29918b89c8c662d7062b0c6a241
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,9 +23,9 @@ translation_date: '2026-08-22'
 
 # Filtres
 
-Chaque champ d'une page de liste peut disposer de son propre ensemble d'opérateurs de filtrage, tels que `contains`, `between` et `is null`. Vos utilisateurs combinent ces opérateurs en un arbre imbriqué `AND`/`OR`, et vous n'avez jamais à écrire une requête complexe pour la base de données.
+Chaque champ d'une page de liste peut disposer de son propre ensemble d'opérateurs de filtrage, tels que `contains`, `between` ou `is null`. Vos utilisateurs combinent ces opérateurs en un arbre `AND`/`OR` imbriqué, et vous n'avez jamais à écrire une requête complexe en base de données.
 
-Le panneau d'administration déduit les filtres disponibles du type sous-jacent du champ. Vous pouvez restreindre, étendre ou remplacer entièrement cet ensemble pour n'importe quel champ.
+L'admin déduit les filtres disponibles du type sous-jacent du champ. Vous pouvez restreindre, étendre ou remplacer entièrement cet ensemble pour n'importe quel champ.
 
 
 ```python
@@ -40,28 +38,28 @@ class PostView(ModelView):
     searchable_fields = ["title", "content", "published", "created_at"]
 ```
 
-Consultez [examples/02-filters](https://github.com/jowilf/starlette-admin/tree/main/examples/02-filters) pour une application exécutable qui couvre les filtres par défaut, les remplacements par champ et une sous-classe personnalisée de `BaseFilter`.
+Consultez [examples/02-filters](https://github.com/jowilf/starlette-admin/tree/main/examples/02-filters) pour une application exécutable couvrant les filtres par défaut, les remplacements par champ et une sous-classe personnalisée de `BaseFilter`.
 
-Chaque champ que vous listez dans `searchable_fields` reçoit un menu déroulant **Filtres** dans la barre d'outils de la liste. À partir de là, les utilisateurs combinent autant de filtres que nécessaire pour trouver les lignes souhaitées.
+Chaque champ listé dans `searchable_fields` reçoit un menu déroulant **Filtres** dans la barre d'outils de la liste. À partir de là, les utilisateurs combinent autant de filtres que nécessaire pour trouver les lignes recherchées.
 
 ## Fonctionnement du constructeur de filtres
 
 La sélection du bouton **Filtres** ouvre un formulaire déroulant dans lequel les utilisateurs construisent leurs requêtes :
 
-* **Ajouter un filtre** : ajoute une ligne de condition. L'utilisateur choisit un champ, sélectionne un opérateur parmi les filtres disponibles pour ce champ et fournit une valeur. Le champ de saisie s'adapte à l'opérateur : une zone de texte simple pour `contains`, deux zones pour `between`, et aucune saisie du tout pour `is null`.
-* **Ajouter un groupe** : imbrique un sous-formulaire avec son propre sélecteur `AND`/`OR`. Utilisez-le pour construire des conditions telles que `A AND (B OR C)`.
-* **Correspondre à tout ou partie des conditions suivantes** : détermine si le niveau actuel utilise la logique `AND` ou `OR`.
-* **Appliquer les filtres** : soumet le formulaire sous forme de requête `GET`. Le panneau d'administration sérialise l'arbre complet de filtres en un seul paramètre de requête `filter`, décrit dans [Le format URL des filtres](#le-format-url-des-filtres).
-* **Filtres actifs** : chaque filtre actif apparaît sous forme de pastille supprimable au-dessus du tableau. La sélection du symbole `×` soumet à nouveau la liste sans cette règle. Un groupe imbriqué se regroupe en une seule pastille que les utilisateurs suppriment dans son intégralité.
+* **Ajouter un filtre** : ajoute une ligne de condition. L'utilisateur choisit un champ, sélectionne un opérateur parmi les filtres disponibles pour ce champ et fournit une valeur. Le champ de saisie s'adapte à l'opérateur : une simple zone de texte pour `contains`, deux zones pour `between`, et aucune saisie pour `is null`.
+* **Ajouter un groupe** : imbrique un sous-formulaire doté de son propre sélecteur `AND`/`OR`. Utilisez-le pour construire des conditions du type `A AND (B OR C)`.
+* **Correspondre à tous/aucun des éléments suivants** : détermine si le niveau courant utilise la logique `AND` ou `OR`.
+* **Appliquer les filtres** : soumet le formulaire sous forme de requête `GET`. L'admin sérialise l'intégralité de l'arbre de filtres dans un seul paramètre de requête `filter`, décrit dans [Le format URL des filtres](#the-filter-url-format).
+* **Filtres actifs** : chaque filtre actif apparaît sous forme d'une pastille supprimable au-dessus du tableau. La sélection du `×` recharge la liste sans cette règle. Un groupe imbriqué est réduit en une seule pastille que les utilisateurs suppriment dans son intégralité.
 
 !!! tip
-    Comme l'état complet des filtres est conservé dans l'URL, une liste filtrée peut être partagée. Vos utilisateurs peuvent ajouter la page à leurs favoris et envoyer le lien à un collègue.
+    Comme tout l'état des filtres est contenu dans l'URL, une liste filtrée est partageable. Vos utilisateurs peuvent mettre la page en favori et envoyer le lien à un collègue.
 
-## Remplacer les filtres d'un champ spécifique
+## Remplacer les filtres d'un champ spécifique {#overriding-filters-for-a-specific-field}
 
-Lorsque les filtres par défaut sont trop généraux, ou si vous avez besoin de quelque chose de plus spécifique, passez l'argument `filters=` à un champ pour remplacer son ensemble par défaut.
+Lorsque les filtres par défaut sont trop larges, ou si vous avez besoin de quelque chose de plus spécifique, passez l'argument `filters=` à un champ pour remplacer son ensemble par défaut.
 
-Vous pouvez réduire la liste aux opérateurs pertinents, l'étendre avec un filtre personnalisé, ou ajouter des opérateurs à un champ qui se limite par défaut aux vérifications de valeur nulle, tel que `TagsField` :
+Vous pouvez restreindre la liste aux opérateurs qui vous importent, l'étendre avec un filtre personnalisé, ou ajouter des opérateurs à un champ qui ne dispose par défaut que des vérifications basiques de nullité, comme `TagsField` :
 
 ```python
 from enum import Enum
@@ -98,7 +96,7 @@ class ProductView(ModelView):
         EnumField("status", enum=ProductStatus),  # Utilise l'ensemble de filtres par défaut
         DecimalField(
             "price",
-            # Réduit à seulement 3 des 9 filtres numériques par défaut
+            # Restreint à seulement 3 des 9 filtres numériques par défaut
             filters=[GreaterThanFilter, BetweenFilter, NumericEqualFilter],
         ),
         DateTimeField("created_at", filters=[DateTimeBetweenFilter, DateInPastFilter]),
@@ -106,13 +104,13 @@ class ProductView(ModelView):
 ```
 
 !!! important "Importer les filtres depuis votre backend"
-    Les classes de filtres que vous passez à `filters=` doivent être les implémentations concrètes correspondant à votre backend de base de données : `starlette_admin.contrib.sqla.filters`, `.beanie.filters`, `.mongoengine.filters` ou `.tortoise.filters`. Importez depuis le module `filters` de votre backend, pas depuis `starlette_admin.filters`.
+    Les classes de filtres que vous passez à `filters=` doivent être les implémentations concrètes correspondant à votre backend de base de données : `starlette_admin.contrib.sqla.filters`, `.beanie.filters`, `.mongoengine.filters`, ou `.tortoise.filters`. Importez depuis le module `filters` de votre backend, et non depuis `starlette_admin.filters`.
 
-## Le format URL des filtres
+## Le format URL des filtres {#the-filter-url-format}
 
-Le constructeur de filtres sérialise son état dans le paramètre de requête `filter` sous forme de chaîne compacte.
+Le constructeur de filtres sérialise son état dans le paramètre de requête `filter` sous forme d'une chaîne compacte.
 
-Le format est `field__operator` pour un filtre sans valeurs, `field__operator=value` pour une valeur unique, et `field__operator=value..value2` pour un filtre à deux valeurs tel que `between`. Les règles sont jointes par `AND` ou `OR`, et les parenthèses imbriquent un groupe :
+Le format est `field__operator` pour un filtre sans valeur, `field__operator=value` pour une valeur unique, et `field__operator=value..value2` pour un filtre à deux valeurs tel que `between`. Les règles sont jointes par `AND` ou `OR`, et les parenthèses imbriquent un groupe :
 
 ```text
 /admin/product/list?filter=price__gt=50+AND+status__eq=ACTIVE
@@ -126,30 +124,30 @@ Le format est `field__operator` pour un filtre sans valeurs, `field__operator=va
 
 Placez une valeur entre guillemets lorsqu'elle contient un espace ou une parenthèse : `name__eq="quoted value"`. Une valeur de liste pour un filtre à sélection multiple tel que `is one of` est séparée par des virgules et ne nécessite pas de guillemets : `status__in=ACTIVE,OUT_OF_STOCK`.
 
-Lorsque l'URL contient une chaîne `filter` invalide, telle qu'un champ inconnu, un opérateur indisponible ou une valeur impossible à analyser, l'application renvoie une erreur `HTTP 400` au lieu de supprimer silencieusement une partie de la condition.
+Lorsque l'URL contient une chaîne `filter` invalide, comme un champ inconnu, un opérateur indisponible ou une valeur non analysable, l'application renvoie une erreur `HTTP 400` plutôt que de rejeter silencieusement une partie de la condition.
 
 !!! important
-    Seuls les champs que vous listez dans `searchable_fields` reçoivent des filtres. Si vous laissez `searchable_fields` non défini, chaque champ en reçoit.
+    Seuls les champs listés dans `searchable_fields` reçoivent des filtres. Si vous laissez `searchable_fields` non défini, tous les champs les reçoivent.
 
 
 ## Référence des filtres intégrés
 
-Le tableau suivant répertorie chaque filtre disponible dès l'installation, l'identifiant d'URL que vous voyez dans un lien mis en favori et le type de valeur attendu par chacun. Les filtres marqués « deux valeurs » nécessitent à la fois un `value` et un `value2` dans l'URL, par exemple `between=2026-01-01..2026-01-31`.
+Le tableau suivant recense chaque filtre disponible nativement, le slug URL visible dans un lien mis en favori, ainsi que le type de valeur attendu par chacun. Les filtres marqués « deux valeurs » nécessitent à la fois une `value` et une `value2` dans l'URL, par exemple `between=2026-01-01..2026-01-31`.
 
-| Filtre | Identifiant | Type de valeur | Deux valeurs ? |
+| Filtre | Slug | Type de valeur | Deux valeurs ? |
 | --- | --- | --- | --- |
 | Contient | `contains` | texte |  |
 | Ne contient pas | `not_contains` | texte |  |
 | Commence par | `startswith` | texte |  |
-| Se termine par | `endswith` | texte |  |
-| Égal à | `eq` | texte, nombre, date, datetime ou heure |  |
-| Différent de | `neq` | texte ou nombre |  |
-| Est nul | `is_null` | *(aucune)* |  |
-| N'est pas nul | `is_not_null` | *(aucune)* |  |
+| Finit par | `endswith` | texte |  |
+| Égal | `eq` | texte, nombre, date, datetime ou heure |  |
+| Différent | `neq` | texte ou nombre |  |
+| Est null | `is_null` | *(aucune)* |  |
+| N'est pas null | `is_not_null` | *(aucune)* |  |
 | Supérieur à | `gt` | nombre |  |
 | Inférieur à | `lt` | nombre |  |
-| Supérieur ou égal à | `gte` | nombre |  |
-| Inférieur ou égal à | `lte` | nombre |  |
+| Supérieur ou égal | `gte` | nombre |  |
+| Inférieur ou égal | `lte` | nombre |  |
 | Entre | `between` | nombre, date, datetime ou heure | ✓ |
 | Est dans le passé | `in_past` | *(aucune)* |  |
 | Est dans le futur | `in_future` | *(aucune)* |  |
@@ -158,12 +156,12 @@ Le tableau suivant répertorie chaque filtre disponible dès l'installation, l'i
 | Fait partie de | `in` | liste séparée par des virgules |  |
 | Ne fait pas partie de | `not_in` | liste séparée par des virgules |  |
 
-Si vous avez besoin d'un filtre pour un type de données non couvert par les filtres intégrés, tel qu'un champ JSON ou un point géographique, consultez [Filtres personnalisés](../advanced/custom-filters.md) pour écrire une sous-classe de `BaseFilter` et l'enregistrer globalement ou par instance de champ.
+Si vous avez besoin d'un filtre pour un type de données non couvert par les filtres intégrés, comme un champ JSON ou un point géographique, consultez [Filtres personnalisés](../advanced/custom-filters.md) pour écrire une sous-classe de `BaseFilter` et l'enregistrer globalement ou pour une instance de champ donnée.
 
 ---
 
-**Pour aller plus loin**
+**Et ensuite**
 
-* **[Filtres personnalisés](../advanced/custom-filters.md) :** Écrire et enregistrer une sous-classe de `BaseFilter`.
-* **[Actions](actions.md) :** Ajouter des actions groupées et des actions de ligne à vos pages de liste.
-* **[Vues](views.md) :** En savoir plus sur `searchable_fields` et le reste de la configuration des pages de liste.
+* **[Filtres personnalisés](../advanced/custom-filters.md) :** écrire et enregistrer une sous-classe de `BaseFilter`.
+* **[Actions](actions.md) :** ajouter des actions groupées et des actions sur les lignes à vos pages de listes.
+* **[Vues](views.md) :** en savoir plus sur `searchable_fields` et le reste de la configuration de la page de liste.

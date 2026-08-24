@@ -1,12 +1,10 @@
 ---
 title: Beanie-Integration
-description: Integrieren Sie Beanie ODM mit starlette-admin, um ein erweiterbares
-  Admin-Interface für Ihre MongoDB-Collections in FastAPI zu erstellen.
+description: Integrieren Sie Beanie ODM mit starlette-admin, um eine erweiterbare
+  Admin-Oberfläche für Ihre MongoDB-Collections in FastAPI zu erstellen.
 source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -25,13 +23,13 @@ translation_date: '2026-08-23'
 
 # Beanie-Integration
 
-Beanie modelliert MongoDB-Dokumente als asynchrone Pydantic-Modelle. Das Modul `starlette_admin.contrib.beanie` bietet spezialisierte `Admin`- und `ModelView`-Klassen, die so konfiguriert sind, dass sie direkt mit diesen Dokumenten interagieren.
+Beanie modelliert MongoDB-Dokumente als asynchrone Pydantic-Modelle. Das Modul `starlette_admin.contrib.beanie` stellt spezialisierte `Admin`- und `ModelView`-Klassen bereit, die so konfiguriert sind, dass sie direkt mit diesen Dokumenten interagieren.
 
-**Hauptfunktionen:**
+**Wichtige Funktionen:**
 
-- Native Unterstützung für MongoDB-Queryoperatoren und Filterung.
-- Automatische Übersetzung von Pydantic-Validierungsfehlern in feldspezifische UI-Formularfehler.
-- Integrierte Unterstützung für die MongoDB-Volltextsuche.
+- Native Unterstützung für MongoDB-Query-Operatoren und Filterung.
+- Automatische Umwandlung von Pydantic-Validierungsfehlern in feldspezifische UI-Formularfehler.
+- Eingebaute Integration für die MongoDB-Volltextsuche.
 
 ## Installation
 
@@ -49,7 +47,7 @@ Beanie modelliert MongoDB-Dokumente als asynchrone Pydantic-Modelle. Das Modul `
 
 ## Minimalbeispiel
 
-Sie müssen Beanie initialisieren, bevor ein Request das Admin-Interface erreicht. Es ist der beste Ansatz, die Verbindungslogik in den `lifespan`-Context-Manager Ihrer Hauptanwendung zu wrappen, um sicherzustellen, dass diese Voraussetzung erfüllt ist.
+Sie müssen Beanie initialisieren, bevor eine Anfrage die Administrationsoberfläche erreicht. Am besten kapseln Sie die Verbindungslogik im `lifespan`-Context-Manager Ihrer Hauptanwendung, um sicherzustellen, dass diese Voraussetzung erfüllt ist.
 
 ```python
 from contextlib import asynccontextmanager
@@ -91,22 +89,22 @@ if __name__ == "__main__":
 
 ```
 
-Die `ModelView` akzeptiert die Beanie-Klasse `Document` direkt. Sie leitet automatisch die Feldliste, die Formulare und die Filter aus den Feldern des Dokuments ab.
+Die `ModelView` akzeptiert die Beanie-`Document`-Klasse direkt. Sie leitet automatisch die Feldliste, Formulare und Filter aus den Feldern des Dokuments ab.
 
-## Kernklassen
+## Zentrale Klassen
 
 ### Die Klasse `beanie.Admin`
 
-Die Klasse `beanie.Admin` erbt von `BaseAdmin` und benötigt bei der Initialisierung keine datenbankspezifische Konfiguration. Das Einrichten der Verbindung erfolgt vollständig innerhalb des Lifespan der Anwendung. Importieren Sie `Admin` immer aus `starlette_admin.contrib.beanie`, um die Kompatibilität mit zukünftigen backend-spezifischen Erweiterungen sicherzustellen.
+Die Klasse `beanie.Admin` erbt von `BaseAdmin` und erfordert bei der Initialisierung keine datenbankspezifische Konfiguration. Der Verbindungsaufbau erfolgt vollständig innerhalb des Lifespans der Anwendung. Importieren Sie `Admin` immer aus `starlette_admin.contrib.beanie`, um die Kompatibilität mit zukünftigen backend-spezifischen Erweiterungen sicherzustellen.
 
 ### Die Klasse `beanie.ModelView`
 
-Die Klasse `beanie.ModelView` stellt die Integrationsschicht zwischen Ihrer Datenbank und dem UI bereit. Sie übernimmt mehrere Operationen automatisch:
+Die Klasse `beanie.ModelView` bildet die Integrationsschicht zwischen Ihrer Datenbank und der Benutzeroberfläche. Sie übernimmt mehrere Operationen automatisch:
 
-- **Feldpopulation:** Generiert automatisch Felder aus der Dokumentdefinition, wenn Sie diese nicht explizit angeben.
-- **Filterung interner Felder:** Schließt standardmäßig Beanies internes Feld `revision_id` aus Listen und Formularen aus.
-- **Auflösung von Beziehungen:** Führt Datenbank-Lesungen mit `fetch_links=True` und `nesting_depth=1` durch, sodass `Link`-Referenzen zu ihren verwandten Objekten aufgelöst werden, anstatt rohe Datenbankreferenzen zurückzugeben.
-- **Fehlerbehandlung:** Übersetzt Pydantic-Validierungsfehler in feldspezifische Formularfehler und verweist Benutzer direkt auf die fehlerhafte Eingabe.
+- **Feldbefüllung:** Generiert automatisch Felder aus der Dokumentdefinition, wenn Sie diese nicht explizit angeben.
+- **Filterung interner Felder:** Schließt das interne `revision_id`-Feld von Beanie standardmäßig aus Listen und Formularen aus.
+- **Auflösung von Beziehungen:** Führt Datenbanklesevorgänge mit `fetch_links=True` und `nesting_depth=1` aus, sodass `Link`-Referenzen zu den zugehörigen Objekten aufgelöst werden, statt rohe Datenbankreferenzen zurückzugeben.
+- **Fehlerbehandlung:** Wandelt Pydantic-Validierungsfehler in feldspezifische Formularfehler um und verweist Benutzer direkt auf die fehlerhafte Eingabe.
 
 ```python
 from starlette_admin.contrib.beanie import ModelView
@@ -118,35 +116,35 @@ class BookView(ModelView):
     sortable_fields = ["title"]
 ```
 
-## Das `BeanieObjectIdField`
+## Das Feld `BeanieObjectIdField`
 
-Beanie verwendet `PydanticObjectId` als Primärschlüssel. Das Admin-Panel stellt diese Schlüssel sowie alle rohen ObjectId-Referenzen automatisch mithilfe eines dedizierten `BeanieObjectIdField`s dar.
+Beanie verwendet `PydanticObjectId` als Primärschlüssel. Das Administrationspanel stellt diese Schlüssel sowie alle rohen ObjectId-Referenzen über ein dediziertes `BeanieObjectIdField` dar.
 
-Es wird zwar genau wie ein Standard-`StringField` gerendert und validiert, hat aber einen eigenen Slot in der Filterregistrierung. Diese Trennung stellt sicher, dass ObjectId-spezifische Filter nur auf ObjectId-Felder angewendet werden, nicht auf jedes Standard-Textfeld in Ihrer Anwendung. Diese spezialisierten Filter parsen Strings sicher in gültige `PydanticObjectId`-Objekte, bevor sie die Datenbank abfragen.
+Es wird zwar exakt wie ein normales `StringField` gerendert und validiert, besitzt jedoch einen eigenen Platz in der Filter-Registry. Diese Trennung stellt sicher, dass ObjectId-spezifische Filter nur auf ObjectId-Felder angewendet werden und nicht auf jedes normale Textfeld Ihrer Anwendung. Diese spezialisierten Filter parsen Zeichenketten sicher in gültige `PydanticObjectId`-Objekte, bevor sie die Datenbank abfragen.
 
-## Filterregistrierung
+## Filter-Registry {#filter-registry}
 
-Jeder Feldtyp erhält einen Default-Satz an Filtern aus der `BeanieFilterRegistry`.
+Jeder Feldtyp erhält einen Standardsatz an Filtern aus der `BeanieFilterRegistry`.
 
-- **String-Matching:** Der Gleichheitsfilter verwendet case-insensitive reguläre Ausdrücke, um Konsistenz mit anderen Textsuchen wie „Contains“ oder „Starts with“ zu wahren.
-- **Array-Operationen:** Die Registry bietet integrierte Unterstützung für arraybasierte Filterung, sodass Operationen wie „Is one of“ auf Listenfelder (wie `TagsField`) sofort funktionieren.
-- **Primärschlüssel:** Das Feld `id` wird beim Erstellen von Queryfragmenten automatisch auf MongoDBs natives `_id` umgemappt.
+- **Zeichenkettenabgleich:** Der Gleichheitsfilter verwendet case-insensitive reguläre Ausdrücke, um Konsistenz mit anderen Textsuchen wie „Contains" oder „Starts with" zu wahren.
+- **Array-Operationen:** Die Registry bietet integrierte Unterstützung für filterung auf Array-Basis, sodass „Is one of"-Operationen auf Listenfelder (wie `TagsField`) ohne weitere Konfiguration funktionieren.
+- **Primärschlüssel:** Das Feld `id` wird beim Aufbau von Query-Fragmenten automatisch auf das native `_id` von MongoDB umgemappt.
 
 ## Volltextsuche
 
-Wenn Benutzer mit dem Suchfeld auf einer Listenseite interagieren, prüft das Admin-Panel, ob in der MongoDB-Collection ein vorhandener Textindex existiert, und passt seine Querystrategie entsprechend an:
+Wenn Benutzer mit dem Suchfeld auf einer Listenseite interagieren, prüft das Administrationspanel, ob die MongoDB-Collection über einen vorhandenen Textindex verfügt, und passt seine Query-Strategie entsprechend an:
 
-- **Textindex vorhanden:** Die Query nutzt MongoDBs nativen `$text`-Operator. Dies bietet echte Volltextsuchfunktionen, einschließlich Tokenisierung, Stemming und Relevanz-Ranking.
-- **Kein Textindex vorhanden:** Das System fällt auf eine case-insensitive Suche mit regulären Ausdrücken über alle Felder zurück, die als `searchable` markiert sind. Dies erfordert zwar keine Einrichtung, kann Ergebnisse jedoch nicht nach Relevanz ordnen und keine Standardindizes nutzen.
+- **Textindex vorhanden:** Die Abfrage nutzt den nativen `$text`-Operator von MongoDB. Dies bietet echte Volltextsuchfunktionen einschließlich Tokenisierung, Stemming und Relevanz-Ranking.
+- **Kein Textindex vorhanden:** Das System greift auf eine case-insensitive Suche per regulärem Ausdruck über alle als `searchable` markierten Felder zurück. Dies erfordert zwar kein Setup, kann Ergebnisse jedoch nicht nach Relevanz ordnen und keine Standardindizes nutzen.
 
-Das Admin-Panel erkennt vorhandene Textindizes, erstellt aber keine. Sie müssen den Index in Ihrem Beanie-Dokument definieren, um die native Textsuche zu aktivieren. Sie können dies zum Beispiel erreichen, indem Sie `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` zu Ihrem Modell hinzufügen.
+Das Administrationspanel erkennt vorhandene Textindizes, erstellt sie jedoch nicht. Sie müssen den Index in Ihrem Beanie-Dokument definieren, um die native Textsuche zu aktivieren. Dies erreichen Sie beispielsweise, indem Sie `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` zu Ihrem Modell hinzufügen.
 
 !!! note
-Wenn Sie einen Textindex aktivieren, können Sie `full_text_override_order_by = True` in Ihrer `ModelView`-Unterklasse setzen, um Suchergebnisse nach MongoDBs Relevanzscore statt nach der Standardspaltensortierung zu sortieren.
+Wenn Sie einen Textindex aktivieren, können Sie `full_text_override_order_by = True` in Ihrer `ModelView`-Unterklasse setzen, um Suchergebnisse nach dem Relevanz-Score von MongoDB statt nach der Standard-Spalten sortierung zu ordnen.
 
 ## Vollständiges Arbeitsbeispiel
 
-Dieser Abschnitt bietet eine vollständige, lauffähige Beanie-Integration mit `starlette-admin`.
+Dieser Abschnitt enthält eine vollständige, lauffähige Beanie-Integration mit `starlette-admin`.
 
 ### 1. Abhängigkeiten installieren
 
@@ -267,13 +265,13 @@ Starten Sie den FastAPI-Entwicklungsserver:
     uv run -- fastapi dev
     ```
 
-Rufen Sie [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) in Ihrem Browser auf, um das Dashboard anzusehen und mit dem Dashboard zu interagieren.
+Rufen Sie [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) in Ihrem Browser auf, um das Admin-Dashboard anzuzeigen und damit zu interagieren.
 
-> **Erweitertes Beispiel:** [`examples/15-beanie`](https://github.com/jowilf/starlette-admin/tree/main/examples/15-beanie) im Repository enthält ein vollständiges Beispiel mit Inline-Views, Events und benutzerdefinierten Massenaktionen.
+> **Fortgeschrittenes Beispiel:** [`examples/15-beanie`](https://github.com/jowilf/starlette-admin/tree/main/examples/15-beanie) im Repository enthält ein vollständiges Beispiel mit Inline-Views, Events und benutzerdefinierten Batch-Aktionen.
 
-## Was Sie als Nächstes lesen sollten
+## Weitere Lektüre
 
 - **[Views](../user-guide/views.md)**: Erkunden Sie die Konfigurationsoptionen von `BaseModelView` unabhängig vom Backend.
-- **[Filters](../user-guide/filters.md):** Den Filter-Builder und wie ORM-spezifische Filter eingebunden werden.
-- **[MongoEngine](mongoengine.md):** Ein weiteres MongoDB-Backend, das in starlette-admin eingebaut ist.
-- **[SQLAlchemy](sqlalchemy.md):** Das relationale Backend, das in starlette-admin eingebaut ist.
+- **[Filters](../user-guide/filters.md):** Der Filter-Builder und wie ORM-spezifische Filter eingebunden werden.
+- **[MongoEngine](mongoengine.md):** Ein weiteres MongoDB-Backend, das in starlette-admin integriert ist.
+- **[SQLAlchemy](sqlalchemy.md):** Das relationale Backend, das in starlette-admin integriert ist.

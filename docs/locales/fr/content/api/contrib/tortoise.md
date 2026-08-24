@@ -1,12 +1,10 @@
 ---
-title: Référence de l'API du contrib Tortoise ORM
+title: Référence API du contrib Tortoise ORM
 description: Documentation de référence de l'API pour l'intégration du backend Tortoise
   ORM dans starlette-admin.
 source_hash: 64e4327c8b219a5ce961ab0f5a300132bb286dd74a34ad5ec50a110445af46bd
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,9 +23,9 @@ translation_date: '2026-08-22'
 
 # Contrib : Tortoise ORM
 
-Référence complète des attributs et méthodes du backend Tortoise ORM
-(`starlette_admin.contrib.tortoise`), générée à partir des docstrings. Pour un
-parcours orienté tâches, consultez [Tortoise ORM](../../integrations/tortoise.md).
+Référence complète des attributs et des méthodes pour le backend Tortoise ORM
+(`starlette_admin.contrib.tortoise`), générée à partir des docstrings. Pour un guide
+orienté tâches, consultez [Tortoise ORM](../../integrations/tortoise.md).
 
 ::: starlette_admin.contrib.tortoise.admin.Admin
 
@@ -48,6 +46,6 @@ parcours orienté tâches, consultez [Tortoise ORM](../../integrations/tortoise.
 !!! note
     Les classes de filtres concrètes (`ContainsFilter`, `EnumInFilter`, `RelationIsNullFilter`, etc.)
     ne sont pas énumérées ici. Elles reprennent les filtres indépendants du backend documentés dans
-    [Filtres](../filters.md) ; le comportement spécifique à Tortoise (recherches insensibles à la casse,
-    conversion des énumérations, vérifications de valeurs nulles sur les colonnes de clés brutes) est couvert dans
-    [Tortoise ORM](../../integrations/tortoise.md#registre-des-filtres).
+    [Filtres](../filters.md) ; les comportements spécifiques à Tortoise (recherches insensibles à la casse,
+    conversion des enums, vérifications de valeurs nulles sur les colonnes de clés brutes) sont traités dans
+    [Tortoise ORM](../../integrations/tortoise.md#filter-registry).

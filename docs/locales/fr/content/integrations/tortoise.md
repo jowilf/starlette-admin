@@ -3,10 +3,8 @@ title: Intégration de Tortoise ORM
 description: Créez facilement une interface d'administration pour vos modèles Tortoise
   ORM dans FastAPI à l'aide de starlette-admin.
 source_hash: 1cf5d85b26decc7ad12c8dd48040809f644a91e9c46410d700a5e5a72f72c39f
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,14 +23,14 @@ translation_date: '2026-08-22'
 
 # Intégration de Tortoise ORM
 
-Tortoise ORM est un mappeur objet-relationnel natif asyncio inspiré de Django. Le module `starlette_admin.contrib.tortoise` fournit des classes spécialisées `Admin`, `ModelView` et `InlineModelView` préconfigurées pour s'intégrer directement à vos modèles Tortoise.
+Tortoise ORM est un mappeur objet-relationnel natif asyncio, inspiré par Django. Le module `starlette_admin.contrib.tortoise` fournit des classes spécialisées `Admin`, `ModelView` et `InlineModelView` qui sont préconfigurées pour s'intégrer directement avec vos modèles Tortoise.
 
-**Fonctionnalités principales :**
+**Fonctionnalités clés :**
 
-* **Conversion automatique des champs :** Mappe directement les champs des modèles Tortoise vers les composants d'interface. Cela inclut la prise en charge complète des enums, du JSON, des dates et des horodatages automatiques.
-* **Mappage des relations :** Convertit les clés étrangères et les relations un-à-un en champs `HasOne`, et les relations plusieurs-à-plusieurs en champs `HasMany`. Les relations inverses sont automatiquement affichées en lecture seule.
-* **Filtrage avancé :** Exploite les expressions `Q` de Tortoise pour le générateur de filtres et active une recherche plein texte insensible à la casse sur les champs de type chaîne.
-* **Traduction des erreurs :** Mappe directement les erreurs de validation de Tortoise vers des erreurs de formulaire spécifiques à chaque champ dans l'interface.
+* **Conversion automatique des champs :** Mappe les champs des modèles Tortoise directement aux composants d'interface. Cela inclut la prise en charge complète des enums, du JSON, des dates et des timestamps automatiques.
+* **Mapping des relations :** Convertit les relations de type clé étrangère et one-to-one en champs `HasOne`, et les relations many-to-many en champs `HasMany`. Les relations inverses sont automatiquement affichées en lecture seule.
+* **Filtrage avancé :** Exploite les expressions `Q` de Tortoise pour le constructeur de filtres et active une recherche plein texte insensible à la casse sur les champs de type chaîne.
+* **Traduction des erreurs :** Mappe les erreurs de validation de Tortoise directement vers des erreurs de formulaire spécifiques à chaque champ dans l'interface.
 
 ## Installation
 
@@ -50,9 +48,9 @@ Tortoise ORM est un mappeur objet-relationnel natif asyncio inspiré de Django. 
 
 ## Exemple minimal
 
-Tortoise se connecte à la base de données dans le gestionnaire de contexte `lifespan` de votre application. Comme les vues d'administration sont généralement instanciées au moment de l'importation (avant l'exécution de `Tortoise.init()`), vous devez résoudre les relations tôt.
+Tortoise se connecte à la base de données dans le gestionnaire de contexte `lifespan` de votre application. Comme les vues d'administration sont généralement instanciées au moment de l'import (avant l'exécution de `Tortoise.init()`), vous devez résoudre les relations en amont.
 
-Appelez `Tortoise.init_models()` immédiatement après avoir défini vos modèles afin de garantir que les relations soient disponibles lors de la construction des vues d'administration.
+Appelez `Tortoise.init_models()` immédiatement après la définition de vos modèles afin de garantir que les relations soient disponibles lors de la construction des vues d'administration.
 
 ```python
 from contextlib import asynccontextmanager
@@ -70,7 +68,7 @@ class Genre(Model):
     description = fields.TextField(null=True)
 
 
-# Resolve relations at import time before the admin views are built.
+# Résolvez les relations au moment de l'import avant la construction des vues d'administration.
 Tortoise.init_models(["app"], "models")
 
 
@@ -101,16 +99,16 @@ La classe `ModelView` accepte directement la classe `Model` de Tortoise et déri
 
 ### `tortoise.Admin`
 
-La classe `tortoise.Admin` hérite de `BaseAdmin` et ne nécessite aucune configuration spécifique à la base de données lors de l'initialisation. La configuration de la connexion s'effectue entièrement dans le lifespan de l'application. Importez toujours `Admin` depuis `starlette_admin.contrib.tortoise` afin de garantir la compatibilité avec les futures améliorations spécifiques au backend.
+La classe `tortoise.Admin` hérite de `BaseAdmin` et ne nécessite aucune configuration spécifique à la base de données lors de son initialisation. L'établissement de la connexion s'effectue entièrement dans le `lifespan` de l'application. Importez toujours `Admin` depuis `starlette_admin.contrib.tortoise` afin de garantir la compatibilité avec les futures améliorations spécifiques au backend.
 
 ### `tortoise.ModelView`
 
-La classe `tortoise.ModelView` fournit la couche d'intégration entre votre base de données et l'interface utilisateur. Elle gère automatiquement les opérations suivantes :
+La classe `tortoise.ModelView` constitue la couche d'intégration entre votre base de données et l'interface utilisateur. Elle gère automatiquement les opérations suivantes :
 
-* **Remplissage des champs :** Génère les champs à partir de la définition du modèle si vous ne les spécifiez pas explicitement. Les colonnes de clé brute associées aux relations to-one (comme `author_id` pour une relation nommée `author`) ainsi que les relations inverses sont omises par défaut.
-* **Résolution des relations :** Précharge chaque relation affichée par la vue. Cela garantit que les pages de liste et les pages de détail ne déclenchent jamais de chargements paresseux.
-* **Horodatages automatiques :** Les colonnes utilisant `DatetimeField(auto_now=...)` ou `DatetimeField(auto_now_add=...)` sont affichées en lecture seule et ne sont jamais marquées comme obligatoires.
-* **Gestion des erreurs :** Traduit les erreurs de validation de Tortoise (`"<field>: <detail>"`) en erreurs de formulaire spécifiques à chaque champ, qui pointent directement l'utilisateur vers la saisie incorrecte.
+* **Remplissage des champs :** Génère les champs à partir de la définition du modèle si vous ne les spécifiez pas explicitement. Les colonnes brutes des clés sous-tendant les relations to-one (comme `author_id` pour une relation nommée `author`) ainsi que les relations inverses sont omises par défaut.
+* **Résolution des relations :** Précharge chaque relation affichée par la vue. Cela garantit que les listes et les pages de détail ne déclenchent jamais de lazy loads.
+* **Timestamps automatiques :** Les colonnes utilisant `DatetimeField(auto_now=...)` ou `DatetimeField(auto_now_add=...)` sont affichées en lecture seule et ne sont jamais marquées comme obligatoires.
+* **Gestion des erreurs :** Traduit les erreurs de validation de Tortoise (`"<champ> : <détail>"`) en erreurs de formulaire spécifiques à chaque champ, orientant directement l'utilisateur vers la saisie incorrecte.
 
 ```python
 from starlette_admin.contrib.tortoise import ModelView
@@ -124,7 +122,7 @@ class BookView(ModelView):
 
 ### `tortoise.InlineModelView`
 
-Les vues intégrées permettent aux utilisateurs de modifier des lignes liées directement dans le formulaire parent. La clé étrangère est détectée automatiquement lorsque le modèle enfant possède exactement une relation pointant vers le modèle parent. Si plusieurs relations existent, vous devez définir `fk_attr` explicitement, en utilisant soit le nom de la relation, soit sa colonne de clé brute.
+Les vues inline permettent aux utilisateurs de modifier les lignes liées directement dans le formulaire parent. La clé étrangère est détectée automatiquement lorsque le modèle enfant possède exactement une relation pointant vers le modèle parent. Si plusieurs relations existent, vous devez définir `fk_attr` explicitement, soit par le nom de la relation, soit par sa colonne de clé brute.
 
 ```python
 from starlette_admin.contrib.tortoise import InlineModelView, ModelView
@@ -140,38 +138,38 @@ class PostView(ModelView):
     inlines = [CommentInline]
 ```
 
-## Gérer les relations
+## Gestion des relations
 
-L'intégration mappe les relations de la base de données vers les champs d'administration en fonction du type de champ. Vous devez enregistrer un `ModelView` pour chaque modèle lié afin que les champs de relation puissent résoudre correctement leurs vues étrangères.
+L'intégration mappe les relations de la base de données aux champs d'administration selon le type de champ. Vous devez enregistrer un `ModelView` pour chaque modèle lié afin que les champs relationnels puissent résoudre correctement leurs vues étrangères.
 
-| Type de relation | Configuration Tortoise | Comportement côté administration |
+| Type de relation | Configuration Tortoise | Comportement côté admin |
 | --- | --- | --- |
-| **Directe (to-one)** | `ForeignKeyField`, `OneToOneField` | Convertit en `HasOne`. |
-| **Directe (to-many)** | `ManyToManyField` | Convertit en `HasMany`. |
-| **Inverse** | Propriétés `related_name` | Affiche en lecture seule. Doit être ajoutée explicitement à `fields` pour être visible. |
+| **Directe (To-One)** | `ForeignKeyField`, `OneToOneField` | Convertie en `HasOne`. |
+| **Directe (To-Many)** | `ManyToManyField` | Convertie en `HasMany`. |
+| **Inverse** | propriétés `related_name` | Affichée en lecture seule. Doit être ajoutée explicitement à `fields` pour être visible. |
 
 **Filtrage et tri sur les relations :**
-Les relations to-one proposent les filtres « Is null » et « Is not null » ciblant la colonne de clé brute. Pour exposer une relation dans le générateur de filtres, ajoutez le nom de la relation à `searchable_fields`. Pour activer le tri selon la colonne de clé brute, ajoutez le nom de la relation à `sortable_fields`.
+Les relations to-one proposent les filtres « Is null » et « Is not null » ciblant la colonne de clé brute. Pour exposer une relation dans le constructeur de filtres, ajoutez le nom de la relation à `searchable_fields`. Pour activer le tri sur la colonne de clé brute, ajoutez le nom de la relation à `sortable_fields`.
 
 ## Recherche et filtrage
 
-### Registre des filtres
+### Registre de filtres {#filter-registry}
 
-Chaque type de champ reçoit un ensemble de filtres par défaut du `TortoiseFilterRegistry`, implémentés à l'aide des expressions `Q` de Tortoise :
+Chaque type de champ reçoit un ensemble de filtres par défaut provenant du `TortoiseFilterRegistry`, implémentés à l'aide des expressions `Q` de Tortoise :
 
 * **Correspondance de chaînes :** Les filtres contient, commence/termine par et égalité utilisent des recherches insensibles à la casse (`__icontains`, `__istartswith`, `__iendswith`, `__iexact`).
-* **Enums :** Les valeurs brutes des filtres sont reconverties en membres d'enum avant l'interrogation, pour les colonnes `CharEnumField` et `IntEnumField`.
+* **Enums :** Les valeurs brutes des filtres sont converties en membres d'enum avant la requête, pour les colonnes `CharEnumField` et `IntEnumField`.
 * **Colonnes temporelles :** Les colonnes `TimeField` n'offrent que les vérifications de valeur nulle. Cette limitation existe car les paramètres de type time ne peuvent pas être liés de manière portable sur tous les backends de base de données.
 
-### Recherche en texte intégral
+### Recherche plein texte
 
-Le champ de recherche de la page de liste construit une correspondance `contains` insensible à la casse (expressions `Q` combinées par `OR`) sur tous les champs de type chaîne déclarés comme interrogeables. Vous pouvez personnaliser ce comportement en redéfinissant la méthode `get_search_query()` sur votre vue.
+La zone de recherche de la page de liste construit une correspondance insensible à la casse de type `contains` (expressions `Q` combinées par `OR`) sur tous les champs de type chaîne marqués comme recherchables. Vous pouvez personnaliser ce comportement en redéfinissant la méthode `get_search_query()` de votre vue.
 
-## Exemple fonctionnel complet
+## Exemple complet fonctionnel
 
 Cette section fournit une intégration complète et exécutable de Tortoise ORM avec `starlette-admin`.
 
-### 1. Installez les dépendances
+### 1. Installer les dépendances
 
 === "pip"
 
@@ -185,9 +183,9 @@ Cette section fournit une intégration complète et exécutable de Tortoise ORM 
     uv add starlette-admin tortoise-orm "fastapi[standard]"
     ```
 
-Le paquet `fastapi[standard]` inclut la CLI FastAPI, ce qui vous permet de démarrer le serveur de développement en exécutant `fastapi dev`.
+Le paquet `fastapi[standard]` inclut la CLI de FastAPI, ce qui vous permet de démarrer le serveur de développement en exécutant `fastapi dev`.
 
-### 2. Créez l'application
+### 2. Créer l'application
 
 Enregistrez le code suivant dans un fichier nommé `main.py`.
 
@@ -231,7 +229,7 @@ class Post(Model):
         return self.title
 
 
-# Resolve relations at import time before the admin views are built.
+# Résolvez les relations au moment de l'import avant la construction des vues d'administration.
 Tortoise.init_models(["main"], "models")
 
 
@@ -271,7 +269,7 @@ admin.mount_to(app)
 
 Comme `created_at` utilise `auto_now_add`, l'interface d'administration l'affiche automatiquement en lecture seule. Aucune configuration `exclude_fields_from_create` ou `exclude_fields_from_edit` n'est nécessaire.
 
-### 3. Démarrez le serveur
+### 3. Lancer le serveur
 
 Démarrez le serveur de développement FastAPI :
 
@@ -289,10 +287,10 @@ Démarrez le serveur de développement FastAPI :
 
 Accédez à [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) dans votre navigateur pour consulter le tableau de bord d'administration et interagir avec lui.
 
-> **Exemple avancé :** [`examples/17-tortoise`](https://github.com/jowilf/starlette-admin/tree/main/examples/17-tortoise) dans le dépôt contient un exemple complet incluant des relations, des vues intégrées, des enums et des champs JSON adossés à SQLite.
+> **Exemple avancé :** [`examples/17-tortoise`](https://github.com/jowilf/starlette-admin/tree/main/examples/17-tortoise) dans le dépôt contient un exemple complet incluant des relations, des vues inline, des enums et des champs JSON reposant sur SQLite.
 
 ## Pour aller plus loin
 
-* **[Vues](../user-guide/views.md) :** Explorez les options de configuration de `BaseModelView`, indépendantes du backend.
-* **[Filtres](../user-guide/filters.md) :** Découvrez le générateur de filtres et la manière dont les filtres spécifiques aux ORM s'y intègrent.
+* **[Vues](../user-guide/views.md) :** Explorez les options de configuration de `BaseModelView` indépendantes du backend.
+* **[Filtres](../user-guide/filters.md) :** Découvrez le constructeur de filtres et comment les filtres spécifiques à un ORM s'y intègrent.
 * **[SQLAlchemy](sqlalchemy.md) :** Documentation de l'autre backend relationnel intégré à starlette-admin.

@@ -3,14 +3,12 @@ title: Referencia de la API de Contrib para SQLModel
 description: Documentación de referencia de la API para la integración del backend
   SQLModel en starlette-admin.
 source_hash: ee62d48b6085bc125ca853e8cb77e9de5b6818a9babd9bef12bfcae9dd82e8e5
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -26,10 +24,10 @@ translation_date: '2026-08-22'
 # Contrib: SQLModel
 
 Referencia completa de atributos y métodos para el backend de SQLModel (`starlette_admin.contrib.sqlmodel`),
-generada a partir de docstrings. SQLModel se basa en SQLAlchemy, por lo que `Admin` y `ModelView` son
-subclases ligeras del [backend de SQLAlchemy](sqlalchemy.md) que validan los datos de los formularios a través de
-la capa de Pydantic del modelo. Para un recorrido orientado a tareas, consulte
-[Integración de SQLModel](../../integrations/sqlmodel.md).
+generada a partir de los docstrings. SQLModel se basa en SQLAlchemy por debajo, por lo que `Admin` y `ModelView` son
+subclases ligeras del [backend de SQLAlchemy](sqlalchemy.md) que validan los datos de los formularios a través de la
+capa Pydantic del modelo. Para una guía orientada a tareas, consulte
+[Integración con SQLModel](../../integrations/sqlmodel.md).
 
 ::: starlette_admin.contrib.sqlmodel.admin.Admin
 

@@ -1,9 +1,7 @@
 ---
 source_hash: 407757442fad75a534f382375e48ae12d4b0d56b21f2b5c4ee126b8d6ce698c7
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -20,24 +18,24 @@ translation_date: '2026-08-23'
     [Lesen Sie die ursprüngliche englische Version](https://jowilf.github.io/starlette-admin/blog/posts/soft-deletes-trash-view/)
 <!-- translation-notice:end -->
 
-# Soft-Deletes und eine Papierkorb-View mit FastAPI & starlette-admin
+# Soft Deletes und eine Trash-Ansicht mit FastAPI & starlette-admin
 
 _2026-07-10_
 
-Ein Standard-`DELETE` ist gnadenlos. Wenn ein Operator verklickt oder ein automatisierter Aufräum-Job gegen den falschen Filter läuft, sind die Daten verloren, sofern Sie keine komplexe Wiederherstellung der Datenbank durchführen. Die Implementierung eines „Soft-Delete“ mindert dieses Risiko, indem ein Datensatz als gelöscht markiert wird, statt ihn dauerhaft aus der Datenbank zu entfernen. Dieser Ansatz macht die Datenwiederherstellung zu einer einfachen Update-Operation.
+Eine Standard-`DELETE`-Operation ist unerbittlich. Wenn ein Operator verklickt oder ein automatisierter Aufräum-Job mit dem falschen Filter läuft, sind die Daten verloren – es sei denn, Sie führen eine komplexe Datenbank-Wiederherstellung durch. Die Implementierung eines „Soft Delete" mildert dieses Risiko ab, indem ein Datensatz als gelöscht markiert wird, statt ihn dauerhaft aus der Datenbank zu entfernen. Dieser Ansatz macht die Datenwiederherstellung zu einer einfachen Update-Operation.
 
-Diese Anleitung zeigt, wie Sie das Soft-Delete-Muster in einer FastAPI-Anwendung mit `starlette-admin` implementieren. Wir bauen eine vollständige Lösung auf der Grundlage von:
+Dieser Leitfaden zeigt, wie Sie das Soft-Delete-Muster in einer FastAPI-Anwendung mit `starlette-admin` implementieren. Wir bauen eine vollständige Lösung mit folgenden Komponenten:
 
 - Einem einzelnen Datenbankmodell
-- Zwei unterschiedlichen administrativen Views
+- Zwei unterschiedlichen administrativen Ansichten
 - Einem `deleted_at`-Zeitstempel
-- Einer dedizierten Papierkorb-Oberfläche zum Wiederherstellen oder dauerhaften Entfernen von Datensätzen
+- Einer dedizierten Trash-Oberfläche zum Wiederherstellen oder endgültigen Löschen von Datensätzen
 
-**Den vollständigen lauffähigen Code ansehen:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete).
+**Den vollständigen lauffähigen Code anzeigen:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete).
 
 ## Das Modell
 
-Fügen Sie der Tabelle, die Sie schützen möchten, eine nullable Zeitstempelspalte hinzu. Ein `NULL`-Wert kennzeichnet einen aktiven Datensatz, während ein gefüllter Zeitstempel einen gelöschten Datensatz kennzeichnet:
+Fügen Sie der Tabelle, die Sie schützen möchten, eine nullable Zeitstempel-Spalte hinzu. Ein `NULL`-Wert kennzeichnet einen aktiven Datensatz, während ein gesetzter Zeitstempel einen gelöschten Datensatz anzeigt:
 
 ```python title="app.py" hl_lines="8"
 class Post(Base):
@@ -50,11 +48,11 @@ class Post(Base):
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 ```
 
-Dieser Ansatz erfordert weder eine separate Papierkorb-Tabelle noch eine externe Soft-Delete-Mixin-Bibliothek. Eine einzige Spalte verwaltet die gesamte State Machine.
+Dieser Ansatz erfordert keine separate Trash-Tabelle und keine externe Soft-Delete-Mixin-Bibliothek. Eine einzelne Spalte verwaltet den gesamten Zustandsautomaten.
 
-## Gelöschte Zeilen in der aktiven View ausblenden
+## Gelöschte Zeilen in der aktiven Ansicht ausblenden
 
-Die Klasse `ModelView` baut ihre Listen-, Zähl- und Detail-Queries mit überschreibbaren Methoden auf. `get_detail_query` greift standardmäßig auf `get_list_query` zurück, sodass das Filtern der List-Query auch die Detailseite filtert, direkte URLs eingeschlossen. `get_count_query` ist unabhängig und muss separat gefiltert werden. Indem Sie diese Queries so filtern, dass sie nur Datensätze enthalten, bei denen `deleted_at IS NULL` gilt, blenden Sie Soft-gelöschte Zeilen wirksam von der Listenseite, den Paginierungs-Zählern und direkten Detail-Links aus:
+Die Klasse `ModelView` erstellt ihre Listen-, Zähl- und Detailabfragen mithilfe überschreibbarer Methoden. `get_detail_query` greift standardmäßig auf `get_list_query` zurück, sodass die Filterung der Listenabfrage auch die Detailseite filtert – direkte URLs eingeschlossen. `get_count_query` ist unabhängig und muss separat gefiltert werden. Indem Sie diese Abfragen so filtern, dass sie nur Datensätze einschließen, bei denen `deleted_at IS NULL` gilt, blenden Sie soft-gelöschte Zeilen wirksam von der Listenseite, den Paginierungszählern und direkten Detail-Links aus:
 
 ```python title="app.py" hl_lines="7-8 10-11"
 class PostView(ModelView):
@@ -70,14 +68,14 @@ class PostView(ModelView):
         return super().get_count_query(request).where(Post.deleted_at.is_(None))
 ```
 
-Sie müssen `deleted_at` außerdem von den Create- und Edit-Formularen ausschließen. Operatoren sollten dieses Feld niemals manuell setzen; es sollte nur programmatisch durch die Methode `delete()` und die Restore-Aktion geändert werden.
+Sie müssen `deleted_at` außerdem von den Create- und Edit-Formularen ausschließen. Operatoren sollten dieses Feld niemals manuell setzen; es sollte ausschließlich programmatisch durch die Methode `delete()` und die Restore-Aktion geändert werden.
 
 !!! warning
-    Ein fehlendes `get_count_query` erzeugt ein Daten-Sichtbarkeitsleck: Paginierungs- und Suchergebnis-Gesamtzahlen enthalten gelöschte Zeilen, obwohl diese nicht in der Liste gerendert werden. `get_detail_query` benötigt hier keine separate Überschreibung, da es standardmäßig auf `get_list_query` zurückgreift und denselben Filter automatisch erbt. Wenn Sie einer View dennoch ein benutzerdefiniertes `get_detail_query` geben, erbt sie nicht mehr von `get_list_query` und muss `deleted_at` selbst filtern.
+Ein fehlendes `get_count_query` führt zu einem Leak bei der Datensichtbarkeit: Paginierungs- und Suchergebnis-Zähler schließen gelöschte Zeilen ein, obwohl diese nicht in der Liste gerendert werden. `get_detail_query` benötigt hier keine separate Überschreibung, da es standardmäßig auf `get_list_query` zurückgreift und denselben Filter automatisch erbt. Wenn Sie einer Ansicht jedoch ein eigenes `get_detail_query` geben, erbt sie nicht mehr von `get_list_query` und muss `deleted_at` selbst filtern.
 
 ## Delete neu definieren
 
-Sowohl die integrierte Massenlösch-Aktion als auch die Lösch-Schaltfläche auf Zeilenebene rufen `ModelView.delete()` auf. Das Überschreiben dieser Methode definiert das Löschverhalten global über alle Einstiegspunkte hinweg neu, ohne zusätzliche Konfiguration:
+Sowohl die integrierte Batch-Delete-Aktion als auch der Delete-Button auf Zeilenebene rufen die Methode `ModelView.delete()` auf. Durch das Überschreiben dieser Methode definieren Sie das Löschverhalten global über alle Einstiegspunkte hinweg neu – ohne zusätzliche Konfiguration:
 
 ```python title="app.py" hl_lines="6-7 11"
 async def delete(self, request: Request, pks: list[Any]) -> int | None:
@@ -94,15 +92,15 @@ async def delete(self, request: Request, pks: list[Any]) -> int | None:
     return len(objs)
 ```
 
-Die Aufrufe von `_emit_before_delete` und `_emit_after_delete` stellen sicher, dass der [Event Bus](../../advanced/events.md) genau so feuert wie bei einem Hard-Delete. Ein Abonnent von `AdminEvent.AFTER_DELETE` (etwa ein Audit-Log oder ein Webhook) muss daher nicht wissen, dass das Löschen soft war. Die Auswirkung ändert sich auf der Ebene der Datenbankzeile, aber die Lifecycle-Events bleiben konsistent.
+Die Aufrufe `_emit_before_delete` und `_emit_after_delete` stellen sicher, dass der [Event Bus](../../advanced/events.md) genau so auslöst, wie er es bei einem Hard Delete täte. Folglich muss ein `AdminEvent.AFTER_DELETE`-Abonnent (etwa ein Audit-Log oder ein Webhook) nicht wissen, dass die Löschung soft erfolgte. Die Auswirkung ändert sich auf der Ebene der Datenbankzeile, aber die Lifecycle-Events bleiben konsistent.
 
 ### AFTER_DELETE_COMMITTED braucht seine eigene Verdrahtung
 
-Die Events `BEFORE_DELETE` und `AFTER_DELETE` bilden nicht den kompletten Lifecycle ab. Die Basisimplementierung von `ModelView.delete()` in SQLAlchemy registriert zusätzlich einen `on_commit`-Callback. Dieser Callback feuert das Event `AFTER_DELETE_COMMITTED`, sobald die Transaktion erfolgreich committet, sodass Abonnenten sicher davon ausgehen können, dass die Zeile dauerhaft entfernt wurde.
+Die Events `BEFORE_DELETE` und `AFTER_DELETE` repräsentieren nicht den vollständigen Lifecycle. Die Basisimplementierung der Methode `ModelView.delete()` registriert zusätzlich einen `on_commit`-Callback. Dieser Callback löst das Event `AFTER_DELETE_COMMITTED` aus, sobald die Transaktion erfolgreich committet wurde, sodass Abonnenten sicher davon ausgehen können, dass die Zeile dauerhaft entfernt ist.
 
-Da das Beispiel `PostView` die Methode `delete()` vollständig überschreibt, wird die Standardregistrierung des `on_commit` umgangen. Ein Handler, der auf einer Soft-Delete-fähigen View auf `AdminEvent.AFTER_DELETE_COMMITTED` lauscht, feuert daher stillschweigend nicht.
+Da das Beispiel `PostView` die Methode `delete()` vollständig überschreibt, wird die Standardregistrierung von `on_commit` umgangen. Folglich wird ein Handler, der auf einem soft-löschbaren View auf `AdminEvent.AFTER_DELETE_COMMITTED` lauscht, stillschweigend nicht ausgelöst.
 
-Um diese Funktionalität wiederherzustellen, müssen Sie denselben Callback manuell registrieren, den auch die Basisimplementierung verwendet:
+Um diese Funktionalität wiederherzustellen, müssen Sie denselben Callback manuell registrieren, den die Basisimplementierung verwendet:
 
 ```python title="app.py" hl_lines="16-17 20 22"
 from collections.abc import Callable
@@ -130,15 +128,15 @@ async def delete(self, request: Request, pks: list[Any]) -> int | None:
     return len(objs)
 ```
 
-Die Hilfsfunktion `_make_after_delete_committed` nimmt `obj` und `pk` als normale Parameter entgegen. Sie wird pro Zeile einmalig mit den Werten genau dieser Zeile aufgerufen. Diese Struktur ist entscheidend. Würden Sie ein Lambda direkt im Schleifenkörper erstellen, würde es sich auf die Schleifenvariablen selbst beziehen statt auf ihre Werte in dem jeweiligen Durchlauf. Infolgedessen würde jeder Callback nach Abschluss der Schleife mit den finalen Werten von `obj` und `pk` feuern. Werden sie als Argumente an eine äußere Funktion übergeben, wird ihr exakter Zustand zum Aufrufzeitpunkt eingefangen.
+Die Hilfsfunktion `_make_after_delete_committed` nimmt `obj` und `pk` als normale Parameter entgegen. Sie wird einmal pro Zeile mit den Werten genau dieser Zeile aufgerufen. Diese Struktur ist entscheidend. Würden Sie ein Lambda direkt im Schleifenkörper erstellen, würde es über die Schleifenvariablen selbst schließen statt über deren Werte im jeweiligen Iterationsschritt. Infolgedessen würde jeder Callback nach Abschluss der Schleife mit den finalen Werten von `obj` und `pk` ausgelöst. Werden sie als Argumente an eine äußere Funktion übergeben, wird ihr exakter Zustand zum Aufrufzeitpunkt eingefangen.
 
-Ein Vorteil von Soft-Deletes kommt hier zum Tragen. Ein Hard-Delete erfordert, das Objekt (`session.expunge`) zu trennen, bevor sein Committed-Callback geplant wird. Da eine hart gelöschte Zeile zum Commit-Zeitpunkt bereits weg ist, löst der Zugriff auf ein nicht geladenes Attribut einen `ObjectDeletedError` aus. Da ein Soft-Delete die Zeile nie entfernt, bleibt das Objekt angehängt und alle Attribute sind innerhalb des Callbacks sicher lesbar.
+Ein Vorteil des Soft Deletes kommt hier zum Tragen. Ein Hard Delete erfordert das Detachen des Objekts (`session.expunge`), bevor sein Committed-Callback eingeplant wird. Da eine hard-gelöschte Zeile zum Commit-Zeitpunkt bereits verschwunden ist, löst der Zugriff auf ein nicht geladenes Attribut einen `ObjectDeletedError` aus. Da ein Soft Delete die Zeile nie entfernt, bleibt das Objekt attached, und alle Attribute sind innerhalb des Callbacks sicher lesbar.
 
-Die wichtigste Regel für `on_commit` gilt jedoch weiterhin: Der Callback darf nicht über `request.state.session` in die Datenbank schreiben. Diese Session ist bereits abgeschlossen. Alles, was in diese Session geflusht wird, startet eine neue Transaktion, die beim Schließen der Session verworfen wird.
+Die Grundregel für `on_commit` gilt dennoch weiterhin: Der Callback darf nicht unter Verwendung von `request.state.session` in die Datenbank schreiben. Diese Session ist bereits abgeschlossen. Alles, was in diese Session geflusht wird, startet eine neue Transaktion, die beim Schließen der Session verworfen wird.
 
-## Eine zweite View für dieselbe Tabelle
+## Eine zweite Ansicht für dieselbe Tabelle
 
-Die `TrashView` zielt auf dasselbe Modell `Post`, registriert sich aber unter einem eigenen `key`. Diese Konfiguration weist `starlette-admin` an, sie als eigenständige Ressource mit separater URL und separatem Menüeintrag zu behandeln:
+Der `TrashView` zielt auf dasselbe `Post`-Modell, registriert sich jedoch unter einem eigenen `key`. Diese Konfiguration weist `starlette-admin` an, ihn als eigenständige Ressource mit separater URL und eigenem Menüeintrag zu behandeln:
 
 ```python title="app.py" hl_lines="8 11"
 class TrashView(ModelView):
@@ -160,13 +158,13 @@ class TrashView(ModelView):
         return False
 ```
 
-Diese Queries sind das exakte Gegenteil der `PostView`-Queries und filtern auf `IS NOT NULL` statt auf `IS NULL`. `get_detail_query` greift wiederum standardmäßig auf `get_list_query` zurück, sodass gelöschte Datensätze auf ihrer Detailseite korrekt aufgelöst werden, ganz ohne separate Überschreibung. Die Methoden `can_create` und `can_edit` geben `False` zurück, weil Operatoren Datensätze niemals direkt im Papierkorb erstellen oder bearbeiten sollten. Datensätze gelangen nur über `PostView.delete()` in den Papierkorb und verlassen ihn nur über eine Restore-Aktion oder eine endgültige Bereinigung.
+Diese Abfragen sind das exakte Gegenteil der `PostView`-Abfragen und filtern auf `IS NOT NULL` statt auf `IS NULL`. `get_detail_query` greift erneut standardmäßig auf `get_list_query` zurück, sodass sich gelöschte Datensätze auf ihrer Detailseite korrekt auflösen lassen – ohne separate Überschreibung. Die Methoden `can_create` und `can_edit` geben `False` zurück, da Operatoren niemals direkt im Papierkorb Datensätze erstellen oder bearbeiten sollten. Datensätze können nur über `PostView.delete()` in den Papierkorb gelangen und ihn nur über eine Restore-Aktion oder eine endgültige Bereinigung verlassen.
 
-## Wiederherstellen und das Argument für ein echtes Delete
+## Wiederherstellen – und der Fall für ein echtes Delete
 
-Die `TrashView` behält die integrierte `delete`-Aktion in ihrer `actions`-Liste bei und überschreibt sie nicht. Innerhalb der Papierkorb-View führt das Ausführen eines `delete` ein normales SQL-`DELETE` aus. Dies wirkt als endgültige Bereinigung. Sobald eine Zeile aus dem Papierkorb entfernt wurde, ist sie vollständig weg.
+Der `TrashView` behält die integrierte `delete`-Aktion in seiner `actions`-Liste bei und überschreibt sie nicht. Innerhalb der Trash-Ansicht führt die Ausführung eines `delete` ein Standard-SQL-`DELETE` durch. Dies wirkt als endgültige Bereinigung. Sobald eine Zeile aus dem Papierkorb entfernt wurde, ist sie vollständig verschwunden.
 
-Das Wiederherstellen eines Datensatzes erfordert eine kleine [benutzerdefinierte Aktion](../../user-guide/actions.md), die den Zeitstempel `deleted_at` leert:
+Das Wiederherstellen eines Datensatzes erfordert eine kleine [Custom Action](../../user-guide/actions.md), die den Zeitstempel `deleted_at` zurücksetzt:
 
 ```python title="app.py" hl_lines="12"
 @action(
@@ -187,32 +185,32 @@ async def restore_action(self, request: Request, pks: list[Any]) -> None:
     flash(request, f"{count} post{'s' if count != 1 else ''} restored.", "success")
 ```
 
-Das Setzen von `deleted_at = None` stellt die Zeile beim nächsten Request sofort wieder in die aktive Liste der `PostView` zurück, da die primäre View nur nach `NULL`-Werten fragt.
+Durch das Setzen von `deleted_at = None` erscheint die Zeile unmittelbar bei der nächsten Anfrage wieder in der aktiven Liste des `PostView`, da die primäre Ansicht ausschließlich nach `NULL`-Werten abfragt.
 
-## Beide Views mit derselben Tabelle verbinden
+## Beide Ansichten mit derselben Tabelle verbinden
 
 ```python title="app.py" hl_lines="2"
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Posts"))
 admin.add_view(TrashView(Post, key="trash", icon="fa fa-trash"))
 ```
 
-Diese Konfiguration richtet zwei separate administrative Views für eine einzige Datenbanktabelle ein. Eine einzige Spalte bestimmt, welche View jede bestimmte Zeile anzeigt.
+Diese Konfiguration etabliert zwei separate administrative Ansichten für eine einzige Datenbanktabelle. Eine einzelne Spalte bestimmt, welche Ansicht jede bestimmte Zeile anzeigt.
 
 ## Wo dieses Muster an seine Grenzen stößt
 
-- **Unique Constraints:** Eine `UNIQUE`-Constraint auf einem Feld wie `slug` verhindert, dass Operatoren einen aktiven Beitrag mit demselben Slug neu erstellen, solange die Soft-gelöschte Version noch im Papierkorb liegt. Zur Lösung entweder Zeilen mit `deleted_at IS NOT NULL` mithilfe eines partiellen Index aus dem Unique-Index ausschließen (sofern Ihre Datenbank-Engine dies unterstützt) oder die Spalte `deleted_at` selbst in die Unique-Constraint aufnehmen.
-- **Foreign Keys:** Ein Soft-gelöschter `Post` bleibt eine gültige Zeile für Fremdschlüssel-Beziehungen in anderen Tabellen. Kind-Datensätze verweisen weiterhin darauf. Während dies oft das gewünschte Verhalten ist, erfordert das Kaskadieren eines Soft-Deletes auf verwandte Zeilen explizite eigene Logik. Die Datenbank handhabt das nicht automatisch so wie `ON DELETE CASCADE` bei Hard-Deletes.
-- **Query-Disziplin:** Jede neue Datenbank-Query, die auf das Modell `Post` zielt, muss den Filter `deleted_at IS NULL` explizit enthalten. Lässt eine Raw-Query, ein Export-Job oder eine sekundäre Admin-View diesen Filter weg, sickern gelöschte Daten in aktive Workflows.
-- **Datenbankwachstum:** Soft-gelöschte Zeilen belegen weiterhin Tabellen- und Indexplatz. Wenn Ihre Anwendung die meisten Soft-gelöschten Zeilen bereinigt, statt sie wiederherzustellen, sollten Sie einen geplanten Hintergrund-Job implementieren. Dieser Job kann Datensätze, die älter als ein bestimmtes Aufbewahrungszeitfenster sind, hart löschen, um ein unbegrenztes Datenbankwachstum zu verhindern.
+- **Unique Constraints:** Ein `UNIQUE`-Constraint auf einem Feld wie `slug` verhindert, dass Operatoren einen aktiven Post mit demselben Slug neu erstellen, solange die soft-gelöschte Version noch im Papierkorb liegt. Zur Lösung bieten sich zwei Wege an: Entweder schließen Sie Zeilen mit `deleted_at IS NOT NULL` mithilfe eines Partial Index (sofern Ihre Datenbank-Engine diesen unterstützt) vom Unique Index aus, oder Sie nehmen die Spalte `deleted_at` selbst in den Unique Constraint auf.
+- **Foreign Keys:** Ein soft-gelöschter `Post` bleibt eine gültige Zeile für Foreign-Key-Beziehungen in anderen Tabellen. Kinddatensätze werden weiterhin auf ihn auflösen. Während dies oft das gewünschte Verhalten ist, erfordert das Kaskadieren eines Soft Deletes auf verwandte Zeilen explizite Custom Logic. Die Datenbank behandelt dies nicht automatisch so wie `ON DELETE CASCADE` bei Hard Deletes.
+- **Query-Disziplin:** Jede neue Datenbankabfrage, die auf das Modell `Post` abzielt, muss den Filter `deleted_at IS NULL` explizit enthalten. Lässt eine Raw Query, ein Export-Job oder eine sekundäre Admin-Ansicht diesen Filter weg, sickern gelöschte Daten in aktive Workflows.
+- **Datenbankwachstum:** Soft-gelöschte Zeilen belegen weiterhin Tabellen- und Indexspeicher. Wenn Ihre Anwendung die meisten soft-gelöschten Zeilen bereinigt statt sie wiederherzustellen, ziehen Sie die Implementierung eines geplanten Background Jobs in Betracht. Dieser Job kann Datensätze, die älter als ein bestimmtes Aufbewahrungszeitfenster sind, hard-deleten, um ein unbegrenztes Datenbankwachstum zu verhindern.
 
-## Auf andere Backends erweitern
+## Erweiterung auf andere Backends
 
-Die Kernprinzipien dieses Musters beschränken sich nicht auf SQLAlchemy. Sie können diesen Ansatz auf jedem Backend umsetzen, das das Überschreiben von Listen-, Zähl- und Detail-Queries neben der Methode `delete()` erlaubt. Wenn Sie beispielsweise Beanie, MongoEngine oder Tortoise ORM verwenden, filtern die entsprechenden Overrides die Query auf ein Feld `deleted_at` auf exakt dieselbe Weise. Die konkrete Query-Syntax ändert sich, aber das architektonische Muster bleibt identisch.
+Die Grundprinzipien dieses Musters sind nicht exklusiv für SQLAlchemy. Sie können diesen Ansatz auf jedem Backend implementieren, das das Überschreiben von Listen-, Zähl- und Detailabfragen gemeinsam mit der Methode `delete()` erlaubt. Wenn Sie beispielsweise Beanie, MongoEngine oder Tortoise ORM verwenden, filtern die entsprechenden Overrides die Abfrage auf ein Feld `deleted_at` auf exakt dieselbe Weise. Die konkrete Query-Syntax ändert sich, doch das architektonische Muster bleibt identisch.
 
 ---
 
-## Was kommt als Nächstes
+## Was kommt als Nächstes?
 
-- **[Events](../../advanced/events.md):** Verstehen Sie, wie `_emit_before_delete` und `_emit_after_delete` mit externen Abonnenten außerhalb der View zusammenhängen.
-- **[Actions](../../user-guide/actions.md):** Erkunden Sie den Decorator hinter `restore_action`, einschließlich der Implementierung von Bestätigungsdialogen und Flash-Nachrichten-Helfern.
-- **[Views](../../user-guide/views.md):** Sehen Sie sich den vollständigen Satz an Query- und Permission-Hooks innerhalb von `ModelView` an.
+- **[Events](../../advanced/events.md):** Verstehen Sie, wie `_emit_before_delete` und `_emit_after_delete` externe Abonnenten außerhalb der View anbinden.
+- **[Actions](../../user-guide/actions.md):** Erkunden Sie den Decorator hinter `restore_action`, einschließlich der Implementierung von Bestätigungsdialogen und Flash-Message-Helfern.
+- **[Views](../../user-guide/views.md):** Sehen Sie sich den vollständigen Satz an Query- und Permission-Hooks an, der innerhalb von `ModelView` verfügbar ist.

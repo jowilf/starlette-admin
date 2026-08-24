@@ -1,12 +1,10 @@
 ---
 title: Référence de l'API des champs
-description: Documentation de référence de l'API pour tous les types de champs disponibles
+description: Documentation de référence API pour tous les types de champs disponibles
   dans starlette-admin.
 source_hash: 79eba140a93083b5b94b39d6496d16d9703d48140b5290383927e0ee28325836
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,7 +23,7 @@ translation_date: '2026-08-22'
 
 # Champs
 
-Référence complète des attributs et des méthodes de `BaseField` et de tous les types de champs intégrés, générée à partir de leurs docstrings. Pour un guide orienté tâches, consultez [Champs](../user-guide/fields.md).
+Référence complète des attributs et méthodes de `BaseField` et de chaque type de champ intégré, générée à partir de leurs docstrings. Pour un parcours orienté tâches, consultez [Fields](../user-guide/fields.md).
 
 ## Classe de base
 

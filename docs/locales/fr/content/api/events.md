@@ -3,10 +3,8 @@ title: Référence de l'API des événements
 description: Documentation de référence de l'API pour le système d'événements et les
   hooks de starlette-admin.
 source_hash: 38b33892f675bf13798c334f941f806a503dc542816e56e5593ee7eb99103312
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,7 +23,7 @@ translation_date: '2026-08-22'
 
 # Événements
 
-Référence complète des attributs et méthodes du système d'événements, générée à partir des docstrings. Pour un guide orienté tâches, consultez [Événements](../advanced/events.md).
+Référence complète des attributs et méthodes du système d'événements, générée à partir des docstrings. Pour un parcours orienté tâche, consultez [Événements](../advanced/events.md).
 
 ## Bus d'événements
 
@@ -39,7 +37,7 @@ Référence complète des attributs et méthodes du système d'événements, gé
 
 ::: starlette_admin.events.AdminEvent
 
-## Contextes d'événements
+## Contextes d'événement
 
 ::: starlette_admin.events.EventContext
 

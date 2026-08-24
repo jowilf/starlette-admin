@@ -1,11 +1,9 @@
 ---
-title: Справочник API модуля Beanie Contrib
-description: Справочная документация по API интеграции бэкенда Beanie в starlette-admin.
+title: Справочник API Contrib для Beanie
+description: Справочная документация по API интеграции Beanie backend в starlette-admin.
 source_hash: 6a89593e9010ec12dd664910d2bbb407467441efa960bc4a6fefd818a7d71b36
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,8 +22,8 @@ translation_date: '2026-08-23'
 
 # Contrib: Beanie
 
-Полный справочник атрибутов и методов для бэкенда Beanie (`starlette_admin.contrib.beanie`),
-сгенерированный из докстрингов. Пошаговое руководство с примерами задач см. в разделе
+Полный справочник атрибутов и методов для Beanie backend (`starlette_admin.contrib.beanie`),
+сгенерированный из docstrings. Пошаговое руководство с примерами задач см. в разделе
 [Beanie](../../integrations/beanie.md).
 
 ::: starlette_admin.contrib.beanie.admin.Admin
@@ -34,17 +32,16 @@ translation_date: '2026-08-23'
 
 ::: starlette_admin.contrib.beanie.view.InlineModelView
 
-## Поля
+## Fields
 
 ::: starlette_admin.contrib.beanie.fields.BeanieObjectIdField
 
-## Конвертеры
+## Converters
 
 ::: starlette_admin.contrib.beanie.converters.BeanieModelConverter
 
 !!! note
-    Конкретные классы фильтров (`EqualFilter`, `ArrayInFilter`, `ObjectIdEqualFilter` и так далее)
-    здесь не перечислены. Они повторяют не зависящие от бэкенда фильтры, описанные в разделе
-    [Фильтры](../filters.md); специфичное для Beanie поведение (сопоставление строк с помощью
-    заякоренных регулярных выражений, полнотекстовый поиск) рассматривается в разделе
-    [Beanie](../../integrations/beanie.md#filter-registry).
+    Конкретные классы фильтров (`EqualFilter`, `ArrayInFilter`, `ObjectIdEqualFilter` и т. д.)
+    здесь не перечисляются. Они повторяют фильтры, не зависящие от backend, описанные в разделе
+    [Filters](../filters.md); специфичное для Beanie поведение (поиск по строкам с привязанным regex,
+    полнотекстовый поиск) рассматривается в разделе [Beanie](../../integrations/beanie.md#filter-registry).

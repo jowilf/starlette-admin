@@ -1,12 +1,10 @@
 ---
-title: Instances d'administration multiples
-description: Montez plusieurs tableaux de bord d'administration isolés sur une seule
-  application FastAPI pour différents rôles ou domaines d'utilisateurs.
+title: Instances Admin multiples
+description: Montez plusieurs tableaux de bord admin isolés sur une seule application
+  FastAPI pour différents rôles d'utilisateurs ou domaines.
 source_hash: 8b8c561c0c44bf9cb942e4e0d074f7a7e10c1e1fadb7339f4c76acce70d3a9a2
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -23,9 +21,9 @@ translation_date: '2026-08-22'
     [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/advanced/multiple-admin/)
 <!-- translation-notice:end -->
 
-# Instances d'administration multiples
+# Instances Admin multiples
 
-Chaque instance de `Admin` que vous construisez est une sous-application Starlette autonome. Montez-en autant que nécessaire, chacune avec son propre `base_url`, `route_name`, fournisseur d'authentification et vues.
+Chaque instance `Admin` que vous construisez est une sous-application Starlette autonome. Montez-en autant que nécessaire, chacune avec son propre `base_url`, son propre `route_name`, son fournisseur d'authentification et ses vues.
 
 ```python
 from sqlalchemy import create_engine
@@ -107,11 +105,11 @@ root_admin.mount_to(app)
 
 ```
 
-Dans cet exemple, `/staff` affiche une page de connexion gérée par `StaffAuth` et `/root` en affiche une autre, gérée par `SuperAdminAuth`. Se connecter à l'un ne donne pas accès à l'autre : chaque `SessionMiddleware` signe son cookie avec son propre `secret_key`, de sorte que chaque instance de `Admin` ne lit que les données de session écrites par son propre fournisseur d'authentification.
+Dans cet exemple, `/staff` affiche une page de connexion adossée à `StaffAuth` et `/root` en affiche une autre adossée à `SuperAdminAuth`. Se connecter à l'un ne donne pas accès à l'autre : chaque `SessionMiddleware` signe son cookie avec son propre `secret_key`, de sorte que chaque instance `Admin` ne lit que les données de session écrites par son propre fournisseur d'authentification.
 
 ## `base_url` et `route_name`
 
-`base_url` et `route_name` sont des paramètres du constructeur des classes `Admin` et `BaseAdmin` dans `starlette_admin/base.py`. Ils ont pour valeurs par défaut `/admin` et `"admin"` :
+`base_url` et `route_name` sont des paramètres du constructeur des classes `Admin` et `BaseAdmin` dans `starlette-admin/base.py`. Leurs valeurs par défaut sont `/admin` et `"admin"` :
 
 ```python
 def __init__(
@@ -124,21 +122,21 @@ def __init__(
 
 ```
 
-* **`base_url`** définit le préfixe de chemin auquel le panneau d'administration est monté. Il est passé directement dans l'appel interne `app.mount(self.base_url, app=admin_app, name=self.route_name)`, il doit donc être unique pour chaque instance. Sinon, un montage masque l'autre.
-* **`route_name`** est le nom sous lequel Starlette enregistre le montage. Chaque URL générée par le panneau d'administration, pour les listes, les détails, les modifications, les exportations et les ressources statiques, provient de `request.url_for(route_name + ":list", ...)`, et chaque template de page lit `request.app.state.ROUTE_NAME` pour obtenir le bon préfixe lors de la construction des liens.
+* **`base_url`** définit le préfixe de chemin auquel l'admin est monté. Il passe directement dans l'appel interne `app.mount(self.base_url, app=admin_app, name=self.route_name)`, il doit donc être unique pour chaque instance. Dans le cas contraire, un montage masque l'autre.
+* **`route_name`** est le nom sous lequel Starlette enregistre le montage. Chaque URL générée par l'admin — pour les listes, les détails, les éditions, les exports et les ressources statiques — provient de `request.url_for(route_name + ":list", ...)`, et chaque template de page lit `request.app.state.ROUTE_NAME` pour obtenir le bon préfixe lors de la construction des liens.
 
-`mount_to` construit une sous-application Starlette fraîche pour chaque instance du panneau d'administration : les middleware, les routes et les variables globales de template restent donc isolés. `Admin` n'est pas un singleton à l'échelle du processus : construisez autant d'instances indépendantes que votre application en a besoin.
+`mount_to` construit une nouvelle sous-application Starlette pour chaque instance admin, si bien que les middlewares, les routes et les variables globales des templates restent isolés. `Admin` n'est pas un singleton à l'échelle du processus : construisez autant d'instances indépendantes que votre application en a besoin.
 
 !!! warning
-    Donnez à chaque `Admin` un `route_name` distinct. Le routeur de Starlette résout `url_for("admin:list", ...)` en faisant correspondre le **nom** du montage ; deux panneaux d'administration partageant un même `route_name` laissent donc l'application parente avec deux montages sous le même nom, et `url_for` résout vers celui que Starlette trouve en premier. Tous les liens internes du second panneau d'administration, y compris les liens de modification, les ressources statiques et les endpoints d'exportation, pointent alors silencieusement vers le `base_url` du premier.
+    Attribuez à chaque `Admin` un `route_name` distinct. Le routeur de Starlette résout `url_for("admin:list", ...)` en correspondant au **nom** du montage ; ainsi, deux admins partageant le même `route_name` laissent l'application parente avec deux montages sous le même nom, et `url_for` résout vers celui que Starlette trouve en premier. Chaque lien interne du deuxième admin — y compris les liens d'édition, les ressources statiques et les endpoints d'export — pointe alors silencieusement vers le `base_url` du premier.
 
 ## Partager des vues ou définir des vues distinctes
 
-`add_view` prend une instance de vue et la modifie pendant la configuration. Pour une `BaseModelView`, cette configuration lie des callbacks internes au panneau d'administration auprès duquel elle est enregistrée, notamment la manière dont les champs `HasOne` et `HasMany` résolvent les liens vers les enregistrements liés.
+`add_view` reçoit une instance de vue et la modifie pendant sa configuration. Pour une `BaseModelView`, cette configuration lie des callbacks internes à l'admin auprès duquel elle est enregistrée, notamment la manière dont les champs `HasOne` et `HasMany` résolvent les liens vers les enregistrements associés.
 
-Si vous enregistrez la même **instance** de vue sur deux panneaux d'administration, le second appel à `add_view` écrase ces callbacks : les liens de relation sur les pages du premier panneau sont alors résolus par rapport aux vues et aux URLs du second.
+Enregistrez la même **instance** de vue sur deux admins et le second appel `add_view` écrase ces callbacks : les liens de relation sur les pages du premier admin se résolvent alors par rapport aux vues et aux URLs du second.
 
-Pour éviter cela, donnez à chaque panneau d'administration une nouvelle instance de la **classe** `ModelView`. La classe ne contient aucun état propre à un panneau d'administration ; seules les instances en contiennent :
+Pour éviter cela, donnez à chaque admin une nouvelle instance de la **classe** `ModelView`. La classe ne contient aucun état propre à un admin ; seules les instances en ont :
 
 ```python
 staff_admin.add_view(ModelView(Order))
@@ -146,7 +144,7 @@ root_admin.add_view(ModelView(Order))  # separate instance of the same class; th
 
 ```
 
-Lorsque les deux panneaux d'administration nécessitent des comportements différents, comme des règles de visibilité différentes ou des permissions `can_delete`, écrivez une sous-classe pour chacun plutôt que de modifier une instance partagée à l'exécution :
+Lorsque les deux admins nécessitent des comportements différents, comme des règles de visibilité ou des permissions `can_delete` distinctes, écrivez une sous-classe pour chacun au lieu de modifier une instance partagée à l'exécution :
 
 ```python
 class StaffOrderView(ModelView):
@@ -171,4 +169,4 @@ root_admin.add_view(RootOrderView(Order))
 
 * **[Authentication](../user-guide/auth.md) :** le contrat complet de `AuthProvider` et `OAuthProvider`.
 * **[Extension Points](extension-points.md) :** toutes les autres surfaces enfichables disponibles sur la classe `Admin`.
-* **[Quickstart](../getting-started/quickstart.md) :** la configuration de base avec un seul panneau d'administration sur laquelle ce guide s'appuie.
+* **[Quickstart](../getting-started/quickstart.md) :** la configuration mono-admin fondamentale sur laquelle ce guide s'appuie.

@@ -22,6 +22,9 @@ CONTENT_SUBDIR = "content"
 SOURCE_LOCALE = "en"
 EN_CONTENT_DIR = LOCALES_DIR / "en" / CONTENT_SUBDIR
 REGISTRY_PATH = LOCALES_DIR / "locales.json"
+#: Single system prompt shared by every locale; `{name}` / `{code}` are
+#: substituted at runtime with the target locale's entry from locales.json.
+TRANSLATIONS_PROMPT_PATH = LOCALES_DIR / "translations_prompt.md"
 ROOT_CONFIG_PATH = PROJECT_ROOT / "zensical.toml"
 
 #: Pages never translated, regardless of per-locale `skip` lists.
@@ -176,11 +179,8 @@ def registry_codes() -> list[str]:
 
 def require_locale_files(code: str) -> None:
     base = locale_dir(code)
-    missing = [
-        name for name in ("llm_prompt.md", "nav.json") if not (base / name).is_file()
-    ]
-    if missing:
-        raise I18nError(f"locale '{code}' is incomplete, missing {missing} in {base}")
+    if not (base / "nav.json").is_file():
+        raise I18nError(f"locale '{code}' is incomplete, missing nav.json in {base}")
 
 
 def resolve_locales(selection: list[str]) -> list[str]:
@@ -479,16 +479,16 @@ def stored_prompt_hash(text: str) -> str | None:
     return value if isinstance(value, str) else None
 
 
-def prompt_hash(code: str) -> str:
-    return sha256_file(locale_dir(code) / "llm_prompt.md")
+def prompt_hash() -> str:
+    return sha256_file(TRANSLATIONS_PROMPT_PATH)
 
 
 def hashes_current(text: str, en_path: Path, code: str) -> bool:
-    """True when the English source and the locale llm_prompt are unchanged."""
+    """True when the English source and the shared prompt are unchanged."""
     return (
         en_path.exists()
         and stored_source_hash(text) == sha256_file(en_path)
-        and stored_prompt_hash(text) == prompt_hash(code)
+        and stored_prompt_hash(text) == prompt_hash()
     )
 
 

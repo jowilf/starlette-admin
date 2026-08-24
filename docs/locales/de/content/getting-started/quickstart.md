@@ -1,12 +1,10 @@
 ---
-title: Quickstart
-description: Erstellen Sie mit unserem umfassenden Quickstart-Guide in wenigen Minuten
-  ein voll funktionsfähiges CRUD-Admin-Interface für FastAPI und Starlette.
+title: Schnellstart
+description: Erstellen Sie in wenigen Minuten eine voll funktionsfähige CRUD-Admin-Oberfläche
+  für FastAPI und Starlette mit unserem umfassenden Schnellstart-Leitfaden.
 source_hash: 19c9639af6caf311e19b134a5042588a3329ca1c3eeb005f000e63d8ac92c7bc
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -23,13 +21,13 @@ translation_date: '2026-08-23'
     [Lesen Sie die ursprüngliche englische Version](https://jowilf.github.io/starlette-admin/getting-started/quickstart/)
 <!-- translation-notice:end -->
 
-# Quickstart
+# Schnellstart
 
-Erstellen Sie in wenigen Minuten ein voll funktionsfähiges CRUD-Admin-Interface für einen Blog, mit automatisch generierten Formularen, Listen, Suche, Import und Export, direkt aus Ihren Datenmodellen gespeist.
+Erstellen Sie in wenigen Minuten eine voll funktionsfähige CRUD-Admin-Oberfläche für einen Blog – mit automatisch generierten Formularen, Listen, Suche, Import und Export, die direkt aus Ihren Datenmodellen erzeugt werden.
 
 ## Installation
 
-Installieren Sie die notwendigen Pakete mit Ihrem bevorzugten Paketmanager:
+Installieren Sie die erforderlichen Pakete mit Ihrem bevorzugten Paketmanager:
 
 === "pip"
 
@@ -44,7 +42,7 @@ Installieren Sie die notwendigen Pakete mit Ihrem bevorzugten Paketmanager:
     ```
 
 !!! note
-    Das Paket `fastapi[standard]` enthält die FastAPI-CLI, mit der Sie den Entwicklungsserver durch Ausführen von `fastapi dev` starten können.
+    Das Paket `fastapi[standard]` enthält die FastAPI CLI, mit der Sie den Entwicklungsserver durch Ausführen von `fastapi dev` starten können.
 
 ## Das vollständige Beispiel
 
@@ -97,7 +95,7 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.mount_to(app)
 ```
 
-## Die Anwendung ausführen
+## Anwendung ausführen
 
 Starten Sie den Entwicklungsserver:
 
@@ -113,13 +111,13 @@ Starten Sie den Entwicklungsserver:
     uv run -- fastapi dev
     ```
 
-Öffnen Sie einen Browser und gehen Sie zu [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin).
+Öffnen Sie einen Browser und navigieren Sie zu [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin).
 
-Wählen Sie in der Seitenleiste **Posts** und anschließend **Create** aus. Sie haben jetzt Zugriff auf paginierte List-, Detail-, Create-, Edit- und Delete-Seiten. Das System generiert all diese Interfaces automatisch aus Ihrer Modelldefinition.
+Wählen Sie in der Seitenleiste **Posts** und anschließend **Create**. Sie haben nun Zugriff auf paginierte Listen-, Detail-, Erstellungs-, Bearbeitungs- und Löschseiten. Das System generiert alle diese Oberflächen automatisch aus Ihrer Modelldefinition.
 
-## Wie es funktioniert
+## Funktionsweise
 
-Die folgenden Abschnitte erklären die zentralen Komponenten der Anwendung.
+Die folgenden Abschnitte erläutern die zentralen Komponenten der Anwendung.
 
 ### Das Modell
 
@@ -136,7 +134,7 @@ class Post(Base):
     )
 ```
 
-Dieser Code verwendet Standard-SQLAlchemy 2.0. Das Paket starlette-admin liest die Spaltenmetadaten, die diesen Attributen zugeordnet sind, um das exakte HTML-Eingabefeld zu bestimmen, das generiert werden soll. Beispielsweise erstellt es ein Textfeld für `str`, eine Checkbox für `bool` und einen Datetime-Picker für `datetime`.
+Dieser Code verwendet Standard-SQLAlchemy 2.0. Das Paket starlette-admin liest die Spaltenmetadaten, die diesen Attributen zugeordnet sind, um das exakte HTML-Eingabefeld zu bestimmen, das generiert werden soll. Beispielsweise erstellt es ein Textfeld für `str`, ein Kontrollkästchen für `bool` und einen Datums-Zeit-Auswahl für `datetime`.
 
 ### Die View
 
@@ -146,7 +144,7 @@ class PostView(ModelView):
     searchable_fields = ("title", "content")
 ```
 
-`PostView` dient als zentrales Objekt für diese Ressource. Das Attribut `fields` steuert, welche Spalten in der Liste und im Formular erscheinen, während `searchable_fields` die Suchleiste aktiviert. Alle Konfigurationen dazu, wie `Post` im Admin-Dashboard aussieht und sich verhält, befinden sich innerhalb dieser einen Klasse.
+`PostView` dient als zentrales Objekt für diese Ressource. Das Attribut `fields` steuert, welche Spalten in der Liste und im Formular erscheinen, während `searchable_fields` die Suchleiste aktiviert. Sämtliche Konfigurationen dafür, wie `Post` im Admin-Dashboard aussieht und sich verhält, befinden sich in dieser einzigen Klasse.
 
 !!! note
     Das Beispiel importiert `ModelView` aus `starlette_admin.contrib.sqla`, da es auf SQLAlchemy basiert. Wenn Sie ein anderes Backend verwenden, etwa Beanie, MongoEngine oder Tortoise ORM, müssen Sie `ModelView` aus dem entsprechenden contrib-Paket importieren. Die Konfigurations-API bleibt über alle unterstützten Backends hinweg konsistent.
@@ -159,17 +157,17 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.mount_to(app)
 ```
 
-Die Klasse `Admin` verbindet die Datenbank-Engine mit dem User Interface.
+Die Klasse `Admin` verbindet die Datenbank-Engine mit der Benutzeroberfläche.
 
 * `add_view` registriert Ihre View in der Seitenleiste. Der optionale Parameter `icon` akzeptiert jede gültige [Font Awesome](https://fontawesome.com/icons)-Klasse.
-* `mount_to` hängt die Admin-Anwendung unter dem Pfad `/admin` an Ihre FastAPI- oder Starlette-Anwendung an.
+* `mount_to` bindet die Admin-Anwendung unter dem Pfad `/admin` an Ihre FastAPI- oder Starlette-Anwendung an.
 
 !!! warning
-    Der Parameter `secret_key` signiert Cookies für Session-Daten, einschließlich Flash-Nachrichten und CSRF-Schutz. In Produktionsumgebungen müssen Sie den Beispielwert durch einen langen, zufälligen und sicher generierten String ersetzen. Verwenden Sie niemals einen Platzhalterwert in einem Live-Deployment.
+    Der Parameter `secret_key` signiert Cookies für Sitzungsdaten, einschließlich Flash-Nachrichten und CSRF-Schutz. In Produktionsumgebungen müssen Sie den Beispielwert durch eine lange, zufällige und sicher generierte Zeichenkette ersetzen. Verwenden Sie niemals einen Platzhalterwert in einer Live-Bereitstellung.
 
 ## Ein zweites Modell hinzufügen
 
-Sie können eine unbeschränkte Anzahl von Modellen registrieren. Um zum Beispiel ein `Tag`-Modell und seine entsprechende View hinzuzufügen, definieren Sie die Klassen und rufen `add_view` erneut auf:
+Sie können eine unbegrenzte Anzahl von Modellen registrieren. Um beispielsweise ein `Tag`-Modell mit der entsprechenden View hinzuzufügen, definieren Sie die Klassen und rufen `add_view` erneut auf:
 
 ```python
 class Tag(Base):
@@ -188,12 +186,12 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.add_view(TagView(Tag, icon="fa fa-tag"))
 ```
 
-Aktualisieren Sie das Browserfenster, um sowohl **Posts** als auch **Tags** in der Seitenleiste zu sehen. Jede Ressource verfügt nun über ihre eigenen voll funktionsfähigen List-, Create-, Edit- und Delete-Seiten.
+Laden Sie das Browserfenster neu, um sowohl **Posts** als auch **Tags** in der Seitenleiste zu sehen. Jede Ressource verfügt nun über eigene voll funktionsfähige Listen-, Erstellungs-, Bearbeitungs- und Löschseiten.
 
 ---
 
 ## Nächste Schritte
 
-* **[Konzepte](concepts.md):** Lernen Sie die Terminologie der hier eingeführten Konzepte kennen, um sich besser in der Benutzeranleitung zurechtzufinden.
-* **[Admin](../user-guide/admin.md):** Entdecken Sie alle `Admin(...)`-Optionen, einschließlich Branding, Theming, Authentifizierung, Sicherheit und Internationalisierung.
-* **[Views](../user-guide/views.md):** Erkunden Sie alle verfügbaren `ModelView`-Konfigurationsoptionen zur Anpassung Ihrer Datenpräsentation.
+* **[Konzepte](concepts.md):** Lernen Sie die Terminologie der hier eingeführten Konzepte kennen, um sich im Benutzerhandbuch besser zurechtzufinden.
+* **[Admin](../user-guide/admin.md):** Entdecken Sie alle Optionen von `Admin(...)`, einschließlich Branding, Theming, Authentifizierung, Sicherheit und Internationalisierung.
+* **[Views](../user-guide/views.md):** Erkunden Sie sämtliche Konfigurationsoptionen von `ModelView`, die zur Anpassung Ihrer Datenpräsentation zur Verfügung stehen.

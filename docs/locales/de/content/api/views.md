@@ -2,10 +2,8 @@
 title: Views-API-Referenz
 description: API-Referenzdokumentation für ModelView, CustomView und Link in starlette-admin.
 source_hash: 38859e9f37ece4d46c4fb18d8b26d357f9de6f5334cc205694cf2289e20d1427
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,7 +22,7 @@ translation_date: '2026-08-23'
 
 # Views
 
-Vollständige Referenz der Attribute und Methoden der View-Klassen, generiert aus deren Docstrings. Eine aufgabenorientierte Einführung finden Sie unter [Views](../user-guide/views.md) und
+Vollständige Referenz der Attribute und Methoden der View-Klassen, generiert aus deren Docstrings. Eine aufgabenorientierte Einführung finden Sie unter [Views](../user-guide/views.md) sowie
 [Custom Views & Widgets](../user-guide/custom-views.md).
 
 ::: starlette_admin.views.BaseView

@@ -1,12 +1,10 @@
 ---
 title: Tortoise-ORM-Integration
-description: Erstellen Sie mit starlette-admin ganz einfach ein Admin-Interface für
-  Ihre Tortoise-ORM-Modelle in FastAPI.
+description: Erstellen Sie mit starlette-admin ganz einfach eine Admin-Oberfläche
+  für Ihre Tortoise-ORM-Modelle in FastAPI.
 source_hash: 1cf5d85b26decc7ad12c8dd48040809f644a91e9c46410d700a5e5a72f72c39f
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -25,14 +23,14 @@ translation_date: '2026-08-23'
 
 # Tortoise-ORM-Integration
 
-Tortoise ORM ist ein asyncio-nativer Object-Relational Mapper, der von Django inspiriert ist. Das Modul `starlette_admin.contrib.tortoise` stellt spezialisierte `Admin`-, `ModelView`- und `InlineModelView`-Klassen bereit, die vorkonfiguriert sind, um sich direkt in Ihre Tortoise-Modelle zu integrieren.
+Tortoise ORM ist ein asyncio-nativer Object-Relational Mapper, der von Django inspiriert ist. Das Modul `starlette_admin.contrib.tortoise` stellt spezialisierte Klassen `Admin`, `ModelView` und `InlineModelView` bereit, die vorkonfiguriert sind und sich direkt in Ihre Tortoise-Modelle integrieren lassen.
 
 **Wichtigste Funktionen:**
 
-* **Automatische Feldkonvertierung:** Bildet Tortoise-Modellfelder direkt auf UI-Komponenten ab. Dies umfasst volle Unterstützung für Enums, JSON, Datumsangaben und automatische Zeitstempel.
-* **Relationales Mapping:** Konvertiert Fremdschlüssel- und One-to-One-Beziehungen in `HasOne`-Felder und Many-to-Many-Beziehungen in `HasMany`-Felder. Rückwärtsbeziehungen werden automatisch als schreibgeschützt dargestellt.
-* **Erweiterte Filterung:** Nutzt Tortoise-`Q`-Ausdrücke für den Filterbuilder und ermöglicht eine Groß-/Kleinschreibung ignorierende Volltextsuche über String-Felder hinweg.
-* **Fehlerübersetzung:** Bildet Tortoise-Validierungsfehler direkt auf feldspezifische Formularfehler im UI ab.
+* **Automatische Feldkonvertierung:** Bildet Tortoise-Modellfelder direkt auf UI-Komponenten ab. Dies umfasst vollständige Unterstützung für Enums, JSON, Datumsangaben und automatische Zeitstempel.
+* **Relationale Abbildung:** Konvertiert Foreign-Key- und One-to-One-Relationen in `HasOne`-Felder sowie Many-to-Many-Relationen in `HasMany`-Felder. Rückwärtsrelationen werden automatisch schreibgeschützt dargestellt.
+* **Erweiterte Filterung:** Nutzt Tortoise-`Q`-Ausdrücke für den Filter-Builder und ermöglicht eine case-insensitive Volltextsuche über String-Felder.
+* **Fehlerübersetzung:** Ordnet Tortoise-Validierungsfehler direkt feldspezifischen Formularfehlern in der Benutzeroberfläche zu.
 
 ## Installation
 
@@ -48,11 +46,11 @@ Tortoise ORM ist ein asyncio-nativer Object-Relational Mapper, der von Django in
     uv add starlette-admin tortoise-orm
     ```
 
-## Minimalbeispiel
+## Minimales Beispiel
 
-Tortoise verbindet sich innerhalb des `lifespan`-Context-Managers Ihrer Anwendung mit der Datenbank. Da Admin-Views typischerweise zur Importzeit instanziiert werden (bevor `Tortoise.init()` ausgeführt wird), müssen Sie Beziehungen frühzeitig auflösen.
+Tortoise verbindet sich innerhalb des `lifespan`-Context-Managers Ihrer Anwendung mit der Datenbank. Da Admin-Views typischerweise zur Importzeit instanziiert werden (also bevor `Tortoise.init()` ausgeführt wird), müssen Sie Relationen frühzeitig auflösen.
 
-Rufen Sie `Tortoise.init_models()` unmittelbar nach der Definition Ihrer Modelle auf, um sicherzustellen, dass die Beziehungen verfügbar sind, wenn die Admin-Views erstellt werden.
+Rufen Sie `Tortoise.init_models()` unmittelbar nach der Definition Ihrer Modelle auf, um sicherzustellen, dass die Relationen verfügbar sind, wenn die Admin-Views aufgebaut werden.
 
 ```python
 from contextlib import asynccontextmanager
@@ -95,21 +93,21 @@ if __name__ == "__main__":
 
 ```
 
-Die `ModelView` akzeptiert die Tortoise-`Model`-Klasse direkt und leitet automatisch die Feldliste, Formulare und Filter aus dem Schema des Datenbankmodells ab.
+Die Klasse `ModelView` akzeptiert die Tortoise-Klasse `Model` direkt und leitet die Feldliste, Formulare und Filter automatisch aus dem Schema des Modells ab.
 
-## Kernklassen
+## Zentrale Klassen
 
 ### `tortoise.Admin`
 
-Die Klasse `tortoise.Admin` erbt von `BaseAdmin` und erfordert bei der Initialisierung keine datenbankspezifische Konfiguration. Das Verbindungsaufbau erfolgt vollständig innerhalb des Lifespans der Anwendung. Importieren Sie `Admin` immer aus `starlette_admin.contrib.tortoise`, um die Kompatibilität mit zukünftigen backend-spezifischen Erweiterungen sicherzustellen.
+Die Klasse `tortoise.Admin` erbt von `BaseAdmin` und benötigt bei der Initialisierung keine datenbankspezifische Konfiguration. Der Verbindungsaufbau erfolgt vollständig innerhalb des Lifespans der Anwendung. Importieren Sie `Admin` immer aus `starlette_admin.contrib.tortoise`, um die Kompatibilität mit zukünftigen backend-spezifischen Erweiterungen sicherzustellen.
 
 ### `tortoise.ModelView`
 
-Die Klasse `tortoise.ModelView` bildet die Integrationsschicht zwischen Ihrer Datenbank und dem User Interface. Sie übernimmt folgende Operationen automatisch:
+Die Klasse `tortoise.ModelView` bildet die Integrationsschicht zwischen Ihrer Datenbank und der Benutzeroberfläche. Sie übernimmt folgende Operationen automatisch:
 
-* **Feldbefüllung:** Generiert Felder aus der Modelldefinition, sofern Sie diese nicht explizit angeben. Die rohen Schlüsselspalten, die To-One-Beziehungen unterliegen (wie `author_id` für eine Beziehung namens `author`), sowie Rückwärtsbeziehungen werden standardmäßig ausgelassen.
-* **Beziehungsauslösung:** Lädt jede von der View angezeigte Beziehung vorab (Prefetch). Dadurch lösen Listen- und Detailseiten niemals Lazy Loads aus.
-* **Auto-Zeitstempel:** Spalten mit `DatetimeField(auto_now=...)` oder `DatetimeField(auto_now_add=...)` werden schreibgeschützt dargestellt und nie als erforderlich markiert.
+* **Feldbefüllung:** Generiert Felder aus der Modelldefinition, sofern Sie diese nicht explizit angeben. Die rohen Schlüsselspalten, die To-one-Relationen zugrunde liegen (z. B. `author_id` für eine Relation namens `author`), sowie Rückwärtsrelationen werden standardmäßig ausgelassen.
+* **Relationsauflösung:** Lädt jede Relation vorab (Prefetching), die von dem View angezeigt wird. Dadurch lösen Listen- und Detailseiten niemals Lazy Loads aus.
+* **Automatische Zeitstempel:** Spalten mit `DatetimeField(auto_now=...)` oder `DatetimeField(auto_now_add=...)` werden schreibgeschützt dargestellt und niemals als Pflichtfeld markiert.
 * **Fehlerbehandlung:** Übersetzt Tortoise-Validierungsfehler (`"<field>: <detail>"`) in feldspezifische Formularfehler, die Benutzerinnen und Benutzer direkt auf die fehlerhafte Eingabe hinweisen.
 
 ```python
@@ -124,7 +122,7 @@ class BookView(ModelView):
 
 ### `tortoise.InlineModelView`
 
-Inline-Views ermöglichen es Benutzern, verwandte Zeilen innerhalb des übergeordneten Formulars zu bearbeiten. Der Fremdschlüssel wird automatisch erkannt, wenn das Kindmodell genau eine Beziehung zum Elternmodell besitzt. Wenn mehrere Beziehungen existieren, müssen Sie `fk_attr` explizit festlegen, entweder mit dem Namen der Beziehung oder mit ihrer rohen Schlüsselspalte.
+Inline-Views ermöglichen es, zugehörige Zeilen innerhalb des übergeordneten Formulars zu bearbeiten. Der Foreign Key wird automatisch erkannt, wenn das untergeordnete Modell genau eine Relation besitzt, die auf das übergeordnete Modell zeigt. Existieren mehrere Relationen, müssen Sie `fk_attr` explizit festlegen – entweder über den Relationsnamen oder dessen rohe Schlüsselspalte.
 
 ```python
 from starlette_admin.contrib.tortoise import InlineModelView, ModelView
@@ -140,34 +138,34 @@ class PostView(ModelView):
     inlines = [CommentInline]
 ```
 
-## Umgang mit Beziehungen
+## Umgang mit Relationen
 
-Die Integration bildet Datenbankbeziehungen anhand des Feldtyps auf Admin-Felder ab. Sie müssen für jedes verwandte Modell eine `ModelView` registrieren, damit Beziehungsfelder ihre fremden Views erfolgreich auflösen können.
+Die Integration bildet Datenbankrelationen anhand des Feldtyps auf Admin-Felder ab. Sie müssen für jedes referenzierte Modell einen `ModelView` registrieren, damit Relationsfelder ihre fremden Views erfolgreich auflösen können.
 
-| Beziehungstyp | Tortoise-Konfiguration | Admin-Verhalten |
+| Relationstyp | Tortoise-Konfiguration | Verhalten im Admin |
 | --- | --- | --- |
 | **Forward (To-One)** | `ForeignKeyField`, `OneToOneField` | Wird zu `HasOne` konvertiert. |
 | **Forward (To-Many)** | `ManyToManyField` | Wird zu `HasMany` konvertiert. |
 | **Backward** | `related_name`-Properties | Wird schreibgeschützt dargestellt. Muss explizit zu `fields` hinzugefügt werden, um angezeigt zu werden. |
 
-**Filtern und Sortieren über Beziehungen:**
-To-One-Beziehungen bieten die Filter „Is null“ und „Is not null“, die auf die rohe Schlüsselspalte abzielen. Um eine Beziehung im Filterbuilder verfügbar zu machen, fügen Sie den Beziehungsnamen zu `searchable_fields` hinzu. Um die Sortierung nach der rohen Schlüsselspalte zu ermöglichen, fügen Sie den Beziehungsnamen zu `sortable_fields` hinzu.
+**Filterung und Sortierung über Relationen:**
+To-one-Relationen bieten die Filter „Is null" und „Is not null", die auf die rohe Schlüsselspalte abzielen. Um eine Relation im Filter-Builder verfügbar zu machen, fügen Sie den Relationsnamen zu `searchable_fields` hinzu. Um die Sortierung nach der rohen Schlüsselspalte zu ermöglichen, fügen Sie den Relationsnamen zu `sortable_fields` hinzu.
 
 ## Suche und Filterung
 
-### Filterregistry
+### Filter-Registry {#filter-registry}
 
-Jeder Feldtyp erhält einen Standardsatz von Filtern aus der `TortoiseFilterRegistry`, implementiert mit Tortoise-`Q`-Ausdrücken:
+Jeder Feldtyp erhält einen Standardsatz von Filtern aus der `TortoiseFilterRegistry`, die mithilfe von Tortoise-`Q`-Ausdrücken implementiert ist:
 
-* **String-Matching:** Contains-, Starts/Ends-With- und Equality-Filter verwenden Lookups ohne Berücksichtigung der Groß-/Kleinschreibung (`__icontains`, `__istartswith`, `__iendswith`, `__iexact`).
-* **Enums:** Rohe Filterwerte werden vor der Query sowohl für `CharEnumField`- als auch für `IntEnumField`-Spalten zurück in Enum-Member umgewandelt.
-* **Zeitspalten:** `TimeField`-Spalten bieten nur Null-Prüfungen. Diese Einschränkung besteht, weil Parameter vom Typ Time nicht portabel über alle Database-Backends hinweg gebunden werden können.
+* **String-Matching:** Contains-, Starts/Ends-with- und Equality-Filter verwenden case-insensitive Lookups (`__icontains`, `__istartswith`, `__iendswith`, `__iexact`).
+* **Enums:** Rohe Filterwerte werden vor der Abfrage sowohl bei `CharEnumField`- als auch bei `IntEnumField`-Spalten zurück in Enum-Member konvertiert.
+* **Zeitspalten:** `TimeField`-Spalten bieten ausschließlich Null-Prüfungen. Diese Einschränkung besteht, weil Parameter vom Typ Time nicht portabel über alle Datenbank-Backends gebunden werden können.
 
 ### Volltextsuche
 
-Das Suchfeld der Listenseite erstellt eine Groß-/Kleinschreibung ignorierende `contains`-Übereinstimmung (`OR`-kombinierte `Q`-Ausdrücke) über alle durchsuchbaren String-artigen Felder hinweg. Sie können dieses Verhalten anpassen, indem Sie die Methode `get_search_query()` Ihrer View überschreiben.
+Das Suchfeld der Listenseite erstellt einen case-insensitiven `contains`-Vergleich (mit `OR` kombinierte `Q`-Ausdrücke) über alle durchsuchbaren string-artigen Felder. Sie können dieses Verhalten anpassen, indem Sie die Methode `get_search_query()` Ihres Views überschreiben.
 
-## Vollständiges lauffähiges Beispiel
+## Vollständiges Beispiel
 
 Dieser Abschnitt enthält eine vollständige, lauffähige Tortoise-ORM-Integration mit `starlette-admin`.
 
@@ -185,11 +183,11 @@ Dieser Abschnitt enthält eine vollständige, lauffähige Tortoise-ORM-Integrati
     uv add starlette-admin tortoise-orm "fastapi[standard]"
     ```
 
-Das Paket `fastapi[standard]` enthält die FastAPI CLI, mit der Sie den Entwicklungsserver durch Ausführung von `fastapi dev` starten können.
+Das Paket `fastapi[standard]` enthält die FastAPI CLI, mit der Sie den Entwicklungsserver durch Ausführen von `fastapi dev` starten können.
 
-### 2. Die Anwendung erstellen
+### 2. Anwendung erstellen
 
-Speichern Sie den folgenden Code in einer Datei namens `main.py`.
+Speichern Sie den folgenden Code in einer Datei mit dem Namen `main.py`.
 
 ```python title="main.py"
 from contextlib import asynccontextmanager
@@ -269,9 +267,9 @@ admin.add_view(PostView(Post, icon="fa fa-newspaper"))
 admin.mount_to(app)
 ```
 
-Da `created_at` `auto_now_add` verwendet, stellt das Admin-Interface es automatisch schreibgeschützt dar. Eine Konfiguration mit `exclude_fields_from_create` oder `exclude_fields_from_edit` ist nicht erforderlich.
+Da `created_at` `auto_now_add` verwendet, stellt der Admin dieses Feld automatisch schreibgeschützt dar. Eine Konfiguration über `exclude_fields_from_create` oder `exclude_fields_from_edit` ist nicht erforderlich.
 
-### 3. Den Server starten
+### 3. Server starten
 
 Starten Sie den FastAPI-Entwicklungsserver:
 
@@ -287,12 +285,12 @@ Starten Sie den FastAPI-Entwicklungsserver:
     uv run -- fastapi dev
     ```
 
-Navigieren Sie in Ihrem Browser zu [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin), um das Dashboard anzuzeigen und damit zu interagieren.
+Rufen Sie [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) in Ihrem Browser auf, um das Admin-Dashboard anzuzeigen und damit zu interagieren.
 
-> **Fortgeschrittenes Beispiel:** [`examples/17-tortoise`](https://github.com/jowilf/starlette-admin/tree/main/examples/17-tortoise) im Repository enthält ein voll funktionsfähiges Beispiel, das Beziehungen, Inline-Views, Enums und JSON-Felder auf Basis von SQLite umfasst.
+> **Fortgeschrittenes Beispiel:** [`examples/17-tortoise`](https://github.com/jowilf/starlette-admin/tree/main/examples/17-tortoise) im Repository enthält ein vollständiges Beispiel mit Relationen, Inline-Views, Enums und JSON-Feldern auf Basis von SQLite.
 
-## Was Sie als Nächstes lesen sollten
+## Weiterführende Lektüre
 
 * **[Views](../user-guide/views.md):** Erkunden Sie die Konfigurationsoptionen von `BaseModelView`, unabhängig vom Backend.
-* **[Filters](../user-guide/filters.md):** Erfahren Sie mehr über den Filterbuilder und wie ORM-spezifische Filter eingebunden werden.
-* **[SQLAlchemy](sqlalchemy.md):** Dokumentation für das andere relationale Backend, das in starlette-admin integriert ist.
+* **[Filters](../user-guide/filters.md):** Erfahren Sie mehr über den Filter-Builder und wie ORM-spezifische Filter eingebunden werden.
+* **[SQLAlchemy](sqlalchemy.md):** Dokumentation zum anderen relationalen Backend, das in starlette-admin integriert ist.

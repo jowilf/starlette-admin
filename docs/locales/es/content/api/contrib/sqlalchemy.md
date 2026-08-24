@@ -1,16 +1,14 @@
 ---
 title: Referencia de la API de Contrib para SQLAlchemy
 description: Documentación de referencia de la API para la integración del backend
-  de SQLAlchemy en starlette-admin.
+  SQLAlchemy en starlette-admin.
 source_hash: c966b22ba523b8451e3c0168394e068bf412475140a3d5427bc0c70d2c6d971d
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -25,8 +23,8 @@ translation_date: '2026-08-22'
 
 # Contrib: SQLAlchemy
 
-Referencia completa de atributos y métodos del backend de SQLAlchemy (`starlette_admin.contrib.sqla`),
-generada a partir de las cadenas de documentación. Para una guía orientada a tareas, consulte
+Referencia completa de atributos y métodos para el backend de SQLAlchemy (`starlette_admin.contrib.sqla`),
+generada a partir de las docstrings. Para una guía orientada a tareas, consulte
 [SQLAlchemy](../../integrations/sqlalchemy.md).
 
 ::: starlette_admin.contrib.sqla.admin.Admin
@@ -38,8 +36,8 @@ generada a partir de las cadenas de documentación. Para una guía orientada a t
 ## Validación con Pydantic
 
 La extensión `ext.pydantic` valida los datos del formulario contra un modelo de Pydantic antes de
-escribir el registro. Consulte [Validación con Pydantic](../../integrations/sqlalchemy.md#validacion-con-pydantic)
-para obtener el procedimiento completo.
+escribir el registro. Consulte [Validación con Pydantic](../../integrations/sqlalchemy.md#pydantic-validation) para
+obtener la guía completa.
 
 ::: starlette_admin.contrib.sqla.ext.pydantic.ModelView
 
@@ -68,7 +66,7 @@ para obtener el procedimiento completo.
 ::: starlette_admin.contrib.sqla.exceptions.NotSupportedValue
 
 !!! note
-    Las clases de filtro concretas (`EqualFilter`, `ContainsFilter`, `BetweenFilter`, etc.) no se
-    enumeran aquí. Reflejan una a una los filtros independientes del backend documentados en
-    [Filtros](../filters.md); el comportamiento específico de SQLAlchemy que conviene conocer se
-    trata en [SQLAlchemy](../../integrations/sqlalchemy.md#registro-de-filtros).
+    Las clases de filtros concretas (`EqualFilter`, `ContainsFilter`, `BetweenFilter`, etc.) no se
+    enumeran aquí. Reflejan uno a uno los filtros independientes del backend documentados en
+    [Filtros](../filters.md); el comportamiento específico de SQLAlchemy que conviene conocer está
+    cubierto en [SQLAlchemy](../../integrations/sqlalchemy.md#filter-registry).

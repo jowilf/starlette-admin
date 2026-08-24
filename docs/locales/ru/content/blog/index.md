@@ -1,9 +1,7 @@
 ---
 source_hash: d0594ec094733ff9a9b13d38f4b41a9088a8fd35e54d762f918681da30ddbd29
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -20,9 +18,9 @@ translation_date: '2026-08-23'
     [Читать оригинал на английском](https://jowilf.github.io/starlette-admin/blog/)
 <!-- translation-notice:end -->
 
-# Блог разработчиков
+# Блог разработчика
 
-В этом разделе собраны продвинутые паттерны и практические приёмы для создания интерфейсов администрирования с помощью `starlette-admin`. Статьи посвящены реальным реализациям, которые расширяют стандартную справочную документацию.
+В этом разделе собраны продвинутые паттерны и практические приёмы построения административных интерфейсов с помощью `starlette-admin`. Статьи посвящены реализациям из реальных проектов, которые расширяют возможности стандартной справочной документации.
 
 ## Публикация новой статьи
 
@@ -36,5 +34,5 @@ translation_date: '2026-08-23'
 
 | Дата | Название статьи |
 | --- | --- |
-| 2026-07-13 | [Добавляем панель администрирования в FastAPI за 5 минут с помощью starlette-admin](posts/add-admin-panel-to-fastapi-in-5-minutes.md) |
-| 2026-07-10 | [Мягкое удаление и представление корзины с FastAPI и starlette-admin](posts/soft-deletes-trash-view.md) |
+| 2026-07-13 | [Add an Admin Panel to FastAPI in 5 Minutes with starlette-admin](posts/add-admin-panel-to-fastapi-in-5-minutes.md) |
+| 2026-07-10 | [Soft Deletes and a Trash View with FastAPI & starlette-admin](posts/soft-deletes-trash-view.md) |

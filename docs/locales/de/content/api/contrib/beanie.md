@@ -2,10 +2,8 @@
 title: Beanie Contrib API-Referenz
 description: API-Referenzdokumentation für die Beanie-Backend-Integration in starlette-admin.
 source_hash: 6a89593e9010ec12dd664910d2bbb407467441efa960bc4a6fefd818a7d71b36
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,8 +22,8 @@ translation_date: '2026-08-23'
 
 # Contrib: Beanie
 
-Vollständige Referenz für Attribute und Methoden des Beanie-Backends (`starlette_admin.contrib.beanie`),
-generiert aus Docstrings. Für eine aufgabenorientierte Einführung siehe
+Vollständige Referenz aller Attribute und Methoden des Beanie-Backends (`starlette_admin.contrib.beanie`),
+generiert aus Docstrings. Eine aufgabenorientierte Anleitung finden Sie unter
 [Beanie](../../integrations/beanie.md).
 
 ::: starlette_admin.contrib.beanie.admin.Admin
@@ -34,16 +32,17 @@ generiert aus Docstrings. Für eine aufgabenorientierte Einführung siehe
 
 ::: starlette_admin.contrib.beanie.view.InlineModelView
 
-## Felder
+## Fields
 
 ::: starlette_admin.contrib.beanie.fields.BeanieObjectIdField
 
-## Converter
+## Converters
 
 ::: starlette_admin.contrib.beanie.converters.BeanieModelConverter
 
 !!! note
     Konkrete Filterklassen (`EqualFilter`, `ArrayInFilter`, `ObjectIdEqualFilter` usw.) werden
-    hier nicht aufgelistet. Sie spiegeln die backend-agnostischen Filter wider, die in
-    [Filters](../filters.md) dokumentiert sind. Beanie-spezifisches Verhalten (verankertes Regex-String-Matching, Volltext-
-    Suche) wird in [Beanie](../../integrations/beanie.md#filterregistrierung) behandelt.
+    hier nicht aufgeführt. Sie entsprechen den backend-unabhängigen Filtern, die in
+    [Filters](../filters.md) dokumentiert sind; Beanie-spezifisches Verhalten (verankerte
+    Regex-Zeichenkettenübereinstimmung, Volltextsuche) wird in
+    [Beanie](../../integrations/beanie.md#filter-registry) behandelt.

@@ -1,13 +1,11 @@
 ---
 title: Venir de Django Admin
-description: Un guide de migration complet qui associe les concepts de Django Admin
-  à leurs équivalents starlette-admin pour construire des interfaces d'administration
-  déclaratives.
+description: Un guide de migration complet qui met en correspondance les concepts
+  de Django Admin avec leurs équivalents starlette-admin pour construire des interfaces
+  d'administration déclaratives.
 source_hash: a6ce6a3317c78ccc26347c432872c69131a6677381bb4750eb4380f6fb0ba094
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -26,11 +24,11 @@ translation_date: '2026-08-22'
 
 # Venir de Django Admin
 
-Si vous connaissez Django Admin, starlette-admin vous semblera familier. Les deux génèrent une interface d'administration à partir d'une configuration déclarative par modèle, et tous deux prennent en charge l'édition en ligne, les actions groupées et les permissions par requête.
+Si vous connaissez Django Admin, starlette-admin vous semblera familier. Les deux génèrent une interface d'administration à partir d'une configuration déclarative, modèle par modèle, et prennent tous deux en charge l'édition en ligne, les actions par lot et des permissions par requête.
 
-Les différences sont structurelles. starlette-admin fonctionne sur n'importe quelle application ASGI au lieu d'exiger Django, prend en charge plusieurs ORM, et vous permet de brancher votre propre authentification plutôt que d'imposer un modèle utilisateur intégré.
+Les différences sont structurelles : starlette-admin fonctionne sur n'importe quelle application ASGI au lieu d'exiger Django, prend en charge plusieurs ORM et vous permet de brancher votre propre authentification plutôt que d'imposer un modèle utilisateur intégré.
 
-Ce guide associe chaque concept majeur de `ModelAdmin` à son équivalent starlette-admin, avec du code côte à côte.
+Ce guide fait correspondre chaque concept majeur de `ModelAdmin` à son équivalent starlette-admin, avec du code côte à côte.
 
 ## Modèle mental
 
@@ -41,7 +39,7 @@ Ce guide associe chaque concept majeur de `ModelAdmin` à son équivalent starle
 | `admin.site.register(Model, ModelAdmin)` | `admin.add_view(MyView(Model))` |
 | `admin.site.urls` dans `urlpatterns` | `admin.mount_to(app)` |
 | Django ORM | SQLAlchemy, SQLModel, MongoEngine, Beanie ou Tortoise ORM via `starlette_admin.contrib.*` |
-| `__str__` sur le modèle | `__admin_repr__(self, request)`, qui est asynchrone et sensible à la requête |
+| `__str__` sur le modèle | `__admin_repr__(self, request)`, qui est asynchrone et tient compte de la requête |
 | Champs de formulaire déduits des champs du modèle | [Champs](../user-guide/fields.md) déduits par le convertisseur du backend, personnalisables champ par champ |
 
 ## Enregistrer un modèle
@@ -76,26 +74,26 @@ Ce guide associe chaque concept majeur de `ModelAdmin` à son équivalent starle
     admin.mount_to(app)  # app is your FastAPI or Starlette instance
     ```
 
-Deux différences structurelles se distinguent :
+Deux différences structurelles ressortent :
 
-1. **Une seule liste de champs pilote chaque page.** `fields` est la source unique de vérité. Vous utilisez ensuite [`exclude_fields_from_list`, `exclude_fields_from_detail`, `exclude_fields_from_create` et `exclude_fields_from_edit`](../user-guide/views.md#selection-et-personnalisation-des-champs) pour les variations par page.
-2. **L'instance de `Admin` possède le moteur de base de données.** Vous ne passez pas une session à chaque vue.
+1. **Une seule liste de champs pilote toutes les pages.** `fields` constitue la source de vérité unique. Vous utilisez ensuite [`exclude_fields_from_list`, `exclude_fields_from_detail`, `exclude_fields_from_create` et `exclude_fields_from_edit`](../user-guide/views.md#field-selection-and-customization) pour des variations par page.
+2. **L'instance `Admin` détient le moteur de base de données.** Vous ne passez pas une session à chaque vue.
 
 ## Options de la page de liste
 
 | Django Admin | starlette-admin | Remarques |
 | --- | --- | --- |
-| `list_display` | `fields` moins [`exclude_fields_from_list`](../user-guide/views.md#selection-et-personnalisation-des-champs) | Une seule liste de champs pilote chaque page. |
-| `list_display` avec un callable ou `@admin.display` | [`ComputedField`](../user-guide/fields.md#computedfield), ou `getter=` sur n'importe quel champ | Par exemple, `ComputedField("full_name", getter=lambda request, obj: ...)`. Utilisez `getter=` sur un champ typé, comme un champ de date ou d'image, pour conserver le rendu de ce type. |
-| Reformater une vraie colonne pour l'affichage | [`formatter=`](../user-guide/fields.md#calculer-mettre-en-forme-et-analyser-les-valeurs) sur le champ | Un `dict[RequestAction, callable]`, ainsi la page de liste, la page de détail et l'exportation peuvent formater différemment. Django nécessite un callable plus `admin_order_field` pour conserver le tri ; ici la colonne reste triable. |
-| `search_fields` | [`searchable_fields`](../user-guide/views.md#recherche-et-tri) | Alimente à la fois la recherche plein texte et le constructeur de filtres. |
-| `list_filter` | `searchable_fields` combiné avec `filters=` par champ | Les utilisateurs obtiennent un constructeur visuel avec des groupes `AND`/`OR` imbriqués au lieu d'une barre latérale fixe. Voir [Filtres](../user-guide/filters.md). |
-| `ordering` | [`fields_default_sort`](../user-guide/views.md#recherche-et-tri) | Par exemple, `fields_default_sort = [("created_at", True)]` trie dans l'ordre décroissant. |
-| `admin_order_field` / triabilité | [`sortable_fields`](../user-guide/views.md#recherche-et-tri) | Chaque champ est triable par défaut. |
-| `list_editable` | [`inline_editable_fields`](../user-guide/inline-edit.md) | Les utilisateurs sélectionnent une cellule et la modifient sur place. |
-| `list_per_page` | [`page_size`, `page_size_options`](../user-guide/views.md#pagination-et-controles-de-linterface) | Contrôle les limites de pagination. |
-| `date_hierarchy` | Filtres de date, tels que `between` et `in the past` | Il n'y a pas de barre de navigation hiérarchique dédiée ; le constructeur de filtres couvre ce cas. |
-| `empty_value_display` | Une entrée `formatter=`, ou `null_template` | Les formatters reçoivent les valeurs `None`, ils peuvent donc substituer un texte indicatif. `null_template` remplace le balisage rendu à la place. |
+| `list_display` | `fields` moins [`exclude_fields_from_list`](../user-guide/views.md#field-selection-and-customization) | Une seule liste de champs pilote toutes les pages. |
+| `list_display` avec un callable ou `@admin.display` | [`ComputedField`](../user-guide/fields.md#computedfield), ou `getter=` sur n'importe quel champ | Par exemple, `ComputedField("full_name", getter=lambda request, obj: ...)`. Utilisez `getter=` sur un champ typé, tel qu'un champ date ou image, pour conserver le rendu propre à ce type. |
+| Reformater une vraie colonne pour l'affichage | [`formatter=`](../user-guide/fields.md#computing-formatting-and-parsing-values) sur le champ | Un `dict[RequestAction, callable]`, de sorte que la liste, le détail et l'export puissent formater différemment. Django exige un callable plus `admin_order_field` pour conserver le tri ; ici la colonne reste triable. |
+| `search_fields` | [`searchable_fields`](../user-guide/views.md#search-and-sort) | Alimente à la fois la recherche plein texte et le constructeur de filtres. |
+| `list_filter` | `searchable_fields` combiné aux `filters=` par champ | Les utilisateurs disposent d'un constructeur visuel avec des groupes `AND`/`OR` imbriqués au lieu d'une barre latérale fixe. Voir [Filtres](../user-guide/filters.md). |
+| `ordering` | [`fields_default_sort`](../user-guide/views.md#search-and-sort) | Par exemple, `fields_default_sort = [("created_at", True)]` trie par ordre décroissant. |
+| `admin_order_field` / triabilité | [`sortable_fields`](../user-guide/views.md#search-and-sort) | Chaque champ est triable par défaut. |
+| `list_editable` | [`inline_editable_fields`](../user-guide/inline-edit.md) | Les utilisateurs sélectionnent une cellule et la modifient directement. |
+| `list_per_page` | [`page_size`, `page_size_options`](../user-guide/views.md#pagination-and-ui-controls) | Contrôle les limites de pagination. |
+| `date_hierarchy` | Filtres de date, tels que `between` et `in the past` | Il n'existe pas de barre dédiée de navigation hiérarchique ; le constructeur de filtres couvre ce cas. |
+| `empty_value_display` | Une entrée `formatter=`, ou `null_template` | Les formatters reçoivent les valeurs `None`, ils peuvent donc substituer un espace réservé. `null_template` remplace le balisage rendu à la place. |
 
 ## Formulaires
 
@@ -103,13 +101,13 @@ Deux différences structurelles se distinguent :
 | --- | --- | --- |
 | `fields` / `exclude` | `fields`, `exclude_fields_from_create`, `exclude_fields_from_edit` | Contrôle la visibilité des champs du formulaire. |
 | `fieldsets` | [`form_layout`](../advanced/form-layout.md) | Composez librement avec `FieldsetWidget`, `TabsWidget`, `GridWidget` et `RowWidget`. |
-| `readonly_fields` | `read_only=True` sur le champ | Vous pouvez également exclure le champ des vues de création et d'édition. |
-| `prepopulated_fields` | [`SlugField("slug", populate_from="title")`](../user-guide/fields.md#slugfield) | Même comportement de slugification en direct. |
-| `autocomplete_fields`, `raw_id_fields` | Comportement par défaut de [`HasOne` / `HasMany`](../user-guide/fields.md#hasone-hasmany) | Les widgets de relation sont des entrées Select2 avec recherche côté serveur dès l'installation. |
+| `readonly_fields` | `read_only=True` sur le champ | Vous pouvez aussi exclure le champ des vues create et edit. |
+| `prepopulated_fields` | [`SlugField("slug", populate_from="title")`](../user-guide/fields.md#slugfield) | Même comportement de génération de slug en direct. |
+| `autocomplete_fields`, `raw_id_fields` | Comportement par défaut de [`HasOne` / `HasMany`](../user-guide/fields.md#hasone-hasmany) | Les widgets de relation sont des entrées Select2 avec recherche côté serveur, prêts à l'emploi. |
 | `filter_horizontal` / `filter_vertical` | [`HasMany`](../user-guide/fields.md#hasone-hasmany) | Rendu sous forme de composant multi-sélection avec recherche. |
 | `formfield_overrides` | Entrées explicites dans la liste `fields` | Remplacez directement le champ détecté automatiquement : `fields = ["id", TextAreaField("bio")]` |
-| Validation de formulaire personnalisée | `validators=` sur le champ ou `FormValidationError` dans les hooks | Voir [Validators](../api/validators.md). |
-| `to_python()` du champ de formulaire / coercition personnalisée | [`parser=`](../user-guide/fields.md#calculer-mettre-en-forme-et-analyser-les-valeurs) sur le champ | Remplace l'analyse par défaut du formulaire ou de l'importation du champ selon `RequestAction`. |
+| Validation de formulaire personnalisée | `validators=` sur le champ ou `FormValidationError` dans les hooks | Voir [Validateurs](../api/validators.md). |
+| `to_python()` du champ de formulaire / coercition personnalisée | [`parser=`](../user-guide/fields.md#computing-formatting-and-parsing-values) sur le champ | Remplace l'analyse par défaut du formulaire ou de l'importation du champ selon la `RequestAction`. |
 | Texte d'aide du formulaire de modèle | `help_text=` | Disponible sur toute définition de champ. |
 
 ### Exemple de fieldsets
@@ -138,7 +136,7 @@ Deux différences structurelles se distinguent :
         ]
     ```
 
-`form_layout` va plus loin que les fieldsets : vous pouvez construire des onglets, des grilles responsives et des mises en page imbriquées. Voir [Form Layout](../advanced/form-layout.md).
+`form_layout` va plus loin que les fieldsets : vous pouvez créer des onglets, des grilles responsives et des mises en page imbriquées. Voir [Form Layout](../advanced/form-layout.md).
 
 ## Inlines
 
@@ -169,7 +167,7 @@ Deux différences structurelles se distinguent :
         inlines = [CommentInline]
     ```
 
-starlette-admin détecte la clé étrangère lorsqu'elle est non ambiguë, et il prend en charge les clés étrangères composites. Voir [Inline Forms](../user-guide/inline-forms.md) pour les configurations avancées.
+starlette-admin détecte la clé étrangère lorsqu'elle est non ambiguë et prend en charge les clés étrangères composites. Consultez [Formulaires inline](../user-guide/inline-forms.md) pour les configurations avancées.
 
 ## Actions
 
@@ -207,13 +205,13 @@ starlette-admin détecte la clé étrangère lorsqu'elle est non ambiguë, et il
             flash(request, "Articles published")
     ```
 
-Là où Django Admin passe un `QuerySet`, le gestionnaire starlette-admin reçoit un objet [`ActionSelection`](../user-guide/actions.md). Il résout les lignes, les clés primaires et les filtres actifs paresseusement, et il se comporte de la même manière lorsqu'un utilisateur sélectionne tous les enregistrements correspondants.
+Là où Django Admin passe un `QuerySet`, le handler starlette-admin reçoit un objet [`ActionSelection`](../user-guide/actions.md). Il résout paresseusement les lignes, les clés primaires et les filtres actifs, et se comporte de la même manière lorsqu'un utilisateur sélectionne tous les enregistrements correspondants.
 
-Les actions peuvent également afficher un formulaire HTML personnalisé dans la boîte de dialogue de confirmation, ce qui, dans Django Admin, signifie construire une page intermédiaire. Pour les opérations par ligne, utilisez [`@row_action` et `@link_row_action`](../user-guide/actions.md#actions-de-ligne), qui n'ont pas d'équivalent dans Django Admin.
+Les actions peuvent également afficher un formulaire HTML personnalisé dans la boîte de dialogue de confirmation, ce qui, dans Django Admin, implique la construction d'une page intermédiaire. Pour les opérations par ligne, utilisez [`@row_action` et `@link_row_action`](../user-guide/actions.md#row-actions), qui n'ont pas d'équivalent dans Django Admin.
 
 ## Permissions et authentification
 
-Django Admin délègue à `django.contrib.auth`. starlette-admin scinde le problème en deux : un [`AuthProvider`](../user-guide/auth.md) répond à « qui est cet utilisateur », et les [méthodes par vue](../user-guide/views.md#securite-et-autorisations) répondent à « que peut-il faire ».
+Django Admin délègue à `django.contrib.auth`. starlette-admin scinde le problème en deux : un [`AuthProvider`](../user-guide/auth.md) répond « qui est cet utilisateur », et les [méthodes par vue](../user-guide/views.md#security-and-authorization) répondent « que peut-il faire ».
 
 | Django Admin | starlette-admin |
 | --- | --- |
@@ -235,17 +233,17 @@ class ArticleView(ModelView):
         return "admin" in request.state.admin_user.roles
 ```
 
-Chaque méthode `can_*` reçoit la requête, vos décisions d'autorisation peuvent donc lire l'utilisateur courant, les en-têtes HTTP ou tout autre élément de la requête.
+Chaque méthode `can_*` reçoit la requête : vos décisions d'autorisation peuvent donc lire l'utilisateur courant, les en-têtes HTTP ou tout autre élément de la requête.
 
-## Hooks de sauvegarde et signaux
+## Hooks d'enregistrement et signaux
 
 | Django Admin | starlette-admin | Remarques |
 | --- | --- | --- |
-| `save_model(request, obj, form, change)` | [`before_create` / `before_edit`](../user-guide/views.md#hooks-de-cycle-de-vie) sur la vue | Natif asynchrone, et reçoit les données de formulaire analysées avec l'instance du modèle. |
-| `delete_model` | `before_delete` | Gère la logique avant suppression. |
-| `post_save` et autres signaux | [Events](../advanced/events.md) | Par exemple, `admin.events.on(AdminEvent.AFTER_CREATE, handler)` diffuse à toutes les vues. |
-| Historique des modifications `LogEntry` | Construisez-le avec le système d'événements | Abonnez-vous à `AFTER_CREATE`, `AFTER_EDIT` et `AFTER_DELETE` pour remplir votre propre table d'audit. |
-| `messages.success(request, ...)` | `flash(request, ...)` | Voir [Flash Messages](../user-guide/flash-messages.md). |
+| `save_model(request, obj, form, change)` | [`before_create` / `before_edit`](../user-guide/views.md#lifecycle-hooks) sur la vue | Nativement asynchrone, et reçoit les données de formulaire analysées avec l'instance du modèle. |
+| `delete_model` | `before_delete` | Gère la logique pré-suppression. |
+| `post_save` et autres signaux | [Événements](../advanced/events.md) | Par exemple, `admin.events.on(AdminEvent.AFTER_CREATE, handler)` diffuse à toutes les vues. |
+| Historique des modifications `LogEntry` | Construisez-le avec le système d'événements | Abonnez-vous à `AFTER_CREATE`, `AFTER_EDIT` et `AFTER_DELETE` pour alimenter votre propre table d'audit. |
+| `messages.success(request, ...)` | `flash(request, ...)` | Voir [Messages flash](../user-guide/flash-messages.md). |
 
 ## Configuration globale du site
 
@@ -254,22 +252,22 @@ Chaque méthode `can_*` reçoit la requête, vos décisions d'autorisation peuve
 | `admin.site.site_header`, `site_title` | `Admin(title="...")` |
 | Logo personnalisé via une surcharge de template | `Admin(logo_url="...", login_logo_url="...", favicon_url="...")` |
 | `AdminSite.index_template` | `Admin(index_view=...)` avec des [widgets](../user-guide/custom-views.md) pour un tableau de bord riche |
-| Surcharges de templates dans `templates/admin/` | `Admin(templates_dir="...")`, voir [Templates](../advanced/templates.md) |
-| Plusieurs instances de `AdminSite` | Plusieurs instances de `Admin` montées sur différents chemins d'application |
+| Surcharges de template dans `templates/admin/` | `Admin(templates_dir="...")`, voir [Templates](../advanced/templates.md) |
+| Instances multiples de `AdminSite` | Instances multiples de `Admin` montées sur différents chemins de l'application |
 | `ModelAdmin.get_queryset` | `get_list_query`, `get_count_query` ou `get_detail_query` pour le backend SQLAlchemy |
 | `USE_I18N`, `LANGUAGES` | `Admin(i18n_config=I18nConfig(default_locale="fr"))` |
-| `TIME_ZONE` | `Admin(timezone_config=TimezoneConfig(...))`, voir [i18n and Timezones](../user-guide/i18n.md) |
+| `TIME_ZONE` | `Admin(timezone_config=TimezoneConfig(...))`, voir [i18n et fuseaux horaires](../user-guide/i18n.md) |
 
-## Ce que vous gagnez en changeant
+## Ce que vous gagnez en migrant
 
-* **Asynchrone de bout en bout :** les gestionnaires, les hooks de cycle de vie et les callbacks de widget peuvent tous être des coroutines exécutées sur votre boucle d'événements existante, à côté de vos endpoints FastAPI.
+* **Asynchronisme de bout en bout :** les handlers, les lifecycle hooks et les callbacks de widgets peuvent tous être des coroutines exécutées sur votre boucle d'événements existante, aux côtés de vos endpoints FastAPI.
 * **Flexibilité de la base de données :** la même configuration d'administration s'applique que vous utilisiez SQLAlchemy, SQLModel, MongoDB via MongoEngine ou Beanie, ou Tortoise ORM.
-* **Exportation et importation intégrées :** CSV, JSON et PDF, plus Excel et d'autres formats via `tablib`. Exportez directement des enregistrements, ou importez des données en masse via un assistant axé sur la prévisualisation qui applique une validation au niveau des lignes et prend en charge les upserts optionnels par clé primaire. Voir [Export and Import](../user-guide/export-import.md).
-* **Widgets de tableau de bord :** les cartes statistiques, ApexCharts et les grilles de mise en page se combinent en pages d'accueil et vues personnalisées, vous n'avez donc pas besoin d'un package de thème externe pour construire un tableau de bord. Voir [Custom Views and Widgets](../user-guide/custom-views.md).
-* **Interface utilisateur moderne :** Tabler (Bootstrap 5) vous offre le mode sombre, les bascules de visibilité des colonnes et la mise en surbrillance des résultats de recherche par défaut.
+* **Export et import intégrés :** CSV, JSON et PDF, plus Excel et d'autres formats via `tablib`. Exportez directement les enregistrements, ou importez des données en masse via un assistant axé sur la prévisualisation qui applique une validation au niveau de chaque ligne et prend en charge les upserts optionnels de clés primaires. Voir [Export et Import](../user-guide/export-import.md).
+* **Widgets de tableau de bord :** cartes statistiques, ApexCharts et grilles de mise en page se combinent pour former des index pages et des custom views, si bien que vous n'avez besoin d'aucun package de thème externe pour construire un dashboard. Voir [Custom Views et Widgets](../user-guide/custom-views.md).
+* **Interface utilisateur moderne :** Tabler (Bootstrap 5) vous offre le mode sombre, les bascules de visibilité des colonnes et la surlignage des résultats de recherche par défaut.
 
 ## Ce que vous devez apporter vous-même
 
-* **Authentification :** il n'y a ni modèle utilisateur ni base de données de permissions fournis. Implémentez `AuthProvider.authenticate()` sur le magasin de données que votre application utilise déjà.
+* **Authentification :** il n'existe ni modèle utilisateur ni base de permissions intégrés. Implémentez `AuthProvider.authenticate()` sur le magasin de données qu'utilise déjà votre application.
 * **Journalisation d'audit :** starlette-admin ne génère pas de table `LogEntry`. Branchez le [système d'événements](../advanced/events.md) sur votre propre table d'audit.
-* **Configuration UI au niveau du modèle :** les commodités de Django telles que `choices`, `verbose_name` et les validators au niveau du modèle ne sont pas transférées. Déclarez-les plutôt sur le champ starlette-admin, avec `EnumField`, `label=` et `validators=`.
+* **Configuration UI au niveau du modèle :** les commodités de Django telles que les `choices`, `verbose_name` et validateurs au niveau du modèle ne se transfèrent pas. Déclarez-les plutôt sur le champ starlette-admin, avec `EnumField`, `label=` et `validators=`.

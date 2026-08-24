@@ -3,10 +3,8 @@ title: Tortoise ORM Contrib API-Referenz
 description: API-Referenzdokumentation für die Tortoise-ORM-Backend-Integration in
   starlette-admin.
 source_hash: 64e4327c8b219a5ce961ab0f5a300132bb286dd74a34ad5ec50a110445af46bd
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -25,9 +23,10 @@ translation_date: '2026-08-23'
 
 # Contrib: Tortoise ORM
 
-Vollständige Referenz aller Attribute und Methoden des Tortoise-ORM-Backends
+Vollständige Referenz der Attribute und Methoden des Tortoise-ORM-Backends
 (`starlette_admin.contrib.tortoise`), generiert aus den Docstrings. Eine
-aufgabenorientierte Anleitung finden Sie unter [Tortoise ORM](../../integrations/tortoise.md).
+anwendungsorientierte Einführung finden Sie unter
+[Tortoise ORM](../../integrations/tortoise.md).
 
 ::: starlette_admin.contrib.tortoise.admin.Admin
 
@@ -47,8 +46,8 @@ aufgabenorientierte Anleitung finden Sie unter [Tortoise ORM](../../integrations
 
 !!! note
     Die konkreten Filterklassen (`ContainsFilter`, `EnumInFilter`, `RelationIsNullFilter` usw.)
-    werden hier nicht aufgelistet. Sie entsprechen den backend-unabhängigen Filtern, die unter
-    [Filter](../filters.md) dokumentiert sind; Tortoise-spezifisches Verhalten (Lookups ohne
-    Berücksichtigung der Groß-/Kleinschreibung, Enum-Umwandlung, Null-Prüfungen für rohe
-    Schlüsselspalten) wird unter
-    [Tortoise ORM](../../integrations/tortoise.md#filterregistry) behandelt.
+    werden hier nicht aufgeführt. Sie entsprechen den backend-unabhängigen Filtern, die in
+    [Filter](../filters.md) dokumentiert sind; Tortoise-spezifisches Verhalten (Suchen ohne
+    Berücksichtigung der Groß-/Kleinschreibung, Enum-Konvertierung, Null-Prüfungen der rohen
+    Schlüsselspalte) wird in
+    [Tortoise ORM](../../integrations/tortoise.md#filter-registry) behandelt.

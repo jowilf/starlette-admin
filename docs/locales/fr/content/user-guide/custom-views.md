@@ -1,12 +1,10 @@
 ---
-title: Vues personnalisées & widgets
+title: Vues et widgets personnalisés
 description: Créez des widgets de tableau de bord personnalisés, des pages statiques
-  et des vues autonomes dans votre panneau d'administration starlette-admin.
+  et des vues autonomes dans votre panneau starlette-admin.
 source_hash: 6f5147acf421066ce3c314b76d6a43207b99786736811af1cec56d47d1faf51e
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,9 +23,9 @@ translation_date: '2026-08-22'
 
 # Vues personnalisées
 
-Toutes les pages du panneau d'administration ne correspondent pas à un modèle de base de données. Une `CustomView` crée une page autonome dans la barre latérale que vous composez vous-même à partir de widgets intégrés, de templates personnalisés ou de routes personnalisées.
+Toutes les pages d'administration ne correspondent pas à un modèle de base de données. Une `CustomView` crée une page autonome dans la barre latérale que vous composez vous-même à partir de widgets intégrés, de templates personnalisés ou de routes personnalisées.
 
-Dans la plupart des cas, vous n'avez pas besoin d'hériter d'une classe quelconque. Instanciez `CustomView`, passez-lui un widget et enregistrez-le :
+Dans la plupart des cas, vous n'avez pas besoin de créer une sous-classe. Instanciez `CustomView`, passez-lui un widget et enregistrez-le :
 
 ```python
 from starlette.requests import Request
@@ -52,24 +50,24 @@ admin.add_view(
 )
 ```
 
-* **`menu_label`**, **`icon`** et **`path`** : contrôlent l'entrée dans la barre latérale ainsi que l'URL.
-* **`widget`** : détermine ce que la page affiche. Passez une instance unique de `BaseWidget`, ou un appelable (`(request) -> BaseWidget | None`) qui construit l'arborescence à chaque requête. Utilisez la forme appelable lorsque la page dépend de données en temps réel, de l'utilisateur actuel ou de feature flags.
+* **`menu_label`**, **`icon`** et **`path`** : contrôlent l'entrée dans la barre latérale et l'URL.
+* **`widget`** : détermine ce que la page affiche. Passez une seule instance de `BaseWidget`, ou un callable (`(request) -> BaseWidget | None`) qui construit l'arborescence à chaque requête. Utilisez la forme callable lorsque la page dépend de données en temps réel, de l'utilisateur courant ou de feature flags.
 
-Pour afficher plusieurs widgets, passez un [widget de mise en page](#widgets-de-mise-en-page) contenant des enfants.
+Pour afficher plusieurs widgets, passez un [widget de mise en page](#widgets-de-mise-en-page) qui contient des enfants.
 
-N'héritez de `CustomView` que si vous avez besoin d'endpoints personnalisés, d'un contrôle d'accès ou d'un contrôle total sur la réponse HTTP.
+Ne créez une sous-classe de `CustomView` que si vous avez besoin d'endpoints personnalisés, d'un contrôle d'accès ou d'un contrôle total sur la réponse HTTP.
 
 ---
 
 ## Widgets de contenu
 
-Les widgets de contenu affichent les données elles-mêmes. Leurs paramètres `*_callback` acceptent des appelables asynchrones qui reçoivent la `Request` actuelle ; chaque widget peut ainsi récupérer des données en temps réel.
+Les widgets de contenu affichent les données elles-mêmes. Leurs paramètres `*_callback` acceptent des callables asynchrones qui reçoivent le `Request` courant, ce qui permet à chaque widget de récupérer des données en temps réel.
 
-Pour la signature complète du constructeur de chaque widget ci-dessous, consultez la [référence de l'API des widgets](../api/widgets.md).
+Pour la signature complète du constructeur de chaque widget ci-dessous, consultez la [référence de l'API Widgets](../api/widgets.md).
 
 ### StatWidget
 
-Une carte KPI qui affiche une seule métrique, une description facultative et un sparkline.
+Une carte KPI qui affiche une métrique unique, une description facultative et un sparkline.
 
 ```python
 from starlette.requests import Request
@@ -91,15 +89,15 @@ orders_stat = StatWidget(
 
 **Paramètres principaux :**
 
-* `title` et `value_callback` : le libellé et l'appelable asynchrone qui renvoie la métrique.
-* `description` et `color` : le texte secondaire sous la valeur. `color` accepte les jetons de couleur Tabler, comme « success » et « danger ».
-* `link` : englobe toute la carte dans une ancre.
-* `chart_callback` : renvoie une liste ApexCharts `series`, telle que [{"name": "Views", "data": [10, 20, 30]}], pour afficher un sparkline au bas de la carte.
+* `title` et `value_callback` : le libellé et le callable asynchrone qui renvoie la métrique.
+* `description` et `color` : le texte secondaire sous la valeur. `color` accepte les tokens de couleur Tabler, tels que `"success"` et `"danger"`.
+* `link` : enveloppe toute la carte dans une ancre.
+* `chart_callback` : renvoie une liste `series` ApexCharts, telle que `[{"name": "Views", "data": [10, 20, 30]}]`, pour afficher un sparkline en bas de la carte.
 * `countup` : anime la valeur de la métrique au chargement avec countup.js.
 
 ### ChartWidget
 
-Un graphique ApexCharts dans une carte.
+Un graphique ApexCharts intégré dans une carte.
 
 ```python
 from starlette.requests import Request
@@ -120,13 +118,13 @@ revenue_chart = ChartWidget(
 
 **Paramètres principaux :**
 
-* `chart_type` : toute chaîne ApexCharts valide, comme « line », « bar », « pie », « donut » ou « heatmap ».
-* `series_callback` : renvoie une liste de dictionnaires pour la plupart des graphiques (`[{"name": "...", "data": [...]}]`). Pour « pie », « donut » et « radialBar », elle renvoie une simple liste de nombres.
-* `options` : un dictionnaire fusionné avec la configuration ApexCharts par défaut. Utilisez-le pour les réglages propres à chaque type, tels que `xaxis.categories` ou `labels`.
+* `chart_type` : toute chaîne valide ApexCharts, telle que `"line"`, `"bar"`, `"pie"`, `"donut"` ou `"heatmap"`.
+* `series_callback` : renvoie une liste de dictionnaires pour la plupart des graphiques (`[{"name": "...", "data": [...]}]`). Pour `"pie"`, `"donut"` et `"radialBar"`, elle renvoie une liste plate de nombres.
+* `options` : un dictionnaire fusionné par-dessus la configuration par défaut d'ApexCharts. Utilisez-le pour les réglages propres à chaque type, tels que `xaxis.categories` ou `labels`.
 
 ### TableWidget
 
-Un tableau récapitulatif compact et en lecture seule.
+Un tableau récapitulatif compact, en lecture seule.
 
 ```python
 from starlette.requests import Request
@@ -146,7 +144,7 @@ latest_orders = TableWidget(
 
 ### TextWidget & HtmlWidget
 
-Utilisez `TextWidget` pour le texte brut ou le Markdown, et `HtmlWidget` pour des blocs HTML pré-rendus.
+Utilisez `TextWidget` pour du texte brut ou du Markdown, et `HtmlWidget` pour des blocs HTML pré-rendus.
 
 ```python
 from starlette_admin import TextWidget, HtmlWidget
@@ -163,26 +161,26 @@ banner = HtmlWidget(
 ```
 
 !!! warning "Risque de sécurité"
-    `HtmlWidget` affiche les chaînes exactement telles que vous les fournissez, sans échappement. Ne transmettez jamais de contenu fourni par l'utilisateur via ce widget, car cela expose votre panneau d'administration aux injections XSS.
+    `HtmlWidget` affiche les chaînes exactement telles que vous les fournissez, sans échappement. Ne passez jamais de contenu fourni par l'utilisateur à travers lui, car cela exposerait votre administration à des injections XSS.
 
 ### DividerWidget
 
-Affiche une ligne horizontale (`<hr>`) pour séparer des sections. Il ne prend aucun paramètre.
+Affiche une règle horizontale (`<hr>`) pour séparer des sections. Il ne prend aucun paramètre.
 
 ## Widgets de mise en page
 
-Les widgets de mise en page constituent la structure porteuse de vos vues personnalisées. Au lieu d'afficher des données, ils organisent, alignent et positionnent vos widgets de contenu.
+Les widgets de mise en page constituent l'ossature structurelle de vos vues personnalisées. Au lieu d'afficher des données, ils organisent, alignent et positionnent vos widgets de contenu.
 
 !!! note
-    Ces mêmes widgets de mise en page alimentent l'attribut `form_layout` de `ModelView`, vous pouvez donc aussi les utiliser pour organiser les champs des formulaires de création et d'édition en colonnes, panneaux et onglets. Consultez [Mises en page de formulaire](../advanced/form-layout.md).
+    Ces mêmes widgets de mise en page alimentent l'attribut `form_layout` de `ModelView`, ce qui vous permet également de les utiliser pour organiser les champs des formulaires de création et d'édition en colonnes, panneaux et onglets. Voir [Mises en page de formulaire](../advanced/form-layout.md).
 
 ### Lignes, colonnes et cartes
 
 Pour construire une grille responsive, combinez ces primitives de mise en page :
 
-* **`ColumnWidget`** : la fondation verticale. Il empile les widgets enfants de haut en bas et sert généralement de conteneur racine pour l'arborescence de votre tableau de bord.
+* **`ColumnWidget`** : la fondation verticale. Elle empile les widgets enfants de haut en bas et sert généralement de conteneur racine pour l'arborescence de votre tableau de bord.
 * **`RowWidget`** : le conteneur horizontal. Il aligne les enfants côte à côte dans une ligne flexbox. Enveloppez un enfant dans un objet `Col` pour définir sa largeur responsive via `Breakpoints`, sur une grille standard de 1 à 12. Les enfants non enveloppés se partagent équitablement la largeur disponible.
-* **`CardRowWidget`** : la ligne soignée. Il hérite de toutes les mécaniques de `RowWidget` et donne à tous les enfants la même hauteur. Utilisez-le lorsque vous disposez une rangée de cartes, comme des statistiques KPI, des graphiques ou des tableaux de données.
+* **`CardRowWidget`** : la ligne soignée. Elle hérite de toutes les mécaniques de `RowWidget` et donne à tous les enfants des hauteurs égales. Utilisez-la lorsque vous disposez une rangée de cartes, telles que des statistiques KPI, des graphiques ou des tableaux de données.
 
 ```python
 from starlette_admin import Breakpoints, CardRowWidget, Col, ColumnWidget
@@ -201,7 +199,7 @@ page = ColumnWidget(children=[kpi_row, revenue_chart, latest_orders])
 
 ### GridWidget
 
-Une grille responsive construite sur le système `row-cols-*` de Bootstrap. Contrairement à `Col`, `Breakpoints` définit ici le **nombre d'éléments par ligne**, et non l'étendue des colonnes.
+Une grille responsive construite sur le système `row-cols-*` de Bootstrap. Contrairement à `Col`, `Breakpoints` définit ici le **nombre d'éléments par ligne**, et non l'étendue en colonnes.
 
 ```python
 from starlette_admin import Breakpoints, GridWidget
@@ -234,7 +232,7 @@ reports = TabsWidget(tabs=[("Revenue", revenue_chart), ("Orders", latest_orders)
 
 ## Composer le tableau de bord d'accueil
 
-Une `CustomView` alimente la racine par défaut du panneau d'administration (`/admin/`). Si vous n'en fournissez pas, `Admin` construit une `DefaultIndexView` qui affiche le nombre d'enregistrements et des liens vers vos modèles enregistrés.
+Une `CustomView` alimente la racine par défaut de l'administration (`/admin/`). Lorsque vous n'en fournissez pas, `Admin` construit une `DefaultIndexView` qui affiche le nombre d'enregistrements et des liens vers vos modèles enregistrés.
 
 Pour construire votre propre tableau de bord, écrivez une fonction qui assemble l'arborescence de widgets et passez-la au paramètre `index_view` de votre instance `Admin`.
 
@@ -261,12 +259,12 @@ admin = Admin(
 )
 ```
 
-Comme `build_dashboard` s'exécute à chaque requête, votre mise en page peut s'adapter à l'exécution. Par exemple, vous pouvez masquer des panneaux aux utilisateurs non administrateurs ou remplacer des graphiques.
+Comme `build_dashboard` s'exécute à chaque requête, votre mise en page peut s'adapter à l'exécution. Par exemple, vous pouvez masquer des panneaux aux non-administrateurs ou remplacer des graphiques.
 
 
 ## Templates personnalisés
 
-Lorsque le système de widgets n'est pas assez souple, héritez de `CustomView` et redécorez `index` avec `@route("")` afin d'afficher votre propre template Jinja plutôt que le rendu par défaut des widgets :
+Lorsque le système de widgets n'est pas assez flexible, créez une sous-classe de `CustomView` et redécorez `index` avec `@route("")` pour afficher votre propre template Jinja au lieu du rendu par défaut des widgets :
 
 ```python
 from starlette_admin import CustomView, route
@@ -288,7 +286,7 @@ class StatusView(CustomView):
 admin.add_view(StatusView())
 ```
 
-`self.templates` est une instance de `Jinja2Templates` résolue par rapport à votre [répertoire de templates](../advanced/templates.md). Elle n'est disponible qu'une fois la vue montée ; ne l'appelez donc pas depuis `__init__`. Un template personnalisé étend généralement la disposition de base du panneau d'administration :
+`self.templates` est une instance de `Jinja2Templates` résolue par rapport à votre [répertoire de templates](../advanced/templates.md). Elle n'est disponible qu'une fois la vue montée ; ne l'appelez donc pas depuis `__init__`. Un template personnalisé étend généralement la mise en page de base de l'administration :
 
 ```html
 {% extends "layout.html" %}
@@ -300,7 +298,7 @@ admin.add_view(StatusView())
 
 ```
 
-Pour afficher des widgets dans votre template personnalisé, résolvez-les et affichez-les vous-même, puis passez le résultat via votre propre contexte :
+Pour afficher des widgets dans votre template personnalisé, résolvez-les et rendez-les vous-même, puis transmettez le résultat via votre propre contexte :
 
 ```python
 from starlette_admin.widgets import render_widget
@@ -347,12 +345,12 @@ class StatusView(CustomView):
 ```
 
 !!! important
-    Omettez les blocs CSS et JS uniquement lorsque votre template n'affiche aucun widget. Sans eux, les widgets de graphique et de statistique ne peuvent pas charger leurs dépendances, telles qu'ApexCharts.
+    Omettez les blocs CSS et JS uniquement si votre template n'affiche aucun widget. Sans eux, les widgets de graphique et de statistiques ne peuvent pas charger leurs dépendances, telles qu'ApexCharts.
 
 
 ## Ajouter des routes avec `@route`
 
-Lorsqu'une page personnalisée nécessite ses propres endpoints, comme une route JSON qui alimente un graphique côté client ou un gestionnaire POST pour un formulaire, héritez de `CustomView` et attachez des méthodes avec `@route` :
+Lorsqu'une page personnalisée a besoin de ses propres endpoints, tels qu'une route JSON qui alimente un graphique côté client ou un gestionnaire POST pour un formulaire, créez une sous-classe de `CustomView` et attachez des méthodes avec `@route` :
 
 ```python
 from starlette.responses import JSONResponse
@@ -385,14 +383,14 @@ class ReportsView(CustomView):
 admin.add_view(ReportsView())
 ```
 
-* **`path`** : ajouté au chemin racine de la vue. Dans l'exemple ci-dessus, `@route("/data")` est enregistré à `/admin/reports/data`.
-* **Protection CSRF** : chaque route modifiant des données (POST, PUT, DELETE) passe par le middleware CSRF ; les formulaires de vos templates doivent donc inclure `{{ csrf_input(request) }}`.
-* `CustomView` retombe des arguments du constructeur sur les attributs de classe, comme le fait `ModelView`, de sorte que `ReportsView()` ci-dessus fonctionne sans argument. Passez des valeurs de remplacement, comme dans `ReportsView(menu_label="...")`, lorsque vous avez besoin d'une configuration par instance.
+* **`path`** : ajouté au chemin racine de la vue. Dans l'exemple ci-dessus, `@route("/data")` est enregistré sur `/admin/reports/data`.
+* **Protection CSRF** : chaque route modifiante (POST, PUT, DELETE) passe par le middleware CSRF ; vos formulaires doivent donc inclure `{{ csrf_input(request) }}`.
+* `CustomView` retombe des arguments du constructeur sur les attributs de classe, comme le fait `ModelView` ; ainsi, `ReportsView()` ci-dessus fonctionne sans argument. Passez des valeurs de remplacement, comme dans `ReportsView(menu_label="...")`, lorsque vous avez besoin d'une configuration par instance.
 
 
 ## Contrôle d'accès
 
-Pour restreindre l'accès à une `CustomView` entière, remplacez la méthode `is_accessible(request)`. Lorsqu'elle renvoie `False`, le panneau d'administration retire la vue de la barre latérale et chaque endpoint `@route` renvoie `403 Forbidden`.
+Pour restreindre l'accès à une `CustomView` entière, redéfinissez la méthode `is_accessible(request)`. Lorsqu'elle renvoie `False`, l'administration retire la vue de la barre latérale et chaque endpoint `@route` renvoie `403 Forbidden`.
 
 ```python
 class ReportsView(CustomView):
@@ -406,12 +404,12 @@ class ReportsView(CustomView):
 Pour des permissions plus fines, par exemple permettre à tout le monde de consulter la page mais réserver le POST aux administrateurs, placez cette logique dans le gestionnaire `@route` concerné plutôt que dans `is_accessible`.
 
 
-> Consultez [examples/07-dashboard](https://github.com/jowilf/starlette-admin/tree/main/examples/07-dashboard) pour une application exécutable qui utilise chacun des widgets décrits sur cette page : `StatWidget`, `ChartWidget`, `TableWidget`, `TabsWidget`, `PanelWidget` et `GridWidget`.
+> Consultez [examples/07-dashboard](https://github.com/jowilf/starlette-admin/tree/main/examples/07-dashboard) pour une application exécutable qui utilise tous les widgets décrits sur cette page : `StatWidget`, `ChartWidget`, `TableWidget`, `TabsWidget`, `PanelWidget` et `GridWidget`.
 
 ---
 
-**Et ensuite ?**
+**Et ensuite**
 
-* **[Templates](../advanced/templates.md) :** personnalisez la disposition de base que vos templates de vue personnalisée étendent.
-* **[Messages flash](flash-messages.md) :** affichez les retours provenant de vos gestionnaires `@route`.
-* **[Actions](actions.md) :** ajoutez des actions groupées et des actions de ligne à vos vues de modèles.
+* **[Templates](../advanced/templates.md) :** personnalisez la mise en page de base que vos templates de vue personnalisée étendent.
+* **[Messages flash](flash-messages.md) :** affichez les retours de vos gestionnaires `@route`.
+* **[Actions](actions.md) :** ajoutez des actions groupées et des actions par ligne à vos vues de modèles.

@@ -3,10 +3,8 @@ title: Intégration de Beanie
 description: Intégrez Beanie ODM avec starlette-admin pour créer une interface d'administration
   extensible pour vos collections MongoDB dans FastAPI.
 source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -30,7 +28,7 @@ Beanie modélise les documents MongoDB sous forme de modèles Pydantic asynchron
 **Fonctionnalités principales :**
 
 - Prise en charge native des opérateurs de requête et du filtrage MongoDB.
-- Traduction automatique des erreurs de validation Pydantic en erreurs de formulaire spécifiques à chaque champ.
+- Traduction automatique des erreurs de validation Pydantic en erreurs de formulaire spécifiques à chaque champ dans l'interface utilisateur.
 - Intégration intégrée de la recherche plein texte MongoDB.
 
 ## Installation
@@ -49,7 +47,7 @@ Beanie modélise les documents MongoDB sous forme de modèles Pydantic asynchron
 
 ## Exemple minimal
 
-Vous devez initialiser Beanie avant que toute requête n'atteigne l'interface d'administration. La meilleure approche pour garantir cette condition préalable consiste à encapsuler la logique de connexion dans le gestionnaire de contexte `lifespan` de votre application principale.
+Vous devez initialiser Beanie avant que toute requête n'atteigne l'interface d'administration. Encapsuler la logique de connexion dans le gestionnaire de contexte `lifespan` de votre application principale constitue la meilleure approche pour garantir que ce prérequis est satisfait.
 
 ```python
 from contextlib import asynccontextmanager
@@ -91,22 +89,22 @@ if __name__ == "__main__":
 
 ```
 
-La classe `ModelView` accepte directement la classe `Document` de Beanie. Elle dérive automatiquement la liste des champs, les formulaires et les filtres à partir des champs du document.
+La classe `ModelView` accepte directement la classe `Document` de Beanie. Elle déduit automatiquement la liste des champs, les formulaires et les filtres à partir des champs du document.
 
 ## Classes principales
 
 ### La classe `beanie.Admin`
 
-La classe `beanie.Admin` hérite de `BaseAdmin` et ne nécessite aucune configuration spécifique à la base de données lors de l'initialisation. La configuration de la connexion s'effectue entièrement dans le lifespan de l'application. Importez toujours `Admin` depuis `starlette_admin.contrib.beanie` afin de garantir la compatibilité avec les futures améliorations propres au backend.
+La classe `beanie.Admin` hérite de `BaseAdmin` et ne nécessite aucune configuration spécifique à la base de données lors de l'initialisation. La configuration de la connexion s'effectue entièrement au sein du lifespan de l'application. Importez toujours `Admin` depuis `starlette_admin.contrib.beanie` afin de garantir la compatibilité avec les futures améliorations spécifiques au backend.
 
 ### La classe `beanie.ModelView`
 
 La classe `beanie.ModelView` fournit la couche d'intégration entre votre base de données et l'interface utilisateur. Elle gère automatiquement plusieurs opérations :
 
-- **Remplissage des champs :** génère automatiquement les champs à partir de la définition du document si vous ne les spécifiez pas explicitement.
+- **Peuplement des champs :** génère automatiquement les champs à partir de la définition du document si vous ne les spécifiez pas explicitement.
 - **Filtrage des champs internes :** exclut par défaut le champ interne `revision_id` de Beanie des listes et des formulaires.
-- **Résolution des relations :** exécute les lectures en base de données avec `fetch_links=True` et `nesting_depth=1`, ce qui garantit que les références `Link` sont résolues vers leurs objets associés plutôt que de renvoyer des références brutes de la base de données.
-- **Gestion des erreurs :** traduit les erreurs de validation Pydantic en erreurs de formulaire spécifiques à chaque champ, en indiquant directement aux utilisateurs l'entrée incorrecte.
+- **Résolution des relations :** exécute les lectures en base de données avec `fetch_links=True` et `nesting_depth=1`, garantissant que les références `Link` sont résolues vers leurs objets associés plutôt que de renvoyer des références brutes de la base de données.
+- **Gestion des erreurs :** traduit les erreurs de validation Pydantic en erreurs de formulaire spécifiques à chaque champ, orientant directement l'utilisateur vers la saisie incorrecte.
 
 ```python
 from starlette_admin.contrib.beanie import ModelView
@@ -120,29 +118,29 @@ class BookView(ModelView):
 
 ## Le champ `BeanieObjectIdField`
 
-Beanie utilise `PydanticObjectId` comme clé primaire. Le panneau d'administration représente automatiquement ces clés, ainsi que toute référence brute d'ObjectId, à l'aide d'un champ dédié `BeanieObjectIdField`.
+Beanie utilise `PydanticObjectId` comme clés primaires. Le panneau d'administration représente automatiquement ces clés, ainsi que toute référence ObjectId brute, à l'aide d'un champ dédié : `BeanieObjectIdField`.
 
-Bien qu'il s'affiche et se valide exactement comme un champ `StringField` standard, il dispose de son propre emplacement dans le registre des filtres. Cette séparation garantit que les filtres spécifiques aux ObjectId ne s'appliquent qu'aux champs ObjectId, plutôt qu'à tous les champs texte standards de votre application. Ces filtres spécialisés analysent sans risque les chaînes de caractères pour les convertir en objets `PydanticObjectId` valides avant d'interroger la base de données.
+Bien qu'il s'affiche et se valide exactement comme un `StringField` standard, il conserve son propre emplacement dans le registre des filtres. Cette séparation garantit que les filtres spécifiques aux ObjectId ne s'appliquent qu'aux champs de type ObjectId, et non à tous les champs textuels standard de votre application. Ces filtres spécialisés analysent sans risque les chaînes de caractères pour les convertir en objets `PydanticObjectId` valides avant d'interroger la base de données.
 
-## Registre des filtres
+## Registre des filtres {#filter-registry}
 
 Chaque type de champ reçoit un ensemble de filtres par défaut provenant du `BeanieFilterRegistry`.
 
-- **Correspondance de chaînes :** le filtre d'égalité utilise des expressions régulières insensibles à la casse afin de rester cohérent avec les autres recherches textuelles telles que « Contient » ou « Commence par ».
-- **Opérations sur les tableaux :** le registre fournit une prise en charge intégrée du filtrage basé sur les tableaux, permettant aux opérations « Est l'un de » sur les champs à valeur de liste (comme `TagsField`) de fonctionner immédiatement.
-- **Clés primaires :** le champ `id` est automatiquement remappé vers le champ natif `_id` de MongoDB lors de la construction des fragments de requête.
+- **Correspondance sur les chaînes :** le filtre d'égalité utilise des expressions régulières insensibles à la casse afin de maintenir la cohérence avec les autres recherches textuelles telles que « Contient » ou « Commence par ».
+- **Opérations sur les tableaux :** le registre fournit une prise en charge intégrée du filtrage basé sur les tableaux, permettant aux opérations « Fait partie de » sur les champs à valeur de liste (comme `TagsField`) de fonctionner immédiatement.
+- **Clés primaires :** le champ `id` est automatiquement remappé vers le `_id` natif de MongoDB lors de la construction des fragments de requête.
 
 ## Recherche plein texte
 
-Lorsque les utilisateurs interagissent avec la zone de recherche sur une page de liste, le panneau d'administration vérifie si la collection MongoDB possède un index de texte existant et adapte sa stratégie de requête en conséquence :
+Lorsque les utilisateurs interagissent avec le champ de recherche sur une page de liste, le panneau d'administration vérifie si la collection MongoDB dispose d'un index texte existant et adapte sa stratégie de requête en conséquence :
 
-- **Index de texte présent :** la requête utilise l'opérateur natif `$text` de MongoDB. Cela offre de véritables capacités de recherche plein texte, notamment la tokenisation, la racinisation et le classement par pertinence.
-- **Aucun index de texte :** le système revient à une recherche par expression régulière insensible à la casse sur tous les champs marqués comme `searchable`. Bien que cela ne nécessite aucune configuration, il est impossible de classer les résultats par pertinence ni d'utiliser les index standards.
+- **Index texte présent :** la requête utilise l'opérateur natif `$text` de MongoDB. Cela offre de véritables capacités de recherche plein texte, incluant la tokenisation, la radicalisation (stemming) et le classement par pertinence.
+- **Aucun index texte :** le système revient à une recherche par expression régulière insensible à la casse sur tous les champs marqués comme `searchable`. Bien qu'elle ne nécessite aucune configuration, cette approche ne peut ni classer les résultats par pertinence ni exploiter les index standards.
 
-Le panneau d'administration détecte les index de texte existants mais ne les crée pas. Vous devez définir l'index sur votre document Beanie pour activer la recherche plein texte native. Par exemple, vous pouvez y parvenir en ajoutant `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` à votre modèle.
+Le panneau d'administration détecte les index texte existants mais ne les crée pas. Vous devez définir l'index sur votre document Beanie pour activer la recherche plein texte native. Par exemple, vous pouvez y parvenir en ajoutant `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` à votre modèle.
 
 !!! note
-Si vous activez un index de texte, vous pouvez définir `full_text_override_order_by = True` sur votre sous-classe de `ModelView` pour trier les résultats de recherche selon le score de pertinence de MongoDB au lieu du tri par colonne par défaut.
+Si vous activez un index texte, vous pouvez définir `full_text_override_order_by = True` sur votre sous-classe de `ModelView` pour trier les résultats de recherche selon le score de pertinence de MongoDB plutôt que selon le tri de colonne par défaut.
 
 ## Exemple complet fonctionnel
 
@@ -162,7 +160,7 @@ Cette section fournit une intégration Beanie complète et exécutable avec `sta
     uv install starlette-admin beanie "fastapi[standard]"
     ```
 
-Le paquet `fastapi[standard]` inclut la CLI FastAPI, qui vous permet de démarrer le serveur de développement en exécutant `fastapi dev`.
+Le paquet `fastapi[standard]` inclut la CLI FastAPI, vous permettant de démarrer le serveur de développement en exécutant `fastapi dev`.
 
 ### 2. Créer l'application
 
@@ -267,13 +265,13 @@ Démarrez le serveur de développement FastAPI :
     uv run -- fastapi dev
     ```
 
-Accédez à [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) dans votre navigateur pour afficher le tableau de bord d'administration et interagir avec lui.
+Accédez à [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) dans votre navigateur pour consulter et interagir avec le tableau de bord d'administration.
 
-> **Exemple avancé :** [`examples/15-beanie`](https://github.com/jowilf/starlette-admin/tree/main/examples/15-beanie) dans le dépôt contient un exemple complet incluant des vues en ligne, des événements et des actions groupées personnalisées.
+> **Exemple avancé :** [`examples/15-beanie`](https://github.com/jowilf/starlette-admin/tree/main/examples/15-beanie) dans le dépôt contient un exemple complet qui inclut des vues inline, des événements et des actions groupées personnalisées.
 
 ## Pour aller plus loin
 
-- **[Vues](../user-guide/views.md)** : explorez les options de configuration de `BaseModelView`, indépendamment du backend.
+- **[Vues](../user-guide/views.md)** : explorez les options de configuration de `BaseModelView`, indépendantes du backend.
 - **[Filtres](../user-guide/filters.md) :** le constructeur de filtres et la manière dont les filtres spécifiques à l'ORM s'intègrent.
-- **[MongoEngine](mongoengine.md) :** un autre backend MongoDB intégré à starlette-admin.
-- **[SQLAlchemy](sqlalchemy.md) :** le backend relationnel intégré à starlette-admin.
+- **[MongoEngine](mongoengine.md)** : un autre backend MongoDB intégré à starlette-admin.
+- **[SQLAlchemy](sqlalchemy.md)** : le backend relationnel intégré à starlette-admin.

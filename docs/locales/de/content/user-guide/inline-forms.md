@@ -1,12 +1,10 @@
 ---
 title: Inline-Formulare
 description: Verwalten Sie zugehörige Modelle inline direkt innerhalb der Create-
-  und Edit-Formulare eines übergeordneten Modells mit InlineModelView.
+  und Edit-Formulare eines übergeordneten Modells mithilfe von InlineModelView.
 source_hash: 0c7d60efcf81de737f205968caea2030a08bf37d63452dce2d0cc29b93309e22
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -25,9 +23,9 @@ translation_date: '2026-08-23'
 
 # Inline-Formulare
 
-Inline-Formulare ermöglichen es Benutzern, zugehörige Datensätze direkt von der Create- oder Edit-Seite eines übergeordneten Modells aus zu verwalten. Sie eignen sich für untergeordnete Modelle, die nur neben ihrem übergeordneten Modell Sinn ergeben, etwa Kommentare zu einem Artikel oder Aufgaben in einem Projekt, und sie ersparen Ihnen den Aufbau einer separaten View für das untergeordnete Modell.
+Inline-Formulare ermöglichen es Benutzern, zugehörige Datensätze direkt auf der Create- oder Edit-Seite eines übergeordneten Modells zu verwalten. Sie eignen sich für untergeordnete Modelle, die nur in Verbindung mit ihrem übergeordneten Modell sinnvoll sind – etwa Kommentare zu einem Artikel oder Aufgaben in einem Projekt – und ersparen Ihnen den Aufbau einer separaten Admin-Ansicht für das untergeordnete Modell.
 
-Unter [examples/06-inline-forms](https://github.com/jowilf/starlette-admin/tree/main/examples/06-inline-forms) finden Sie eine lauffähige App, die alle drei Muster auf dieser Seite abdeckt: automatisch erkannter Fremdschlüssel, expliziter Fremdschlüssel und zusammengesetzter Fremdschlüssel.
+Unter [examples/06-inline-forms](https://github.com/jowilf/starlette-admin/tree/main/examples/06-inline-forms) finden Sie eine lauffähige App, die alle drei Muster dieser Seite abdeckt: automatisch erkannter Fremdschlüssel, expliziter Fremdschlüssel und zusammengesetzter Fremdschlüssel.
 
 ## Ein minimales Inline
 
@@ -82,30 +80,30 @@ class ArticleView(ModelView):
     inlines = [CommentInline]
 ```
 
-Das Einrichten besteht aus zwei Schritten: Definieren Sie eine `InlineModelView`-Unterklasse für das untergeordnete Modell und fügen Sie sie dann zur Liste `inlines` der `ModelView` des übergeordneten Modells hinzu.
+Die Einrichtung erfolgt in zwei Schritten: Definieren Sie eine `InlineModelView`-Unterklasse für das untergeordnete Modell und fügen Sie diese anschließend zur `inlines`-Liste des `ModelView` des übergeordneten Modells hinzu.
 
-Die Create- und Edit-Seiten von `ArticleView` rendern nun ein Formset namens `Comments` unterhalb der eigenen Felder des Artikels. Das Formset beginnt mit einer leeren Zeile (`extra = 1`) und enthält die Steuerelemente zum Hinzufügen und Löschen, die das SQLAlchemy-Backend für Sie verdrahtet.
+Auf den Create- und Edit-Seiten von `ArticleView` wird nun ein `Comments`-Formset unterhalb der eigenen Felder des Artikels gerendert. Das Formset beginnt mit einer leeren Zeile (`extra = 1`) und enthält die Steuerelemente zum Hinzufügen und Löschen, die das SQLAlchemy-Backend für Sie verdrahtet.
 
-Beachten Sie, dass `CommentInline` niemals `fk_attr` setzt. Das SQLAlchemy-Backend untersucht `Article.comments` und leitet `Comment.article_id` als Fremdschlüssel ab, da dies die einzige Beziehung ist, die auf `Comment` zeigt. Setzen Sie `fk_attr` selbst nur dann, wenn diese Ableitung mehrdeutig ist oder wenn die Beziehung nicht im ORM-Modell deklariert ist. Siehe [Explizite und zusammengesetzte Fremdschlüssel](#explizite-und-zusammengesetzte-fremdschlussel).
+Beachten Sie, dass `CommentInline` niemals `fk_attr` setzt. Das SQLAlchemy-Backend untersucht `Article.comments` und leitet `Comment.article_id` als Fremdschlüssel ab, da es die einzige Beziehung ist, die auf `Comment` zeigt. Setzen Sie `fk_attr` selbst nur dann, wenn diese Ableitung nicht eindeutig möglich ist oder wenn die Beziehung nicht im ORM-Modell deklariert ist. Siehe [Explizite und zusammengesetzte Fremdschlüssel](#explizite-und-zusammengesetzte-fremdschluessel).
 
 ## `InlineModelView`-Referenz
 
-| Attribut | Typ | Defaultwert | Beschreibung |
+| Attribut | Typ | Standardwert | Beschreibung |
 | --- | --- | --- | --- |
 | `model` | ORM-Modellklasse | `None` | Das zugehörige Modell, das dieses Inline verwaltet. Erforderlich. |
-| `fk_attr` | `str | tuple[str, ...]` | `""` | Name des Fremdschlüsselfelds am Inline-Modell, das auf das übergeordnete Modell zeigt. Ein Tuple deklariert einen zusammengesetzten Fremdschlüssel. Optional beim SQLAlchemy-Backend, das ihn bei Auslassung automatisch aus der Beziehung des übergeordneten Modells erkennt. |
-| `extra` | `int` | `0` | Anzahl leerer Zeilen, die zusätzlich zu vorhandenen Zeilen auf den Create- und Edit-Formularen angezeigt werden. |
-| `allow_delete` | `bool` | `True` | Zeigt eine Löschen-Checkbox bzw. -Schaltfläche für jede vorhandene Zeile an. |
+| `fk_attr` | `str | tuple[str, ...]` | `""` | Name des Fremdschlüsselfelds im Inline-Modell, das auf das übergeordnete Modell zeigt. Ein Tupel deklariert einen zusammengesetzten Fremdschlüssel. Im SQLAlchemy-Backend optional; dieses erkennt ihn automatisch aus der Beziehung des übergeordneten Modells, wenn Sie ihn weglassen. |
+| `extra` | `int` | `0` | Anzahl leerer Zeilen, die zusätzlich zu bestehenden Zeilen auf Create- und Edit-Formularen angezeigt werden. |
+| `allow_delete` | `bool` | `True` | Zeigt eine Löschen-Checkbox bzw. einen Löschen-Button in jeder bestehenden Zeile an. |
 | `inline_template` | `str` | `"inline.html"` | Template, das zum Rendern des Formsets verwendet wird. |
-| `collapsible` | `bool` | `True` | Ob Benutzer das Formset ein- und ausklappen können. |
-| `collapsed` | `bool` | `False` | Anfänglicher eingeklappter Zustand. Gilt nur, wenn `collapsible=True` ist. |
+| `collapsible` | `bool` | `True` | Gibt an, ob Benutzer das Formset ein- und ausklappen können. |
+| `collapsed` | `bool` | `False` | Anfangszustand des Einklappens. Wirkt nur bei `collapsible=True`. |
 
 
 Der Konstruktor löst einen `ValueError` aus, wenn Sie `fk_attr` leer lassen und das Backend die Beziehung nicht eindeutig auflösen kann.
 
-## Einklappbare Formsets
+## Ausklappbare Formsets
 
-Standardmäßig (`collapsible = True`) rendert jede `InlineModelView` ihr Formset mit einem Header, den Benutzer auswählen können, um untergeordnete Datensätze einzuklappen, die sie nicht benötigen. Setzen Sie `collapsed = True`, damit das Formset geschlossen statt geöffnet startet:
+Standardmäßig (`collapsible = True`) rendert jedes `InlineModelView` sein Formset mit einem Header, den Benutzer auswählen können, um nicht benötigte untergeordnete Datensätze einzuklappen. Setzen Sie `collapsed = True`, um das Formset zunächst geschlossen statt geöffnet anzuzeigen:
 
 ```python
 class CommentInline(InlineModelView):
@@ -115,7 +113,7 @@ class CommentInline(InlineModelView):
     collapsed = True
 ```
 
-Setzen Sie `collapsible = False`, um ein Formset vollständig davon auszunehmen, sodass es immer ausgeklappt ohne Umschalter gerendert wird:
+Setzen Sie `collapsible = False`, um ein Formset vollständig vom Ausklappen auszuschließen; es wird dann immer ausgeklappt ohne Umschalter gerendert:
 
 ```python
 class CommentInline(InlineModelView):
@@ -125,7 +123,7 @@ class CommentInline(InlineModelView):
     collapsible = False
 ```
 
-## Explizite und zusammengesetzte Fremdschlüssel
+## Explizite und zusammengesetzte Fremdschlüssel {#explizite-und-zusammengesetzte-fremdschluessel}
 
 Setzen Sie `fk_attr` selbst, wenn das übergeordnete Modell mehr als eine Beziehung zum selben untergeordneten Modell hat, wenn die Beziehung nicht im ORM-Modell deklariert ist oder wenn der Fremdschlüssel zusammengesetzt ist:
 
@@ -229,19 +227,19 @@ class OrderView(ModelView):
     inlines = [OrderLineInline]
 ```
 
-Beachten Sie, dass `OrderLineInline` kein `fk_attr` benötigt, obwohl der Primärschlüssel von `OrderLine` zusammengesetzt ist (`order_store_id`, `order_seq`, `line_no`). Das SQLAlchemy-Backend löst den zusammengesetzten Fremdschlüssel über die `ForeignKeyConstraint` zwischen `Order` und `OrderLine` auf und füllt beide Spalten in neuen Zeilen. Übergeben Sie ein `tuple[str, ...]` an `fk_attr` nur dann, wenn die Introspektion der Constraints keine Übereinstimmung findet.
+Beachten Sie, dass `OrderLineInline` kein `fk_attr` benötigt, obwohl der Primärschlüssel von `OrderLine` zusammengesetzt ist (`order_store_id`, `order_seq`, `line_no`). Das SQLAlchemy-Backend löst den zusammengesetzten Fremdschlüssel über die `ForeignKeyConstraint` zwischen `Order` und `OrderLine` auf und füllt beide Spalten in neuen Zeilen. Übergeben Sie ein `tuple[str, ...]` an `fk_attr` nur dann, wenn die Constraint-Introspektion keine Übereinstimmung findet.
 
 ## Validierung
 
-Jede eingereichte Zeile wird für sich validiert, über dieselben `create`- und `edit`-Pfade, die auch eine eigenständige `ModelView` verwendet. Das Admin-Interface speichert zuerst das übergeordnete Modell und verarbeitet dann jede Inline-Zeile nacheinander. Ein Tippfehler im Feld `author` eines Kommentars hindert die anderen Kommentare nicht daran, verarbeitet zu werden. Schlägt die Validierung einer Zeile fehl, werden deren Fehler dieser Zeile zugeordnet, und das Formular rendert die Zeile an Ort und Stelle mit den eingereichten Werten neu, damit Benutzer diesen Eintrag korrigieren und erneut einreichen können.
+Jede eingereichte Zeile wird für sich allein validiert – über dieselben `create`- und `edit`-Pfade, die auch ein eigenständiges `ModelView` verwendet. Die Admin speichert zuerst das übergeordnete Modell und verarbeitet anschließend jede Inline-Zeile der Reihe nach. Ein Tippfehler im Feld `author` eines Kommentars hindert die anderen Kommentare nicht an der Verarbeitung. Schlägt die Validierung einer Zeile fehl, werden ihre Fehler dieser Zeile zugeordnet, und das Formular rendert die Zeile an Ort und Stelle mit den eingereichten Werten neu, damit Benutzer den Eintrag korrigieren und erneut absenden können.
 
 !!! important
-    Beim SQLAlchemy-Backend ist der gesamte Request alles-oder-nichts. Das übergeordnete Modell und jede Inline-Zeile teilen sich dieselbe request-scoped Session, und diese Session committet nur, wenn der gesamte Request erfolgreich ist. Schlägt die Validierung einer Zeile fehl, gibt die Response einen Fehler zurück und die Session wird zurückgerollt, sodass das übergeordnete Modell und alle Inline-Zeilen gemeinsam zurückgesetzt werden, einschließlich Zeilen, die die Validierung bestanden haben. Betrachten Sie die Fehler pro Zeile in der UI als eine Liste dessen, was zu korrigieren ist, nicht als Aufzeichnung dessen, was gespeichert wurde.
+    Im SQLAlchemy-Backend gilt für die gesamte Anfrage Alles-oder-Nichts. Das übergeordnete Modell und jede Inline-Zeile teilen sich dieselbe request-scoped Session, und diese Session committet nur, wenn die gesamte Anfrage erfolgreich ist. Schlägt die Validierung einer beliebigen Zeile fehl, gibt die Antwort einen Fehler zurück und die Session wird zurückgerollt, sodass das übergeordnete Modell und alle Inline-Zeilen gemeinsam zurückgesetzt werden – einschließlich der Zeilen, die die Validierung bestanden haben. Betrachten Sie die Fehlermeldungen pro Zeile in der UI als Liste dessen, was zu korrigieren ist, nicht als Protokoll dessen, was gespeichert wurde.
 
 ---
 
 ## Wie es weitergeht
 
-* **[SQLAlchemy](../integrations/sqlalchemy.md):** Wie die Introspektion von Beziehungen die automatische Erkennung von Fremdschlüsseln ermöglicht.
-* **[Benutzerdefinierte Views](custom-views.md):** Seiten erstellen, die über den Standard-Workflow aus Create, Edit und List hinausgehen.
-* **[Events](../advanced/events.md):** Auf Inline-Änderungen reagieren, nachdem Datensätze gespeichert wurden.
+* **[SQLAlchemy](../integrations/sqlalchemy.md):** Wie Beziehungs-Introspektion die automatische Erkennung von Fremdschlüsseln ermöglicht.
+* **[Custom Views](custom-views.md):** Erstellen Sie Seiten jenseits des Standard-Workflows aus Create, Edit und List.
+* **[Events](../advanced/events.md):** Reagieren Sie auf Inline-Änderungen, nachdem Datensätze gespeichert wurden.

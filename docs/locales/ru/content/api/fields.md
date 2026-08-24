@@ -1,11 +1,9 @@
 ---
-title: Справочник API полей
+title: Справочник по API полей
 description: Справочная документация по всем типам полей, доступным в starlette-admin.
 source_hash: 79eba140a93083b5b94b39d6496d16d9703d48140b5290383927e0ee28325836
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,9 +22,8 @@ translation_date: '2026-08-23'
 
 # Поля
 
-Полный справочник атрибутов и методов для `BaseField` и всех встроенных типов полей,
-сгенерированный из их докстрингов. Пошаговое руководство по работе с полями см. в разделе
-[Поля](../user-guide/fields.md).
+Полный справочник атрибутов и методов для `BaseField` и всех встроенных типов полей, сгенерированный
+на основе их docstring-строк. Для практического пошагового ознакомления см. раздел [Поля](../user-guide/fields.md).
 
 ## Базовый класс
 

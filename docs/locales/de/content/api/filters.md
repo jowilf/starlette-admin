@@ -2,10 +2,8 @@
 title: Filter-API-Referenz
 description: API-Referenzdokumentation für Datenbank-Query-Filter in starlette-admin.
 source_hash: c26f3e6379afdc4268934bf0f05b895ebb00f0517dd9834b6fbc337c4f192231
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,12 +22,16 @@ translation_date: '2026-08-23'
 
 # Filter
 
-Vollständige Attribut- und Methodenreferenz für das Filtersystem, generiert aus Docstrings. Für eine aufgabenorientierte Einführung siehe [Filter](../user-guide/filters.md) und [Benutzerdefinierte Filter](https://jowilf.github.io/starlette-admin/advanced/custom-filters/).
+Vollständige Referenz aller Attribute und Methoden des Filtersystems, generiert aus den Docstrings. Eine aufgabenorientierte Einführung finden Sie unter [Filters](../user-guide/filters.md) und
+[Custom Filters](../advanced/custom-filters.md).
 
-Die folgenden Klassen sind backend-agnostisch: Sie deklarieren `name`, `label` und `data_type` eines Filters, aber nicht dessen Query-Logik. Jedes ORM-Backend (`contrib.sqla`, `contrib.beanie`,
-`contrib.mongoengine`, `contrib.tortoise`) leitet davon ab, um die tatsächliche `apply()`-Implementierung für dieses Backend hinzuzufügen. Auf der jeweiligen [Integrationsseite](../integrations/sqlalchemy.md) finden Sie die konkreten, importierbaren Filterklassen.
+Die folgenden Klassen sind backend-unabhängig: Sie deklarieren `name`, `label` und
+`data_type` eines Filters, jedoch nicht dessen Query-Logik. Jedes ORM-Backend (`contrib.sqla`, `contrib.beanie`,
+`contrib.mongoengine`, `contrib.tortoise`) leitet davon Unterklassen ab, um die konkrete `apply()`-Implementierung für das jeweilige
+Backend bereitzustellen. Die tatsächlich importierbaren Filterklassen finden Sie auf der entsprechenden
+[Integrationsseite](../integrations/sqlalchemy.md).
 
-## Kerntypen
+## Kern-Typen
 
 ::: starlette_admin.filters.base.FilterDataType
 

@@ -1,16 +1,14 @@
 ---
 title: Puntos de extensión
-description: Una descripción general de todos los métodos de hook, clases base y puntos
-  de configuración personalizables disponibles en starlette-admin.
+description: Una descripción general de todos los métodos hook personalizables, clases
+  base y puntos de configuración disponibles en starlette-admin.
 source_hash: d9fad2e9fd41b2f2ccc685090f07423b0ee2b96bf0a00b08ef0fbf2b4027ebf2
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -25,7 +23,7 @@ translation_date: '2026-08-22'
 
 # Puntos de extensión
 
-Esta página reúne en un solo lugar todas las superficies conectables de `starlette-admin`. Encuentre la clase, el hook o el decorador que se ajuste a lo que desea modificar y siga el enlace para consultar la guía completa.
+Esta página reúne en un solo lugar todas las superficies conectables de `starlette-admin`. Encuentre la clase, el hook o el decorador que se ajuste a lo que desea modificar y siga el enlace correspondiente para consultar la guía completa.
 
 | Punto de extensión | Interfaz de API o hook | Documentación |
 | --- | --- | --- |
@@ -34,17 +32,17 @@ Esta página reúne en un solo lugar todas las superficies conectables de `starl
 | **Importador personalizado** | Cree una subclase de `BaseImporter`. | [Exportación e importación](../user-guide/export-import.md) |
 | **Tema personalizado** | Cree una subclase de `BaseTheme`. | [Temas personalizados](custom-themes.md) |
 | **Backend de autenticación personalizado** | Cree una subclase de `BaseAuthProvider`. | [Autenticación](../user-guide/auth.md) |
-| **Almacenamiento de archivos personalizado** | Cree una subclase de `BaseStorage`, que se registra a sí misma mediante su atributo `name`. | [Almacenamiento de archivos](../user-guide/file-storage.md) |
+| **Almacenamiento de archivos personalizado** | Cree una subclase de `BaseStorage`, que se registra automáticamente mediante su atributo `name`. | [Almacenamiento de archivos](../user-guide/file-storage.md) |
 | **Widget personalizado** | Cree una subclase de `BaseWidget`. | [Vistas personalizadas](../user-guide/custom-views.md) |
 | **Rutas adicionales en una vista personalizada** | Aplique el decorador `@route("/path", methods=["GET"])` a un método de `CustomView`. | [Vistas personalizadas](../user-guide/custom-views.md) |
-| **Plug-in** | Cree una subclase de `BasePlugin` para agrupar campos, vistas, assets y más. | [Plug-ins](plugins.md) |
+| **Plugin** | Cree una subclase de `BasePlugin` para agrupar campos, vistas, assets y más. | [Plugins](plugins.md) |
 
 !!! tip
-    Para cambiar los colores predeterminados del tema Tabler, no necesita un tema personalizado. En su lugar, pase un objeto `TablerSettings` a una instancia de `DefaultTheme`.
+    Para cambiar los colores del tema Tabler predeterminado, no necesita un tema personalizado. En su lugar, pase un objeto `TablerSettings` a una instancia de `DefaultTheme`.
 
 ---
 
-## Próximos pasos
+## ¿Qué sigue?
 
-* **[Conceptos](../getting-started/concepts.md):** Vea cómo estas piezas conectables encajan en la arquitectura del framework.
+* **[Conceptos](../getting-started/concepts.md):** Vea cómo estas piezas conectables se integran en la arquitectura del framework.
 * **[Vistas](../user-guide/views.md):** Explore las vistas principales a las que se asocian la mayoría de estos puntos de extensión.

@@ -1,12 +1,9 @@
 ---
-title: Fields-API-Referenz
-description: API-Referenzdokumentation für alle Feldtypen, die in starlette-admin
-  verfügbar sind.
+title: Fields API-Referenz
+description: API-Referenzdokumentation für alle in starlette-admin verfügbaren Feldtypen.
 source_hash: 79eba140a93083b5b94b39d6496d16d9703d48140b5290383927e0ee28325836
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -23,11 +20,9 @@ translation_date: '2026-08-23'
     [Lesen Sie die ursprüngliche englische Version](https://jowilf.github.io/starlette-admin/api/fields/)
 <!-- translation-notice:end -->
 
-# Felder
+# Fields
 
-Vollständige Referenz der Attribute und Methoden für `BaseField` und jeden integrierten
-Feldtyp, generiert aus deren Docstrings. Eine aufgabenorientierte Einführung finden Sie unter
-[Felder](../user-guide/fields.md).
+Vollständige Referenz aller Attribute und Methoden von `BaseField` und jedem integrierten Feldtyp, generiert aus deren Docstrings. Eine aufgabenorientierte Einführung finden Sie unter [Fields](../user-guide/fields.md).
 
 ## Basisklasse
 
@@ -71,7 +66,7 @@ Feldtyp, generiert aus deren Docstrings. Eine aufgabenorientierte Einführung fi
 
 ::: starlette_admin.fields.BooleanField
 
-## Datum und Zeit
+## Datum und Uhrzeit
 
 ::: starlette_admin.fields.DateTimeField
 
@@ -109,7 +104,7 @@ Feldtyp, generiert aus deren Docstrings. Eine aufgabenorientierte Einführung fi
 
 ::: starlette_admin.fields.ImageField
 
-## Beziehungen
+## Relationen
 
 ::: starlette_admin.fields.RelationField
 

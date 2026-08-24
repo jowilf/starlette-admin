@@ -1,12 +1,10 @@
 ---
 title: Référence de l'API des vues
-description: Documentation de référence de l'API pour ModelView, CustomView et Link
-  dans starlette-admin.
+description: Documentation de référence API pour ModelView, CustomView et Link dans
+  starlette-admin.
 source_hash: 38859e9f37ece4d46c4fb18d8b26d357f9de6f5334cc205694cf2289e20d1427
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,8 +23,8 @@ translation_date: '2026-08-22'
 
 # Vues
 
-Référence complète des attributs et méthodes des classes de vue, générée à partir de leurs docstrings. Pour un guide orienté tâches, consultez [Vues](../user-guide/views.md) et
-[Vues personnalisées & Widgets](../user-guide/custom-views.md).
+Référence complète des attributs et méthodes des classes de vues, générée à partir de leurs docstrings. Pour un guide orienté tâches, consultez [Vues](../user-guide/views.md) et
+[Vues & Widgets personnalisés](../user-guide/custom-views.md).
 
 ::: starlette_admin.views.BaseView
 

@@ -1,12 +1,10 @@
 ---
 title: Messages flash
-description: Envoyez des alertes éphémères de succès, d'avertissement ou d'erreur
-  aux utilisateurs après avoir accompli des actions dans starlette-admin.
+description: Envoyer des alertes éphémères de succès, d'avertissement ou d'erreur
+  aux utilisateurs après la réalisation d'actions dans starlette-admin.
 source_hash: 597d52f90701d02e1620bfc199dbd2bdebc85f958d6f79d8458d1f8d50a0f9ec
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,9 +23,9 @@ translation_date: '2026-08-22'
 
 # Messages flash
 
-Les messages flash fournissent aux utilisateurs un retour temporaire, à usage unique, après l'exécution d'une action, comme « Post créé avec succès » ou « Type de fichier invalide ». Un message survit à une seule redirection HTTP, et le panneau d'administration le supprime après son affichage.
+Les messages flash fournissent aux utilisateurs un retour temporaire, à usage unique, après qu'ils ont effectué une action, par exemple « Article créé avec succès » ou « Type de fichier invalide ». Un message survit à une seule redirection HTTP, et l'interface d'administration le supprime une fois affiché.
 
-`flash()` met en file d'attente un message sur la requête courante. Le panneau d'administration affiche le message sur la page suivante que l'utilisateur voit, puis vide la file. Ce motif provient de Flask-Admin.
+`flash()` place un message en file d'attente sur la requête courante. L'administration affiche le message sur la page suivante que l'utilisateur consulte, puis vide la file. Ce modèle provient de Flask-Admin.
 
 
 ```python
@@ -38,7 +36,7 @@ from starlette_admin.flash import flash
 class PostView(BaseModelView):
     async def before_create(self, request: Request, data: dict) -> None:
         if not data.get("title", "").strip():
-            # Mettre le message en file pour le prochain chargement de page
+            # Queue the message for the next page load
             flash(request, "Title cannot be blank.", category="error")
             raise ValueError("Title cannot be blank.")
 
@@ -46,7 +44,7 @@ class PostView(BaseModelView):
 
 ## Catégories de messages
 
-Chaque message flash nécessite une catégorie. La catégorie définit la couleur de la bannière dans le thème par défaut, ce qui permet aux utilisateurs d'évaluer la gravité d'un coup d'œil.
+Chaque message flash nécessite une catégorie. La catégorie détermine la couleur du bandeau dans le thème par défaut, ce qui permet aux utilisateurs d'évaluer la gravité d'un coup d'œil.
 
 ```python
 from starlette_admin.flash import flash
@@ -58,11 +56,11 @@ flash(request, "Upload failed: file too large.", category="error")
 
 ```
 
-L'argument `category` vaut par défaut `"info"`. Il doit être exactement l'une des valeurs suivantes : `success`, `info`, `warning` ou `error`. Toute autre valeur lève une `ValueError`.
+L'argument `category` vaut `"info"` par défaut. Il doit correspondre exactement à l'une des valeurs suivantes : `success`, `info`, `warning` ou `error`. Toute autre valeur lève une `ValueError`.
 
 ## Messages CRUD intégrés
 
-Vous n'avez pas besoin d'appeler `flash()` pour les opérations CRUD standard. Le panneau d'administration affiche automatiquement un message `success` lorsque ces actions se terminent :
+Vous n'avez pas besoin d'appeler `flash()` pour les opérations CRUD standard. L'administration émet automatiquement un message `success` lorsque ces actions se terminent :
 
 | Action | Message par défaut |
 | --- | --- |
@@ -72,11 +70,11 @@ Vous n'avez pas besoin d'appeler `flash()` pour les opérations CRUD standard. L
 | **Delete (bulk)** | `%(count)d items were successfully deleted.` |
 
 !!! note "À quoi correspond `<repr>`"
-    Les messages automatiques utilisent la représentation de ligne définie par `view.repr()`, et non le nom de classe du modèle. Par exemple, la création d'un post déclenche l'affichage de *« The item 'My First Post' was added successfully »* plutôt qu'un générique *« Post was added successfully »*.
+    Les messages automatiques utilisent la représentation de ligne définie par `view.repr()`, et non le nom de classe du modèle. Par exemple, la création d'un article émet *« The item 'My First Post' was added successfully »* plutôt qu'un générique *« Post was added successfully »*.
 
-## Utiliser des messages flash dans les actions personnalisées
+## Utiliser les messages flash dans des actions personnalisées
 
-Les gestionnaires d'actions personnalisées (`@action` et `@row_action`) retournent `None` par défaut. Pour fournir un retour à l'utilisateur, appelez `flash()` avant que le gestionnaire ne retourne.
+Les gestionnaires d'actions personnalisées (`@action` et `@row_action`) renvoient `None` par défaut. Pour fournir un retour à l'utilisateur, appelez `flash()` avant que le gestionnaire ne retourne.
 
 ```python
 from starlette.requests import Request
@@ -94,17 +92,17 @@ class PostView(BaseModelView):
             obj.published = True
             await self.edit(request, pk, {"published": True})
 
-        # Informer l'utilisateur du succès de l'action personnalisée
+        # Notify the user that the custom action succeeded
         flash(request, f"{len(pks)} post(s) published.", category="success")
 
 ```
 
-* **Si vous omettez `flash()` :** l'action s'exécute quand même, mais l'utilisateur ne reçoit aucune confirmation visuelle après la redirection de la page.
-* **Si l'action échoue :** lorsque votre action personnalisée lève `ActionFailed`, le panneau d'administration intercepte l'exception et affiche sa chaîne sous forme de bannière d'erreur. N'appelez pas `flash()` dans une branche `ActionFailed`, car la requête n'est pas redirigée.
+* **Si vous omettez `flash()` :** l'action s'exécute toujours, mais l'utilisateur ne reçoit aucune confirmation visuelle après la redirection de la page.
+* **Si l'action échoue :** lorsque votre action personnalisée lève `ActionFailed`, l'administration intercepte l'exception et affiche sa chaîne sous forme de bandeau d'erreur. N'appelez pas `flash()` dans une branche `ActionFailed`, car la requête n'est pas redirigée.
 
-## Afficher les messages dans vos templates personnalisés
+## Afficher les messages dans des templates personnalisés
 
-Le template de base du panneau d'administration récupère et affiche les messages flash pour vous. Vous n'avez besoin de les récupérer vous-même que si vous construisez entièrement une [vue personnalisée](custom-views.md).
+Le template de base de l'administration extrait et affiche les messages flash pour vous. Vous n'avez besoin de les récupérer vous-même que si vous construisez entièrement une [vue personnalisée](custom-views.md).
 
 ```python
 from starlette_admin.flash import get_flashed_messages
@@ -114,17 +112,17 @@ messages = get_flashed_messages(request)
 
 ```
 
-La lecture de la file des messages flash est **destructrice**. Le premier appel à `get_flashed_messages(request)` récupère et vide la file. Les appels suivants au cours de la même requête retournent une liste vide, `[]`.
+La lecture de la file des messages flash est **destructive**. Le premier appel à `get_flashed_messages(request)` extrait et vide la file. Les appels suivants durant la même requête renvoient une liste vide, `[]`.
 
-!!! important "Gardez les messages courts"
-    Les messages flash sont stockés dans un cookie signé et `httponly` nommé `admin_flash`, et non dans la session du serveur. Les navigateurs limitent la taille des cookies à environ 4 Ko ; utilisez donc les messages flash uniquement pour un retour concis. Évitez les chaînes longues et les charges utiles volumineuses. L'approche basée sur les cookies signifie également que les messages flash fonctionnent sans `SessionMiddleware`.
+!!! important "Gardez des messages courts"
+    Les messages flash sont stockés dans un cookie signé et `httponly` nommé `admin_flash`, et non dans la session côté serveur. Les navigateurs limitent la taille d'un cookie à environ 4 Ko ; réservez donc les messages flash aux retours brefs. Évitez les longues chaînes et les charges de données volumineuses. Cette approche basée sur les cookies signifie également que les messages flash fonctionnent sans `SessionMiddleware`.
 
-> Consultez [examples/09-actions](https://github.com/jowilf/starlette-admin/tree/main/examples/09-actions) pour voir une application exécutable qui appelle `flash()` depuis des hooks et des actions personnalisées.
+> Consultez [examples/09-actions](https://github.com/jowilf/starlette-admin/tree/main/examples/09-actions) pour une application exécutable qui appelle `flash()` depuis des hooks et des actions personnalisées.
 
 ---
 
-## Et ensuite ?
+## Pour aller plus loin
 
-* **[Actions](actions.md)** : Déclencher une logique métier pour les actions groupées et les actions de ligne.
-* **[Sécurité](security.md)** : Découvrez comment sécuriser le cookie des messages flash et les jetons CSRF.
-* **[Templates avancés](../advanced/templates.md)** : Rendre des bannières de messages flash dans vos propres templates.
+* **[Actions](actions.md)** : Déclencher une logique métier via des actions groupées ou sur des lignes.
+* **[Sécurité](security.md)** : Découvrez comment `secret_key` sécurise à la fois le cookie des messages flash et les jetons CSRF.
+* **[Templates](../advanced/templates.md)** : Afficher les bandeaux de messages flash dans vos propres mises en page.

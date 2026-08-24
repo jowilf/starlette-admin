@@ -1,12 +1,10 @@
 ---
 title: Benutzerdefinierte Felder
-description: Erfahren Sie, wie Sie in starlette-admin benutzerdefinierte Feldtypen
-  erstellen, um spezielle Datentypen und benutzerdefinierte UI-Widgets zu verarbeiten.
+description: Erfahren Sie, wie Sie in starlette-admin eigene Feldtypen erstellen,
+  um spezielle Datentypen und benutzerdefinierte UI-Widgets zu verarbeiten.
 source_hash: 5daa493733490d2421b0bacf11a0669eaad36b82cccc3dd0be3f7709e5681eb2
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -25,9 +23,9 @@ translation_date: '2026-08-23'
 
 # Benutzerdefinierte Felder
 
-Die integrierten Felder decken die meisten Spalten ab, auf die Sie treffen werden. Wenn keines davon passt, können Sie Ihr eigenes bauen, indem Sie [`BaseField`](../api/fields.md#starlette_admin.fields.BaseField) subclassen. Ein Feld besteht aus drei Methoden, die Daten zwischen Ihrem Modell und dem Browser bewegen, plus einer Reihe von Template-Pfaden, die es rendern. Subclassen Sie `BaseField` direkt oder erweitern Sie das integrierte Feld, das Ihren Anforderungen am nächsten kommt (z. B. `StringField` oder `EnumField`), und überschreiben Sie nur die Teile, die abweichen.
+Die integrierten Felder decken die meisten Spalten ab, auf die Sie stoßen werden. Wenn jedoch keines davon passt, können Sie ein eigenes erstellen, indem Sie [`BaseField`](../api/fields.md#starlette_admin.fields.BaseField) ableiten. Ein Feld besteht aus drei Methoden, die Daten zwischen Ihrem Modell und dem Browser bewegen, sowie einer Reihe von Template-Pfaden, die es rendern. Leiten Sie direkt von `BaseField` ab oder erweitern Sie das integrierte Feld, das Ihren Anforderungen am nächsten kommt (z. B. `StringField` oder `EnumField`), und überschreiben Sie nur die Teile, die sich unterscheiden.
 
-## Minimales Beispiel
+## Minimalbeispiel
 
 ```python
 from dataclasses import dataclass
@@ -54,7 +52,7 @@ class StatusBadgeField(EnumField):
 
 ```
 
-Richten Sie Ihre `Admin`-Instanz auf das Template-Verzeichnis und verwenden Sie dann das Feld in Ihrer View:
+Richten Sie Ihre `Admin`-Instanz auf das Templates-Verzeichnis und verwenden Sie dann das Feld in Ihrer View:
 
 ```python
 from starlette_admin.contrib.sqla import Admin, ModelView
@@ -71,25 +69,25 @@ class EmployeeView(ModelView):
     ]
 ```
 
-Da `StatusBadgeField` von `EnumField` statt von `BaseField` erbt, erbt es `choices`, die Formularvalidierung gegen diese Choices sowie das Default-Template `fields/form/enum.html` für die Create- und Edit-Formulare. Nichts davon muss geändert werden, daher überschreibt die Klasse nur die Attribute für das List- und Detail-Rendering.
+Da `StatusBadgeField` von `EnumField` statt von `BaseField` abstammt, erbt es `choices`, die Formularvalidierung gegen diese Auswahl sowie die Standard-Template `fields/form/enum.html` für die Erstell- und Bearbeitungsformulare. Nichts davon muss geändert werden, daher überschreibt die Klasse nur die Attribute für die Listen- und Detaildarstellung.
 
-Der Rest dieser Seite behandelt, was Sie überschreiben müssen, wenn ein Feld mehr als einen Template-Austausch benötigt. Den vollständigen lauffähigen Code finden Sie zusammen mit einem zweiten Feld (`AvatarNameField`), das tatsächlich die Datenmethoden überschreibt, unter [`examples/advanced/05-custom-fields`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/05-custom-fields).
+Der Rest dieser Seite behandelt, was Sie überschreiben müssen, wenn ein Feld mehr als einen Template-Austausch erfordert. Den vollständigen, lauffähigen Code – zusammen mit einem zweiten Feld (`AvatarNameField`), das tatsächlich die Datenmethoden überschreibt – finden Sie unter [`examples/advanced/05-custom-fields`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/05-custom-fields).
 
 ## Die drei Datenmethoden
 
 | Methode | Aufgerufen, wenn | Signatur |
 | --- | --- | --- |
-| `parse_form_data` | Ein Create/Edit-Formular abgesendet wird | `async def parse_form_data(self, request: Request, form_data: FormData) -> Any` |
+| `parse_form_data` | Ein Erstell-/Bearbeitungsformular abgesendet wird | `async def parse_form_data(self, request: Request, form_data: FormData) -> Any` |
 | `parse_obj` | Ein Wert von einer Modellinstanz zur Anzeige gelesen wird | `async def parse_obj(self, request: Request, obj: Any) -> Any` |
 | `serialize_value` | Ein Wert für das Frontend formatiert wird (Liste, Detail, API, Export) | `async def serialize_value(self, request: Request, value: Any) -> Any` |
 
-`StatusBadgeField` überschreibt keine davon, weil `EnumField` den abgesendeten Wert bereits gegen `choices` parst und den rohen String aus `obj.status` liest. Das Badge ist nur Präsentation auf Basis dieses Strings. Überschreiben Sie diese drei Methoden, wenn der Wert selbst berechnet oder umgeformt werden muss statt nur neu gerendert.
+`StatusBadgeField` überschreibt keine dieser Methoden, da `EnumField` den abgesendeten Wert bereits gegen `choices` validiert und den rohen String aus `obj.status` liest. Das Badge ist lediglich die Präsentation dieses Strings. Überschreiben Sie diese drei Methoden, wenn der Wert selbst berechnet oder umgeformt werden muss, statt nur neu gerendert zu werden.
 
 !!! tip "Hooks oder Subclassing"
-    Für eine einmalige Änderung an einem einzelnen Feld brauchen Sie selten eine Unterklasse. Übergeben Sie stattdessen die [Hooks `getter`, `formatter` und `parser`](../user-guide/fields.md#werte-berechnen-formatieren-und-parsen) als Konstruktorargumente, um das Lesen, die Anzeigeformatierung und das Parsen der Eingabe zu handhaben.
-    **Wann Subclassing:** nur wenn Sie dieselbe Logik in mehr als einer View benötigen oder wenn Sie die Templates ändern müssen.
+    Für eine einmalige Änderung an einem einzelnen Feld benötigen Sie selten eine eigene Klasse. Übergeben Sie stattdessen die [Hooks `getter`, `formatter` und `parser`](../user-guide/fields.md#computing-formatting-and-parsing-values) als Konstruktorargumente, um das Lesen, die Anzeigeformatierung und das Parsen der Eingabe zu handhaben.
+    **Wann Subclassing:** Nur wenn Sie dieselbe Logik in mehr als einer View benötigen oder wenn Sie die Templates ändern möchten.
 
-`parse_form_data` empfängt die rohe `FormData` (aus `starlette.datastructures`) vom Request und gibt die Daten zurück, die `view.create()` bzw. `view.edit()` für dieses Feld erhalten sollen. Die Default-Implementierung liest `form_data.get(self.id)` und gibt es unverändert zurück. Die meisten Felder müssen nur eine Typumwandlung hinzufügen:
+`parse_form_data` erhält die rohen `FormData` (aus `starlette.datastructures`) der Anfrage und gibt die Daten zurück, die `view.create()` bzw. `view.edit()` für dieses Feld erhalten sollen. Die Standardimplementierung liest `form_data.get(self.id)` und gibt ihn unverändert zurück. Die meisten Felder müssen lediglich eine Typkonvertierung ergänzen:
 
 ```python
 async def parse_form_data(self, request: Request, form_data: FormData) -> bool:
@@ -97,7 +95,7 @@ async def parse_form_data(self, request: Request, form_data: FormData) -> bool:
     return raw in ("on", "true", "yes")
 ```
 
-`parse_obj` empfängt die Modellinstanz und gibt den anzuzeigenden Wert zurück. Der Default gibt `getattr(obj, self.name, None)` zurück. Überschreiben Sie ihn für Felder, die nicht auf ein einzelnes Modellattribut abgebildet werden, z. B. eines, das zwei Spalten kombiniert. `AvatarNameField` kombiniert beispielsweise einen `name`-String mit dem hochgeladenen Avatar der Zeile:
+`parse_obj` erhält die Modellinstanz und gibt den anzuzeigenden Wert zurück. Die Standardimplementierung gibt `getattr(obj, self.name, None)` zurück. Überschreiben Sie sie für Felder, die nicht auf ein einzelnes Modellattribut abgebildet sind, etwa eines, das zwei Spalten kombiniert. `AvatarNameField` kombiniert beispielsweise einen `name`-String mit dem hochgeladenen Avatar der Zeile:
 
 ```python
 async def parse_obj(self, request: Request, obj: Any) -> Any:
@@ -106,7 +104,7 @@ async def parse_obj(self, request: Request, obj: Any) -> Any:
     return {"name": name, "avatar_key": avatar_key, "initials": self._initials(name)}
 ```
 
-`serialize_value` empfängt, was `parse_obj` (oder die ORM-Schicht) erzeugt hat, und formatiert es für den aktuellen Request. Es wird separat für die Listenseite, die Detailseite, die JSON-API und Datenexporte aufgerufen. Verzweigen Sie daher auf `request.state.action`, wenn sich die Struktur je nach Kontext unterscheiden muss. `AvatarNameField` benötigt das Avatar-Bild nur auf der Listenseite und fällt überall sonst auf reinen Text zurück:
+`serialize_value` erhält das Ergebnis von `parse_obj` (oder der ORM-Schicht) und formatiert es für die aktuelle Anfrage. Es wird separat für die Listenseite, die Detailseite, die JSON-API und Datenexporte aufgerufen. Verzweigen Sie daher über `request.state.action`, wenn sich die Struktur je nach Kontext unterscheiden muss. `AvatarNameField` benötigt das Avatar-Bild nur auf der Listenseite und fällt überall sonst auf reinen Text zurück:
 
 ```python
 async def serialize_value(self, request: Request, value: Any) -> Any:
@@ -119,23 +117,23 @@ async def serialize_value(self, request: Request, value: Any) -> Any:
 ```
 
 !!! warning
-    Was auch immer `serialize_value` für `RequestAction.LIST` und `RequestAction.RELATION_LOOKUP` zurückgibt, geht direkt in eine JSON-Response ein, es muss also JSON-serialisierbar sein.
+    Was auch immer `serialize_value` für `RequestAction.LIST` und `RequestAction.RELATION_LOOKUP` zurückgibt, geht direkt in eine JSON-Antwort ein und muss daher JSON-serialisierbar sein.
 
 ## Template-Pfade
 
-Jedes Feld trägt die folgenden Template-Attribute. Jedes davon ist ein Pfad, den der Jinja2-Loader des Admins auflöst: Er prüft zuerst Ihr `templates_dir`, falls Sie eines gesetzt haben, und fällt dann auf das integrierte Verzeichnis `starlette_admin/templates/` zurück. Einzelheiten finden Sie unter [Templates](templates.md).
+Jedes Feld trägt die folgenden Template-Attribute. Jedes davon ist ein Pfad, den der Jinja2-Loader des Admins auflöst: Er prüft zunächst Ihr `templates_dir`, sofern gesetzt, und fällt anschließend auf das integrierte Verzeichnis `starlette_admin/templates/` zurück. Details finden Sie unter [Templates](templates.md).
 
-| Attribut | Default | Gerendert für |
+| Attribut | Standardwert | Gerendert für |
 | --- | --- | --- |
 | `list_template` | `"fields/list/text.html"` | Den Spaltenwert jeder Zeile auf der Listenseite |
 | `detail_template` | `"fields/detail/text.html"` | Die schreibgeschützte Detailseite |
-| `form_template` | `"fields/form/input.html"` | Das Create/Edit-Formularfeld |
+| `form_template` | `"fields/form/input.html"` | Das Eingabefeld im Erstell-/Bearbeitungsformular |
 | `null_template` | `"fields/detail/_null.html"` | Listen- und Detailseiten, wenn der Wert `None` ist |
-| `empty_template` | `"fields/detail/_empty.html"` | Listen- und Detailseiten, wenn der Wert eine leere Liste oder ein leeres Tuple ist |
+| `empty_template` | `"fields/detail/_empty.html"` | Listen- und Detailseiten, wenn der Wert eine leere Liste oder ein leeres Tupel ist |
 
-Alle fünf Templates erhalten die `field`-Instanz und den aktuellen `data`-Wert. Bei `list_template` und `detail_template` ist `data` niemals `None` oder leer, da diese Fälle zu `null_template` bzw. `empty_template` weitergeleitet werden, bevor das typspezifische Template eingebunden wird. Das `form_template` erhält außerdem `error` (die Nachricht einer `FormValidationError`, falls eine aufgetreten ist) und `action` (`RequestAction.CREATE`, `RequestAction.EDIT` oder `RequestAction.INLINE_EDIT`, wenn es innerhalb des [Inline-Edit](../user-guide/inline-edit.md)-Popovers der Listenseite gerendert wird). Alle drei sind Formularaktionen, daher gibt `action.is_form()` `True` zurück. Feldcode, der die Darstellung des Formularwerts benötigt, sollte darauf verzweigen und nicht auf `action == RequestAction.EDIT`.
+Alle fünf Templates erhalten die `field`-Instanz und den aktuellen `data`-Wert. Bei `list_template` und `detail_template` ist `data` niemals `None` oder leer, da diese Fälle vor dem Einbinden des typspezifischen Templates an `null_template` bzw. `empty_template` weitergeleitet werden. Das `form_template` erhält außerdem `error` (die Meldung einer `FormValidationError`, falls eine aufgetreten ist) sowie `action` (`RequestAction.CREATE`, `RequestAction.EDIT` oder `RequestAction.INLINE_EDIT`, wenn es innerhalb des Popovers für [Inline-Bearbeitung](../user-guide/inline-edit.md) der Listenseite gerendert wird). Alle drei sind Formular-Aktionen, sodass `action.is_form()` `True` zurückgibt. Feldcode, der die Formulardarstellung des Werts benötigt, sollte auf dieser Grundlage verzweigen und nicht auf `action == RequestAction.EDIT`.
 
-Überschreiben Sie `null_template` und `empty_template`, wenn ein fehlender Wert anders aussehen soll als die Default-Labels `-null-` und `-empty-`, z. B. als Icon für einen leeren Zustand oder als Badge „Nicht angegeben", das zum eigenen Styling des Feldes passt:
+Überschreiben Sie `null_template` und `empty_template`, wenn ein fehlender Wert anders aussehen soll als die standardmäßigen gedämpften Beschriftungen `-null-` und `-empty-` – beispielsweise ein Icon für den leeren Zustand oder ein Badge „Nicht angegeben“, das zum Stil des Feldes passt:
 
 ```python
 @dataclass
@@ -150,7 +148,7 @@ class StatusBadgeField(EnumField):
 <span class="badge">Unknown</span>
 ```
 
-Da `null_template` und `empty_template` einfache Feldattribute wie `list_template` sind, werden sie über Liste, Detail und jede andere View geteilt, die dieses Feld rendert, etwa die Inline-Tabelle einer verwandten View.
+Da `null_template` und `empty_template` einfache Feldattribute wie `list_template` sind, gelten sie übergreifend für Liste, Detail und jede andere View, die dieses Feld rendert – etwa die Inline-Tabelle einer verwandten View.
 
 `StatusBadgeField` weist sowohl `list_template` als auch `detail_template` dasselbe Template zu, weil dasselbe Badge in beiden Kontexten funktioniert:
 
@@ -159,7 +157,7 @@ Da `null_template` und `empty_template` einfache Feldattribute wie `list_templat
 
 ```
 
-`AvatarNameField` überschreibt nur `list_template`. Die Variable `data` in diesem Template ist das Dictionary, das `parse_obj` gebaut und `serialize_value` umgeformt hat, und kein einfacher String:
+`AvatarNameField` überschreibt nur `list_template`. Die Variable `data` in diesem Template ist das Dictionary, das `parse_obj` erstellt und `serialize_value` umgeformt hat – kein simpler String:
 
 ```html title="templates/employee/avatar_name.html"
 <span class="avatar avatar-xs me-2"
@@ -170,21 +168,21 @@ Da `null_template` und `empty_template` einfache Feldattribute wie `list_templat
 
 ```
 
-Die Klasse `inline-edit-value` ist das Opt-in-Marker für die Unterstreichung des [Inline-Edits](../user-guide/inline-edit.md). Sie ist wirkungslos, solange das Feld nicht inline editierbar ist. Daher kostet es hier nichts, sie auf dem Namen statt auf dem Avatar zu setzen, während der Hinweis korrekt eingegrenzt bleibt, falls das Feld jemals editierbar wird.
+Die Klasse `inline-edit-value` ist das Opt-in-Merkmal für die Unterstreichung der [Inline-Bearbeitung](../user-guide/inline-edit.md). Sie bleibt wirkungslos, solange das Feld nicht inline-editierbar ist. Sie hier auf den Namen und nicht auf den Avatar zu setzen, kostet also nichts und hält die Funktion korrekt eingegrenzt, falls das Feld später editierbar wird.
 
-Das Überschreiben von `list_template` und `detail_template` bei Beibehaltung des Default-`form_template` ist genau das, was `StatusBadgeField` tut, indem es `EnumField` erweitert. Das Default-Template `fields/form/enum.html` rendert ein `<select>`-Dropdown-Menü, das aus `field.choices` befüllt wird, sodass das Bearbeiten eines Status ohne weitere Änderungen funktioniert.
+Das Überschreiben von `list_template` und `detail_template` bei Beibehaltung des Standard-`form_template` ist genau das, was `StatusBadgeField` durch die Erweiterung von `EnumField` erreicht. Das Standard-Template `fields/form/enum.html` rendert ein `<select>`-Dropdown, das aus `field.choices` befüllt wird, sodass sich ein Status ohne weitere Änderung bearbeiten lässt.
 
-## Registrierung im Converter-Registry
+## Registrierung in der Converter-Registry
 
-Die Liste `fields = [...]` einer View akzeptiert einfache Attributnamen ebenso wie Feldobjekte. Jedes Element, das noch kein `BaseField` ist, durchläuft ein **Converter-Registry**, das den Spaltentyp auf eine Feldklasse abbildet. Jedes ORM-Backend bringt sein eigenes Registry mit (`starlette_admin.contrib.sqla.converters.ModelConverter` und die Äquivalente für `beanie`, `mongoengine` und `tortoise`), alle basieren auf derselben Basisklasse:
+Die Liste `fields = [...]` einer View akzeptiert neben Feldobjekten auch einfache Attributnamen. Jeder Eintrag, der nicht bereits ein `BaseField` ist, durchläuft eine **Converter-Registry**, die den Spaltentyp einer Feldklasse zuordnet. Jedes ORM-Backend bringt seine eigene Registry mit (`starlette_admin.contrib.sqla.converters.ModelConverter` und die Entsprechungen für `beanie`, `mongoengine` und `tortoise`); alle bauen auf derselben Basis auf:
 
 ```python
 from starlette_admin.converters import BaseModelConverter, converts
 ```
 
-Der Dekorator `@converts(*types)` markiert eine Methode als Converter für einen oder mehrere Typschlüssel. `BaseModelConverter.__init__` scannt die Instanz nach diesen dekorierten Methoden und baut daraus sein `converters`-Dictionary. Beim SQLAlchemy-Backend sind die Typschlüssel die **Namen** der Spaltentypen (`"String"`, `"Integer"`, `"Enum"` usw.), weil SQLAlchemy keine gemeinsame gemeinsame Basisklasse über Dialekte hinweg hat.
+Der Decorator `@converts(*types)` markiert eine Methode als Converter für einen oder mehrere Typschlüssel. `BaseModelConverter.__init__` durchsucht die Instanz nach diesen dekorierten Methoden und baut daraus sein `converters`-Dictionary auf. Beim SQLAlchemy-Backend sind die Typschlüssel die **Namen** der Spaltentypen (`"String"`, `"Integer"`, `"Enum"` usw.), da SQLAlchemy keine gemeinsame Basisklasse über alle Dialekte hinweg besitzt.
 
-Subclassen Sie den Converter des Backends, um eigene Mappings hinzuzufügen. Dieses Beispiel leitet jede `Enum`-Spalte an `StatusBadgeField` statt an das Default-`EnumField` weiter:
+Leiten Sie vom Converter des Backends ab, um eigene Zuordnungen hinzuzufügen. Dieses Beispiel leitet jede `Enum`-Spalte an `StatusBadgeField` statt an das Standard-`EnumField` weiter:
 
 ```python
 from typing import Any
@@ -203,7 +201,7 @@ class MyModelConverter(ModelConverter):
         )
 ```
 
-Übergeben Sie die Unterklasse an `ModelView(converter=...)`, damit die String-Feldnamen in `fields = [...]` über Ihren Converter statt über den Default aufgelöst werden:
+Übergeben Sie die Unterklasse an `ModelView(converter=...)`, damit die String-Feldnamen in `fields = [...]` über Ihren Converter statt über den Standard-Converter aufgelöst werden:
 
 ```python
 from starlette_admin.contrib.sqla import ModelView
@@ -216,12 +214,12 @@ class EmployeeView(ModelView):
 admin.add_view(EmployeeView(Employee, converter=MyModelConverter()))
 ```
 
-Wenn Sie Felder immer explizit konstruieren, wie im minimalen Beispiel oben, können Sie das Converter-Registry umgehen. Sie benötigen es nur, wenn ein Eintrag wie `fields = ["status"]` aus dem zugrunde liegenden Spaltentyp ein `StatusBadgeField` erzeugen soll.
+Wenn Sie Felder stets explizit konstruieren – wie im Minimalbeispiel oben –, können Sie die Converter-Registry umgehen. Sie benötigen sie nur, wenn ein Eintrag wie `fields = ["status"]` anhand des zugrunde liegenden Spaltentyps ein `StatusBadgeField` erzeugen soll.
 
 ---
 
 ## Wie es weitergeht
 
-* **[Felder](../user-guide/fields.md):** Die vollständige Referenz der integrierten Felder und die Tabelle der `BaseField`-Attribute.
+* **[Felder](../user-guide/fields.md):** Die vollständige Referenz der integrierten Felder samt Attributtabelle von `BaseField`.
 * **[Templates](templates.md):** Wie der Template-Loader `list_template`, `detail_template`, `form_template`, `null_template` und `empty_template` auflöst.
-* **[Erweiterungspunkte](extension-points.md):** Alle weiteren austauschbaren Oberflächen in `starlette-admin`.
+* **[Erweiterungspunkte](extension-points.md):** Alle weiteren pluggable Oberflächen in `starlette-admin`.

@@ -3,14 +3,12 @@ title: Referencia de la API de validadores
 description: Documentación de referencia de la API para los validadores de campos
   de formulario en starlette-admin.
 source_hash: 42e3fab8cab328d3c9f6ee206f8e80a246ccb8d84625a9da35ee0afd4f8bd644
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -25,9 +23,9 @@ translation_date: '2026-08-22'
 
 # Validadores
 
-Validadores de campos integrados, que se adjuntan a cualquier campo mediante `BaseField(validators=[...])`
-y se ejecutan a través de `BaseField.validate`. Para obtener una descripción general del flujo de
-validación, consulte [Campos](../user-guide/fields.md).
+Validadores de campo integrados, que se adjuntan a cualquier campo mediante `BaseField(validators=[...])`
+y se ejecutan a través de `BaseField.validate`. Para obtener una visión general del flujo de validación, consulte
+[Fields](../user-guide/fields.md).
 
 ::: starlette_admin.validators.length
 

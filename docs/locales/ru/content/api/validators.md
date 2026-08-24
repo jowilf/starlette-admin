@@ -2,10 +2,8 @@
 title: Справочник API валидаторов
 description: Справочная документация по валидаторам полей форм в starlette-admin.
 source_hash: 42e3fab8cab328d3c9f6ee206f8e80a246ccb8d84625a9da35ee0afd4f8bd644
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,7 +22,9 @@ translation_date: '2026-08-23'
 
 # Валидаторы
 
-Встроенные валидаторы полей, которые можно подключить к любому полю через `BaseField(validators=[...])` и которые выполняются методом `BaseField.validate`. Обзор процесса валидации см. в разделе [Поля](../user-guide/fields.md).
+Встроенные валидаторы полей, которые подключаются к любому полю через `BaseField(validators=[...])`
+и выполняются методом `BaseField.validate`. Общий обзор процесса валидации см. в разделе
+[Fields](../user-guide/fields.md).
 
 ::: starlette_admin.validators.length
 
@@ -60,7 +60,7 @@ translation_date: '2026-08-23'
 
 ::: starlette_admin.validators.items
 
-## Валидаторы файлов
+## Файловые валидаторы
 
 ::: starlette_admin.validators.file_size
 

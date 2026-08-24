@@ -1,11 +1,9 @@
 ---
-title: Справочник API экспорта
-description: Справочная документация по API экспортёров данных в starlette-admin.
+title: Справочник по API экспорта
+description: Справочная документация по экспортерам данных в starlette-admin.
 source_hash: 140539516051b84e0745b8f35c2b2097574357706a3002d4bf73bc9c8f780da0
-prompt_hash: efac6b04187c7def41059e1c72e46a95b2ca178220b0cb995f0594e001f3f1a5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -24,7 +22,7 @@ translation_date: '2026-08-23'
 
 # Экспорт
 
-Полный справочник атрибутов и методов системы экспорта, сгенерированный из докстрингов. Пошаговое руководство по задачам см. в разделе [Экспорт и импорт](../user-guide/export-import.md).
+Полный справочник атрибутов и методов системы экспорта, сгенерированный из docstring. Пошаговое руководство по практическим задачам см. в разделе [Экспорт и импорт](../user-guide/export-import.md).
 
 ::: starlette_admin.export.ExportConfig
 

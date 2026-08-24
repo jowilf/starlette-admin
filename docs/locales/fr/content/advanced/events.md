@@ -1,12 +1,10 @@
 ---
 title: Événements
-description: Abonnez-vous aux événements globaux du cycle de vie tels que AFTER_CREATE
+description: Abonnez-vous aux événements globaux du cycle de vie comme AFTER_CREATE
   pour construire des journaux d'audit, des webhooks et des workflows asynchrones.
 source_hash: e066fc5f57c4f38a189d1a2889e1aa3463d726bf0b7b986068937f673c067a6f
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,7 +23,7 @@ translation_date: '2026-08-22'
 
 # Événements
 
-Un hook de méthode comme `before_create` ne s'exécute que pour la vue qui le définit. Le système d'événements permet à du code extérieur à cette vue de réagir à ce qui s'y passe : un journal d'audit, un webhook ou une invalidation de cache peuvent ainsi être définis à un seul endroit au lieu d'être copiés-collés dans chaque `ModelView` que vous écrivez.
+Un hook de méthode comme `before_create` ne s'exécute que pour la vue qui le définit. Le système d'événements permet à du code situé en dehors de cette vue de réagir à ce qui s'y passe : un journal d'audit, un webhook ou une invalidation de cache peut ainsi vivre à un seul endroit au lieu d'être copié-collé dans chaque `ModelView` que vous écrivez.
 
 ```python
 from starlette_admin.events import AdminEvent, AfterCreateContext
@@ -38,29 +36,29 @@ async def notify_slack(ctx: AfterCreateContext) -> None:
 admin.events.on(AdminEvent.AFTER_CREATE, notify_slack)
 ```
 
-Enregistrez ce gestionnaire une seule fois à côté de votre instance `admin` et l'endpoint de création de chaque vue l'appellera, y compris celles que vous ajouterez plus tard.
+Enregistrez ceci une seule fois à côté de votre instance `admin` et le endpoint de création de chaque vue l'appellera, y compris les vues que vous ajouterez plus tard.
 
-## Vue vs. niveau admin
+## Niveau vue ou niveau admin
 
-Chaque vue possède un attribut `events` auquel vous pouvez vous abonner directement, limité à cette seule vue. L'instance `Admin` en possède également un, qui couvre toutes les vues qui lui sont enregistrées, ou un sous-ensemble si vous passez `keys=`.
+Chaque vue possède un attribut `events` auquel vous pouvez vous abonner directement, avec une portée limitée à cette seule vue. L'instance `Admin` en possède également un, qui touche toutes les vues qui lui sont enregistrées, ou un sous-ensemble si vous passez `keys=`.
 
-* **`view.events.on(...)`** : se déclenche uniquement pour cette vue.
-* **`admin.events.on(...)`** : se déclenche pour toutes les vues actuelles et futures, sauf restriction via `keys=`.
+* **`view.events.on(...)`** : Se déclenche uniquement pour cette vue.
+* **`admin.events.on(...)`** : Se déclenche pour toutes les vues actuelles et futures, sauf si vous le restreignez avec `keys=`.
 
-Vous pouvez vous inscrire sur `admin.events` avant ou après avoir appelé `admin.add_view(...)`. L'ordre n'a pas d'importance : un gestionnaire enregistré en premier reste attaché à la vue dès que vous l'ajoutez.
+Vous pouvez vous enregistrer sur `admin.events` avant ou après avoir appelé `admin.add_view(...)`. L'ordre n'a pas d'importance : un handler enregistré en premier s'attachera quand même à la vue dès que vous l'ajouterez.
 
-## Hooks de méthode vs. abonnements aux événements
+## Hooks de méthode et abonnements aux événements
 
-Les deux se déclenchent au même moment du cycle de vie de la requête. Ils diffèrent par l'emplacement du code et le nombre de vues touchées.
+Les deux se déclenchent au même moment du cycle de vie de la requête. Ils diffèrent par l'endroit où réside le code et par le nombre de vues qu'ils atteignent.
 
-| Fonctionnalité | Hook de méthode (`before_create`, ...) | Abonnement aux événements (`view.events` / `admin.events`) |
+| Caractéristique | Hook de méthode (`before_create`, ...) | Abonnement aux événements (`view.events` / `admin.events`) |
 | --- | --- | --- |
-| **Emplacement du code** | Dans la classe de la vue | N'importe où, par exemple une fonction au niveau du module ou une classe d'abonné |
+| **Emplacement du code** | Dans la classe de la vue | N'importe où, par exemple une fonction au niveau module ou une classe subscriber |
 | **Portée** | Cette vue spécifique | Une vue (`view.events`) ou toutes les vues (`admin.events`) |
-| **Adapté à** | Logique propre à cette ressource (slugifier un titre, horodater) | Préoccupations transversales (journaux d'audit, notifications, plug-ins) |
-| **Multiples autorisés ?** | Non, une méthode par vue | Oui, autant de gestionnaires que souhaité par événement, ordonnés par priorité |
+| **Adapté à** | Logique propre à cette ressource (slugifier un titre, horodater) | Préoccupations transversales (journaux d'audit, notifications, plugins) |
+| **Multiples autorisés ?** | Non, une méthode par vue | Oui, autant de handlers que souhaité par événement, ordonnés par priorité |
 
-Utilisez un hook de méthode lorsque la logique est intrinsèque au modèle. Utilisez un abonnement aux événements lorsqu'elle n'appartient à aucune vue en particulier, ou lorsque vous la livrez comme un composant réutilisable dans plusieurs panneaux d'administration.
+Utilisez un hook de méthode lorsque la logique est intrinsèque au modèle. Utilisez un abonnement aux événements lorsqu'elle n'appartient à aucune vue en particulier, ou lorsque vous la livrez comme un composant réutilisable sur plusieurs admins.
 
 ```python
 from typing import Any
@@ -76,41 +74,41 @@ class PostView(ModelView):
         obj.slug = data["title"].lower().replace(" ", "-")
 ```
 
-## Valeurs d'`AdminEvent`
+## Valeurs de AdminEvent
 
 `AdminEvent` est une énumération de chaînes. Voici les membres activement émis par le cycle de vie des vues :
 
-| Événement | Déclenché lorsque | Classe de contexte |
+| Événement | Déclenché quand | Classe de contexte |
 | --- | --- | --- |
 | `BEFORE_CREATE` / `AFTER_CREATE` | Enregistrement créé | `BeforeCreateContext` / `AfterCreateContext` |
-| `AFTER_CREATE_COMMITTED` | Transaction de création validée | `AfterCreateContext` |
+| `AFTER_CREATE_COMMITTED` | Transaction de création validée (commit) | `AfterCreateContext` |
 | `BEFORE_EDIT` / `AFTER_EDIT` | Enregistrement mis à jour | `BeforeEditContext` / `AfterEditContext` |
-| `AFTER_EDIT_COMMITTED` | Transaction de modification validée | `AfterEditContext` |
+| `AFTER_EDIT_COMMITTED` | Transaction de modification validée (commit) | `AfterEditContext` |
 | `BEFORE_DELETE` / `AFTER_DELETE` | Enregistrement supprimé | `BeforeDeleteContext` / `AfterDeleteContext` |
-| `AFTER_DELETE_COMMITTED` | Transaction de suppression validée | `AfterDeleteContext` |
-| `BEFORE_ACTION` / `AFTER_ACTION` | Action groupée ou action de ligne exécutée | `BeforeActionContext` / `AfterActionContext` |
-| `BEFORE_EXPORT` / `AFTER_EXPORT` | Exportation déclenchée | `BeforeExportContext` / `AfterExportContext` |
-| `BEFORE_IMPORT` / `AFTER_IMPORT` | Importation déclenchée | `BeforeImportContext` / `AfterImportContext` |
+| `AFTER_DELETE_COMMITTED` | Transaction de suppression validée (commit) | `AfterDeleteContext` |
+| `BEFORE_ACTION` / `AFTER_ACTION` | Action de lot ou de ligne exécutée | `BeforeActionContext` / `AfterActionContext` |
+| `BEFORE_EXPORT` / `AFTER_EXPORT` | Export déclenché | `BeforeExportContext` / `AfterExportContext` |
+| `BEFORE_IMPORT` / `AFTER_IMPORT` | Import déclenché | `BeforeImportContext` / `AfterImportContext` |
 | `AFTER_LOGIN` | Connexion réussie | `AfterLoginContext` |
 
-`AFTER_CREATE_COMMITTED`, `AFTER_EDIT_COMMITTED` et `AFTER_DELETE_COMMITTED` ne se déclenchent que pour les backends qui diffèrent la validation à la fin de la requête, ce qui désigne aujourd'hui le backend SQLAlchemy. Consultez [Vues](../user-guide/views.md#hooks-de-cycle-de-vie) pour connaître les méthodes de hook `after_create_committed`, `after_edit_committed` et `after_delete_committed` qui les émettent.
+`AFTER_CREATE_COMMITTED`, `AFTER_EDIT_COMMITTED` et `AFTER_DELETE_COMMITTED` ne se déclenchent que pour les backends qui repoussent le commit à la fin de la requête, ce qui désigne aujourd'hui le backend SQLAlchemy. Consultez [Views](../user-guide/views.md#lifecycle-hooks) pour connaître les méthodes de hook `after_create_committed`, `after_edit_committed` et `after_delete_committed` qui les émettent.
 
-Pour `AFTER_DELETE_COMMITTED`, `ctx.obj` est une instance détachée : ses attributs déjà chargés restent lisibles, mais la lecture d'un attribut non chargé avant la suppression lève une exception, car la ligne correspondante a disparu.
+Pour `AFTER_DELETE_COMMITTED`, `ctx.obj` est une instance détachée : ses attributs déjà chargés restent lisibles, mais la lecture d'un attribut qui n'était pas chargé avant la suppression lève une exception, car la ligne sous-jacente a disparu.
 
-Chaque contexte est une dataclass qui hérite d'`EventContext`, laquelle porte des champs communs à tous les événements :
+Chaque contexte est une dataclass qui hérite de `EventContext`, laquelle porte des champs communs à tous les événements :
 
 | Attribut | Type | Description |
 | --- | --- | --- |
-| `event` | `AdminEvent` ou `str` | L'événement déclenché |
+| `event` | `AdminEvent` ou `str` | L'événement qui s'est déclenché |
 | `request` | `Request` | La requête en cours |
-| `view_key` | `str` | La clé (`key`) de la vue |
-| `extra` | `dict` | Vide par défaut, librement utilisable pour stocker des données dans une chaîne de gestionnaires personnalisés |
+| `view_key` | `str` | Le `key` de la vue |
+| `extra` | `dict` | Vide par défaut, à votre libre disposition pour stocker des données dans une chaîne de handlers personnalisée |
 
 Chaque sous-classe ajoute les champs propres à son événement.
 
-Les événements de modification déclenchés par une [modification en ligne](../user-guide/inline-edit.md) depuis la page de liste portent `extra["inline"] = True`, et leurs charges utiles `data` / `old_data` ne contiennent que le champ modifié. Tout le reste est identique à une modification classique, si bien que les gestionnaires existants ne nécessitent aucun changement.
+Les événements de modification déclenchés par une [modification inline](../user-guide/inline-edit.md) depuis la page de liste portent `extra["inline"] = True`, et leurs payloads `data` / `old_data` ne contiennent que le champ modifié. Tout le reste est identique à une modification classique ; les handlers existants ne nécessitent donc aucun changement.
 
-## S'abonner avec un décorateur
+## Abonnement via un décorateur
 
 `view.events.on()` fonctionne aussi bien comme décorateur que comme appel direct de fonction :
 
@@ -134,15 +132,15 @@ async def log_deletion(ctx: BeforeDeleteContext) -> None:
     logger.info("Deleting order pk=%s", ctx.pk)
 ```
 
-Enregistré ainsi, `log_deletion` se déclenche uniquement pour `order_view`, pas pour les autres vues du panneau d'administration. La méthode `on()` accepte aussi le gestionnaire directement, sans passer par le décorateur :
+Enregistré ainsi, `log_deletion` ne se déclenche que pour `order_view`, pas pour les autres vues de l'admin. La méthode `on()` accepte également le handler directement, sans passer par la forme décorateur :
 
 ```python
 order_view.events.on(AdminEvent.BEFORE_DELETE, log_deletion)
 ```
 
-## `AdminEventSubscriber` : regrouper les gestionnaires
+## AdminEventSubscriber : regrouper les handlers
 
-Lorsqu'une même préoccupation réagit à plusieurs événements, `AdminEventSubscriber` permet de les rassembler dans une seule classe au lieu de disperser des fonctions au niveau du module. Décorez les méthodes avec `@on(AdminEvent.X)`, où le `on` au niveau du module issu de `starlette_admin.events`, et non la méthode du bus, puis appelez `subscribe()` une fois :
+Lorsqu'une même préoccupation réagit à plusieurs événements, `AdminEventSubscriber` permet de les rassembler dans une seule classe au lieu de disperser des fonctions au niveau module. Décorez les méthodes avec `@on(AdminEvent.X)`, le `on` au niveau module issu de `starlette_admin.events` plutôt que la méthode du bus, puis appelez `subscribe()` une seule fois :
 
 ```python
 import logging
@@ -177,13 +175,13 @@ class AuditSubscriber(AdminEventSubscriber):
 admin.events.subscribe(AuditSubscriber())
 ```
 
-`subscribe()` est disponible sur `view.events` comme sur `admin.events`. Appelez-le sur `view.events` pour limiter l'abonné à une seule vue.
+`subscribe()` est disponible aussi bien sur `view.events` que sur `admin.events`. Appelez-le sur `view.events` pour limiter le subscriber à une seule vue.
 
-Une méthode peut gérer plusieurs événements : `@on(AdminEvent.AFTER_CREATE, AdminEvent.AFTER_EDIT)` enregistre la même méthode pour les deux.
+Une même méthode peut gérer plusieurs événements : `@on(AdminEvent.AFTER_CREATE, AdminEvent.AFTER_EDIT)` enregistre la même méthode pour les deux.
 
-## `admin.events` : déléguer aux vues
+## admin.events : délégation aux vues
 
-`admin.events.on()` accepte les mêmes arguments que `view.events.on()`, plus `keys=`, une liste de clés de vues à laquelle restreindre l'abonnement. Laissez-la non définie (`None`, valeur par défaut) et chaque vue de modèle actuelle et future reçoit le gestionnaire :
+`admin.events.on()` accepte les mêmes arguments que `view.events.on()`, plus `keys=`, une liste de clés de vues à laquelle restreindre l'abonnement. Laissez-la non renseignée (`None`, la valeur par défaut) et chaque vue de modèle, actuelle comme future, reçoit le handler :
 
 ```python
 import httpx
@@ -196,19 +194,19 @@ async def notify_new_order(ctx: AfterCreateContext) -> None:
         await client.post(SLACK_WEBHOOK_URL, json={"text": f"New order: {ctx.pk}"})
 ```
 
-Seule la vue enregistrée avec `key="order"`, ou dont la clé par défaut correspond à `"order"`, appelle ce gestionnaire. Un `AFTER_CREATE` sur toute autre vue ne le déclenchera pas.
+Seule la vue enregistrée avec `key="order"`, ou dont la clé par défaut correspond à `"order"`, appelle ce handler. Un `AFTER_CREATE` sur toute autre vue ne le déclenchera pas.
 
-`admin.events.subscribe()` accepte également `keys=`, ce qui vous permet de limiter un `AdminEventSubscriber` à un sous-ensemble de vues de la même façon :
+`admin.events.subscribe()` accepte également `keys=`, ce qui vous permet de limiter un `AdminEventSubscriber` à un sous-ensemble de vues de la même manière :
 
 ```python
 admin.events.subscribe(AuditSubscriber(), keys=["order", "invoice"])
 ```
 
-`keys=` n'affecte que les événements du cycle de vie des vues du tableau ci-dessus : création, modification, suppression, action, exportation et importation. C'est ainsi que `admin.events` détermine les vues auxquelles un gestionnaire s'applique. `AFTER_LOGIN` est un événement de niveau admin et n'est lié à aucune vue ; `keys=` n'a donc aucun effet pour lui.
+`keys=` n'affecte que les événements de cycle de vie des vues du tableau ci-dessus : create, edit, delete, action, export et import. C'est ainsi que `admin.events` détermine à quelles vues un handler s'applique. `AFTER_LOGIN` est de niveau admin et n'est lié à aucune vue ; `keys=` n'a donc aucun effet pour cet événement.
 
 ## Priorité
 
-`on()` accepte un mot-clé `priority`, un entier valant `0` par défaut. Les gestionnaires d'un même événement s'exécutent par ordre de priorité décroissante : un nombre plus élevé se déclenche en premier :
+`on()` accepte un mot-clé `priority`, un entier valant `0` par défaut. Les handlers d'un même événement s'exécutent par ordre de priorité décroissante : un nombre plus élevé se déclenche en premier :
 
 ```python
 import logging
@@ -228,19 +226,19 @@ async def log_deletion(ctx: BeforeDeleteContext) -> None:
     logger.info("deleting order pk=%s", ctx.pk)  # runs second
 ```
 
-Les gestionnaires de priorité identique s'exécutent dans l'ordre d'enregistrement. Les méthodes d'un `AdminEventSubscriber` acceptent une priorité via `@on(AdminEvent.X, priority=10)`, transmise de la même façon.
+Les handlers de même priorité s'exécutent dans leur ordre d'enregistrement. Les méthodes de `AdminEventSubscriber` acceptent une priorité via `@on(AdminEvent.X, priority=10)`, qui est transmise de la même façon.
 
 !!! warning
-    Un gestionnaire `BEFORE_DELETE`, ou tout gestionnaire `BEFORE_*`, qui lève une exception interrompt l'opération, et les gestionnaires suivants de cet événement ne s'exécutent pas. Un gestionnaire `AFTER_*` qui lève une exception transforme une modification déjà validée en requête échouée. Si un échec ne doit pas apparaître comme une erreur du panneau d'administration, encapsulez la logique risquée, telle que les appels réseau ou les API tierces, dans son propre bloc `try`/`except` à l'intérieur du gestionnaire.
+    Un handler `BEFORE_DELETE`, ou tout handler `BEFORE_*`, qui lève une exception interrompt l'opération, et les handlers suivants de cet événement ne s'exécutent pas. Un handler `AFTER_*` qui lève une exception transforme une modification déjà validée (committed) en requête échouée. Si un échec ne doit pas apparaître comme une erreur admin, encapsulez la logique à risque, telle que des appels réseau ou des API tierces, dans son propre bloc `try`/`except` au sein du handler.
 
-## Exemple étendu
+## Exemple complet
 
-[`examples/05-events`](https://github.com/jowilf/starlette-admin/tree/main/examples/05-events) réunit tous les schémas de cette page : surcharges de hooks sur `PostView`, un `AuditSubscriber` enregistré sur `admin.events` pour toutes les vues, un enregistrement direct de gestionnaires pour les avertissements de suppression, d'exportation et d'importation, un gestionnaire limité à `post_view.events` et un `CommentModerationSubscriber` limité à `comment_view.events`. Exécutez-le pour observer l'interaction entre priorité et portée dans une même application.
+[`examples/05-events`](https://github.com/jowilf/starlette-admin/tree/main/examples/05-events) met en œuvre ensemble tous les schémas de cette page : des surcharges de hooks sur `PostView`, un `AuditSubscriber` enregistré sur `admin.events` pour toutes les vues, un enregistrement direct de handlers pour les avertissements de suppression, d'export et d'import, un handler limité à `post_view.events`, et un `CommentModerationSubscriber` limité à `comment_view.events`. Exécutez-le pour observer l'interaction entre priorité et portée au sein d'une même application.
 
 ---
 
-## Pour aller plus loin
+## Et ensuite ?
 
-* **[Vues](../user-guide/views.md)** : les hooks de méthode `before_*` et `after_*` sur lesquels cette page s'appuie.
-* **[Actions](../user-guide/actions.md)** : actions groupées et actions de ligne, qui émettent `BEFORE_ACTION` / `AFTER_ACTION`.
-* **[Formulaires en ligne](../user-guide/inline-forms.md)** : enregistrements imbriqués créés en même temps qu'un parent.
+* **[Views](../user-guide/views.md)** : Les hooks de méthode `before_*` et `after_*` sur lesquels cette page s'appuie.
+* **[Actions](../user-guide/actions.md)** : Les actions de lot et de ligne, qui émettent `BEFORE_ACTION` / `AFTER_ACTION`.
+* **[Inline Forms](../user-guide/inline-forms.md)** : Les enregistrements imbriqués créés en même temps qu'un parent.

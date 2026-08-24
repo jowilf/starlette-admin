@@ -1,12 +1,10 @@
 ---
-title: Référence de l'API du module Beanie
+title: Référence de l'API Contrib Beanie
 description: Documentation de référence de l'API pour l'intégration du backend Beanie
   dans starlette-admin.
 source_hash: 6a89593e9010ec12dd664910d2bbb407467441efa960bc4a6fefd818a7d71b36
-prompt_hash: 0bd45c6d5dcce61597a6a7d4092aab60033adf6d540437bd0d1499df82a2dbd5
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
@@ -25,8 +23,8 @@ translation_date: '2026-08-22'
 
 # Contrib : Beanie
 
-Référence complète des attributs et des méthodes pour le backend Beanie (`starlette_admin.contrib.beanie`),
-générée à partir des docstrings. Pour un guide orienté tâches, consultez la page
+Référence complète des attributs et des méthodes du backend Beanie (`starlette_admin.contrib.beanie`),
+générée à partir des docstrings. Pour une présentation orientée tâches, consultez la page
 [Beanie](../../integrations/beanie.md).
 
 ::: starlette_admin.contrib.beanie.admin.Admin
@@ -35,16 +33,16 @@ générée à partir des docstrings. Pour un guide orienté tâches, consultez l
 
 ::: starlette_admin.contrib.beanie.view.InlineModelView
 
-## Champs
+## Fields
 
 ::: starlette_admin.contrib.beanie.fields.BeanieObjectIdField
 
-## Convertisseurs
+## Converters
 
 ::: starlette_admin.contrib.beanie.converters.BeanieModelConverter
 
 !!! note
     Les classes de filtres concrètes (`EqualFilter`, `ArrayInFilter`, `ObjectIdEqualFilter`, etc.) ne sont pas
     énumérées ici. Elles reprennent les filtres indépendants du backend documentés dans
-    [Filtres](../filters.md) ; les comportements spécifiques à Beanie (correspondance de chaînes par regex ancrée,
-    recherche plein texte) sont couverts dans [Beanie](../../integrations/beanie.md#registre-des-filtres).
+    [Filters](../filters.md) ; les comportements spécifiques à Beanie (correspondance de chaînes par regex ancrée,
+    recherche plein texte) sont décrits dans [Beanie](../../integrations/beanie.md#filter-registry).

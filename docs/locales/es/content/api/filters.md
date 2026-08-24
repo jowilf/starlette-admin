@@ -3,14 +3,12 @@ title: Referencia de la API de filtros
 description: Documentación de referencia de la API para los filtros de consultas de
   base de datos en starlette-admin.
 source_hash: c26f3e6379afdc4268934bf0f05b895ebb00f0517dd9834b6fbc337c4f192231
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -25,13 +23,13 @@ translation_date: '2026-08-22'
 
 # Filtros
 
-Referencia completa de atributos y métodos del sistema de filtros, generada a partir de las docstrings. Para un recorrido orientado a tareas, consulte [Filtros](../user-guide/filters.md) y
+Referencia completa de atributos y métodos del sistema de filtros, generada a partir de las docstrings. Para una guía orientada a tareas, consulte [Filtros](../user-guide/filters.md) y
 [Filtros personalizados](../advanced/custom-filters.md).
 
-Las clases siguientes son independientes del backend: declaran el `name`, la `label` y el
+Las clases siguientes son independientes del backend: declaran el `name`, el `label` y el
 `data_type` de un filtro, pero no su lógica de consulta. Cada backend ORM (`contrib.sqla`, `contrib.beanie`,
-`contrib.mongoengine`, `contrib.tortoise`) crea subclases de ellas para añadir la implementación real de `apply()` para ese
-backend. Consulte la [página de integración](../integrations/sqlalchemy.md) correspondiente para conocer las clases de filtros concretas que puede importar.
+`contrib.mongoengine`, `contrib.tortoise`) las hereda para añadir la implementación real de `apply()` correspondiente a ese
+backend. Consulte la [página de integración](../integrations/sqlalchemy.md) pertinente para conocer las clases de filtro concretas que puede importar.
 
 ## Tipos principales
 

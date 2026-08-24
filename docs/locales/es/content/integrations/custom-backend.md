@@ -1,16 +1,14 @@
 ---
-title: Integración de backends personalizados
-description: Aprenda a crear un adaptador de backend personalizado para starlette-admin
-  y a conectar su propio ORM o almacén de datos basado en API a la interfaz de administración.
+title: Integración de un backend personalizado
+description: Aprenda a construir un adaptador de backend personalizado para starlette-admin
+  y conectar su propio ORM o almacén de datos basado en API a la interfaz de administración.
 source_hash: 1e6a2e4cecb72a0dcb27f5f1988cd060ce3e1085b9261aec475fb4ed3bf33b8a
-prompt_hash: 4d252dd7142cde87a0a6edf7cc724709cd7913d618d80eb0687c4c9beddf15fb
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? warning "Traducción automática supervisada"
+??? info "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no
@@ -25,11 +23,11 @@ translation_date: '2026-08-22'
 
 # Backends personalizados
 
-`starlette-admin` ofrece backends integrados para SQLAlchemy, SQLModel, Beanie, MongoEngine y Tortoise ORM, pero el panel de administración es completamente independiente del mecanismo de almacenamiento. Cada backend es simplemente una subclase de `BaseModelView`. Esta clase traduce las operaciones CRUD estándar en comandos que su fuente de datos específica entiende. Ya sea que utilice una API REST, Redis, una base de datos heredada sin un ORM o un almacén de documentos ligero como TinyDB, el proceso de implementación sigue siendo idéntico.
+`starlette-admin` proporciona backends integrados para SQLAlchemy, SQLModel, Beanie, MongoEngine y Tortoise ORM, pero el panel de administración es completamente agnóstico respecto al almacenamiento. Cada backend es simplemente una subclase de `BaseModelView`. Esta clase traduce las operaciones CRUD estándar en comandos que su fuente de datos específica entiende. Ya sea que utilice una API REST, Redis, una base de datos heredada sin ORM o un almacén de documentos ligero como TinyDB, el proceso de implementación sigue siendo idéntico.
 
 ## Métodos requeridos
 
-`BaseModelView` requiere que implemente seis métodos abstractos. Al proporcionar estos seis métodos, hereda automáticamente el conjunto completo de funcionalidades del panel de administración: listado, búsqueda, ordenamiento, filtrado, paginación, creación, edición, importación, exportación y eliminación.
+`BaseModelView` requiere que implemente seis métodos abstractos. Al proporcionar estos seis métodos, hereda automáticamente todo el conjunto de características del panel de administración: listado, búsqueda, ordenamiento, filtrado, paginación, creación, edición, importación, exportación y eliminación.
 
 ```python
 from collections.abc import Sequence
@@ -77,39 +75,39 @@ class MyBackendView(BaseModelView):
 
 ```
 
-| Método | Se invoca en | Devuelve |
+| Método | Se invoca para | Devuelve |
 | --- | --- | --- |
 | **`find_all`** | Página de lista, exportación | Una página de registros que coinciden con `q`, `sorts` y `filters` |
 | **`count`** | Paginación de la página de lista, verificación del límite de exportación | El número total de registros que coinciden con `q` y `filters` |
 | **`find_by_pk`** | Detalle, edición, eliminación individual, acciones de fila | Un único registro, o `None` si no se encuentra |
-| **`find_by_pks`** | Acciones por lotes, eliminación por lotes, exportación de selección | Una secuencia de registros que coinciden con las claves primarias proporcionadas |
+| **`find_by_pks`** | Acciones masivas, eliminación masiva, exportación de selección | Una secuencia de registros que coinciden con las claves primarias proporcionadas |
 | **`create`** | Envío del formulario de creación, importación | El registro recién creado |
 | **`edit`** | Envío del formulario de edición | El registro actualizado |
-| **`delete`** | Eliminación por lotes, eliminación de fila | El número de registros eliminados, o `None` |
+| **`delete`** | Eliminación masiva, eliminación de fila | El número de registros eliminados, o `None` |
 
-El panel de administración se encarga internamente de analizar la cadena de consulta de la solicitud (por ejemplo, `?page=2&sort=views__desc&q=fire`). Nunca necesitará analizar parámetros de solicitud en bruto. Para cuando se invoca `find_all` o `count`, el panel ya ha procesado las entradas:
+El panel de administración se encarga internamente de analizar la cadena de consulta de la solicitud (como `?page=2&sort=views__desc&q=fire`). Nunca necesitará analizar parámetros crudos de la solicitud. Para cuando se invoca `find_all` o `count`, el panel ya ha procesado las entradas:
 
 * **La paginación** se convierte en `skip` y `limit` (`skip = (page - 1) * page_size`).
 * **La búsqueda** se proporciona como la cadena simple `q`.
 * **El ordenamiento** se formatea como una lista priorizada de tuplas `(field_name, direction)`.
-* **Los filtros** se analizan en un árbol estructurado de tipo `FilterGroup`.
+* **Los filtros** se analizan en un árbol estructurado `FilterGroup`.
 
-Su única tarea es traducir estos argumentos estructurados al lenguaje de consulta nativo de su backend.
+Su única tarea consiste en traducir estos argumentos estructurados al lenguaje de consulta nativo de su backend.
 
-## Clave de la vista, nombre visible y campos
+## Clave de vista, nombre visible y campos
 
-Antes de renderizar, una `ModelView` requiere cuatro atributos esenciales para comprender la forma de los datos y el enrutamiento:
+Antes de renderizar, una `ModelView` requiere cuatro atributos fundamentales para comprender la forma de los datos y el enrutamiento:
 
 | Atributo | Propósito |
 | --- | --- |
 | **`key`** | Slug único de URL (por ejemplo, `/admin/post/list`) y clave interna para las suscripciones a eventos. |
 | **`display_name`** / **`menu_label`** | Nombres visibles para la interfaz. `display_name` es singular para los títulos de los formularios, mientras que `menu_label` es plural para la navegación y las páginas de lista. |
 | **`pk_attr`** | El nombre específico del campo que identifica de manera única un registro. |
-| **`fields`** | Una lista de instancias de `BaseField` que define las columnas que se muestran y editan. |
+| **`fields`** | Una lista de instancias de `BaseField` que define las columnas a mostrar y editar. |
 
-Los backends integrados rellenan estos atributos automáticamente mediante la introspección de sus modelos. Por ejemplo, la `ModelView` de SQLAlchemy lee las columnas y la clave primaria del mapper. Esta introspección corre a cargo de una subclase de `BaseModelConverter`. Estos convertidores utilizan decoradores `@converts(...)` para asignar los tipos de columna nativos a sus equivalentes de `BaseField`.
+Los backends integrados rellenan estos atributos automáticamente mediante introspección de sus modelos. Por ejemplo, la `ModelView` de SQLAlchemy lee las columnas y la clave primaria del mapper. Esta introspección la gestiona una subclase de `BaseModelConverter`. Estos convertidores utilizan decoradores `@converts(...)` para mapear los tipos de columna nativos a sus equivalentes `BaseField` correspondientes.
 
-Al construir un backend sin un modelo introspectable, como una API REST o un almacén de diccionarios sencillo, debe establecer estos cuatro atributos explícitamente como atributos de clase:
+Al construir un backend sin un modelo introspectable, como una API REST o un almacén de diccionarios simple, debe establecer estos cuatro atributos explícitamente como atributos de clase:
 
 ```python
 class PostView(BaseModelView):
@@ -126,11 +124,11 @@ class PostView(BaseModelView):
 
 ```
 
-Listar los campos explícitamente es el enfoque más sencillo para vistas puntuales. Sin embargo, si está construyendo una clase base `ModelView` reutilizable diseñada para varios modelos en un backend personalizado, lo correcto es escribir en su lugar un `BaseModelConverter` personalizado. Implemente los métodos `convert()` y `convert_fields_list()`, decore sus gestores de tipos con `@converts(...)` e invoque el convertidor durante la inicialización. Esto permite que las vistas concretas hereden automáticamente las definiciones de campos, igualando el comportamiento de los backends integrados.
+Listar los campos explícitamente es el enfoque más sencillo para vistas únicas. Sin embargo, si está construyendo una clase base `ModelView` reutilizable diseñada para múltiples modelos sobre un backend personalizado, debería escribir en su lugar un `BaseModelConverter` personalizado. Implemente los métodos `convert()` y `convert_fields_list()`, decore sus manejadores de tipos con `@converts(...)` e invoque el convertidor durante la inicialización. Esto permite que las vistas concretas hereden automáticamente las definiciones de campos, replicando el comportamiento de los backends integrados.
 
 ## Procesamiento de árboles de filtros
 
-Los filtros se pasan a sus métodos como un objeto `FilterGroup`. Esta estructura es un árbol de nodos lógicos AND/OR que contiene objetos hoja `FilterRule`:
+Los filtros se pasan a sus métodos como un `FilterGroup`. Esta estructura es un árbol de nodos lógicos AND/OR que contiene objetos hoja `FilterRule`:
 
 ```python
 @dataclass
@@ -147,7 +145,7 @@ class FilterGroup:
 
 ```
 
-Para convertir este árbol en una consulta de base de datos, debe recorrerlo de forma recursiva. Para cada `FilterRule`, recupere la clase de filtro concreta correspondiente de su `FilterRegistry` e invoque su método `apply()`. Para los nodos anidados `FilterGroup`, recurra y combine los fragmentos resultantes utilizando el operador lógico apropiado.
+Para convertir este árbol en una consulta de base de datos, debe recorrerlo recursivamente. Para cada `FilterRule`, obtenga la clase de filtro concreta correspondiente de su `FilterRegistry` e invoque su método `apply()`. Para los nodos `FilterGroup` anidados, recurra y combine los fragmentos resultantes utilizando el operador lógico apropiado.
 
 Este es el patrón `build_query` utilizado por el ejemplo de referencia de TinyDB:
 
@@ -190,15 +188,15 @@ def _build_rule_fragment(
 
 ```
 
-El método `apply(ctx)` de cada filtro concreto recibe un objeto `FilterApplyContext` que contiene la `query`, el nombre del campo (`field name`) y los valores. Devuelve un fragmento de consulta específico del lenguaje de su backend. Dado que este proceso evita mutar el estado compartido, puede combinar limpiamente las reglas resultantes independientemente de la arquitectura de su base de datos subyacente.
+El método `apply(ctx)` de cada filtro concreto recibe un objeto `FilterApplyContext` que contiene la `query`, el nombre del campo y los valores. Devuelve un fragmento de consulta específico del lenguaje de su backend. Dado que este proceso evita mutar estado compartido, puede combinar limpiamente las reglas resultantes independientemente de la arquitectura de su base de datos subyacente.
 
-## Ejemplo de referencia de TinyDB
+## El ejemplo de referencia de TinyDB
 
-[`examples/advanced/03-custom-backend`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/03-custom-backend) contiene un panel de administración totalmente ejecutable respaldado por [TinyDB](https://github.com/msiemens/tinydb). TinyDB es un almacén de documentos que guarda los datos en un archivo JSON local. Constituye un excelente punto de referencia porque carece de un ORM, lo que significa que cada método interactúa directamente con el almacén de datos.
+[`examples/advanced/03-custom-backend`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/03-custom-backend) contiene un panel de administración completamente ejecutable respaldado por [TinyDB](https://github.com/msiemens/tinydb). TinyDB es un almacén de documentos que guarda los datos en un archivo JSON local. Constituye un excelente punto de referencia porque carece de un ORM, lo que significa que cada método interactúa directamente con el almacén de datos.
 
 ### Definición del modelo (`models.py`)
 
-El modelo de datos es una dataclass estándar de Python sin ninguna lógica específica del panel de administración:
+El modelo de datos es una dataclass estándar de Python sin ninguna lógica específica de administración:
 
 ```python
 @dataclass
@@ -285,9 +283,9 @@ async def count(
 
 ```
 
-Dado que TinyDB carece de capacidades nativas de ordenamiento, la lógica de ordenamiento se ejecuta en Python. Aplicar los ordenamientos en orden inverso crea un ordenamiento fiable de múltiples claves.
+Dado que TinyDB carece de capacidades nativas de ordenamiento, la lógica de ordenamiento se ejecuta en Python. Aplicar los ordenamientos en orden inverso produce un ordenamiento confiable por múltiples claves.
 
-Las operaciones de escritura (`create`, `edit`, `delete`) modifican la base de datos directamente. Es fundamental que también activen los hooks de eventos de la vista, garantizando así que los eventos del ciclo de vida se disparen correctamente:
+Las operaciones de escritura (`create`, `edit`, `delete`) modifican la base de datos directamente. Es fundamental que también disparen los hooks de eventos de la vista, garantizando así que los eventos del ciclo de vida se activen correctamente:
 
 ```python
 async def create(self, request: Request, data: dict) -> Any:
@@ -336,13 +334,13 @@ if __name__ == "__main__":
 
 ```
 
-Para probar esta implementación, ejecute `uv run app.py` desde el directorio del ejemplo y acceda a `http://localhost:8000/admin/`.
+Para probar esta implementación, ejecute `uv run app.py` desde el directorio del ejemplo y navegue a `http://localhost:8000/admin/`.
 
-## Filtros de campos personalizados
+## Filtros de campo personalizados
 
-Los filtros están profundamente ligados a la sintaxis específica de su backend. Una operación «contains» requiere código completamente distinto en TinyDB, SQL y MongoDB. Cada backend personalizado debe registrar sus propias subclases de `BaseFilter` en un `FilterRegistry` y devolverlas a través de `get_filter_registry()`.
+Los filtros están profundamente ligados a la sintaxis específica de su backend. Una operación «contains» requiere código completamente distinto en TinyDB, SQL y MongoDB. Cada backend personalizado debe registrar sus propias subclases de `BaseFilter` en un `FilterRegistry` y devolverlas mediante `get_filter_registry()`.
 
-Para crear un filtro, cree una subclase de un tipo base como `EqualFilter` o `ContainsFilter` e implemente el método `apply`:
+Para crear un filtro, derive una subclase de un tipo base como `EqualFilter` o `ContainsFilter` e implemente el método `apply`:
 
 ```python
 import re
@@ -359,7 +357,7 @@ class TinyDBContainsFilter(ContainsFilter):
 
 ```
 
-La mejor práctica para construir el registro es crear una subclase de `FilterRegistry` y decorar los métodos específicos de cada campo con `@filters(...)`. Este es exactamente el patrón que utilizan los backends incluidos:
+La mejor práctica para construir el registro consiste en derivar una subclase de `FilterRegistry` y decorar los métodos específicos por tipo de campo con `@filters(...)`. Este es exactamente el patrón utilizado por los backends incluidos:
 
 ```python
 from starlette_admin import IntegerField, StringField
@@ -390,18 +388,18 @@ class PostView(BaseModelView):
 
 ```
 
-Si un campo no tiene una entrada coincidente en el registro y carece de una anulación explícita `filters=[]`, no será filtrable. El ejemplo de TinyDB deja deliberadamente el campo `id` sin filtrado mediante la técnica de la anulación `filters=[]`.
+Si un campo no tiene una entrada coincidente en el registro y carece de una anulación explícita `filters=[]`, no será filtrable. El ejemplo de TinyDB deja intencionalmente el campo `id` sin filtrado mediante la técnica de anulación `filters=[]`.
 
-Para esquemas dinámicos donde los tipos filtrables se desconocen hasta el tiempo de ejecución, `FilterRegistry` ofrece un método imperativo `register(field_type, *filter_classes)`.
+Para esquemas dinámicos donde los tipos filtrables no se conocen hasta el tiempo de ejecución, `FilterRegistry` proporciona un método imperativo `register(field_type, *filter_classes)`.
 
 ## Gestión de eventos del ciclo de vida
 
-Su backend personalizado posee por completo los métodos `create`, `edit` y `delete`. Como `BaseModelView` nunca accede directamente a su fuente de datos, debe notificarle explícitamente cuando ocurra una escritura. No hacerlo rompe silenciosamente dos sistemas fundamentales:
+Su backend personalizado posee por completo los métodos `create`, `edit` y `delete`. Dado que `BaseModelView` nunca accede directamente a su fuente de datos, debe notificarle explícitamente cuando ocurra una escritura. No hacerlo rompe silenciosamente dos sistemas fundamentales:
 
-1. **Hooks de métodos:** las anulaciones `before_create` y `after_create` en su `ModelView`.
-2. **Suscriptores de eventos:** los handlers registrados en `view.events` o `admin.events`.
+1. **Hooks de método:** las anulaciones `before_create` y `after_create` en su `ModelView`.
+2. **Suscriptores de eventos:** los manejadores registrados en `view.events` o `admin.events`.
 
-La notificación se realiza llamando a métodos auxiliares emparejados definidos en `BaseModelView`. Cada helper invoca el hook de método correspondiente y emite un `AdminEvent`.
+La notificación se realiza invocando pares de métodos helper definidos en `BaseModelView`. Cada helper invoca el hook de método correspondiente y emite un `AdminEvent`.
 
 | Método | Helper previo a la escritura | Helper posterior a la escritura |
 | --- | --- | --- |
@@ -409,16 +407,16 @@ La notificación se realiza llamando a métodos auxiliares emparejados definidos
 | **`edit`** | `_emit_before_edit(request, data, obj, pk=pk, old_data=old_data)` | `_emit_after_edit(request, obj, pk=pk, old_data=old_data)` |
 | **`delete`** | `_emit_before_delete(request, pk, obj)` | `_emit_after_delete(request, pk, obj)` |
 
-La llamada previa a la escritura acepta el objeto en memoria construido a partir de los datos enviados. Ofrece una última oportunidad para que los handlers rechacen la escritura lanzando una excepción. La llamada posterior a la escritura requiere el objeto persistido tal como se leyó de vuelta desde la base de datos. Esto explica por qué el método `create` de TinyDB vuelve a obtener el registro en lugar de devolver el objeto inicial en memoria.
+La llamada previa a la escritura acepta el objeto en memoria construido a partir de los datos enviados. Esto ofrece una última oportunidad para que los manejadores rechacen la escritura lanzando una excepción. La llamada posterior a la escritura requiere el objeto persistido tal como se leyó de vuelta desde la base de datos. Esto explica por qué el método `create` de TinyDB vuelve a obtener el registro en lugar de devolver el objeto inicial en memoria.
 
-Dos helpers adicionales, `_emit_after_create_committed` y `_emit_after_edit_committed`, dan soporte a backends con confirmaciones en dos fases o con semántica de sesión. Omita estos por completo a menos que su base de datos imponga un límite transaccional estricto.
+Dos helpers adicionales, `_emit_after_create_committed` y `_emit_after_edit_committed`, dan soporte a backends con confirmaciones en dos fases o semántica de sesión. Omita estos por completo a menos que su base de datos imponga un límite transaccional estricto.
 
-Las operaciones de exportación e importación no requieren un cableado manual de eventos. La clase `BaseAdmin` gestiona automáticamente estos eventos del ciclo de vida.
+Las operaciones de exportación e importación no requieren cableado manual de eventos. La clase `BaseAdmin` gestiona automáticamente estos eventos del ciclo de vida.
 
 ---
 
 ### Recursos adicionales
 
-* **[Vistas](../user-guide/views.md)**: Explore las opciones de configuración de `BaseModelView` independientes del backend.
-* **[Filtros personalizados](../advanced/custom-filters.md)**: Aprenda a escribir y registrar filtros personalizados desde cero.
-* **[Eventos](../advanced/events.md)**: Comprenda la API completa de suscripción a eventos, incluyendo los hooks de métodos, el bus de eventos y las prioridades de ejecución.
+* **[Views](../user-guide/views.md)**: Explore las opciones de configuración de `BaseModelView` independientes del backend.
+* **[Custom Filters](../advanced/custom-filters.md)**: Aprenda a escribir y registrar filtros personalizados desde cero.
+* **[Events](../advanced/events.md)**: Comprenda la API completa de suscripción a eventos, incluyendo los hooks de método, el bus de eventos y las prioridades de ejecución.

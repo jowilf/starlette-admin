@@ -1,12 +1,10 @@
 ---
 title: Aktionen
-description: Führen Sie Massen- und Zeilenoperationen mit benutzerdefinierten Bestätigungen
-  und Formularen direkt aus der Listenseite aus.
+description: Führen Sie Batch- und zeilenbezogene Operationen mit eigenen Bestätigungen
+  und Formularen direkt aus der Listenansicht aus.
 source_hash: 91835b28170a6a3e07ed477b89c2b03aabc37254d3037ef4e47467e6ee240fca
-prompt_hash: e74e266b22cedf72eaa794c2ae7a360fd32046953223afb4ffa22b1342d51b63
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
-translation_model: stealth/ox-alpha
-translation_date: '2026-08-23'
 ---
 
 <!-- translation-notice:start -->
@@ -25,38 +23,38 @@ translation_date: '2026-08-23'
 
 # Aktionen
 
-Aktionen bieten Ihnen eine direkte Möglichkeit, mit Ihren Datenbankeinträgen aus dem Admin-UI zu arbeiten, sodass Benutzer Operationen wie Massenlöschungen, Bulk-Updates und E-Mail-Versendungen ausführen können.
+Aktionen bieten Ihnen einen direkten Weg, mit Ihren Datenbankdatensätzen aus der Admin-Oberfläche zu arbeiten, sodass Benutzer Operationen wie Massenlöschungen, Bulk-Updates und den Versand von E-Mails ausführen können.
 
 ## `ActionSelection` verstehen
 
-`ActionSelection` ist das zentrale Objekt in der Actions-API. Statt einer rohen Liste von Primärschlüsseln erhält Ihr Handler eine `ActionSelection`-Instanz.
+`ActionSelection` ist das zentrale Objekt der Actions-API. Statt einer rohen Liste von Primärschlüsseln erhält Ihr Handler eine `ActionSelection`-Instanz.
 
-Das Objekt wird lazy aufgelöst und verhält sich gleich, unabhängig davon, ob der Benutzer Zeilen einzeln angehakt hat oder „alle passenden auswählen“ verwendet hat. Es stellt Ihrem Handler außerdem die aktiven Filter der Listenseite zur Verfügung.
+Das Objekt wird lazy aufgelöst und verhält sich identisch, unabhängig davon, ob der Benutzer Zeilen einzeln angehakt oder „alle passenden auswählen" verwendet hat. Es stellt Ihrem Handler außerdem die aktiven Filter der Listenseite zur Verfügung.
 
 ### `ActionSelection` API-Referenz
 
-| Methode oder Eigenschaft  | Beschreibung                                                                        |
-| ------------------------- | ----------------------------------------------------------------------------------- |
-| `await selection.rows()`  | Ruft die Zielzeilen ab. Wird einmal geladen und dann gecacht.                       |
-| `await selection.pks()`   | Ruft die Primärschlüssel der Zielzeilen ab.                                         |
-| `await selection.count()` | Gibt die Gesamtzahl der Zeilen zurück, auf die die Aktion abzielt.                  |
-| `selection.is_select_all` | Ein Boolean, der Ihnen sagt, ob der Benutzer „alle passenden auswählen“ gewählt hat. |
-| `selection.filters`       | Die aktive `FilterGroup`, identisch mit `ListParams.filters`.                       |
-| `selection.q`             | Der aktive Volltext-Suchbegriff oder `None`, wenn die Suche inaktiv ist.            |
+| Methode oder Eigenschaft  | Beschreibung                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| `await selection.rows()`  | Ruft die Zielzeilen ab. Wird einmal geladen und anschließend gecacht.           |
+| `await selection.pks()`   | Ruft die Primärschlüssel der Zielzeilen ab.                                     |
+| `await selection.count()` | Gibt die Gesamtzahl der Zeilen zurück, auf die die Aktion abzielt.              |
+| `selection.is_select_all` | Ein boolescher Wert, der angibt, ob der Benutzer „alle passenden auswählen" gewählt hat. |
+| `selection.filters`       | Die aktive `FilterGroup`, identisch mit `ListParams.filters`.                   |
+| `selection.q`             | Der aktive Volltext-Suchbegriff oder `None`, wenn die Suche inaktiv ist.        |
 
-## Massenaktionen
+## Batch-Aktionen
 
-Standardmäßig aktualisieren Benutzer ein Objekt, indem sie es auf der Listenseite auswählen und es einzeln bearbeiten. Um dieselbe Änderung auf viele Objekte gleichzeitig anzuwenden, fügen Sie eine benutzerdefinierte **Massenaktion** hinzu.
+Standardmäßig aktualisieren Benutzer ein Objekt, indem sie es auf der Listenseite auswählen und es einzeln bearbeiten. Um dieselbe Änderung auf viele Objekte gleichzeitig anzuwenden, fügen Sie eine eigene **Batch-Aktion** hinzu.
 
 !!! note
-    `starlette-admin` fügt standardmäßig eine `delete`-Massenaktion hinzu.
+    `starlette-admin` fügt standardmäßig eine `delete`-Batch-Aktion hinzu.
 
-Um eine benutzerdefinierte Massenaktion zu Ihrer `ModelView` hinzuzufügen, schreiben Sie eine asynchrone Funktion mit Ihrer Logik und wrappen sie in den `@action`-Dekorator.
+Um eine eigene Batch-Aktion zu Ihrer `ModelView` hinzuzufügen, schreiben Sie eine asynchrone Funktion mit Ihrer Logik und umschließen Sie sie mit dem `@action`-Decorator.
 
 !!! important
-    Namen von Massenaktionen müssen innerhalb einer `ModelView` eindeutig sein.
+    Namen von Batch-Aktionen müssen innerhalb einer `ModelView` eindeutig sein.
 
-### Beispiel für eine Massenaktion
+### Beispiel für eine Batch-Aktion
 
 ```python
 from starlette.datastructures import FormData
@@ -130,18 +128,18 @@ class ArticleView(ModelView):
 
 ## Globale Aktionen
 
-Eine Standard-Massenaktion benötigt eine aktive Auswahl: Das Dropdown-Menü **Mit ausgewählten** erscheint nur, wenn mindestens eine Zeile angehakt ist. Wenn eine Aktion stattdessen die gesamte Sammlung betrifft, etwa eine vollständige Datenbanksynchronisierung, machen Sie daraus eine globale Aktion.
+Eine Standard-Batch-Aktion benötigt eine aktive Auswahl: Das Dropdown-Menü **With selected** erscheint nur, wenn mindestens eine Zeile angehakt ist. Wenn eine Aktion stattdessen die gesamte Sammlung betrifft – etwa eine vollständige Datenbank-Synchronisation –, machen Sie daraus eine globale Aktion.
 
-Setzen Sie `allow_empty_selection=True` im `@action`-Dekorator. Globale Aktionen werden in einem immer sichtbaren Dropdown-Menü **Aktionen** gerendert und laufen ohne Zeilenauswahl.
+Setzen Sie `allow_empty_selection=True` im `@action`-Decorator. Globale Aktionen werden in einem stets sichtbaren Dropdown-Menü **Actions** dargestellt und laufen ohne Zeilenauswahl.
 
-**So verhält sich der Handler bei globalen Aktionen:**
+**Verhalten des Handlers bei globalen Aktionen:**
 
 - **Leere Auswahl:** Das `selection`-Objekt kann zu null Zeilen aufgelöst werden.
-- **Zufällige Auswahlen:** Wenn der Benutzer beim Auslösen einer globalen Aktion Zeilen angehakt hat, erhält der Handler diese Zeilen trotzdem. Ignorieren Sie `selection` explizit, wenn Ihre Logik die gesamte Sammlung betrifft.
+- **Zufällige Auswahlen:** Hat der Benutzer beim Auslösen einer globalen Aktion Zeilen angehakt, erhält der Handler diese Zeilen dennoch. Ignorieren Sie `selection` explizit, wenn Ihre Logik die gesamte Sammlung betrifft.
 
-Alle anderen Parameter (`confirmation`, `form`, `custom_response` und `is_action_allowed`) funktionieren genau so wie bei einer Standard-Massenaktion.
+Alle übrigen Parameter (`confirmation`, `form`, `custom_response` und `is_action_allowed`) funktionieren genau wie bei einer Standard-Batch-Aktion.
 
-**Eigene Toolbar-Buttons:** Fügen Sie `dedicated_button=True` hinzu, um eine globale Aktion als eigenen Toolbar-Button zu rendern statt als Eintrag im Dropdown-Menü **Aktionen**. Die integrierte Export-Aktion verwendet diese Option. Die Kombination von `dedicated_button=True` mit einer nur für Auswahlen verfügbaren Aktion löst einen Fehler beim Start aus.
+**Eigene Toolbar-Schaltflächen:** Setzen Sie `dedicated_button=True`, um eine globale Aktion als eigene Toolbar-Schaltfläche statt als Eintrag im Dropdown-Menü **Actions** darzustellen. Die eingebaute Export-Aktion nutzt diese Option. Die Kombination von `dedicated_button=True` mit einer nur für Auswahlen verfügbaren Aktion führt beim Start zu einem Fehler.
 
 ### Beispiel für eine globale Aktion
 
@@ -166,11 +164,11 @@ class ArticleView(ModelView):
 
 ```
 
-### Die Funktion „alle passenden auswählen“
+### Die Funktion „alle passenden auswählen"
 
-Wenn ein Benutzer alle Zeilen auf der aktuellen Seite anhakt und weitere Zeilen dem Filter an anderer Stelle entsprechen, bietet das UI an, alle passenden Zeilen auszuwählen.
+Wenn ein Benutzer alle Zeilen der aktuellen Seite anhakt und weitere Zeilen den Filter an anderer Stelle erfüllen, bietet die Oberfläche an, alle passenden Zeilen auszuwählen.
 
-Diese Option sendet `all=1` an die Actions-API statt einer Liste von Primärschlüsseln. Verwenden Sie `selection.is_select_all`, um Ihre Logik zu verzweigen, oder lassen Sie `selection.rows()` die Daten in beiden Fällen auflösen:
+Diese Option sendet `all=1` an die Action-API statt einer Liste von Primärschlüsseln. Verwenden Sie `selection.is_select_all`, um Ihre Logik zu verzweigen, oder lassen Sie `selection.rows()` die Daten in beiden Fällen auflösen:
 
 ```python
     @action(name="archive", text="Archive")
@@ -184,14 +182,14 @@ Diese Option sendet `all=1` an die Actions-API statt einer Liste von Primärschl
 
 ```
 
-!!! important "Materialisierungslimits"
-    Im Select-all-Modus sind `selection.rows()`, `pks()` und `count()` durch `action_select_all_limit` begrenzt, dessen Defaultwert 1000 beträgt. Eine Überschreitung des Limits löst eine `ActionFailed`-Exception aus. Ein Handler, der nur `selection.filters` und `selection.q` liest, materialisiert nichts, daher greift das Limit nicht.
+!!! important "Materialisierungsgrenzen"
+    Im Select-all-Modus sind `selection.rows()`, `pks()` und `count()` durch `action_select_all_limit` begrenzt, das standardmäßig auf 1000 gesetzt ist. Eine Überschreitung des Limits löst eine `ActionFailed`-Exception aus. Ein Handler, der ausschließlich `selection.filters` und `selection.q` liest, materialisiert nichts, sodass das Limit nicht greift.
 
-## Zeilenaktionen
+## Zeilenaktionen {#row-actions}
 
-Zeilenaktionen ermöglichen es Benutzern, direkt aus der Listenseite auf ein einzelnes Element zu operieren. `starlette-admin` enthält standardmäßig drei Zeilenaktionen: `view`, `edit` und `delete`.
+Zeilenaktionen ermöglichen es Benutzern, direkt aus der Listenansicht auf ein einzelnes Element zu operieren. `starlette-admin` enthält standardmäßig drei Zeilenaktionen: `view`, `edit` und `delete`.
 
-Um eine benutzerdefinierte Zeilenaktion hinzuzufügen, schreiben Sie Ihre Logik und wenden den `@row_action`-Dekorator an. Wenn die Aktion den Benutzer nur zu einer anderen URL sendet, verwenden Sie stattdessen den `@link_row_action`-Dekorator. Er bettet den Link in das HTML-Attribut `href` ein und überspringt die Actions-API.
+Um eine eigene Zeilenaktion hinzuzufügen, schreiben Sie Ihre Logik und wenden den `@row_action`-Decorator an. Wenn die Aktion den Benutzer lediglich zu einer anderen URL weiterleitet, verwenden Sie stattdessen den `@link_row_action`-Decorator. Er bettet den Link in das HTML-Attribut `href` ein und umgeht die Action-API.
 
 !!! important
     Namen von Zeilenaktionen müssen innerhalb einer `ModelView` eindeutig sein.
@@ -257,8 +255,8 @@ class ArticleView(ModelView):
 
 Zwei Hooks steuern, ob eine Zeilenaktion verfügbar ist. Beide erlauben die Aktion standardmäßig.
 
-1. **`is_row_action_allowed(request, name)`**: Läuft einmal pro Aktionsname. Verwenden Sie ihn für Einschränkungen, die nicht von der Zeile abhängen, z. B. rollenbasierte Zugriffskontrolle.
-2. **`is_row_action_allowed_for_obj(request, name, obj)`**: Läuft einmal pro Zeile, für die Aktionen, die die erste Prüfung bestanden haben. Verwenden Sie ihn für datenabhängige Einschränkungen, z. B. das Ausblenden eines Buttons **Veröffentlichen** bei einem Artikel, der bereits veröffentlicht wurde.
+1. **`is_row_action_allowed(request, name)`**: Wird einmal pro Aktionsname ausgeführt. Verwenden Sie ihn für Einschränkungen, die nicht von der Zeile abhängen, etwa rollenbasierte Zugriffskontrolle.
+2. **`is_row_action_allowed_for_obj(request, name, obj)`**: Wird einmal pro Zeile für die Aktionen ausgeführt, die die erste Prüfung bestanden haben. Verwenden Sie ihn für datenabhängige Einschränkungen, etwa das Ausblenden einer Schaltfläche **Publish** bei einem bereits veröffentlichten Artikel.
 
 ```python
 from typing import Any
@@ -281,24 +279,24 @@ class ArticleView(ModelView):
 ```
 
 !!! warning
-    Rufen Sie immer `super()` für Aktionsnamen auf, die Ihr Override nicht behandelt. Tun Sie dies nicht, deaktivieren Sie stillschweigend die Berechtigungsprüfungen für die integrierten Aktionen.
+    Rufen Sie `super()` immer für Aktionsnamen auf, die Ihre Überschreibung nicht behandelt. Andernfalls deaktivieren Sie stillschweigend die Berechtigungsprüfungen der eingebauten Aktionen.
 
 ## UI-Konfiguration für Zeilenaktionen
 
 ### Anzeigetypen
 
-Der Parameter `row_actions_display_type` legt fest, wie Aktionen auf der Listenseite erscheinen. Aktionen auf der Detailseite werden immer als vollständige Buttons gerendert.
+Der Parameter `row_actions_display_type` legt fest, wie Aktionen auf der Listenseite erscheinen. Aktionen auf Detailseiten werden immer als vollständige Schaltflächen dargestellt.
 
-| Anzeigetyp     | Beschreibung                                                              |
-| -------------- | ------------------------------------------------------------------------- |
-| `ICON_LIST`    | Rendert eine horizontale Liste von Buttons, die nur Icons enthalten.      |
-| `DROPDOWN`     | Gruppiert Aktionen in einem beschrifteten Dropdown-Menü.                  |
-| `KEBAB`        | Gruppiert Aktionen in einem Dropdown-Menü, das über ein `⋮`-Icon geöffnet wird. |
-| `INLINE_LINKS` | Rendert das Label der Aktion unterhalb des Icons, getrennt durch einen Mittelpunkt. |
+| Anzeigetyp     | Beschreibung                                                                       |
+| -------------- | ---------------------------------------------------------------------------------- |
+| `ICON_LIST`    | Rendert eine horizontale Liste von Schaltflächen, die nur aus Icons bestehen.      |
+| `DROPDOWN`     | Gruppiert Aktionen in einem beschrifteten Dropdown-Menü.                           |
+| `KEBAB`        | Gruppiert Aktionen in einem Dropdown-Menü, das über ein `⋮`-Icon geöffnet wird.    |
+| `INLINE_LINKS` | Rendert das Aktionslabel unterhalb des Icons, getrennt durch einen Mittelpunkt.    |
 
 ### Spaltenpositionierung
 
-Standardmäßig wird die Aktionenspalte vor Ihren Datenspalten gerendert. Um sie auf die rechte Seite der Tabelle zu verschieben, verwenden Sie `RowActionsPosition`:
+Standardmäßig wird die Aktionsspalte vor Ihren Datenspalten gerendert. Um sie an die rechte Seite der Tabelle zu verschieben, verwenden Sie `RowActionsPosition`:
 
 ```python
 from starlette_admin.types import RowActionsPosition
@@ -310,9 +308,9 @@ class ArticleView(ModelView):
 
 ## Dynamische Aktionsformulare
 
-Der Parameter `form` sowohl beim `@action`- als auch beim `@row_action`-Dekorator akzeptiert ein Callable, sodass Sie das HTML zur Request-Zeit generieren können.
+Der Parameter `form` akzeptiert sowohl beim `@action`- als auch beim `@row_action`-Decorator ein Callable, sodass Sie das HTML zur Laufzeit des Requests generieren können.
 
-Das Callable kann synchron oder asynchron sein, und es muss einen String zurückgeben.
+Das Callable kann synchron oder asynchron sein und muss einen String zurückgeben.
 
 - **Signatur von `@action`**: `(request) -> str`
 - **Signatur von `@row_action`**: `(request, obj) -> str`
@@ -375,4 +373,4 @@ class ArticleView(ModelView):
 ```
 
 !!! important
-    Ein Callable eines Zeilenaktionsformulars läuft einmal pro Zeile auf der Listenseite. Halten Sie es schnell und vermeiden Sie Datenbankqueries darin. Die Zeilendaten, die Sie benötigen, sind bereits über den Parameter `obj` verfügbar.
+    Ein Callable für ein Zeilenaktionsformular wird einmal pro Zeile auf der Listenseite ausgeführt. Halten Sie es schnell und vermeiden Sie Datenbankabfragen darin. Die benötigten Zeilendaten stehen Ihnen bereits über den Parameter `obj` zur Verfügung.
