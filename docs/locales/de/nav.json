@@ -1,0 +1,214 @@
+{
+  "skip": [],
+  "nav": [
+    {
+      "Startseite": "index.md"
+    },
+    {
+      "Erste Schritte": [
+        {
+          "Installation": "getting-started/installation.md"
+        },
+        {
+          "Schnellstart": "getting-started/quickstart.md"
+        },
+        {
+          "Konzepte": "getting-started/concepts.md"
+        }
+      ]
+    },
+    {
+      "Benutzerhandbuch": [
+        {
+          "Views": "user-guide/views.md"
+        },
+        {
+          "Admin": "user-guide/admin.md"
+        },
+        {
+          "Felder": "user-guide/fields.md"
+        },
+        {
+          "Filter": "user-guide/filters.md"
+        },
+        {
+          "Aktionen": "user-guide/actions.md"
+        },
+        {
+          "Inline-Bearbeitung": "user-guide/inline-edit.md"
+        },
+        {
+          "Authentifizierung": "user-guide/auth.md"
+        },
+        {
+          "Export & Import": "user-guide/export-import.md"
+        },
+        {
+          "Dateispeicher": "user-guide/file-storage.md"
+        },
+        {
+          "Inline-Formulare": "user-guide/inline-forms.md"
+        },
+        {
+          "Benutzerdefinierte Views & Widgets": "user-guide/custom-views.md"
+        },
+        {
+          "Flash-Nachrichten": "user-guide/flash-messages.md"
+        },
+        {
+          "Internationalisierung & Zeitzonen": "user-guide/i18n.md"
+        },
+        {
+          "Sicherheit": "user-guide/security.md"
+        }
+      ]
+    },
+    {
+      "Integrationen": [
+        {
+          "SQLAlchemy": "integrations/sqlalchemy.md"
+        },
+        {
+          "SQLModel": "integrations/sqlmodel.md"
+        },
+        {
+          "Beanie": "integrations/beanie.md"
+        },
+        {
+          "Tortoise ORM": "integrations/tortoise.md"
+        },
+        {
+          "MongoEngine": "integrations/mongoengine.md"
+        },
+        {
+          "Benutzerdefiniertes Backend": "integrations/custom-backend.md"
+        }
+      ]
+    },
+    {
+      "Erweitert": [
+        {
+          "Benutzerdefinierte Felder": "advanced/custom-fields.md"
+        },
+        {
+          "Formularlayout": "advanced/form-layout.md"
+        },
+        {
+          "Benutzerdefinierte Filter": "advanced/custom-filters.md"
+        },
+        {
+          "Events": "advanced/events.md"
+        },
+        {
+          "Benutzerdefinierte Themes": "advanced/custom-themes.md"
+        },
+        {
+          "Templates": "advanced/templates.md"
+        },
+        {
+          "Mehrere Admin-Instanzen": "advanced/multiple-admin.md"
+        },
+        {
+          "Erweiterungspunkte": "advanced/extension-points.md"
+        },
+        {
+          "Plugins": "advanced/plugins.md"
+        },
+        {
+          "Deployment": "advanced/deployment.md"
+        }
+      ]
+    },
+    {
+      "Vergleich": [
+        {
+          "Übersicht": "comparison/index.md"
+        },
+        {
+          "Umsteiger von Django Admin": "comparison/django-admin.md"
+        },
+        {
+          "Umsteiger von Flask-Admin": "comparison/flask-admin.md"
+        }
+      ]
+    },
+    {
+      "Blog": [
+        {
+          "Übersicht": "blog/index.md"
+        },
+        {
+          "Fügen Sie FastAPI in 5 Minuten ein Admin-Panel hinzu": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
+        },
+        {
+          "Soft Deletes und eine Papierkorb-Ansicht in FastAPI mit Starlette Admin erstellen": "blog/posts/soft-deletes-trash-view.md"
+        }
+      ]
+    },
+    {
+      "API-Referenz": [
+        {
+          "Admin": "api/admin.md"
+        },
+        {
+          "Views": "api/views.md"
+        },
+        {
+          "Felder": "api/fields.md"
+        },
+        {
+          "Widgets": "api/widgets.md"
+        },
+        {
+          "Validatoren": "api/validators.md"
+        },
+        {
+          "Filter": "api/filters.md"
+        },
+        {
+          "Authentifizierung": "api/auth.md"
+        },
+        {
+          "Events": "api/events.md"
+        },
+        {
+          "Speicher": "api/storage.md"
+        },
+        {
+          "Export": "api/export.md"
+        },
+        {
+          "Import": "api/import.md"
+        },
+        {
+          "Contrib": [
+            {
+              "SQLAlchemy": "api/contrib/sqlalchemy.md"
+            },
+            {
+              "SQLModel": "api/contrib/sqlmodel.md"
+            },
+            {
+              "Tortoise ORM": "api/contrib/tortoise.md"
+            },
+            {
+              "Beanie": "api/contrib/beanie.md"
+            },
+            {
+              "MongoEngine": "api/contrib/mongoengine.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Migrationsanleitung": "migration.md"
+    },
+    {
+      "Änderungsprotokoll": "changelog.md"
+    }
+  ],
+  "notice_title": "Überwachte maschinelle Übersetzung",
+  "notice_body": "Dieser Inhalt wurde maschinell übersetzt und basiert auf von Menschen kuratierten Glossaren und Styleguides. Da der Text nicht zeilenweise manuell überprüft wird, können gelegentlich Fehler oder unklare Formulierungen auftreten.\n\nBei etwaigen Abweichungen ist die ursprüngliche englische Version die maßgebliche Quelle.",
+  "notice_link_label": "Lesen Sie die ursprüngliche englische Version"
+}

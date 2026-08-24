@@ -174,3 +174,8 @@ lang = "fr"
 name = "Español"
 link = "/es/"
 lang = "es"
+
+[[project.extra.alternate]]
+name = "Deutsch"
+link = "/de/"
+lang = "de"
