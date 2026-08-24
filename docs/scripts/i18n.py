@@ -652,5 +652,7 @@ def sync_alternates() -> None:
     """Regenerate the `[[project.extra.alternate]]` block in zensical.toml."""
     text = strip_alternate_block(ROOT_CONFIG_PATH.read_text(encoding="utf-8"))
     updated = text + "\n\n" + render_alternate_block() + "\n"
+    if updated == ROOT_CONFIG_PATH.read_text(encoding="utf-8"):
+        return
     ROOT_CONFIG_PATH.write_text(updated, encoding="utf-8")
     print(f"synced language switcher into {ROOT_CONFIG_PATH.name}", flush=True)
