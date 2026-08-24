@@ -1,0 +1,214 @@
+{
+  "skip": [],
+  "nav": [
+    {
+      "首页": "index.md"
+    },
+    {
+      "快速开始": [
+        {
+          "安装": "getting-started/installation.md"
+        },
+        {
+          "快速上手": "getting-started/quickstart.md"
+        },
+        {
+          "核心概念": "getting-started/concepts.md"
+        }
+      ]
+    },
+    {
+      "用户指南": [
+        {
+          "视图": "user-guide/views.md"
+        },
+        {
+          "Admin": "user-guide/admin.md"
+        },
+        {
+          "字段": "user-guide/fields.md"
+        },
+        {
+          "过滤器": "user-guide/filters.md"
+        },
+        {
+          "动作": "user-guide/actions.md"
+        },
+        {
+          "行内编辑": "user-guide/inline-edit.md"
+        },
+        {
+          "身份认证": "user-guide/auth.md"
+        },
+        {
+          "导出与导入": "user-guide/export-import.md"
+        },
+        {
+          "文件存储": "user-guide/file-storage.md"
+        },
+        {
+          "内联表单": "user-guide/inline-forms.md"
+        },
+        {
+          "自定义视图与部件": "user-guide/custom-views.md"
+        },
+        {
+          "Flash 消息": "user-guide/flash-messages.md"
+        },
+        {
+          "国际化与时区": "user-guide/i18n.md"
+        },
+        {
+          "安全": "user-guide/security.md"
+        }
+      ]
+    },
+    {
+      "集成": [
+        {
+          "SQLAlchemy": "integrations/sqlalchemy.md"
+        },
+        {
+          "SQLModel": "integrations/sqlmodel.md"
+        },
+        {
+          "Beanie": "integrations/beanie.md"
+        },
+        {
+          "Tortoise ORM": "integrations/tortoise.md"
+        },
+        {
+          "MongoEngine": "integrations/mongoengine.md"
+        },
+        {
+          "自定义后端": "integrations/custom-backend.md"
+        }
+      ]
+    },
+    {
+      "进阶": [
+        {
+          "自定义字段": "advanced/custom-fields.md"
+        },
+        {
+          "表单布局": "advanced/form-layout.md"
+        },
+        {
+          "自定义过滤器": "advanced/custom-filters.md"
+        },
+        {
+          "事件": "advanced/events.md"
+        },
+        {
+          "自定义主题": "advanced/custom-themes.md"
+        },
+        {
+          "模板": "advanced/templates.md"
+        },
+        {
+          "多 Admin 实例": "advanced/multiple-admin.md"
+        },
+        {
+          "扩展点": "advanced/extension-points.md"
+        },
+        {
+          "插件": "advanced/plugins.md"
+        },
+        {
+          "部署": "advanced/deployment.md"
+        }
+      ]
+    },
+    {
+      "对比": [
+        {
+          "概览": "comparison/index.md"
+        },
+        {
+          "从 Django Admin 迁移": "comparison/django-admin.md"
+        },
+        {
+          "从 Flask-Admin 迁移": "comparison/flask-admin.md"
+        }
+      ]
+    },
+    {
+      "博客": [
+        {
+          "概览": "blog/index.md"
+        },
+        {
+          "5 分钟为 FastAPI 添加管理后台": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
+        },
+        {
+          "使用 starlette-admin 在 FastAPI 中构建软删除与回收站视图": "blog/posts/soft-deletes-trash-view.md"
+        }
+      ]
+    },
+    {
+      "API 参考": [
+        {
+          "Admin": "api/admin.md"
+        },
+        {
+          "视图": "api/views.md"
+        },
+        {
+          "字段": "api/fields.md"
+        },
+        {
+          "部件": "api/widgets.md"
+        },
+        {
+          "校验器": "api/validators.md"
+        },
+        {
+          "过滤器": "api/filters.md"
+        },
+        {
+          "认证": "api/auth.md"
+        },
+        {
+          "事件": "api/events.md"
+        },
+        {
+          "存储": "api/storage.md"
+        },
+        {
+          "导出": "api/export.md"
+        },
+        {
+          "导入": "api/import.md"
+        },
+        {
+          "Contrib": [
+            {
+              "SQLAlchemy": "api/contrib/sqlalchemy.md"
+            },
+            {
+              "SQLModel": "api/contrib/sqlmodel.md"
+            },
+            {
+              "Tortoise ORM": "api/contrib/tortoise.md"
+            },
+            {
+              "Beanie": "api/contrib/beanie.md"
+            },
+            {
+              "MongoEngine": "api/contrib/mongoengine.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "迁移指南": "migration.md"
+    },
+    {
+      "更新日志": "changelog.md"
+    }
+  ],
+  "notice_title": "受监督的机器翻译",
+  "notice_body": "本文内容由机器翻译生成，并遵循人工维护的术语表与风格指南。由于译文未经逐行人工审校，可能偶有错误或表达不当之处。\n\n如有任何出入，请以英文原版为准，英文原版是权威来源。",
+  "notice_link_label": "阅读英文原版"
+}
