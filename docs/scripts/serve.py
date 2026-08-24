@@ -94,10 +94,7 @@ def main() -> int:
                 }
                 print(f"change detected: {len(changed)} file(s), rebuilding...")
                 build(args.locales)
-                # Re-baseline after the build: it touches watched paths
-                # (zensical.toml, docs/locales/*/content) and would otherwise
-                # trigger an endless rebuild loop.
-                last = snapshot()
+                last = snapshot()  # Re-baseline: the build touches watched paths.
     except KeyboardInterrupt:
         print("\nstopping")
     finally:

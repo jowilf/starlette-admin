@@ -168,8 +168,10 @@ i18n-compile = "pybabel compile -f -D admin -d starlette_admin/translations"
 clean = "rm -rf .coverage .coverage.* coverage.xml site .ruff_cache dist build .cache .pytest_cache htmlcov"
 
 # Docs
-docs-serve = "python docs/scripts/serve.py --locales all"
-docs-build = "python docs/scripts/build.py --locales all"
+docs-serve = "python docs/scripts/serve.py"
+docs-build = "python docs/scripts/build.py"
+docs-serve-all = "python docs/scripts/serve.py --locales all"
+docs-build-all = "python docs/scripts/build.py --locales all"
 docs-translate = "python docs/scripts/translate.py"
 
 [tool.hatch.version]

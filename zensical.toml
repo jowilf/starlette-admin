@@ -161,26 +161,26 @@ link = "https://www.linkedin.com/in/jocelin-hounon-2008aa139"
 
 # Language switcher entries -- managed by docs/scripts/build.py, do not edit.
 [[project.extra.alternate]]
-name = "English"
+name = "en - English"
 link = "/"
 lang = "en"
 
 [[project.extra.alternate]]
-name = "Français"
+name = "fr - Français"
 link = "/fr/"
 lang = "fr"
 
 [[project.extra.alternate]]
-name = "Español"
+name = "es - Español"
 link = "/es/"
 lang = "es"
 
 [[project.extra.alternate]]
-name = "Deutsch"
+name = "de - Deutsch"
 link = "/de/"
 lang = "de"
 
 [[project.extra.alternate]]
-name = "Русский"
+name = "ru - Русский"
 link = "/ru/"
 lang = "ru"

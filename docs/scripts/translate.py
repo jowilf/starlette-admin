@@ -500,7 +500,6 @@ def _cmd_nav(args: argparse.Namespace) -> int:
         and bool(existing["notice_body"].strip())
     )
     if args.force or not has_notice:
-        # Translate the notice only when missing or --force is given.
         notice = _translate_notice(args.locale, name, system_prompt, model, reasoning)
         existing["notice_title"] = notice["title"]
         existing["notice_body"] = notice["body"]

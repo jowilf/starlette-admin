@@ -600,11 +600,17 @@ ALTERNATE_MARKER = (
 
 def alternate_entries() -> list[dict[str, str]]:
     """Language switcher entries: English at the site root, locales in subdirs."""
-    entries = [{"name": "English", "link": "/", "lang": SOURCE_LOCALE}]
+    entries = [
+        {"name": f"{SOURCE_LOCALE} - English", "link": "/", "lang": SOURCE_LOCALE}
+    ]
     for entry in load_registry():
         code = entry["code"]
         entries.append(
-            {"name": entry.get("name") or code, "link": f"/{code}/", "lang": code}
+            {
+                "name": f"{code} - {entry.get('name') or code}",
+                "link": f"/{code}/",
+                "lang": code,
+            }
         )
     return entries
 
