@@ -22,8 +22,7 @@ CONTENT_SUBDIR = "content"
 SOURCE_LOCALE = "en"
 EN_CONTENT_DIR = LOCALES_DIR / "en" / CONTENT_SUBDIR
 REGISTRY_PATH = LOCALES_DIR / "locales.json"
-#: Single system prompt shared by every locale; `{name}` / `{code}` are
-#: substituted at runtime with the target locale's entry from locales.json.
+#: Shared system prompt; `{name}` / `{code}` are filled in per locale at runtime.
 TRANSLATIONS_PROMPT_PATH = LOCALES_DIR / "translations_prompt.md"
 ROOT_CONFIG_PATH = PROJECT_ROOT / "zensical.toml"
 
@@ -40,8 +39,7 @@ NOTICE_BODY = (
     "may occur. In case of any discrepancies, the original English version "
     "is the authoritative source."
 )
-#: Markers wrapping the disclosure notice block in translated pages, so the
-#: block can be identified and rewritten without parsing admonition syntax.
+#: Delimit the disclosure notice block for replacement without re-parsing.
 NOTICE_START_MARKER = "<!-- translation-notice:start -->"
 NOTICE_END_MARKER = "<!-- translation-notice:end -->"
 #: Heading line of the disclosure notice (`??? info "Title"` / warning).
@@ -334,9 +332,8 @@ def dump_document(meta: dict[str, Any], body: str) -> str:
 def load_notice(code: str) -> tuple[str, str]:
     """Return the localized (title, body, link label) for the disclosure notice.
 
-    Read from the locale's nav.json (`notice_title` / `notice_body` /
-    `notice_link_label`, written by `translate.py <code> --init`). Falls back
-    to the English wording when the locale carries no complete translation.
+    Values come from nav.json (`notice_title` / `notice_body` /
+    `notice_link_label`); falls back to English when incomplete.
     """
     if code == SOURCE_LOCALE:
         return NOTICE_TITLE, NOTICE_BODY, NOTICE_LINK_LABEL
@@ -389,8 +386,7 @@ def notice_text(
     paragraphs = []
     for para in notice_body.split("\n" * 2):
         if "](" in para:
-            # Keep paragraphs with markdown links on a single unwrapped
-            # line so the link syntax is never split across lines.
+            # Keep linked paragraphs unwrapped so link syntax stays intact.
             paragraphs.append("    " + para)
         else:
             paragraphs.append(
@@ -423,11 +419,9 @@ def insert_notice(
 def set_notice(
     text: str, variant: str, code: str, en_url: str | None = None
 ) -> tuple[str, bool]:
-    """Rewrite the notice block with the given variant and localized wording.
+    """Rewrite the notice block; migrates legacy unmarked notices.
 
-    Handles both marker-wrapped blocks and legacy unmarked notices (which are
-    migrated to the marker format). Idempotent: returns the text unchanged
-    when the block already matches.
+    Idempotent: returns the text unchanged when the block already matches.
     """
     meta, body = split_front_matter(text)
     if meta is None:
@@ -448,8 +442,7 @@ def set_notice(
     index = 1
     while index < len(lines):
         line = lines[index]
-        # Notice paragraphs are indented; blank lines belong to the block
-        # only when another indented paragraph follows them.
+        # A blank line ends the block unless another indented line follows.
         if line.startswith("    ") or (
             line == ""
             and index + 1 < len(lines)
@@ -519,9 +512,7 @@ def staleness_pass(content_dir: Path) -> int:
         if not is_machine_translated(text):
             continue
         fresh = hashes_current(text, EN_CONTENT_DIR / rel, code)
-        # Rewrite the notice with the right variant, the locale's current
-        # wording and a link to the English original (also migrates legacy
-        # unmarked notices to the marker format).
+        # Refresh variant, wording and English link; migrates legacy notices.
         text, did = set_notice(
             text, "info" if fresh else "warning", code, en_url=en_page_url(rel)
         )
@@ -551,11 +542,7 @@ def _prune_nav(nav: list[Any], content_dir: Path) -> list[Any]:
 def _nav_translation_stats(
     nav: list[Any], content_dir: Path, skip: list[str]
 ) -> tuple[int, int]:
-    """Return (translated, expected) nav leaf counts for a locale.
-
-    Deliberately untranslated pages (`DEFAULT_SKIP` plus the locale's own
-    `skip` list) are excluded from both counts.
-    """
+    """Return (translated, expected) nav leaf counts, excluding skipped pages."""
     translated = expected = 0
     for item in nav:
         if not isinstance(item, dict) or len(item) != 1:
@@ -646,9 +633,7 @@ def strip_alternate_block(text: str) -> str:
         line = lines[index]
         if line.strip() in (ALTERNATE_HEADER, ALTERNATE_MARKER):
             index += 1
-            # Swallow the whole managed block: its key/value lines, blanks
-            # and repeated [[...]] headers. Stop at any other table header
-            # or foreign comment.
+            # Skip the managed block; stop at foreign tables or comments.
             while index < total:
                 stripped = lines[index].strip()
                 if stripped in (ALTERNATE_HEADER, ALTERNATE_MARKER):

@@ -347,9 +347,7 @@ def _cmd_init(args: argparse.Namespace) -> int:
     model = args.model or os.environ.get("OPENROUTER_MODEL") or DEFAULT_MODEL
     reasoning = args.reasoning or os.environ.get("OPENROUTER_REASONING") or None
 
-    # Translate the AI notice first: it needs one LLM round-trip, and doing
-    # it before anything is written keeps a failed init free of side effects.
-    # Notices must always be translated, so there is no English fallback here.
+    # Translate the notice first so a failed init leaves no side effects.
     notice = _translate_notice(code, name, system_prompt, model, reasoning)
 
     base.mkdir(parents=True)
@@ -502,8 +500,7 @@ def _cmd_nav(args: argparse.Namespace) -> int:
         and bool(existing["notice_body"].strip())
     )
     if args.force or not has_notice:
-        # Same command translates the disclosure notice; an existing one is
-        # only redone with --force so wording is never duplicated per run.
+        # Translate the notice only when missing or --force is given.
         notice = _translate_notice(args.locale, name, system_prompt, model, reasoning)
         existing["notice_title"] = notice["title"]
         existing["notice_body"] = notice["body"]
