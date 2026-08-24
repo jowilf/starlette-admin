@@ -40,7 +40,7 @@ admin = Admin(engine, title="My Admin", templates_dir="my_templates/")
 `Admin` baut einen Jinja2-`ChoiceLoader`, der zuerst Ihr `templates_dir` prüft und danach das integrierte Paketverzeichnis `starlette_admin/templates/`. Legen Sie eine Datei unter `my_templates/` unter demselben relativen Pfad ab, den sie innerhalb von `starlette_admin/templates/` hat, dann überdeckt Ihre Datei die integrierte. Alle anderen Templates rendern weiterhin aus dem integrierten Verzeichnis.
 
 !!! note
-    Die Loader-Kette registriert außerdem einen `PrefixLoader` unter dem Schlüssel `@starlette-admin`, der immer auf die integrierten Templates auflöst, egal was sie in `templates_dir` überdeckt. Sie erreichen sie mit dem Pfadformat `@starlette-admin/<name>.html`, wobei der abschließende Slash am Präfix selbst wegfällt. Wozu das dient, sehen Sie unten unter [Ein einzelnes Seitentemplate überschreiben](#overriding-a-single-page-template).
+    Die Loader-Kette registriert außerdem einen `PrefixLoader` unter dem Schlüssel `@starlette-admin`, der immer auf die integrierten Templates auflöst, egal was sie in `templates_dir` überdeckt. Sie erreichen sie mit dem Pfadformat `@starlette-admin/<name>.html`, wobei der abschließende Slash am Präfix selbst wegfällt. Wozu das dient, sehen Sie unten unter [Ein einzelnes Seitentemplate überschreiben](#ein-einzelnes-seitentemplate-uberschreiben).
 
 ## Übersicht über die Template-Verzeichnisse
 
@@ -433,6 +433,6 @@ Jede Admin-Instanz registriert diese Filter während `_setup_templates`:
 ## Wie es weitergeht
 
 * **[Formularlayouts](form-layout.md):** Teilen Sie die Erstellen- und Bearbeiten-Formulare in betitelte, optional einklappbare Gruppen auf, und überschreiben Sie `_form_group.html`, um deren Markup zu ändern.
-* **[Benutzerdefinierte Themes](custom-themes.md):** Gestalten Sie das Admin-Panel um, ohne einzelne Templates anzufassen.
+* **[Benutzerdefinierte Themes](https://jowilf.github.io/starlette-admin/advanced/custom-themes/):** Gestalten Sie das Admin-Panel um, ohne einzelne Templates anzufassen.
 * **[Benutzerdefinierte Felder](custom-fields.md):** Kombinieren Sie die Python-Klasse eines Feldes mit seinem eigenen `list_template` oder `form_template`.
 * **[Erweiterungspunkte](extension-points.md):** Die vollständige Liste der erweiterbaren Oberflächen jenseits der Templates.

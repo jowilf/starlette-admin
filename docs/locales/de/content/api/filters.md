@@ -24,7 +24,7 @@ translation_date: '2026-08-23'
 
 # Filter
 
-Vollständige Attribut- und Methodenreferenz für das Filtersystem, generiert aus Docstrings. Für eine aufgabenorientierte Einführung siehe [Filter](../user-guide/filters.md) und [Benutzerdefinierte Filter](../advanced/custom-filters.md).
+Vollständige Attribut- und Methodenreferenz für das Filtersystem, generiert aus Docstrings. Für eine aufgabenorientierte Einführung siehe [Filter](../user-guide/filters.md) und [Benutzerdefinierte Filter](https://jowilf.github.io/starlette-admin/advanced/custom-filters/).
 
 Die folgenden Klassen sind backend-agnostisch: Sie deklarieren `name`, `label` und `data_type` eines Filters, aber nicht dessen Query-Logik. Jedes ORM-Backend (`contrib.sqla`, `contrib.beanie`,
 `contrib.mongoengine`, `contrib.tortoise`) leitet davon ab, um die tatsächliche `apply()`-Implementierung für dieses Backend hinzuzufügen. Auf der jeweiligen [Integrationsseite](../integrations/sqlalchemy.md) finden Sie die konkreten, importierbaren Filterklassen.

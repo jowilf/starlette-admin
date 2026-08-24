@@ -108,7 +108,7 @@ class ProductView(ModelView):
 `CsvExporter` leitet Keyword-Argumente an `csv.writer` weiter und akzeptiert einen Parameter `escape_formulas`. `TablibExporter(format, **kwargs)` deckt jedes Tablib-Format ab und leitet Keyword-Argumente an `tablib.Dataset.export()` weiter.
 
 !!! warning
-    Das Escaping von Formeln ist standardmäßig deaktiviert. Wenn exportierte Felder vom Benutzer bereitgestellte Strings enthalten können, setzen Sie `escape_formulas=True` auf `CsvExporter`, `TsvExporter` oder `TablibExporter`, um eine Formel-Injection zu verhindern, wenn jemand die Datei in einer Tabellenkalkulationsanwendung öffnet. Siehe [Formula injection](security.md#formula-injection).
+    Das Escaping von Formeln ist standardmäßig deaktiviert. Wenn exportierte Felder vom Benutzer bereitgestellte Strings enthalten können, setzen Sie `escape_formulas=True` auf `CsvExporter`, `TsvExporter` oder `TablibExporter`, um eine Formel-Injection zu verhindern, wenn jemand die Datei in einer Tabellenkalkulationsanwendung öffnet. Siehe [Formula injection](security.md#formel-injection).
 
 Export ist standardmäßig aktiviert. Die Schaltfläche **Export** erscheint in der Toolbar, sobald die Liste `exporters` nicht leer ist. Um einzuschränken, wer exportieren darf, überschreiben Sie die Methode `can_export(request)`:
 

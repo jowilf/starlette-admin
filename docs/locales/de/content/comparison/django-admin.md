@@ -77,22 +77,22 @@ Dieser Leitfaden ordnet jedes wichtige `ModelAdmin`-Konzept seiner starlette-adm
 
 Zwei strukturelle Unterschiede fallen auf:
 
-1. **Eine Feldliste steuert jede Seite.** `fields` ist die einzige Quelle der Wahrheit. Anschließend verwenden Sie [`exclude_fields_from_list`, `exclude_fields_from_detail`, `exclude_fields_from_create` und `exclude_fields_from_edit`](../user-guide/views.md#field-selection-and-customization) für Abweichungen pro Seite.
+1. **Eine Feldliste steuert jede Seite.** `fields` ist die einzige Quelle der Wahrheit. Anschließend verwenden Sie [`exclude_fields_from_list`, `exclude_fields_from_detail`, `exclude_fields_from_create` und `exclude_fields_from_edit`](../user-guide/views.md#feldauswahl-und-anpassung) für Abweichungen pro Seite.
 2. **Die `Admin`-Instanz besitzt die Datenbank-Engine.** Sie übergeben keine Session an jede View.
 
 ## Optionen der Listenseite
 
 | Django Admin | starlette-admin | Hinweise |
 | --- | --- | --- |
-| `list_display` | `fields` minus [`exclude_fields_from_list`](../user-guide/views.md#field-selection-and-customization) | Eine einzige Feldliste steuert jede Seite. |
+| `list_display` | `fields` minus [`exclude_fields_from_list`](../user-guide/views.md#feldauswahl-und-anpassung) | Eine einzige Feldliste steuert jede Seite. |
 | `list_display` mit einem Callable oder `@admin.display` | [`ComputedField`](../user-guide/fields.md#computedfield) oder `getter=` an einem beliebigen Feld | Zum Beispiel `ComputedField("full_name", getter=lambda request, obj: ...)`. Verwenden Sie `getter=` an einem typisierten Feld, etwa einem Datums- oder Bildfeld, um das Rendering dieses Typs beizubehalten. |
-| Eine echte Spalte für die Anzeige umformatieren | [`formatter=`](../user-guide/fields.md#computing-formatting-and-parsing-values) am Feld | Ein `dict[RequestAction, callable]`, sodass Liste, Detailseite und Export unterschiedlich formatieren können. Django benötigt einen Callable plus `admin_order_field`, um die Sortierung zu erhalten; hier bleibt die Spalte sortierbar. |
-| `search_fields` | [`searchable_fields`](../user-guide/views.md#search-and-sort) | Versorgt sowohl die Volltextsuche als auch den Filter-Builder. |
+| Eine echte Spalte für die Anzeige umformatieren | [`formatter=`](../user-guide/fields.md#werte-berechnen-formatieren-und-parsen) am Feld | Ein `dict[RequestAction, callable]`, sodass Liste, Detailseite und Export unterschiedlich formatieren können. Django benötigt einen Callable plus `admin_order_field`, um die Sortierung zu erhalten; hier bleibt die Spalte sortierbar. |
+| `search_fields` | [`searchable_fields`](../user-guide/views.md#suchen-und-sortieren) | Versorgt sowohl die Volltextsuche als auch den Filter-Builder. |
 | `list_filter` | `searchable_fields` kombiniert mit `filters=` pro Feld | Die Nutzer erhalten einen visuellen Builder mit verschachtelten `AND`/`OR`-Gruppen statt einer festen Seitenleiste. Siehe [Filter](../user-guide/filters.md). |
-| `ordering` | [`fields_default_sort`](../user-guide/views.md#search-and-sort) | Zum Beispiel sortiert `fields_default_sort = [("created_at", True)]` absteigend. |
-| `admin_order_field` / Sortierbarkeit | [`sortable_fields`](../user-guide/views.md#search-and-sort) | Jedes Feld ist standardmäßig sortierbar. |
+| `ordering` | [`fields_default_sort`](../user-guide/views.md#suchen-und-sortieren) | Zum Beispiel sortiert `fields_default_sort = [("created_at", True)]` absteigend. |
+| `admin_order_field` / Sortierbarkeit | [`sortable_fields`](../user-guide/views.md#suchen-und-sortieren) | Jedes Feld ist standardmäßig sortierbar. |
 | `list_editable` | [`inline_editable_fields`](../user-guide/inline-edit.md) | Nutzer wählen eine Zelle aus und bearbeiten sie direkt an Ort und Stelle. |
-| `list_per_page` | [`page_size`, `page_size_options`](../user-guide/views.md#pagination-and-ui-controls) | Steuert die Grenzen der Paginierung. |
+| `list_per_page` | [`page_size`, `page_size_options`](../user-guide/views.md#paginierung-und-ui-steuerelemente) | Steuert die Grenzen der Paginierung. |
 | `date_hierarchy` | Datumsfilter, wie `between` und `in the past` | Es gibt keine eigene Drilldown-Leiste; der Filter-Builder deckt diesen Fall ab. |
 | `empty_value_display` | Ein `formatter=`-Eintrag oder `null_template` | Formatter erhalten `None`-Werte und können daher einen Platzhalter einsetzen. `null_template` tauscht stattdessen das gerenderte Markup aus. |
 
@@ -108,7 +108,7 @@ Zwei strukturelle Unterschiede fallen auf:
 | `filter_horizontal` / `filter_vertical` | [`HasMany`](../user-guide/fields.md#hasone-hasmany) | Gerendert als durchsuchbare Multi-Select-Komponente. |
 | `formfield_overrides` | Explizite Einträge in der `fields`-Liste | Ersetzen Sie das automatisch erkannte Feld direkt: `fields = ["id", TextAreaField("bio")]` |
 | Benutzerdefinierte Formularvalidierung | `validators=` am Feld oder `FormValidationError` in Hooks | Siehe [Validators](../api/validators.md). |
-| `to_python()` des Formularfelds / benutzerdefinierte Umwandlung | [`parser=`](../user-guide/fields.md#computing-formatting-and-parsing-values) am Feld | Ersetzt das Standard-Parsing des Feldes für Formular oder Import pro `RequestAction`. |
+| `to_python()` des Formularfelds / benutzerdefinierte Umwandlung | [`parser=`](../user-guide/fields.md#werte-berechnen-formatieren-und-parsen) am Feld | Ersetzt das Standard-Parsing des Feldes für Formular oder Import pro `RequestAction`. |
 | Hilfetext des Modelformulars | `help_text=` | Verfügbar an jeder Felddefinition. |
 
 ### Fieldsets-Beispiel
@@ -208,11 +208,11 @@ starlette-admin erkennt den Fremdschlüssel, wenn dieser eindeutig ist, und unte
 
 Wo Django Admin ein `QuerySet` übergibt, erhält der starlette-admin-Handler ein [`ActionSelection`](../user-guide/actions.md)-Objekt. Es löst Zeilen, Primärschlüssel und aktive Filter träge auf und verhält sich genauso, wenn ein Nutzer alle passenden Datensätze auswählt.
 
-Aktionen können auch ein benutzerdefiniertes HTML-Formular innerhalb des Bestätigungsdialogs rendern, was in Django Admin den Bau einer Zwischenseite bedeutet. Für Operationen pro Zeile verwenden Sie [`@row_action` und `@link_row_action`](../user-guide/actions.md#row-actions), die keine Entsprechung in Django Admin haben.
+Aktionen können auch ein benutzerdefiniertes HTML-Formular innerhalb des Bestätigungsdialogs rendern, was in Django Admin den Bau einer Zwischenseite bedeutet. Für Operationen pro Zeile verwenden Sie [`@row_action` und `@link_row_action`](../user-guide/actions.md#zeilenaktionen), die keine Entsprechung in Django Admin haben.
 
 ## Berechtigungen und Authentifizierung
 
-Django Admin delegiert an `django.contrib.auth`. starlette-admin teilt das Problem in zwei Teile: ein [`AuthProvider`](../user-guide/auth.md) beantwortet die Frage „Wer ist dieser Nutzer“, und [Methoden pro View](../user-guide/views.md#security-and-authorization) beantworten die Frage „Was darf er tun“.
+Django Admin delegiert an `django.contrib.auth`. starlette-admin teilt das Problem in zwei Teile: ein [`AuthProvider`](../user-guide/auth.md) beantwortet die Frage „Wer ist dieser Nutzer“, und [Methoden pro View](../user-guide/views.md#sicherheit-und-autorisierung) beantworten die Frage „Was darf er tun“.
 
 | Django Admin | starlette-admin |
 | --- | --- |

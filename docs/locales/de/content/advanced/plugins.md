@@ -213,6 +213,6 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 ## Was kommt als Nächstes
 
-* **[Custom Themes](custom-themes.md):** Ein komplettes visuelles System paketieren und teilen, mit demselben Cookiecutter-Workflow.
+* **[Custom Themes](https://jowilf.github.io/starlette-admin/advanced/custom-themes/):** Ein komplettes visuelles System paketieren und teilen, mit demselben Cookiecutter-Workflow.
 * **[Events](events.md):** Die Subscriber-API, die ein Plugin aus seinem `setup()`-Hook heraus registriert.
 * **[Extension Points](extension-points.md):** Alle Registries und Basisklassen, in die sich ein Plugin einklinken kann.

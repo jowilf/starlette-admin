@@ -29,10 +29,10 @@ Diese Seite listet alle austauschbaren Schnittstellen in `starlette-admin` an ei
 
 | Extension Point | API-Interface oder Hook | Dokumentation |
 | --- | --- | --- |
-| **Benutzerdefinierter Filter** | Unterklasse von `BaseFilter` bilden und `get_filter_registry()` in einer `ModelView` überschreiben. | [Custom Filters](custom-filters.md) |
+| **Benutzerdefinierter Filter** | Unterklasse von `BaseFilter` bilden und `get_filter_registry()` in einer `ModelView` überschreiben. | [Custom Filters](https://jowilf.github.io/starlette-admin/advanced/custom-filters/) |
 | **Benutzerdefinierter Exporter** | Unterklasse von `BaseExporter` bilden. | [Export and Import](../user-guide/export-import.md) |
 | **Benutzerdefinierter Importer** | Unterklasse von `BaseImporter` bilden. | [Export and Import](../user-guide/export-import.md) |
-| **Benutzerdefiniertes Theme** | Unterklasse von `BaseTheme` bilden. | [Custom Themes](custom-themes.md) |
+| **Benutzerdefiniertes Theme** | Unterklasse von `BaseTheme` bilden. | [Custom Themes](https://jowilf.github.io/starlette-admin/advanced/custom-themes/) |
 | **Benutzerdefiniertes Authentifizierungs-Backend** | Unterklasse von `BaseAuthProvider` bilden. | [Authentication](../user-guide/auth.md) |
 | **Benutzerdefinierter Dateispeicher** | Unterklasse von `BaseStorage` bilden, das sich über sein `name`-Attribut selbst registriert. | [File Storage](../user-guide/file-storage.md) |
 | **Benutzerdefiniertes Widget** | Unterklasse von `BaseWidget` bilden. | [Custom Views](../user-guide/custom-views.md) |

@@ -46,4 +46,4 @@ generiert aus Docstrings. Für eine aufgabenorientierte Einführung siehe
     Konkrete Filterklassen (`EqualFilter`, `ArrayInFilter`, `ObjectIdEqualFilter` usw.) werden
     hier nicht aufgelistet. Sie spiegeln die backend-agnostischen Filter wider, die in
     [Filters](../filters.md) dokumentiert sind. Beanie-spezifisches Verhalten (verankertes Regex-String-Matching, Volltext-
-    Suche) wird in [Beanie](../../integrations/beanie.md#filter-registry) behandelt.
+    Suche) wird in [Beanie](../../integrations/beanie.md#filterregistrierung) behandelt.

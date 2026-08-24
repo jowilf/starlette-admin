@@ -51,7 +51,7 @@ Auch ohne Sicherheitsparameter wehrt sich die Admin-Instanz gegen mehrere gängi
 * **Export-Limits:** Auf 100.000 Zeilen pro Request begrenzt, um Ressourcenerschöpfung und Denial of Service zu verhindern.
 * **Import-Limits:** Auf 10 MB pro Request begrenzt, um Speichererschöpfung einzudämmen.
 
-Ein weiterer Schutz ist verfügbar, ist aber standardmäßig deaktiviert: Escaping, das Formel-Injection in CSV- und Tabellenkalkulationsexporten (XLSX, XLS, ODS) verhindert. Siehe [Formel-Injection](#formula-injection).
+Ein weiterer Schutz ist verfügbar, ist aber standardmäßig deaktiviert: Escaping, das Formel-Injection in CSV- und Tabellenkalkulationsexporten (XLSX, XLS, ODS) verhindert. Siehe [Formel-Injection](#formel-injection).
 
 Die folgenden Abschnitte erläutern diese Schutzmechanismen und wie Sie die Schwellenwerte anpassen, die Sie steuern können.
 

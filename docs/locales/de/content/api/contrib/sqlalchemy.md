@@ -38,7 +38,7 @@ generiert aus den Docstrings. Eine aufgabenorientierte Einführung finden Sie un
 
 Die Erweiterung `ext.pydantic` validiert die Formulardaten anhand eines Pydantic-Modells, bevor der
 Datensatz geschrieben wird. Eine vollständige Schritt-für-Schritt-Anleitung finden Sie unter
-[Pydantic-Validierung](../../integrations/sqlalchemy.md#pydantic-validation).
+[Pydantic-Validierung](../../integrations/sqlalchemy.md#pydantic-validierung).
 
 ::: starlette_admin.contrib.sqla.ext.pydantic.ModelView
 

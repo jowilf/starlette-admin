@@ -86,7 +86,7 @@ Der Rest dieser Seite behandelt, was Sie überschreiben müssen, wenn ein Feld m
 `StatusBadgeField` überschreibt keine davon, weil `EnumField` den abgesendeten Wert bereits gegen `choices` parst und den rohen String aus `obj.status` liest. Das Badge ist nur Präsentation auf Basis dieses Strings. Überschreiben Sie diese drei Methoden, wenn der Wert selbst berechnet oder umgeformt werden muss statt nur neu gerendert.
 
 !!! tip "Hooks oder Subclassing"
-    Für eine einmalige Änderung an einem einzelnen Feld brauchen Sie selten eine Unterklasse. Übergeben Sie stattdessen die [Hooks `getter`, `formatter` und `parser`](../user-guide/fields.md#computing-formatting-and-parsing-values) als Konstruktorargumente, um das Lesen, die Anzeigeformatierung und das Parsen der Eingabe zu handhaben.
+    Für eine einmalige Änderung an einem einzelnen Feld brauchen Sie selten eine Unterklasse. Übergeben Sie stattdessen die [Hooks `getter`, `formatter` und `parser`](../user-guide/fields.md#werte-berechnen-formatieren-und-parsen) als Konstruktorargumente, um das Lesen, die Anzeigeformatierung und das Parsen der Eingabe zu handhaben.
     **Wann Subclassing:** nur wenn Sie dieselbe Logik in mehr als einer View benötigen oder wenn Sie die Templates ändern müssen.
 
 `parse_form_data` empfängt die rohe `FormData` (aus `starlette.datastructures`) vom Request und gibt die Daten zurück, die `view.create()` bzw. `view.edit()` für dieses Feld erhalten sollen. Die Default-Implementierung liest `form_data.get(self.id)` und gibt es unverändert zurück. Die meisten Felder müssen nur eine Typumwandlung hinzufügen:

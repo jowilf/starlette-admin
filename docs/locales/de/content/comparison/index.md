@@ -39,7 +39,7 @@ Diese Seite vergleicht alle drei. Wenn Sie Django Admin oder Flask-Admin bereits
 | **Webframework** | Nur Django | Nur Flask | Starlette, FastAPI und jede ASGI-App, die Sub-Applikationen mounten kann |
 | **Ausführungsmodell** | Synchron (WSGI-first) | Synchron (WSGI) | Async-first (ASGI) |
 | **Datenschicht** | Nur Django ORM | SQLAlchemy, MongoEngine, peewee, pymongo | SQLAlchemy, SQLModel, MongoEngine, Beanie, Tortoise ORM oder ein [benutzerdefiniertes Backend](../integrations/custom-backend.md) |
-| **UI-Toolkit** | Django-Templates, klassisches Admin-Theme | Bootstrap 2/3/4 | [Tabler](https://tabler.io) (Bootstrap 5), Dark Mode, [benutzerdefinierte Themes](../advanced/custom-themes.md) |
+| **UI-Toolkit** | Django-Templates, klassisches Admin-Theme | Bootstrap 2/3/4 | [Tabler](https://tabler.io) (Bootstrap 5), Dark Mode, [benutzerdefinierte Themes](https://jowilf.github.io/starlette-admin/advanced/custom-themes/) |
 | **Im Framework enthalten** | Ja, Teil von Django | Nein, separates Paket | Nein, separates Paket |
 | **Authentifizierung** | Integriert über `django.contrib.auth` | Bringen Sie Ihre eigene mit (`is_accessible`) | Pluggable [`AuthProvider` / `OAuthProvider`](../user-guide/auth.md), bringen Sie Ihren eigenen Benutzerspeicher mit |
 
@@ -70,11 +70,11 @@ starlette-admin zielt auf den asynchronen Python-Stack. Wenn Ihre Anwendung Fast
 | Automatisch generierte CRUD-Views | **Ja** | **Ja** | **Ja** |
 | Volltextsuche | **Ja** `search_fields` | **Ja** `column_searchable_list` | **Ja** [`searchable_fields`](../user-guide/filters.md) |
 | Spaltenfilter | **Ja** `list_filter` | **Ja** `column_filters` | **Ja** [Visueller Filter-Builder](../user-guide/filters.md) mit `AND`/`OR`-Gruppen |
-| Sortierung und Standardsortierung | **Ja** | **Ja** | **Ja** [`sortable_fields`, `fields_default_sort`](../user-guide/views.md#search-and-sort) |
+| Sortierung und Standardsortierung | **Ja** | **Ja** | **Ja** [`sortable_fields`, `fields_default_sort`](../user-guide/views.md#suchen-und-sortieren) |
 | Inline-Bearbeitung auf der Listenseite | **Ja** `list_editable` | **Ja** `column_editable_list` | **Ja** [`inline_editable_fields`](../user-guide/inline-edit.md) |
 | Inline-Formulare für verwandte Modelle | **Ja** `TabularInline` / `StackedInline` | **Ja** `inline_models` | **Ja** [`InlineModelView`](../user-guide/inline-forms.md) |
 | Massenaktionen | **Ja** `actions` | **Ja** `@action` | **Ja** [`@action`](../user-guide/actions.md) mit Bestätigungsdialogen und benutzerdefinierten Formularen |
-| Aktionen pro Zeile | **Teilweise** eigene Templates | **Teilweise** eigene Formatter | **Ja** [`@row_action`, `@link_row_action`](../user-guide/actions.md#row-actions) |
+| Aktionen pro Zeile | **Teilweise** eigene Templates | **Teilweise** eigene Formatter | **Ja** [`@row_action`, `@link_row_action`](../user-guide/actions.md#zeilenaktionen) |
 | Datenexport | **Teilweise** `django-import-export` | **Ja** CSV und weitere | **Ja** [CSV, JSON, Excel, PDF](../user-guide/export-import.md) |
 | Datenimport | **Teilweise** `django-import-export` | **Nein** | **Ja** [CSV, JSON, Excel](../user-guide/export-import.md) mit Validierung der Vorschau und Upsert |
 | Datei- und Bild-Uploads | **Ja** `FileField` / `ImageField` | **Teilweise** erfordert zusätzliche Einrichtung | **Ja** [Lokaler und S3-Dateispeicher](../user-guide/file-storage.md) |
@@ -82,8 +82,8 @@ starlette-admin zielt auf den asynchronen Python-Stack. Wenn Ihre Anwendung Fast
 | Eigenständige benutzerdefinierte Seiten | **Ja** eigene `AdminSite`-URLs | **Ja** `BaseView` + `@expose` | **Ja** [`CustomView`](../user-guide/custom-views.md) |
 | Kontrolle über das Formularlayout | **Ja** `fieldsets` | **Ja** `form_rules` | **Ja** [`form_layout`](../advanced/form-layout.md) mit Tabs und Grids |
 | Authentifizierung | **Ja** `django.contrib.auth` | **Nein** bringen Sie Ihre eigene mit | **Ja** [`AuthProvider`](../user-guide/auth.md) oder `OAuthProvider` |
-| Berechtigungen pro Modell | **Ja** Permission-Framework | **Ja** Überschreiben der `can_*`-Flags | **Ja** [Methoden pro Request](../user-guide/views.md#security-and-authorization) |
-| Berechtigungen pro Feld | **Teilweise** `get_readonly_fields` | **Nein** | **Ja** [`can_access_field`](../user-guide/views.md#security-and-authorization) |
+| Berechtigungen pro Modell | **Ja** Permission-Framework | **Ja** Überschreiben der `can_*`-Flags | **Ja** [Methoden pro Request](../user-guide/views.md#sicherheit-und-autorisierung) |
+| Berechtigungen pro Feld | **Teilweise** `get_readonly_fields` | **Nein** | **Ja** [`can_access_field`](../user-guide/views.md#sicherheit-und-autorisierung) |
 | Lifecycle-Hooks | **Ja** `save_model`, Signals | **Ja** `on_model_change` | **Ja** [Lifecycle-Hooks](../user-guide/views.md#lifecycle-hooks) und [Events](../advanced/events.md) |
 | CSRF-Schutz | **Ja** Django-Middleware | **Ja** über Flask-WTF | **Ja** [In `Admin` integriert](../user-guide/security.md) |
 | Änderungsverlauf / Audit-Log | **Ja** `LogEntry` | **Nein** | **Teilweise** bauen Sie Ihre eigene mit [Events](../advanced/events.md) |

@@ -86,7 +86,7 @@ Das Einrichten besteht aus zwei Schritten: Definieren Sie eine `InlineModelView`
 
 Die Create- und Edit-Seiten von `ArticleView` rendern nun ein Formset namens `Comments` unterhalb der eigenen Felder des Artikels. Das Formset beginnt mit einer leeren Zeile (`extra = 1`) und enthält die Steuerelemente zum Hinzufügen und Löschen, die das SQLAlchemy-Backend für Sie verdrahtet.
 
-Beachten Sie, dass `CommentInline` niemals `fk_attr` setzt. Das SQLAlchemy-Backend untersucht `Article.comments` und leitet `Comment.article_id` als Fremdschlüssel ab, da dies die einzige Beziehung ist, die auf `Comment` zeigt. Setzen Sie `fk_attr` selbst nur dann, wenn diese Ableitung mehrdeutig ist oder wenn die Beziehung nicht im ORM-Modell deklariert ist. Siehe [Explizite und zusammengesetzte Fremdschlüssel](#explicit-and-composite-foreign-keys).
+Beachten Sie, dass `CommentInline` niemals `fk_attr` setzt. Das SQLAlchemy-Backend untersucht `Article.comments` und leitet `Comment.article_id` als Fremdschlüssel ab, da dies die einzige Beziehung ist, die auf `Comment` zeigt. Setzen Sie `fk_attr` selbst nur dann, wenn diese Ableitung mehrdeutig ist oder wenn die Beziehung nicht im ORM-Modell deklariert ist. Siehe [Explizite und zusammengesetzte Fremdschlüssel](#explizite-und-zusammengesetzte-fremdschlussel).
 
 ## `InlineModelView`-Referenz
 

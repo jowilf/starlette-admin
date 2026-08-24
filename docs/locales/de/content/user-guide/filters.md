@@ -158,12 +158,12 @@ Die folgende Tabelle listet jeden Filter auf, der ab Werk verfügbar ist, den UR
 | Ist eines von | `in` | Kommagetrennte Liste |  |
 | Ist keines von | `not_in` | Kommagetrennte Liste |  |
 
-Wenn Sie einen Filter für einen Datentyp benötigen, den die integrierten Filter nicht abdecken, etwa ein JSON-Feld oder einen Geo-Punkt, lesen Sie [Benutzerdefinierte Filter](../advanced/custom-filters.md), um eine `BaseFilter`-Subklasse zu schreiben und sie global oder pro Feldinstanz zu registrieren.
+Wenn Sie einen Filter für einen Datentyp benötigen, den die integrierten Filter nicht abdecken, etwa ein JSON-Feld oder einen Geo-Punkt, lesen Sie [Benutzerdefinierte Filter](https://jowilf.github.io/starlette-admin/advanced/custom-filters/), um eine `BaseFilter`-Subklasse zu schreiben und sie global oder pro Feldinstanz zu registrieren.
 
 ---
 
 **Wie es weitergeht**
 
-* **[Benutzerdefinierte Filter](../advanced/custom-filters.md):** Schreiben und registrieren Sie eine `BaseFilter`-Subklasse.
+* **[Benutzerdefinierte Filter](https://jowilf.github.io/starlette-admin/advanced/custom-filters/):** Schreiben und registrieren Sie eine `BaseFilter`-Subklasse.
 * **[Aktionen](actions.md):** Fügen Sie Ihren Listenseiten Massen- und Zeilenaktionen hinzu.
 * **[Views](views.md):** Erfahren Sie mehr über `searchable_fields` und die restliche Konfiguration der Listenseite.

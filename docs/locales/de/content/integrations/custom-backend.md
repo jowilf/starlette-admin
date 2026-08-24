@@ -420,5 +420,5 @@ Export- und Importoperationen erfordern keine manuelle Event-Verkabelung. Die Kl
 ### Weitere Ressourcen
 
 * **[Views](../user-guide/views.md)**: Erkunden Sie die `BaseModelView`-Konfigurationsoptionen unabhängig vom Backend.
-* **[Benutzerdefinierte Filter](../advanced/custom-filters.md)**: Erfahren Sie, wie Sie benutzerdefinierte Filter von Grund auf schreiben und registrieren.
+* **[Benutzerdefinierte Filter](https://jowilf.github.io/starlette-admin/advanced/custom-filters/)**: Erfahren Sie, wie Sie benutzerdefinierte Filter von Grund auf schreiben und registrieren.
 * **[Events](../advanced/events.md)**: Verstehen Sie die vollständige Event-Subscription-API, einschließlich Method-Hooks, Event-Bus und Ausführungsprioritäten.

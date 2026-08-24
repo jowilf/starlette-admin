@@ -69,7 +69,7 @@ Dieser Leitfaden bildet die Flask-Admin-API Attribut für Attribut auf ihr starl
     admin.mount_to(app)
     ```
 
-Einen `template_mode`-Schalter gibt es nicht. Das UI verwendet [Tabler](https://tabler.io) (Bootstrap 5) und enthält einen Dark Mode. Um das Aussehen zu ändern, schreiben Sie ein benutzerdefiniertes [`BaseTheme`](../advanced/custom-themes.md) oder [überschreiben die Templates](../advanced/templates.md).
+Einen `template_mode`-Schalter gibt es nicht. Das UI verwendet [Tabler](https://tabler.io) (Bootstrap 5) und enthält einen Dark Mode. Um das Aussehen zu ändern, schreiben Sie ein benutzerdefiniertes [`BaseTheme`](https://jowilf.github.io/starlette-admin/advanced/custom-themes/) oder [überschreiben die Templates](../advanced/templates.md).
 
 ## Attribute der Listenseite
 
@@ -79,18 +79,18 @@ Einen `template_mode`-Schalter gibt es nicht. Das UI verwendet [Tabler](https://
 | `column_exclude_list` | `exclude_fields_from_list` |  |
 | `column_labels` | `label=` | Zum Beispiel `StringField("title", label="Headline")` |
 | `column_descriptions` | `help_text=` | Gilt für die Felddefinition. |
-| `column_formatters` | [`formatter=`](../user-guide/fields.md#computing-formatting-and-parsing-values) am Feld | Zum Beispiel `StringField("title", formatter={RequestAction.LIST: lambda request, value: value[:40]})`. |
+| `column_formatters` | [`formatter=`](../user-guide/fields.md#werte-berechnen-formatieren-und-parsen) am Feld | Zum Beispiel `StringField("title", formatter={RequestAction.LIST: lambda request, value: value[:40]})`. |
 | `column_formatters_detail` / Export-Formatter | Dasselbe `formatter=`-Dict, keyed nach `RequestAction` | Ein Mapping deckt Listenseite, Detailseite und Export ab. Aktionen ohne Eintrag behalten den Rohwert. |
 | `column_type_formatters` | Pro Feld `formatter=`, oder eine benutzerdefinierte Feldunterklasse | Es gibt keine Registry pro Typ. Hängen Sie den Formatter an jedes Feld an oder [erstellen Sie eine Unterklasse des Feldes](../advanced/custom-fields.md), um ihn wiederzuverwenden. |
 | Model-Properties oder Callables in `column_list` | [`ComputedField`](../user-guide/fields.md#computedfield) oder `getter=` an einem beliebigen Feld | Fügt virtuelle Spalten hinzu oder leitet die Wertsuche eines bestehenden Felds um, ganz ohne Unterklasse. |
-| Benutzerdefinierte WTForms-Felder (Wertumwandlung) | [`parser=`](../user-guide/fields.md#computing-formatting-and-parsing-values) am Feld | Ersetzt das Standard-Parsing des Felds für Formular oder Import je nach `RequestAction`. |
-| `column_searchable_list` | [`searchable_fields`](../user-guide/views.md#search-and-sort) |  |
+| Benutzerdefinierte WTForms-Felder (Wertumwandlung) | [`parser=`](../user-guide/fields.md#werte-berechnen-formatieren-und-parsen) am Feld | Ersetzt das Standard-Parsing des Felds für Formular oder Import je nach `RequestAction`. |
+| `column_searchable_list` | [`searchable_fields`](../user-guide/views.md#suchen-und-sortieren) |  |
 | `column_filters` | `searchable_fields` kombiniert mit pro Feld gesetztem `filters=` | Ersetzt die flache Filterliste durch einen [visuellen Builder](../user-guide/filters.md), der verschachtelte `AND`-/`OR`-Gruppen unterstützt. |
-| `column_sortable_list` | [`sortable_fields`](../user-guide/views.md#search-and-sort) |  |
-| `column_default_sort` | [`fields_default_sort`](../user-guide/views.md#search-and-sort) | Zum Beispiel sortiert `[("created_at", True)]` in absteigender Reihenfolge. |
+| `column_sortable_list` | [`sortable_fields`](../user-guide/views.md#suchen-und-sortieren) |  |
+| `column_default_sort` | [`fields_default_sort`](../user-guide/views.md#suchen-und-sortieren) | Zum Beispiel sortiert `[("created_at", True)]` in absteigender Reihenfolge. |
 | `column_editable_list` | [`inline_editable_fields`](../user-guide/inline-edit.md) | Benutzer wählen eine Zelle aus und bearbeiten sie direkt an Ort und Stelle. |
-| `page_size` | [`page_size`](../user-guide/views.md#pagination-and-ui-controls) |  |
-| `can_set_page_size` | [`page_size_options`](../user-guide/views.md#pagination-and-ui-controls) | Der Defaultwert ist `[10, 25, 50, 100]`. Benutzer wählen aus diesen Optionen. |
+| `page_size` | [`page_size`](../user-guide/views.md#paginierung-und-ui-steuerelemente) |  |
+| `can_set_page_size` | [`page_size_options`](../user-guide/views.md#paginierung-und-ui-steuerelemente) | Der Defaultwert ist `[10, 25, 50, 100]`. Benutzer wählen aus diesen Optionen. |
 | `column_display_pk` | Nehmen Sie den Primärschlüssel in `fields` auf |  |
 | `column_details_list` | `fields` minus `exclude_fields_from_detail` | Die Detailseite ist eingebaut. Es gibt kein `can_view_details`-Opt-in. |
 
@@ -167,11 +167,11 @@ CSV- und JSON-Export sind standardmäßig aktiviert. Zeilenlimits greifen automa
             flash(request, "Posts published")
     ```
 
-Der Handler erhält ein [`ActionSelection`](../user-guide/actions.md)-Objekt statt roher IDs. Er löst die Zeilen lazy auf, stellt die aktiven Filter bereit und funktioniert genauso, wenn ein Benutzer alle passenden Datensätze über Seiten hinweg auswählt. Aktionen können außerdem ein benutzerdefiniertes HTML-Formular innerhalb des Bestätigungsdialogs rendern. Für Operationen pro Zeile ersetzen [`@row_action` und `@link_row_action`](../user-guide/actions.md#row-actions) benutzerdefinierte Spalten-Formatter.
+Der Handler erhält ein [`ActionSelection`](../user-guide/actions.md)-Objekt statt roher IDs. Er löst die Zeilen lazy auf, stellt die aktiven Filter bereit und funktioniert genauso, wenn ein Benutzer alle passenden Datensätze über Seiten hinweg auswählt. Aktionen können außerdem ein benutzerdefiniertes HTML-Formular innerhalb des Bestätigungsdialogs rendern. Für Operationen pro Zeile ersetzen [`@row_action` und `@link_row_action`](../user-guide/actions.md#zeilenaktionen) benutzerdefinierte Spalten-Formatter.
 
 ## Berechtigungen und Zugriffskontrolle
 
-Die `can_*`-Klassenflags von Flask-Admin werden in starlette-admin zu [Methoden pro Request](../user-guide/views.md#security-and-authorization), sodass Autorisierungsentscheidungen vom angemeldeten Benutzer abhängen können.
+Die `can_*`-Klassenflags von Flask-Admin werden in starlette-admin zu [Methoden pro Request](../user-guide/views.md#sicherheit-und-autorisierung), sodass Autorisierungsentscheidungen vom angemeldeten Benutzer abhängen können.
 
 | Flask-Admin | starlette-admin | Hinweise |
 | --- | --- | --- |
@@ -216,7 +216,7 @@ admin.events.on(AdminEvent.AFTER_CREATE, audit)
 | Benutzerdefiniertes Template-Rendering | `CustomView`-Unterklasse | Gibt Ihnen volle Kontrolle über Routen und Responses. |
 | `AdminIndexView` | `Admin(index_view=...)` | Bauen Sie Dashboards aus `StatWidget`, `ChartWidget`, `TableWidget` und Layout-Widgets. |
 | `MenuLink` | [`Link`](../user-guide/views.md#link)-View | Zum Beispiel `admin.add_link(Link(menu_label="Docs", url="https://..."))` |
-| Kategorien im Menü | [`DropDown`](../user-guide/views.md#sidebar-organization)-View | Gruppiert Views zusammen in der Sidebar. |
+| Kategorien im Menü | [`DropDown`](../user-guide/views.md#organisation-der-sidebar)-View | Gruppiert Views zusammen in der Sidebar. |
 | `FileAdmin` | Nicht verfügbar | Datei- und Bildfelder mit [lokalem oder S3-Speicher](../user-guide/file-storage.md) verwalten Anhänge. Einen Server-Dateibrowser gibt es nicht. |
 
 ## Inline-Datenbankmodelle

@@ -112,7 +112,7 @@ Um mehr als ein `Admin` in derselben Anwendung zu betreiben, geben Sie jeder Ins
 | `static_dir` | `str | None` | `None` | Verzeichnis zusätzlicher statischer Dateien, die neben dem integrierten CSS und JS ausgeliefert werden. |
 | `theme` | `BaseTheme` | `DefaultTheme()` | Eine Theme-Unterklasse, die die Layout-Templates, den Icon-Satz und die statischen Assets definiert. |
 
-[Benutzerdefinierte Themes](../advanced/custom-themes.md) und [Templates](../advanced/templates.md) behandeln diese Optionen im Detail.
+[Benutzerdefinierte Themes](https://jowilf.github.io/starlette-admin/advanced/custom-themes/) und [Templates](../advanced/templates.md) behandeln diese Optionen im Detail.
 
 ### Die Startseite
 

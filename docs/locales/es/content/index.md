@@ -19,7 +19,7 @@ translation_date: '2026-08-22'
 ---
 
 <!-- translation-notice:start -->
-??? info "Traducción automática supervisada"
+??? warning "Traducción automática supervisada"
 
     Este contenido se traduce mediante generación automática guiada por
     glosarios y guías de estilo revisados por personas. Dado que el texto no

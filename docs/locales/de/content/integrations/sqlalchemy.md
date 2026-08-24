@@ -217,7 +217,7 @@ Jeder Feldtyp erhält einen Default-Satz an Filtern aus der `SqlaFilterRegistry`
     Der Filter `Is null` auf einer Beziehung wertet `~column.has()` (für many-to-one-Beziehungen) oder `~column.any()` (für one-to-many- und many-to-many-Beziehungen) aus statt `column.is_(None)`. Da ein Beziehungsattribut keine Standardspalte ist, die einen `NULL`-Wert enthält, hängt seine Nullbarkeit vollständig davon ab, ob verwandte Zeilen existieren.
 
 !!! note
-    Das SQLAlchemy-Backend stellt im Gegensatz zu Beanie und MongoEngine keine `ArrayInFilter`- oder `ArrayNotInFilter`-Filter bereit (die „is one of“-Filter für spaltenwertige Listen). Sie müssen Ihre eigene `apply()`-Logik schreiben, wenn Sie eine „is one of“-Filterung auf einer JSON- oder ARRAY-Spalte mit einem `TagsField` benötigen. Weitere Details finden Sie in der Dokumentation zu [Benutzerdefinierten Filtern](../advanced/custom-filters.md).
+    Das SQLAlchemy-Backend stellt im Gegensatz zu Beanie und MongoEngine keine `ArrayInFilter`- oder `ArrayNotInFilter`-Filter bereit (die „is one of“-Filter für spaltenwertige Listen). Sie müssen Ihre eigene `apply()`-Logik schreiben, wenn Sie eine „is one of“-Filterung auf einer JSON- oder ARRAY-Spalte mit einem `TagsField` benötigen. Weitere Details finden Sie in der Dokumentation zu [Benutzerdefinierten Filtern](https://jowilf.github.io/starlette-admin/advanced/custom-filters/).
 
 ## Sessions und Transaktionen
 

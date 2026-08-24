@@ -33,9 +33,9 @@ Diese Seite sammelt die Upgrade-Anleitungen zwischen den `starlette-admin`-Relea
 
 Dieses Release refaktoriert die Interna von `starlette-admin` und führt eine große Menge an neuen Features ein. Während die High-Level-API weitgehend unverändert bleibt, ist das bedeutendste Update die Neuentwicklung des Renderings der Listenseite. Wir haben DataTables zugunsten einer serverseitig gerenderten Tabelle aufgegeben. Die meisten anderen Updates bestehen aus Umbenennungen oder kleinen Signaturänderungen.
 
-Diese Anleitung deckt jeden Breaking Change in der Reihenfolge ab, in der Sie ihm am wahrscheinlichsten begegnen werden. Jeder Abschnitt vergleicht die alte API mit ihrem Ersatz. Wenn Ihre Implementierung auf den Grundlagen oder leichten Anpassungen basiert (wie einer `Admin`-Instanz, einigen `ModelView`-Subklassen, `fields` und `searchable_fields`), wird Ihre Migration wahrscheinlich auf die Abschnitte [Anforderungen](#requirements) und [Admin-Konstruktor](#the-admin-constructor) sowie einige Umbenennungen beschränkt sein.
+Diese Anleitung deckt jeden Breaking Change in der Reihenfolge ab, in der Sie ihm am wahrscheinlichsten begegnen werden. Jeder Abschnitt vergleicht die alte API mit ihrem Ersatz. Wenn Ihre Implementierung auf den Grundlagen oder leichten Anpassungen basiert (wie einer `Admin`-Instanz, einigen `ModelView`-Subklassen, `fields` und `searchable_fields`), wird Ihre Migration wahrscheinlich auf die Abschnitte [Anforderungen](#anforderungen) und [Admin-Konstruktor](#der-admin-konstruktor) sowie einige Umbenennungen beschränkt sein.
 
-Anpassungen der alten Listenseite erfordern die meiste Aufmerksamkeit. DataTables-Optionen und JavaScript-Renderfunktionen haben kein direktes Äquivalent und müssen auf serverseitige Templates portiert werden (siehe [Entfernung von DataTables](#datatables-removal)).
+Anpassungen der alten Listenseite erfordern die meiste Aufmerksamkeit. DataTables-Optionen und JavaScript-Renderfunktionen haben kein direktes Äquivalent und müssen auf serverseitige Templates portiert werden (siehe [Entfernung von DataTables](#entfernung-von-datatables)).
 
 !!! tip
     Führen Sie das Upgrade Ihrer Abhängigkeiten in einem Schritt durch und starten Sie Ihre Anwendung. Die meisten entfernten oder umbenannten Attribute werfen klare Fehler beim Start, statt still zur Laufzeit zu versagen.
@@ -48,7 +48,7 @@ Anpassungen der alten Listenseite erfordern die meiste Aufmerksamkeit. DataTable
 * **[Filter](user-guide/filters.md):** Ein verschachtelter `AND`/`OR`-Filterbuilder ersetzt den DataTables SearchBuilder. Filter werden aus den Feldtypen abgeleitet und sind vollständig in reinem Python erweiterbar. Sie können eine Filterklasse schreiben, ohne JavaScript zu benötigen.
 * **[Import und serverseitiger Export](user-guide/export-import.md):** Importieren Sie Daten aus CSV, JSON, Excel und mehr mit Fehlerberichterstattung pro Zeile, zusammen mit serverseitigen Exportern (CSV, JSON, Excel, PDF usw.), die die clientseitigen DataTables-Buttons ersetzen.
 * **[Events](advanced/events.md):** Abonnieren Sie Lifecycle-Hooks wie `before_create`, `after_edit_committed`, `after_login` und verschiedene Action-Events.
-* **[Themes](advanced/custom-themes.md) und [Plugins](advanced/plugins.md):** Paketieren und wiederverwenden Sie benutzerdefinierte Ästhetiken und Verhaltensweisen. Cookiecutter-Templates sind verfügbar, um Ihnen einen schnellen Einstieg zu ermöglichen.
+* **[Themes](https://jowilf.github.io/starlette-admin/advanced/custom-themes/) und [Plugins](advanced/plugins.md):** Paketieren und wiederverwenden Sie benutzerdefinierte Ästhetiken und Verhaltensweisen. Cookiecutter-Templates sind verfügbar, um Ihnen einen schnellen Einstieg zu ermöglichen.
 * **[Widgets und Dashboards](user-guide/custom-views.md):** Erstellen Sie Indexseiten und benutzerdefinierte Views mit `StatWidget`, `ChartWidget`, `TableWidget` und mehr.
 * **[Formularlayout](advanced/form-layout.md):** Ordnen Sie Create-/Edit-Formulare logisch an, mit Zeilen, Spalten, Fieldsets und Tabs.
 * **[Inline-Bearbeitung](user-guide/inline-edit.md):** Bearbeiten Sie ein einzelnes Feld direkt von der Listenseite aus.
@@ -323,9 +323,9 @@ async def count(self, request, q=None, filters=None): ...
 
 ### Ohne Ersatz entfernt
 
-* `AdminConfig` (siehe [Authentifizierung](#authentication)).
-* `datatables_options`, `responsive_table` und `save_state` (siehe [Entfernung von DataTables](#datatables-removal)).
-* Das Odmantic-Backend (siehe [Anforderungen](#requirements)).
+* `AdminConfig` (siehe [Authentifizierung](#authentifizierung)).
+* `datatables_options`, `responsive_table` und `save_state` (siehe [Entfernung von DataTables](#entfernung-von-datatables)).
+* Das Odmantic-Backend (siehe [Anforderungen](#anforderungen)).
 
 ## Hilfe bekommen
 
