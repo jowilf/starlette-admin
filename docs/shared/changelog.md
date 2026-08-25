@@ -10,6 +10,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[1.0.1\] - 2026-08-24
+
+### Added
+
+- Add localized documentation (French, Spanish, German, Russian, Hindi, Simplified Chinese) by [@jowilf](https://github.com/jowilf)
+  in [#824](https://github.com/jowilf/starlette-admin/pull/824)
+
+### Fixed
+
+- Fix flash messages not displayed on `CustomView` widget pages by [@jowilf](https://github.com/jowilf)
+  in [#823](https://github.com/jowilf/starlette-admin/pull/823)
+- Fix language switcher links for sub-path deployments by [@jowilf](https://github.com/jowilf)
+  in [#825](https://github.com/jowilf/starlette-admin/pull/825)
+
 ## \[1.0.0\] - 2026-08-16
 
 This release refactors starlette-admin's internals and adds a large set of new features. The high-level
