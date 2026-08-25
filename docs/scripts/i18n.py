@@ -568,11 +568,15 @@ def _nav_translation_stats(
     return translated, expected
 
 
-def generate_locale_config(code: str) -> Path:
+def generate_locale_config(code: str, prefix: str = "/") -> Path:
     validate_nav(code)
     config = tomllib.loads(ROOT_CONFIG_PATH.read_text(encoding="utf-8"))["project"]
     config["docs_dir"] = f"docs/locales/{code}/{CONTENT_SUBDIR}"
     config["site_dir"] = f"site/{code}"
+    # Absolute URL of this locale (canonical tags, sitemap); `site_url`
+    # already carries the deployment base path.
+    config["site_url"] = f"{site_url()}{code}"
+    config.setdefault("extra", {})["alternate"] = alternate_entries(prefix)
     theme = config.setdefault("theme", {})
     theme["language"] = code
     nav_data = load_nav_json(code)
@@ -593,6 +597,19 @@ def generate_locale_config(code: str) -> Path:
     return out_path
 
 
+def generate_english_config(prefix: str) -> Path:
+    """Root config copy whose switcher links use the given base path.
+
+    Used for builds with a non-default `--alternate-prefix` so the tracked
+    root config always keeps its default "/" entries.
+    """
+    config = tomllib.loads(ROOT_CONFIG_PATH.read_text(encoding="utf-8"))["project"]
+    config.setdefault("extra", {})["alternate"] = alternate_entries(prefix)
+    out_path = PROJECT_ROOT / f"zensical.{SOURCE_LOCALE}.toml"
+    out_path.write_text(dump_toml(config), encoding="utf-8")
+    return out_path
+
+
 # --------------------------------------------------------------------------
 # Language switcher (`extra.alternate`) in the main zensical.toml
 # --------------------------------------------------------------------------
@@ -603,21 +620,37 @@ ALTERNATE_MARKER = (
 )
 
 
-def alternate_entries() -> list[dict[str, str]]:
-    """Language switcher entries: English at the site root, locales in subdirs."""
+def alternate_entries(prefix: str = "/") -> list[dict[str, str]]:
+    """Language switcher entries: English at the site root, locales in subdirs.
+
+    Links are root-relative and must mirror the deployment base path
+    (`prefix`, e.g. "/starlette-admin" for GitHub Pages project sites)
+    because zensical renders them verbatim on every page.
+    """
+    base = normalize_prefix(prefix)
     entries = [
-        {"name": f"{SOURCE_LOCALE} - English", "link": "/", "lang": SOURCE_LOCALE}
+        {
+            "name": f"{SOURCE_LOCALE} - English",
+            "link": f"{base}/" if base else "/",
+            "lang": SOURCE_LOCALE,
+        }
     ]
     for entry in load_registry():
         code = entry["code"]
         entries.append(
             {
                 "name": f"{code} - {entry.get('name') or code}",
-                "link": f"/{code}/",
+                "link": f"{base}/{code}/",
                 "lang": code,
             }
         )
     return entries
+
+
+def normalize_prefix(prefix: str) -> str:
+    """Normalize a base path to "" or "/starlette-admin" form."""
+    stripped = prefix.strip().strip("/")
+    return f"/{stripped}" if stripped else ""
 
 
 def render_alternate_block() -> str:

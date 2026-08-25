@@ -270,6 +270,13 @@ uv run poe docs-serve
 
 and visit http://localhost:8080 in your browser to see a live preview of your documentation.
 
+To preview the site exactly as it is deployed (with the language switcher
+links and URLs under the `/starlette-admin` base path), run:
+
+```shell
+uv run poe docs-serve-prod
+```
+
 ## Attribution
 
 This guide is based on the **contributing.md**. [Make your own](https://contributing.md/)!
