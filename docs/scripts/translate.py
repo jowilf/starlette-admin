@@ -76,7 +76,7 @@ def _get_client() -> Any:
             from openrouter import OpenRouter
         except ImportError as error:
             raise I18nError(
-                "the 'openrouter' package is not installed; run: uv sync --group docs"
+                "the 'openrouter' package is not installed; run: uv sync --group dev"
             ) from error
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
