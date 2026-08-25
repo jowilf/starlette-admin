@@ -13,9 +13,11 @@ from i18n import (
     SHARED_DIR,
     SHARED_ITEMS,
     I18nError,
+    generate_english_config,
     generate_locale_config,
     iter_markdown,
     locale_content_dir,
+    normalize_prefix,
     resolve_locales,
     staleness_pass,
     sync_alternates,
@@ -61,6 +63,13 @@ def main() -> int:
         metavar="LOC",
         help="locale codes to build after English ('all' for every supported locale)",
     )
+    parser.add_argument(
+        "--alternate-prefix",
+        default="/",
+        metavar="PATH",
+        help="deployment base path mirrored in the language switcher links "
+        '(default: "/"; e.g. "/starlette-admin" for GitHub Pages project sites)',
+    )
     args, extras = parser.parse_known_args()
 
     try:
@@ -70,7 +79,11 @@ def main() -> int:
         return 1
 
     sync_all_shared()
-    code = run_zensical(extras)
+    if normalize_prefix(args.alternate_prefix):
+        english_config = generate_english_config(args.alternate_prefix)
+        code = run_zensical(["--config-file", str(english_config), *extras])
+    else:
+        code = run_zensical(extras)
     if code != 0 or not args.locales:
         return code
 
@@ -88,7 +101,7 @@ def main() -> int:
         flipped = staleness_pass(content)
         if flipped:
             print(f"staleness pass ({loc}): {flipped} notice(s) updated", flush=True)
-        config_path = generate_locale_config(loc)
+        config_path = generate_locale_config(loc, args.alternate_prefix)
         print(f"building locale '{loc}' with {config_path.name}", flush=True)
         code = run_zensical(["--config-file", str(config_path), *extras])
         if code != 0:

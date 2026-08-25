@@ -21,7 +21,7 @@ jobs:
           enable-cache: true
       - name: Install Dependencies
         run: uv sync --only-group docs --only-group dev
-      - run: uv run poe docs-build-all
+      - run: uv run poe docs-build-prod
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site

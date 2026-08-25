@@ -172,6 +172,8 @@ docs-serve = "python docs/scripts/serve.py"
 docs-build = "python docs/scripts/build.py"
 docs-serve-all = "python docs/scripts/serve.py --locales all"
 docs-build-all = "python docs/scripts/build.py --locales all"
+docs-serve-prod = "python docs/scripts/serve.py --locales all --alternate-prefix /starlette-admin"
+docs-build-prod = "python docs/scripts/build.py --locales all --alternate-prefix /starlette-admin"
 docs-translate = "python docs/scripts/translate.py"
 
 [tool.hatch.version]
