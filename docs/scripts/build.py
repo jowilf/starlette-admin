@@ -26,13 +26,18 @@ def sync_shared(content_dir: Path) -> None:
     content_dir.mkdir(parents=True, exist_ok=True)
     for item in SHARED_ITEMS:
         src = SHARED_DIR / item
-        if not src.is_dir():
+        if not src.exists():
             print(f"warning: {src} does not exist, skipping", file=sys.stderr)
             continue
         dest = content_dir / item
-        if dest.exists():
+        if dest.is_dir():
             shutil.rmtree(dest)
-        shutil.copytree(src, dest)
+        elif dest.exists():
+            dest.unlink()
+        if src.is_dir():
+            shutil.copytree(src, dest)
+        else:
+            shutil.copy2(src, dest)
         rel = content_dir.relative_to(DOCS_DIR)
         print(f"synced shared/{item} -> {rel}/{item}", flush=True)
 

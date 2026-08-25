@@ -25,6 +25,7 @@ from i18n import (
     dump_document,
     en_page_url,
     insert_notice,
+    is_shared,
     iter_markdown,
     load_en_nav,
     load_nav_json,
@@ -301,9 +302,10 @@ def _cmd_status(args: argparse.Namespace) -> int:
     for rel in en_rels:
         buckets[page_state(rel, args.locale)].append(rel)
     en_set = set(en_rels)
-    for path in iter_markdown(locale_content_dir(args.locale)):
-        rel = path.relative_to(locale_content_dir(args.locale)).as_posix()
-        if rel not in en_set:
+    content_dir = locale_content_dir(args.locale)
+    for path in iter_markdown(content_dir):
+        rel = path.relative_to(content_dir).as_posix()
+        if rel not in en_set and not is_shared(rel):
             buckets["orphan"].append(rel)
 
     counts = {key: len(value) for key, value in buckets.items()}

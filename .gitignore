@@ -25,5 +25,6 @@ CLAUDE.md
 docs/locales/*/content/assets/
 docs/locales/*/content/javascripts/
 docs/locales/*/content/stylesheets/
+docs/locales/*/content/changelog.md
 
 zensical.*.toml

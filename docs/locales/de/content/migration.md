@@ -27,7 +27,7 @@ Diese Seite sammelt die Upgrade-Anleitungen zwischen den `starlette-admin`-Versi
 
 ---
 
-## Von 0.17.x zu 1.0.0
+## Von 0.17.x zu 1.0.0 {#from-017x-to-100}
 
 Diese Version refaktoriert die Interna von `starlette-admin` und führt eine große Anzahl neuer Features ein. Während die High-Level-API weitgehend unverändert bleibt, ist das bedeutendste Update die Neuentwicklung des Renderings der Listenseite. Wir haben DataTables zugunsten einer serverseitig gerenderten Tabelle aufgegeben. Die meisten anderen Updates bestehen aus Umbenennungen oder kleineren Signaturänderungen.
 

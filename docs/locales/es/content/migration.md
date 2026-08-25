@@ -27,7 +27,7 @@ Esta página recopila las instrucciones de actualización entre las versiones de
 
 ---
 
-## De 0.17.x a 1.0.0
+## De 0.17.x a 1.0.0 {#from-017x-to-100}
 
 Esta versión refactoriza el funcionamiento interno de `starlette-admin` e introduce un amplio conjunto de nuevas funcionalidades. Aunque la API de alto nivel se mantiene prácticamente sin cambios, la actualización más significativa es la reescritura del renderizado de la página de lista. Hemos eliminado DataTables en favor de una tabla renderizada en el servidor. La mayoría de los demás cambios consisten en renombrados o modificaciones menores de firmas.
 

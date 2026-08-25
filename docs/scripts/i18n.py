@@ -17,7 +17,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DOCS_DIR = PROJECT_ROOT / "docs"
 LOCALES_DIR = DOCS_DIR / "locales"
 SHARED_DIR = DOCS_DIR / "shared"
-SHARED_ITEMS = ["assets", "javascripts", "stylesheets"]
+#: Files and directories synced from `shared/` into every locale content dir.
+SHARED_ITEMS = ["assets", "javascripts", "stylesheets", "changelog.md"]
 CONTENT_SUBDIR = "content"
 SOURCE_LOCALE = "en"
 EN_CONTENT_DIR = LOCALES_DIR / "en" / CONTENT_SUBDIR
@@ -25,9 +26,6 @@ REGISTRY_PATH = LOCALES_DIR / "locales.json"
 #: Shared system prompt; `{name}` / `{code}` are filled in per locale at runtime.
 TRANSLATIONS_PROMPT_PATH = LOCALES_DIR / "translations_prompt.md"
 ROOT_CONFIG_PATH = PROJECT_ROOT / "zensical.toml"
-
-#: Pages never translated, regardless of per-locale `skip` lists.
-DEFAULT_SKIP = ["changelog.md"]
 
 NOTICE_TITLE = "Supervised Machine Translation"
 #: Label of the per-page link pointing at the English original.
@@ -271,7 +269,14 @@ def iter_markdown(root: Path) -> list[Path]:
 
 
 def is_skipped(rel: str, skip: list[str]) -> bool:
-    return any(fnmatch.fnmatch(rel, pattern) for pattern in [*DEFAULT_SKIP, *skip])
+    return any(fnmatch.fnmatch(rel, pattern) for pattern in skip)
+
+
+def is_shared(rel: str) -> bool:
+    """True when a relative path comes from the shared directory."""
+    return rel in SHARED_ITEMS or any(
+        rel.startswith(f"{item}/") for item in SHARED_ITEMS
+    )
 
 
 def select_targets(paths: list[str], skip: list[str]) -> list[str]:
@@ -574,7 +579,7 @@ def generate_locale_config(code: str) -> Path:
     nav = nav_data["nav"]
     content_dir = locale_content_dir(code)
     translated, total = _nav_translation_stats(
-        nav, content_dir, [*DEFAULT_SKIP, *nav_data.get("skip", [])]
+        nav, content_dir, nav_data.get("skip", [])
     )
     config["nav"] = _prune_nav(nav, content_dir)
     if translated < total:
