@@ -17,12 +17,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Add localized documentation (French, Spanish, German, Russian, Hindi, Simplified Chinese) by [@jowilf](https://github.com/jowilf)
   in [#824](https://github.com/jowilf/starlette-admin/pull/824)
 
+- Include `.agents` directory in wheel and sdist build targets by [@jowilf](https://github.com/jowilf)
+  in [#821](https://github.com/jowilf/starlette-admin/pull/821)
+
 ### Fixed
 
 - Fix flash messages not displayed on `CustomView` widget pages by [@jowilf](https://github.com/jowilf)
   in [#823](https://github.com/jowilf/starlette-admin/pull/823)
-- Fix language switcher links for sub-path deployments by [@jowilf](https://github.com/jowilf)
-  in [#825](https://github.com/jowilf/starlette-admin/pull/825)
 
 ## \[1.0.0\] - 2026-08-16
 
