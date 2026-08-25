@@ -1,0 +1,214 @@
+{
+  "skip": [],
+  "nav": [
+    {
+      "Главная": "index.md"
+    },
+    {
+      "Начало работы": [
+        {
+          "Установка": "getting-started/installation.md"
+        },
+        {
+          "Быстрый старт": "getting-started/quickstart.md"
+        },
+        {
+          "Основные понятия": "getting-started/concepts.md"
+        }
+      ]
+    },
+    {
+      "Руководство пользователя": [
+        {
+          "Представления": "user-guide/views.md"
+        },
+        {
+          "Admin": "user-guide/admin.md"
+        },
+        {
+          "Поля": "user-guide/fields.md"
+        },
+        {
+          "Фильтры": "user-guide/filters.md"
+        },
+        {
+          "Действия": "user-guide/actions.md"
+        },
+        {
+          "Инлайн-редактирование": "user-guide/inline-edit.md"
+        },
+        {
+          "Аутентификация": "user-guide/auth.md"
+        },
+        {
+          "Экспорт и импорт": "user-guide/export-import.md"
+        },
+        {
+          "Файловое хранилище": "user-guide/file-storage.md"
+        },
+        {
+          "Инлайн-формы": "user-guide/inline-forms.md"
+        },
+        {
+          "Пользовательские представления и виджеты": "user-guide/custom-views.md"
+        },
+        {
+          "Флеш-сообщения": "user-guide/flash-messages.md"
+        },
+        {
+          "Интернационализация и часовые пояса": "user-guide/i18n.md"
+        },
+        {
+          "Безопасность": "user-guide/security.md"
+        }
+      ]
+    },
+    {
+      "Интеграции": [
+        {
+          "SQLAlchemy": "integrations/sqlalchemy.md"
+        },
+        {
+          "SQLModel": "integrations/sqlmodel.md"
+        },
+        {
+          "Beanie": "integrations/beanie.md"
+        },
+        {
+          "Tortoise ORM": "integrations/tortoise.md"
+        },
+        {
+          "MongoEngine": "integrations/mongoengine.md"
+        },
+        {
+          "Пользовательский бэкенд": "integrations/custom-backend.md"
+        }
+      ]
+    },
+    {
+      "Продвинутые темы": [
+        {
+          "Пользовательские поля": "advanced/custom-fields.md"
+        },
+        {
+          "Компоновка формы": "advanced/form-layout.md"
+        },
+        {
+          "Пользовательские фильтры": "advanced/custom-filters.md"
+        },
+        {
+          "События": "advanced/events.md"
+        },
+        {
+          "Пользовательские темы": "advanced/custom-themes.md"
+        },
+        {
+          "Шаблоны": "advanced/templates.md"
+        },
+        {
+          "Несколько экземпляров Admin": "advanced/multiple-admin.md"
+        },
+        {
+          "Точки расширения": "advanced/extension-points.md"
+        },
+        {
+          "Плагины": "advanced/plugins.md"
+        },
+        {
+          "Развёртывание": "advanced/deployment.md"
+        }
+      ]
+    },
+    {
+      "Сравнение": [
+        {
+          "Обзор": "comparison/index.md"
+        },
+        {
+          "Переход с Django Admin": "comparison/django-admin.md"
+        },
+        {
+          "Переход с Flask-Admin": "comparison/flask-admin.md"
+        }
+      ]
+    },
+    {
+      "Блог": [
+        {
+          "Обзор": "blog/index.md"
+        },
+        {
+          "Добавляем панель администрирования в FastAPI за 5 минут": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
+        },
+        {
+          "Мягкое удаление и представление корзины в FastAPI с помощью Starlette Admin": "blog/posts/soft-deletes-trash-view.md"
+        }
+      ]
+    },
+    {
+      "Справочник API": [
+        {
+          "Admin": "api/admin.md"
+        },
+        {
+          "Представления": "api/views.md"
+        },
+        {
+          "Поля": "api/fields.md"
+        },
+        {
+          "Виджеты": "api/widgets.md"
+        },
+        {
+          "Валидаторы": "api/validators.md"
+        },
+        {
+          "Фильтры": "api/filters.md"
+        },
+        {
+          "Аутентификация": "api/auth.md"
+        },
+        {
+          "События": "api/events.md"
+        },
+        {
+          "Хранилище": "api/storage.md"
+        },
+        {
+          "Экспорт": "api/export.md"
+        },
+        {
+          "Импорт": "api/import.md"
+        },
+        {
+          "Contrib": [
+            {
+              "SQLAlchemy": "api/contrib/sqlalchemy.md"
+            },
+            {
+              "SQLModel": "api/contrib/sqlmodel.md"
+            },
+            {
+              "Tortoise ORM": "api/contrib/tortoise.md"
+            },
+            {
+              "Beanie": "api/contrib/beanie.md"
+            },
+            {
+              "MongoEngine": "api/contrib/mongoengine.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Руководство по миграции": "migration.md"
+    },
+    {
+      "Список изменений": "changelog.md"
+    }
+  ],
+  "notice_title": "Машинный перевод под контролем человека",
+  "notice_body": "Этот контент переведён с помощью машинной генерации, направляемой составленными людьми глоссариями и руководствами по стилю. Поскольку текст не проверяется вручную построчно, возможны отдельные ошибки или неестественные формулировки.\n\nВ случае любых расхождений авторитетным источником считается оригинальная версия на английском языке.",
+  "notice_link_label": "Читать оригинал на английском"
+}

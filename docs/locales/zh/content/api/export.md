@@ -1,0 +1,37 @@
+---
+title: 导出 API 参考
+description: starlette-admin 数据导出器的 API 参考文档。
+source_hash: 140539516051b84e0745b8f35c2b2097574357706a3002d4bf73bc9c8f780da0
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
+machine_translated: true
+---
+
+<!-- translation-notice:start -->
+??? info "受监督的机器翻译"
+
+    本文内容由机器翻译生成，并遵循人工维护的术语表与风格指南。由于译文未经逐行人工审校，可能偶有错误或表达不当之处。
+
+    如有任何出入，请以英文原版为准，英文原版是权威来源。
+
+    [阅读英文原版](https://jowilf.github.io/starlette-admin/api/export/)
+<!-- translation-notice:end -->
+
+# 导出
+
+导出系统的完整属性和方法参考，由 docstring 生成。如需面向任务的指引，请参阅[导出与导入](../user-guide/export-import.md)。
+
+::: starlette_admin.export.ExportConfig
+
+::: starlette_admin.export.ExportContext
+
+::: starlette_admin.export.BaseExporter
+
+::: starlette_admin.export.CsvExporter
+
+::: starlette_admin.export.TsvExporter
+
+::: starlette_admin.export.TablibExporter
+
+::: starlette_admin.export.JsonExporter
+
+::: starlette_admin.export.PdfExporter

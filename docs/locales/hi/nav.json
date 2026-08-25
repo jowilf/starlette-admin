@@ -1,0 +1,214 @@
+{
+  "skip": [],
+  "nav": [
+    {
+      "होम": "index.md"
+    },
+    {
+      "शुरुआत": [
+        {
+          "इंस्टॉलेशन": "getting-started/installation.md"
+        },
+        {
+          "क्विकस्टार्ट": "getting-started/quickstart.md"
+        },
+        {
+          "मूल अवधारणाएँ": "getting-started/concepts.md"
+        }
+      ]
+    },
+    {
+      "उपयोगकर्ता गाइड": [
+        {
+          "व्यूज़": "user-guide/views.md"
+        },
+        {
+          "Admin": "user-guide/admin.md"
+        },
+        {
+          "फ़ील्ड्स": "user-guide/fields.md"
+        },
+        {
+          "फ़िल्टर": "user-guide/filters.md"
+        },
+        {
+          "एक्शन": "user-guide/actions.md"
+        },
+        {
+          "इनलाइन संपादन": "user-guide/inline-edit.md"
+        },
+        {
+          "प्रमाणीकरण": "user-guide/auth.md"
+        },
+        {
+          "एक्सपोर्ट और इंपोर्ट": "user-guide/export-import.md"
+        },
+        {
+          "फ़ाइल स्टोरेज": "user-guide/file-storage.md"
+        },
+        {
+          "इनलाइन फ़ॉर्म": "user-guide/inline-forms.md"
+        },
+        {
+          "कस्टम व्यूज़ और विजेट": "user-guide/custom-views.md"
+        },
+        {
+          "फ़्लैश संदेश": "user-guide/flash-messages.md"
+        },
+        {
+          "अंतर्राष्ट्रीयकरण और समय क्षेत्र": "user-guide/i18n.md"
+        },
+        {
+          "सुरक्षा": "user-guide/security.md"
+        }
+      ]
+    },
+    {
+      "इंटीग्रेशन": [
+        {
+          "SQLAlchemy": "integrations/sqlalchemy.md"
+        },
+        {
+          "SQLModel": "integrations/sqlmodel.md"
+        },
+        {
+          "Beanie": "integrations/beanie.md"
+        },
+        {
+          "Tortoise ORM": "integrations/tortoise.md"
+        },
+        {
+          "MongoEngine": "integrations/mongoengine.md"
+        },
+        {
+          "कस्टम बैकएंड": "integrations/custom-backend.md"
+        }
+      ]
+    },
+    {
+      "उन्नत विषय": [
+        {
+          "कस्टम फ़ील्ड्स": "advanced/custom-fields.md"
+        },
+        {
+          "फ़ॉर्म लेआउट": "advanced/form-layout.md"
+        },
+        {
+          "कस्टम फ़िल्टर": "advanced/custom-filters.md"
+        },
+        {
+          "इवेंट": "advanced/events.md"
+        },
+        {
+          "कस्टम थीम": "advanced/custom-themes.md"
+        },
+        {
+          "टेम्पलेट": "advanced/templates.md"
+        },
+        {
+          "एकाधिक एडमिन इंस्टेंस": "advanced/multiple-admin.md"
+        },
+        {
+          "एक्सटेंशन पॉइंट": "advanced/extension-points.md"
+        },
+        {
+          "प्लगइन": "advanced/plugins.md"
+        },
+        {
+          "डिप्लॉयमेंट": "advanced/deployment.md"
+        }
+      ]
+    },
+    {
+      "तुलना": [
+        {
+          "अवलोकन": "comparison/index.md"
+        },
+        {
+          "Django Admin से माइग्रेशन": "comparison/django-admin.md"
+        },
+        {
+          "Flask-Admin से माइग्रेशन": "comparison/flask-admin.md"
+        }
+      ]
+    },
+    {
+      "ब्लॉग": [
+        {
+          "अवलोकन": "blog/index.md"
+        },
+        {
+          "FastAPI में 5 मिनट में एडमिन पैनल जोड़ें": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
+        },
+        {
+          "Starlette Admin से FastAPI में सॉफ़्ट डिलीट और ट्रैश व्यू बनाना": "blog/posts/soft-deletes-trash-view.md"
+        }
+      ]
+    },
+    {
+      "API संदर्भ": [
+        {
+          "Admin": "api/admin.md"
+        },
+        {
+          "व्यूज़": "api/views.md"
+        },
+        {
+          "फ़ील्ड्स": "api/fields.md"
+        },
+        {
+          "विजेट": "api/widgets.md"
+        },
+        {
+          "वैलिडेटर": "api/validators.md"
+        },
+        {
+          "फ़िल्टर": "api/filters.md"
+        },
+        {
+          "प्रमाणीकरण": "api/auth.md"
+        },
+        {
+          "इवेंट": "api/events.md"
+        },
+        {
+          "स्टोरेज": "api/storage.md"
+        },
+        {
+          "एक्सपोर्ट": "api/export.md"
+        },
+        {
+          "इंपोर्ट": "api/import.md"
+        },
+        {
+          "Contrib": [
+            {
+              "SQLAlchemy": "api/contrib/sqlalchemy.md"
+            },
+            {
+              "SQLModel": "api/contrib/sqlmodel.md"
+            },
+            {
+              "Tortoise ORM": "api/contrib/tortoise.md"
+            },
+            {
+              "Beanie": "api/contrib/beanie.md"
+            },
+            {
+              "MongoEngine": "api/contrib/mongoengine.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "माइग्रेशन गाइड": "migration.md"
+    },
+    {
+      "परिवर्तन लॉग": "changelog.md"
+    }
+  ],
+  "notice_title": "पर्यवेक्षित मशीन अनुवाद",
+  "notice_body": "यह सामग्री मानव-निर्मित शब्दावलियों और शैली गाइडों के मार्गदर्शन में मशीन जनरेशन द्वारा अनुवादित की गई है। चूँकि इस पाठ की समीक्षा लाइन-दर-लाइन मैन्युअल रूप से नहीं की गई है, इसलिए कभी-कभी त्रुटियाँ या अनाड़ी वाक्य-रचना हो सकती है।\n\nकिसी भी विसंगति की स्थिति में, मूल अंग्रेज़ी संस्करण ही प्रामाणिक स्रोत है।",
+  "notice_link_label": "मूल अंग्रेज़ी संस्करण पढ़ें"
+}

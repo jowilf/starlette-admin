@@ -5,8 +5,8 @@ site_author = "Jocelin Hounon"
 site_url = "https://jowilf.github.io/starlette-admin"
 repo_name = "jowilf/starlette-admin"
 repo_url = "https://github.com/jowilf/starlette-admin"
-edit_uri = "https://github.com/jowilf/starlette-admin/tree/main/docs"
-docs_dir = "docs"
+edit_uri = "https://github.com/jowilf/starlette-admin/tree/main/docs/locales/en/content"
+docs_dir = "docs/locales/en/content"
 watch = ["starlette_admin"]
 extra_css = ["stylesheets/extra.css"]
 extra_javascript = ["javascripts/extra.js"]
@@ -158,3 +158,39 @@ link = "https://twitter.com/jowilf"
 [[project.extra.social]]
 icon = "fontawesome/brands/linkedin"
 link = "https://www.linkedin.com/in/jocelin-hounon-2008aa139"
+
+# Language switcher entries -- managed by docs/scripts/build.py, do not edit.
+[[project.extra.alternate]]
+name = "en - English"
+link = "/"
+lang = "en"
+
+[[project.extra.alternate]]
+name = "fr - Français"
+link = "/fr/"
+lang = "fr"
+
+[[project.extra.alternate]]
+name = "es - Español"
+link = "/es/"
+lang = "es"
+
+[[project.extra.alternate]]
+name = "de - Deutsch"
+link = "/de/"
+lang = "de"
+
+[[project.extra.alternate]]
+name = "ru - Русский"
+link = "/ru/"
+lang = "ru"
+
+[[project.extra.alternate]]
+name = "hi - हिन्दी"
+link = "/hi/"
+lang = "hi"
+
+[[project.extra.alternate]]
+name = "zh - 简体中文"
+link = "/zh/"
+lang = "zh"

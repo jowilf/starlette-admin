@@ -1,0 +1,447 @@
+---
+title: Authentifizierung
+description: Implementieren Sie die Authentifizierung in starlette-admin mit AuthProvider
+  oder integrieren Sie OAuth, um Ihr Dashboard abzusichern.
+source_hash: 0d55840abab5be403a7df83cdd20bf17ea575bd61f49aaeafcddfb76b3e76054
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
+machine_translated: true
+---
+
+<!-- translation-notice:start -->
+??? info "Überwachte maschinelle Übersetzung"
+
+    Dieser Inhalt wurde maschinell übersetzt und basiert auf von Menschen
+    kuratierten Glossaren und Styleguides. Da der Text nicht zeilenweise
+    manuell überprüft wird, können gelegentlich Fehler oder unklare
+    Formulierungen auftreten.
+
+    Bei etwaigen Abweichungen ist die ursprüngliche englische Version die
+    maßgebliche Quelle.
+
+    [Lesen Sie die ursprüngliche englische Version](https://jowilf.github.io/starlette-admin/user-guide/auth/)
+<!-- translation-notice:end -->
+
+# Authentifizierung
+
+Sie schützen die Admin-Oberfläche, indem Sie eine einzige Methode implementieren:
+
+```python
+async def authenticate(request) -> AdminUser | None
+```
+
+Jede geschützte Admin-Anfrage durchläuft diese Methode. Gibt sie ein `AdminUser`-Objekt zurück, ist die Anfrage authentifiziert. Gibt sie `None` zurück, ist die Anfrage nicht authentifiziert, und der von Ihnen konfigurierte Anmelde- oder OAuth-Ablauf übernimmt.
+
+Bei Erfolg landet das zurückgegebene `AdminUser`-Objekt unter:
+
+```python
+request.state.admin_user
+```
+
+Bei einem Fehlschlag wird die Anfrage als anonym markiert:
+
+```python
+request.state.is_anonymous = True
+```
+
+Öffentliche und teilweise geschützte Routen können so authentifizierte und nicht authentifizierte Anfragen unterscheiden, ohne einen Anmeldeablauf zu starten.
+
+
+## Auswahl eines Authentifizierungsanbieters
+
+| Anbieter | Wann einsetzen | Was Sie implementieren |
+| --- | --- | --- |
+| `AuthProvider` | Sie möchten die integrierte Anmeldeseite verwenden und prüfen die Zugangsdaten selbst. | `login()`, `logout()`, `authenticate()` |
+| `OAuthProvider` | Sie möchten einen OAuth2- oder OIDC-Redirect-Ablauf nutzen, etwa mit Auth0, Okta oder Google. | `redirect_to_provider()`, `handle_callback()`, `authenticate()` |
+
+Beide erben von `BaseAuthProvider` und teilen sich denselben Vertrag. `authenticate()` läuft bei jeder Anfrage. Der Rückgabewert wird zu `request.state.admin_user`; gibt die Methode `None` zurück, setzt das Framework `request.state.is_anonymous = True`.
+
+## `AuthProvider`: integrierte Anmeldeseite
+
+Verwenden Sie diesen Anbieter, wenn das Framework das Anmeldeformular rendern und verarbeiten soll, während Sie die Zugangsdaten selbst überprüfen. Das Framework besitzt das Template, die POST-Verarbeitung und die Weiterleitung.
+
+Hier ist ein vollständiges Beispiel:
+
+```python
+from sqlalchemy import create_engine
+from starlette.applications import Starlette
+from starlette.middleware import Middleware
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.requests import Request
+from starlette_admin.auth import AdminUser, AuthProvider, LoginFailed
+from starlette_admin.contrib.sqla import Admin
+
+SECRET = "change-me-in-production"
+
+# Demo user store: replace with a real lookup against your database
+USERS = {"admin": {"name": "Administrator", "password": "password"}}
+
+
+class MyAuthProvider(AuthProvider):
+    async def login(
+        self, username: str, password: str, remember_me: bool, request: Request
+    ) -> None:
+        user = USERS.get(username)
+        if user and password == user["password"]:
+            request.session["username"] = username
+            return
+        raise LoginFailed("Invalid username or password")
+
+    async def authenticate(self, request: Request) -> AdminUser | None:
+        username = request.session.get("username")
+        user = USERS.get(username)
+        if user:
+            return AdminUser(username=user["name"])
+        return None
+
+    async def logout(self, request: Request) -> None:
+        request.session.clear()
+
+
+engine = create_engine("sqlite:///admin.sqlite")
+app = Starlette(middleware=[Middleware(SessionMiddleware, secret_key=SECRET)])
+admin = Admin(
+    engine, title="My Admin", auth_provider=MyAuthProvider(), secret_key=SECRET
+)
+admin.mount_to(app)
+```
+
+### Erforderliche Methoden
+
+Ein `AuthProvider` implementiert drei Methoden. `SessionMiddleware` ist hier erforderlich, da es den angemeldeten Zustand des Benutzers zwischen den Anfragen speichert.
+
+#### `login()`
+
+Diese Methode verarbeitet das Absenden des Formulars. Sie erhält den `username`, das `password`, einen booleschen Wert `remember_me` sowie die aktuelle `request`.
+
+* **Bei Erfolg:** Schreiben Sie einen Identifikator, etwa eine Benutzer-ID oder einen Benutzernamen, in `request.session`. Geben Sie anschließend `None` zurück, damit das Framework zu `next` bzw. zum Admin-Index weiterleitet, oder geben Sie ein `Response`-Objekt zurück, um an eine andere Stelle umzuleiten.
+* **Bei einem Fehlschlag:** Lösen Sie `LoginFailed("message")` aus, um einen Fehler über dem Formular anzuzeigen, oder lösen Sie `FormValidationError({"username": "..."})` aus, um ein bestimmtes Feld als ungültig zu kennzeichnen.
+
+#### `authenticate()`
+
+Diese Methode läuft bei *jeder* Anfrage an eine geschützte Admin-Route. Sie erhält das `request`-Objekt.
+
+* Lesen Sie den Identifikator, den Sie während `login()` in `request.session` gespeichert haben.
+* Schlagen Sie den Benutzer in Ihrer Datenbank nach.
+* Geben Sie eine `AdminUser`-Instanz zurück, wenn der Benutzer existiert und gültig ist.
+* Geben Sie `None` zurück, wenn der Benutzer nicht existiert oder nicht angemeldet ist.
+
+#### `logout()`
+
+Diese Methode verarbeitet die Abmeldung. Sie erhält das `request`-Objekt, und Sie löschen die Benutzerdaten aus `request.session`, um den Zugriff zu widerrufen. Geben Sie `None` für die Standardweiterleitung zum Admin-Index zurück, oder geben Sie ein `Response`-Objekt zurück, um an eine andere Stelle umzuleiten.
+
+## `OAuthProvider`: OAuth2/OIDC-Redirect-Ablauf {#oauthprovider-oauth2oidc-redirect-flow}
+
+
+Verwenden Sie `OAuthProvider`, wenn Sie die Authentifizierung an einen externen Identity Provider wie Auth0, Okta, Google oder Microsoft Entra ID delegieren.
+
+`AuthProvider` verarbeitet ein Benutzername-Passwort-Formular innerhalb des Admin-Bereichs. `OAuthProvider` verwendet stattdessen einen redirect-basierten Ablauf:
+
+1. Leiten Sie den Benutzer zum Identity Provider weiter.
+2. Der Provider authentifiziert den Benutzer.
+3. Der Provider leitet zurück zu Ihrer Anwendung.
+4. Ihre Anwendung tauscht den Callback gegen die Identität des Benutzers.
+5. `authenticate()` stellt den Benutzer aus der Session wieder her.
+
+### Einrichtung der Callback-URL (erforderlich)
+
+Bevor Sie `OAuthProvider` implementieren, registrieren Sie die Callback-URL Ihrer Anwendung im Dashboard Ihres Identity Providers. Aus Sicherheitsgründen leiten OAuth-Anbieter ausschließlich zu vorab freigegebenen URLs weiter.
+
+#### Beispiel einer Callback-URL
+
+```text
+https://your-domain.com/admin/oauth/callback
+```
+
+#### Lokale Entwicklung
+
+```text
+http://localhost:8000/admin/oauth/callback
+```
+
+!!! important
+    Ihre konkrete Callback-URL hängt von Ihrer Konfiguration ab. Sie setzt sich zusammen aus dem `route_name`, den Sie beim Mounten von `Admin` verwenden, und dem `callback_path` des Providers.
+
+    Die Standardkonfiguration verwendet:
+
+    * `route_name="admin"`
+    * `callback_path="oauth/callback"`
+
+    was diese Callback-URL ergibt:
+
+    ```text
+    /admin/oauth/callback
+    ```
+
+    Im Deployment lautet sie:
+
+    ```text
+    https://your-domain.com/admin/oauth/callback
+    ```
+
+    Wenn Sie das Mount-Präfix oder den Callback-Pfad des Providers ändern, ändert sich auch die URL, und Sie müssen sie in der Konfiguration Ihres OAuth-Providers aktualisieren.
+
+### Erforderliche Methoden
+
+Ein `OAuthProvider` nutzt dasselbe session-basierte Muster wie `AuthProvider`, teilt die Anmeldung jedoch in eine Weiterleitung und einen Callback auf.
+
+#### `redirect_to_provider()`
+
+Diese Methode startet den OAuth-Ablauf. Sie erhält die `request` und eine generierte `callback_url` und muss ein `Response`-Objekt zurückgeben, das den Browser des Benutzers zu Ihrem Identity Provider weiterleitet.
+
+#### `handle_callback()`
+
+Diese Methode läuft, wenn der Browser mit einem Autorisierungscode vom Provider zurückkehrt. Sie erhält die `request`. Tauschen Sie den Code gegen ein Access Token ein, rufen Sie das Profil des Benutzers ab und speichern Sie seine Identität in `request.session`.
+
+#### `authenticate()`
+
+Wie bei `AuthProvider` liest diese Methode alles zurück, was `handle_callback()` in der Session gespeichert hat. Geben Sie ein `AdminUser`-Objekt zurück, wenn die Session gültige Benutzerdaten enthält, andernfalls `None`.
+
+#### `logout()`
+
+Löschen Sie die Session-Daten. Um den Benutzer zusätzlich beim Identity Provider abzumelden (OIDC RP-initiated Logout), überschreiben Sie diese Methode und geben statt `None` ein Redirect-`Response` zurück, das auf den End-Session-Endpoint des Providers zeigt.
+
+Hier ist ein vollständiges Beispiel:
+
+```python
+import os
+
+from authlib.integrations.starlette_client import OAuth
+from starlette.datastructures import URL
+from starlette.requests import Request
+from starlette.responses import RedirectResponse, Response
+from starlette.status import HTTP_303_SEE_OTHER
+from starlette_admin.auth import AdminUser, OAuthProvider
+
+AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID", "your-auth0-client-id")
+AUTH0_CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET", "your-auth0-client-secret")
+AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", "your-auth0-domain")
+
+oauth = OAuth()
+oauth.register(
+    "auth0",
+    client_id=AUTH0_CLIENT_ID,
+    client_secret=AUTH0_CLIENT_SECRET,
+    client_kwargs={
+        "scope": "openid profile email",
+    },
+    server_metadata_url=f"https://{AUTH0_DOMAIN}/.well-known/openid-configuration",
+)
+
+
+class Auth0Provider(OAuthProvider):
+    async def redirect_to_provider(
+        self, request: Request, callback_url: str
+    ) -> Response:
+        client = oauth.create_client("auth0")
+        return await client.authorize_redirect(request, callback_url)
+
+    async def handle_callback(self, request: Request) -> None:
+        client = oauth.create_client("auth0")
+        token = await client.authorize_access_token(request)
+        request.session["user"] = dict(token["userinfo"])
+
+    async def authenticate(self, request: Request) -> AdminUser | None:
+        user = request.session.get("user")
+        if user:
+            return AdminUser(username=user["name"], photo_url=user.get("picture"))
+        return None
+
+    async def logout(self, request: Request) -> None:
+        request.session.clear()
+        client = oauth.create_client("auth0")
+        metadata = await client.load_server_metadata()
+        end_session_endpoint = metadata.get("end_session_endpoint")
+        if end_session_endpoint:
+            logout_url = str(
+                URL(end_session_endpoint).include_query_params(
+                    post_logout_redirect_uri="https://www.google.com/",
+                    client_id=AUTH0_CLIENT_ID,
+                )
+            )
+            return RedirectResponse(logout_url, status_code=HTTP_303_SEE_OTHER)
+        return None
+
+
+SECRET_KEY = "change-me"
+engine = create_engine("sqlite:///admin.sqlite")
+app = Starlette()
+# required because Auth0Provider's handle_callback/authenticate methods use request.session
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+admin = Admin(
+    engine, title="My Admin", auth_provider=Auth0Provider(), secret_key=SECRET_KEY
+)
+admin.mount_to(app)
+```
+
+## Registrierung des Providers
+
+Nachdem Sie einen Authentifizierungsanbieter implementiert haben, binden Sie ihn an die `Admin`-Instanz an.
+
+```python
+admin = Admin(
+    engine, title="My Admin", auth_provider=MyAuthProvider(), secret_key="..."
+)
+admin.mount_to(app)
+```
+
+Diese einzige Zeile ist bereits die gesamte Integration. `Admin` mountet den `AuthMiddleware` des Providers vor jede Admin-Route und fügt die Routen des Providers (Anmeldung, Abmeldung und den Callback bei `OAuthProvider`) innerhalb des Admin-Präfixes hinzu.
+
+## Berechtigungsprüfungen
+
+Die Authentifizierung beantwortet die Frage „Wer ist das?". Berechtigungen beantworten die Frage „Was darf diese Person tun?". Berechtigungen gehören zur View. Rollenbasierter Zugriff erfolgt in drei Schritten:
+
+1. Erben Sie von `AdminUser`, einer einfachen Dataclass, und fügen Sie eine Liste `roles` hinzu.
+2. Geben Sie diese Unterklasse aus der Methode `authenticate()` Ihres Providers zurück, gefüllt mit den Daten aus Ihrem Benutzerspeicher.
+3. Lesen Sie `request.state.admin_user.roles` in den Permission-Hooks der View.
+
+```python
+from dataclasses import dataclass, field
+from typing import Any
+
+from starlette.requests import Request
+from starlette_admin import action, row_action
+from starlette_admin.auth import AdminUser, AuthProvider, LoginFailed
+from starlette_admin.contrib.sqla import ModelView
+from starlette_admin.exceptions import ActionFailed
+from starlette_admin.fields import BaseField
+from starlette_admin.types import RequestAction
+
+# Demo user store: replace with a real lookup against your database
+USERS = {
+    "admin": {
+        "name": "Administrator",
+        "password": "password",
+        "roles": ["read", "create", "edit", "delete", "read_body", "publish"],
+    },
+    "editor": {
+        "name": "Editor",
+        "password": "password",
+        "roles": ["read", "create", "edit", "read_body", "publish"],
+    },
+    "viewer": {"name": "Viewer", "password": "password", "roles": ["read"]},
+}
+
+
+# Step 1: AdminUser is a plain dataclass, so subclassing it to add `roles` is
+# the intended pattern rather than a workaround.
+@dataclass
+class MyAdminUser(AdminUser):
+    roles: list[str] = field(default_factory=list)
+
+
+class MyAuthProvider(AuthProvider):
+    async def login(
+        self, username: str, password: str, remember_me: bool, request: Request
+    ) -> None:
+        user = USERS.get(username)
+        if user and password == user["password"]:
+            request.session["username"] = username
+            return
+        raise LoginFailed("Invalid username or password")
+
+    # Step 2: authenticate() looks up the roles for the signed-in user and
+    # returns them on a MyAdminUser instead of a plain AdminUser.
+    async def authenticate(self, request: Request) -> AdminUser | None:
+        username = request.session.get("username")
+        user = USERS.get(username)
+        if user:
+            return MyAdminUser(username=user["name"], roles=user["roles"])
+        return None
+
+    async def logout(self, request: Request) -> None:
+        request.session.clear()
+
+
+# Step 3: Every hook below reads request.state.admin_user.roles, which is
+# populated only because authenticate() returned a MyAdminUser.
+class ArticleView(ModelView):
+    def is_accessible(self, request: Request) -> bool:
+        return "read" in request.state.admin_user.roles  # Hides the view entirely
+
+    def can_create(self, request: Request) -> bool:
+        return "create" in request.state.admin_user.roles
+
+    def can_edit(self, request: Request) -> bool:
+        return "edit" in request.state.admin_user.roles
+
+    def can_delete(self, request: Request) -> bool:
+        return "delete" in request.state.admin_user.roles
+
+    def can_access_field(
+        self, request: Request, field: BaseField, action: RequestAction | None = None
+    ) -> bool:
+        if field.name == "body":
+            return "read_body" in request.state.admin_user.roles
+        return super().can_access_field(request, field, action)
+
+    async def is_action_allowed(self, request: Request, name: str) -> bool:
+        if name == "publish":
+            return "publish" in request.state.admin_user.roles
+        return await super().is_action_allowed(request, name)
+```
+
+Registrieren Sie `MyAuthProvider` wie jeden anderen Anbieter, mit `admin = Admin(engine, auth_provider=MyAuthProvider(), secret_key=SECRET)`. Jeder Hook oben hat dann Zugriff auf `request.state.admin_user.roles`.
+
+`is_accessible()`, verfügbar auf jeder `BaseView`, blendet die gesamte View aus, einschließlich ihres Eintrags in der Seitenleiste. `can_create`, `can_edit`, `can_delete`, `can_export`, `can_import` und `can_view_detail` steuern einzelne Operationen auf einer `ModelView`. `can_access_field` blendet bestimmte Felder aus, und `is_action_allowed` sowie `is_row_action_allowed` schränken Bulk- und Row-Actions ein. Hängt eine Row-Action vom Datensatz statt vom Benutzer ab – etwa wenn `publish` für einen bereits veröffentlichten Artikel ausgeblendet werden soll – überschreiben Sie stattdessen `is_row_action_allowed_for_obj(request, name, obj)`. Diese Methode erhält das zugrunde liegende Objekt der Zeile und fällt auf `is_row_action_allowed` zurück.
+
+Die vollständige API-Referenz finden Sie unter [Views](views.md) und [Actions](actions.md). Eine vollständig funktionsfähige Version mit `can_export`, `can_import` und einer Row-Action befindet sich in [`examples/03-auth`](https://github.com/jowilf/starlette-admin/tree/main/examples/03-auth).
+
+## `@login_not_required`
+
+Manche Routen bleiben auch in einem sonst abgesicherten Admin-Panel öffentlich, etwa ein Self-Service-Registrierungsformular oder ein Health Check. Dekorieren Sie den Endpoint, und `AuthMiddleware` lässt die Anfrage durch, ohne ein gültiges Ergebnis von `authenticate()` zu prüfen:
+
+```python
+from starlette.requests import Request
+from starlette.responses import RedirectResponse, Response
+from starlette_admin import CustomView, route
+from starlette_admin.auth import login_not_required
+
+
+class AccountsView(CustomView):
+    menu_label = "Accounts"
+    path = "/accounts"
+
+    @route("/register", methods=["GET", "POST"], name="register")
+    @login_not_required
+    async def register(self, request: Request) -> Response:
+        if request.method == "GET":
+            return self.templates.TemplateResponse(
+                request=request, name="register.html", context={}
+            )
+        form = await request.form()
+        # Create the user account before granting access to the panel
+        await create_user(email=form["email"], password=form["password"])
+        return RedirectResponse(request.url_for("admin:login"), status_code=302)
+```
+
+Sowohl `@route` als auch `@login_not_required` versehen die Funktion lediglich mit einem Attribut und geben sie unverändert zurück; die Reihenfolge, in der Sie sie stapeln, spielt daher keine Rolle.
+
+## `allow_routes`
+
+`allow_routes` bietet denselben Bypass auf Ebene des Routennamens statt auf Funktionsebene. Verwenden Sie ihn, wenn Sie die Endpoint-Definition nicht selbst besitzen oder wenn Sie die Bypass-Liste an einer zentralen Stelle pflegen möchten:
+
+```python
+provider = MyAuthProvider(allow_routes=["register"])
+```
+
+Der String ist der Name der Route: entweder der Methodenname oder der Wert, den Sie an den Parameter `name=` in `@route` übergeben haben, wie oben etwa `name="register"`. `AuthMiddleware` erlaubt `"login"` und `"static"` stets, zusätzlich zu den von Ihnen aufgeführten benutzerdefinierten Routen.
+
+## `AdminUser`
+
+Was auch immer `authenticate()` zurückgibt, füllt `request.state.admin_user`. Die obere Leiste liest daraus zwei Felder:
+
+| Attribut | Typ | Standardwert | Beschreibung |
+| --- | --- | --- | --- |
+| `username` | `str` | `"Administrator"` (übersetzbar) | Der im Benutzer-Menü der oberen Leiste angezeigte Name. |
+| `photo_url` | `str | None` | `None` | Die URL des Avatar-Bildes. Ohne Angabe wird ein Platzhalter-Symbol verwendet. |
+
+`AdminUser` ist eine einfache `@dataclass`; daher ist es das vorgesehene Muster, davon zu erben, um Rollen, eine Tenant-ID oder alles andere mitzuführen, das Ihre Permission-Hooks benötigen. Das obige Beispiel `MyAdminUser` zeigt dies in der Praxis.
+
+---
+
+**Weiterführende Themen**
+
+* [Security](security.md): CSRF, Secret Keys und was das Framework automatisch schützt.
+* [Views](views.md): `can_create`, `can_edit`, `can_delete` und die vollständige Liste der Permission-Hooks.
+* [Actions](actions.md): `is_action_allowed` und `is_row_action_allowed` für Bulk- und Row-Actions.

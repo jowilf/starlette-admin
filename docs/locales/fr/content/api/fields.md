@@ -1,0 +1,114 @@
+---
+title: Référence de l'API des champs
+description: Documentation de référence API pour tous les types de champs disponibles
+  dans starlette-admin.
+source_hash: 79eba140a93083b5b94b39d6496d16d9703d48140b5290383927e0ee28325836
+prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
+machine_translated: true
+---
+
+<!-- translation-notice:start -->
+??? info "Traduction automatique supervisée"
+
+    Ce contenu est traduit à l'aide d'une génération automatique guidée par
+    des glossaires et des guides de style élaborés par des humains. Le texte
+    n'étant pas relu manuellement ligne par ligne, des erreurs ou des
+    tournures maladroites peuvent occasionnellement apparaître.
+
+    En cas de divergence, la version anglaise constitue la source de
+    référence.
+
+    [Lire la version originale en anglais](https://jowilf.github.io/starlette-admin/api/fields/)
+<!-- translation-notice:end -->
+
+# Champs
+
+Référence complète des attributs et méthodes de `BaseField` et de chaque type de champ intégré, générée à partir de leurs docstrings. Pour un parcours orienté tâches, consultez [Fields](../user-guide/fields.md).
+
+## Classe de base
+
+::: starlette_admin.fields.BaseField
+
+## Texte
+
+::: starlette_admin.fields.StringField
+
+::: starlette_admin.fields.TextAreaField
+
+::: starlette_admin.fields.TinyMCEEditorField
+
+::: starlette_admin.fields.EmailField
+
+::: starlette_admin.fields.URLField
+
+::: starlette_admin.fields.PhoneField
+
+::: starlette_admin.fields.ColorField
+
+::: starlette_admin.fields.PasswordField
+
+::: starlette_admin.fields.UUIDField
+
+::: starlette_admin.fields.IPAddressField
+
+::: starlette_admin.fields.SlugField
+
+## Nombres
+
+::: starlette_admin.fields.NumberField
+
+::: starlette_admin.fields.IntegerField
+
+::: starlette_admin.fields.DecimalField
+
+::: starlette_admin.fields.FloatField
+
+## Booléens
+
+::: starlette_admin.fields.BooleanField
+
+## Dates et heures
+
+::: starlette_admin.fields.DateTimeField
+
+::: starlette_admin.fields.DateField
+
+::: starlette_admin.fields.TimeField
+
+::: starlette_admin.fields.ArrowField
+
+## Choix
+
+::: starlette_admin.fields.EnumField
+
+::: starlette_admin.fields.TimeZoneField
+
+::: starlette_admin.fields.CountryField
+
+::: starlette_admin.fields.CurrencyField
+
+::: starlette_admin.fields.TagsField
+
+## Données structurées
+
+::: starlette_admin.fields.JSONField
+
+::: starlette_admin.fields.CollectionField
+
+::: starlette_admin.fields.ListField
+
+::: starlette_admin.fields.ComputedField
+
+## Fichiers
+
+::: starlette_admin.fields.FileField
+
+::: starlette_admin.fields.ImageField
+
+## Relations
+
+::: starlette_admin.fields.RelationField
+
+::: starlette_admin.fields.HasOne
+
+::: starlette_admin.fields.HasMany

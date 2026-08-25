@@ -73,6 +73,7 @@ tinymce = ["nh3 >=0.2.14"]
 dev = [
     "click",
     "faker >=40.23.0",
+    "openrouter >=1.1.0",
     "poethepoet >=0.30.0, <0.49.0",
     "pre-commit >=2.20.0, <4.7.0",
     "requests",
@@ -120,7 +121,10 @@ test = [
 ]
 
 cov = ["coverage[toml] >=7.0.0, <7.16.0"]
-docs = ["mkdocstrings[python] >=0.27.0", "zensical >=0.0.44"]
+docs = [
+    "mkdocstrings[python] >=0.27.0",
+    "zensical >=0.0.44",
+]
 e2e = ["pytest-playwright >=0.5.0, <0.10.0"]
 
 [tool.uv]
@@ -164,9 +168,11 @@ i18n-compile = "pybabel compile -f -D admin -d starlette_admin/translations"
 clean = "rm -rf .coverage .coverage.* coverage.xml site .ruff_cache dist build .cache .pytest_cache htmlcov"
 
 # Docs
-docs-serve = "zensical serve -a localhost:8080"
-docs-build = "zensical build"
-docs-deploy = "zensical gh-deploy --force"
+docs-serve = "python docs/scripts/serve.py"
+docs-build = "python docs/scripts/build.py"
+docs-serve-all = "python docs/scripts/serve.py --locales all"
+docs-build-all = "python docs/scripts/build.py --locales all"
+docs-translate = "python docs/scripts/translate.py"
 
 [tool.hatch.version]
 path = "starlette_admin/__init__.py"
@@ -238,6 +244,7 @@ known-third-party = ["starlette_admin"]
 "__init__.py" = ["F401", "PLC0414"]
 "examples/**" = ["N805", "N999", "RUF012"]
 "examples/**/seed.py" = ["T201"]
+"docs/scripts/**" = ["T201"]
 "tests/**" = ["RUF012", "SIM115"]
 
 [tool.ty.rules]
