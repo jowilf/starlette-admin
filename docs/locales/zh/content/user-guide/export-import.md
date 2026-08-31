@@ -38,8 +38,10 @@ from starlette_admin.contrib.sqla import Admin, ModelView
 
 engine = create_engine("sqlite:///store.sqlite")
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -49,15 +51,16 @@ class Product(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     price: Mapped[float] = mapped_column()
 
+
 class ProductView(ModelView):
     fields = ["id", "name", "description", "price"]
     exporters = ["csv", "xlsx", "json"]
     importers = ["csv", "xlsx"]
 
+
 Base.metadata.create_all(engine)
 admin = Admin(engine, title="Store Admin", secret_key="change-me")
 admin.add_view(ProductView(Product, icon="fa fa-box"))
-
 ```
 
 现在，`ProductView` 会在列表工具栏中显示一个**导出**按钮和一个**导入**按钮。每个对话框只提供你在 `exporters` 和 `importers` 中列出的格式。
@@ -71,7 +74,6 @@ admin.add_view(ProductView(Product, icon="fa fa-box"))
 ```python hl_lines="2"
 class ProductView(ModelView):
     exporters = ["csv", "xlsx", "json"]
-
 ```
 
 默认值为 `["csv", "json"]`。下表列出了每种内置格式及其所需的软件包。`csv`、`tsv` 和 `json` 格式不需要额外依赖。其他所有表格格式都使用 `tablib`，而 `pdf` 使用 `reportlab`。未知的格式字符串，或者所需软件包尚未安装的格式，会在启动时抛出错误。
@@ -93,9 +95,9 @@ class ProductView(ModelView):
 ```python hl_lines="5"
 from starlette_admin.export import CsvExporter
 
+
 class ProductView(ModelView):
     exporters = [CsvExporter(delimiter=";"), "xlsx", "json"]
-
 ```
 
 `CsvExporter` 将关键字参数转发给 `csv.writer`，并接受一个 `escape_formulas` 参数。`TablibExporter(format, **kwargs)` 覆盖所有 tablib 格式，并将关键字参数转发给 `tablib.Dataset.export()`。
@@ -108,10 +110,10 @@ class ProductView(ModelView):
 ```python hl_lines="5 6"
 from starlette.requests import Request
 
+
 class ProductView(ModelView):
     def can_export(self, request: Request) -> bool:
         return request.state.admin_user.username == "admin"
-
 ```
 
 ### 导出对话框
@@ -137,7 +139,6 @@ admin = Admin(
     secret_key="change-me",
     export_config=ExportConfig(max_rows=50_000),
 )
-
 ```
 
 `ExportConfig.max_rows` 默认为 100,000。该上限适用于所选范围实际会产生的行数，并且管理后台会在获取任何行之前检查数量。当数量超过上限时，管理后台会闪烁错误提示并重定向回列表页面，而不生成文件。这样可以避免在大表上进行宽泛的无过滤导出时挂起请求。设置 `max_rows=None` 可移除该限制。
@@ -151,7 +152,6 @@ admin = Admin(
 ```python hl_lines="2"
 class ProductView(ModelView):
     importers = ["csv", "xlsx"]
-
 ```
 
 内置的导入格式有 `csv`、`tsv`、`json`、`yaml`、`xlsx`、`xls`、`ods`、`dbf` 和 `html`，其依赖项与对应的导出格式相同。要覆盖某个格式的默认设置，请传入导入器实例，例如来自 `starlette_admin.importers` 的 `CsvImporter(delimiter=";")`。
@@ -161,10 +161,10 @@ class ProductView(ModelView):
 ```python hl_lines="5 6"
 from starlette.requests import Request
 
+
 class ProductView(ModelView):
     def can_import(self, request: Request) -> bool:
         return request.state.admin_user.username == "admin"
-
 ```
 
 ### 导入向导
@@ -212,8 +212,10 @@ from starlette_admin.storage import LocalStorage
 engine = create_engine("sqlite:///catalog.sqlite")
 covers_storage = LocalStorage(base_dir="uploads/covers", name="covers")
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -222,12 +224,14 @@ class Product(Base):
     name: Mapped[str] = mapped_column(String(200))
     photo: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
+
 class ProductView(ModelView):
     fields = [
         "id",
         "name",
         ImageField("photo", storage=covers_storage, upload_folder="products"),
     ]
+
 
 Base.metadata.create_all(engine)
 admin = Admin(engine, title="Catalog Admin", secret_key="change-me")
@@ -261,6 +265,7 @@ from typing import Any
 from starlette_admin.export import BaseExporter
 from starlette_admin.fields import BaseField
 
+
 class MarkdownExporter(BaseExporter):
     content_type = "text/markdown"
     extension = "md"
@@ -288,6 +293,7 @@ import json
 from collections.abc import AsyncGenerator
 from typing import Any
 from starlette_admin.importers import BaseImporter, ImportContext
+
 
 class NdjsonImporter(BaseImporter):
     extension = "ndjson"

@@ -47,32 +47,24 @@ class MyBackendView(BaseModelView):
         q: str | None = None,
         sorts: Sequence[tuple[str, str]] | None = None,
         filters: FilterGroup | None = None,
-    ) -> Sequence[Any]:
-        ...
+    ) -> Sequence[Any]: ...
 
     async def count(
         self,
         request: Request,
         q: str | None = None,
         filters: FilterGroup | None = None,
-    ) -> int:
-        ...
+    ) -> int: ...
 
-    async def find_by_pk(self, request: Request, pk: Any) -> Any:
-        ...
+    async def find_by_pk(self, request: Request, pk: Any) -> Any: ...
 
-    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]:
-        ...
+    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]: ...
 
-    async def create(self, request: Request, data: dict) -> Any:
-        ...
+    async def create(self, request: Request, data: dict) -> Any: ...
 
-    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
-        ...
+    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any: ...
 
-    async def delete(self, request: Request, pks: list[Any]) -> int | None:
-        ...
-
+    async def delete(self, request: Request, pks: list[Any]) -> int | None: ...
 ```
 
 | मेथड | कब कॉल होता है | क्या लौटाता है |
@@ -121,7 +113,6 @@ class PostView(BaseModelView):
         TextAreaField("body"),
         IntegerField("views"),
     ]
-
 ```
 
 fields को स्पष्ट रूप से सूचीबद्ध करना one-off views के लिए सबसे सरल तरीका है। हालाँकि, यदि आप कस्टम बैकएंड पर कई models के लिए designed एक reusable `ModelView` base class बना रहे हैं, तो आपको इसके बजाय एक कस्टम `BaseModelConverter` लिखना चाहिए। `convert()` और `convert_fields_list()` मेथड इंप्लीमेंट करें, अपने type handlers को `@converts(...)` से decorate करें, और initialization के दौरान converter को invoke करें। इससे concrete views फ़ील्ड परिभाषाएँ स्वचालित रूप से इनहेरिट कर लेते हैं, जो बिल्ट-इन बैकएंड के व्यवहार से मेल खाता है।
@@ -134,15 +125,15 @@ fields को स्पष्ट रूप से सूचीबद्ध क�
 @dataclass
 class FilterRule:
     field: str
-    filter: str         # The slug of the BaseFilter to apply (e.g., "contains", "gte")
+    filter: str  # The slug of the BaseFilter to apply (e.g., "contains", "gte")
     value: Any = None
     value2: Any = None  # Only populated for filters with has_value2 (e.g., "between")
+
 
 @dataclass
 class FilterGroup:
     logic: str = "and"  # Accepts "and" or "or"
     rules: list["FilterGroup | FilterRule"] = field(default_factory=list)
-
 ```
 
 इस ट्री को डेटाबेस क्वेरी में बदलने के लिए, आपको इसे recursively walk करना होगा। प्रत्येक `FilterRule` के लिए, अपनी `FilterRegistry` से मैचिंग concrete filter class प्राप्त करें और उसकी `apply()` मेथड कॉल करें। नेस्टेड `FilterGroup` nodes के लिए, recurse करें और उपयुक्त logical operator का उपयोग करके resulting फ़्रैगमेंट को संयोजित करें।
@@ -169,7 +160,9 @@ def build_query(
 
     combined = fragments[0]
     for fragment in fragments[1:]:
-        combined = (combined | fragment) if group.logic == "or" else (combined & fragment)
+        combined = (
+            (combined | fragment) if group.logic == "or" else (combined & fragment)
+        )
     return combined
 
 
@@ -185,7 +178,6 @@ def _build_rule_fragment(
         query=None, field_name=rule.field, value=rule.value, value2=rule.value2
     )
     return filter_cls().apply(ctx)
-
 ```
 
 प्रत्येक concrete filter पर `apply(ctx)` मेथड एक `FilterApplyContext` object प्राप्त करती है जिसमें `query`, `field name`, और `values` होते हैं। यह आपके बैकएंड language के लिए विशिष्ट एक query fragment लौटाती है। चूँकि यह प्रक्रिया shared state को mutate करने से बचती है, आपका underlying डेटाबेस architecture चाहे जो भी हो, resulting rules को cleanly संयोजित कर सकते हैं।
@@ -223,9 +215,10 @@ class Post:
         return (
             q.title.search(term, flags=re.IGNORECASE)
             | q.body.search(term, flags=re.IGNORECASE)
-            | q.tags.test(lambda tags: any(re.match(term, tag, re.IGNORECASE) for tag in tags))
+            | q.tags.test(
+                lambda tags: any(re.match(term, tag, re.IGNORECASE) for tag in tags)
+            )
         )
-
 ```
 
 `search_query` मेथड relevant fields पर full-text search जनरेट करके `q` parameter को संभालती है।
@@ -251,6 +244,7 @@ async def _build_query(
             query = filter_query if query is None else (query & filter_query)
     return query
 
+
 async def find_all(
     self,
     request: Request,
@@ -272,6 +266,7 @@ async def find_all(
         return values[skip : skip + limit]
     return values[skip:]
 
+
 async def count(
     self,
     request: Request,
@@ -280,7 +275,6 @@ async def count(
 ) -> int:
     query = await self._build_query(request, q, filters)
     return len(self.db.search(query)) if query is not None else len(self.db.all())
-
 ```
 
 चूँकि TinyDB में native sorting capabilities नहीं होतीं, sorting logic Python में निष्पादित होती है। sorts को reverse order में apply करने से एक विश्वसनीय multi-key sort बनता है।
@@ -297,16 +291,24 @@ async def create(self, request: Request, data: dict) -> Any:
     await self._emit_after_create(request, obj)
     return obj
 
+
 async def delete(self, request: Request, pks: list[Any]) -> int | None:
     ids = list(map(int, pks))
-    objs = [Post.from_document(self.db.get(doc_id=i)) for i in ids if self.db.contains(doc_id=i)]
+    objs = [
+        Post.from_document(self.db.get(doc_id=i))
+        for i in ids
+        if self.db.contains(doc_id=i)
+    ]
     for obj in objs:
-        await self._emit_before_delete(request, await self.get_pk_value(request, obj), obj)
+        await self._emit_before_delete(
+            request, await self.get_pk_value(request, obj), obj
+        )
     removed = self.db.remove(doc_ids=ids)
     for obj in objs:
-        await self._emit_after_delete(request, await self.get_pk_value(request, obj), obj)
+        await self._emit_after_delete(
+            request, await self.get_pk_value(request, obj), obj
+        )
     return len(removed)
-
 ```
 
 ### ऐप्लिकेशन wiring (`app.py`) {#application-wiring-apppy}
@@ -331,7 +333,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 इस इंप्लीमेंटेशन का परीक्षण करने के लिए, example directory से `uv run app.py` चलाएँ और `http://localhost:8000/admin/` पर जाएँ।
@@ -354,7 +355,6 @@ from tinydb.queries import QueryInstance
 class TinyDBContainsFilter(ContainsFilter):
     def apply(self, ctx: FilterApplyContext) -> QueryInstance:
         return Query()[ctx.field_name].search(re.escape(ctx.value), flags=re.IGNORECASE)
-
 ```
 
 registry बनाने की सर्वोत्तम प्रथा यह है कि `FilterRegistry` को subclass किया जाए और field-specific methods को `@filters(...)` से decorate किया जाए। shipped बैकएंड द्वारा उपयोग किया जाने वाला यही सटीक pattern है:
@@ -364,7 +364,11 @@ from starlette_admin import IntegerField, StringField
 from starlette_admin.fields import BaseField
 from starlette_admin.filters import FilterRegistry, filters
 from starlette_admin.filters.generic import IsNotNullFilter, IsNullFilter
-from starlette_admin.filters.numeric import EqualFilter, GreaterThanFilter, LessThanFilter
+from starlette_admin.filters.numeric import (
+    EqualFilter,
+    GreaterThanFilter,
+    LessThanFilter,
+)
 
 
 class TinyDBFilterRegistry(FilterRegistry):
@@ -379,13 +383,18 @@ class TinyDBFilterRegistry(FilterRegistry):
 
     @filters(IntegerField)
     def integer_filters(self, field: BaseField) -> list[type]:
-        return [EqualFilter, GreaterThanFilter, LessThanFilter, IsNullFilter, IsNotNullFilter]
+        return [
+            EqualFilter,
+            GreaterThanFilter,
+            LessThanFilter,
+            IsNullFilter,
+            IsNotNullFilter,
+        ]
 
 
 class PostView(BaseModelView):
     def get_filter_registry(self) -> FilterRegistry:
         return TinyDBFilterRegistry()
-
 ```
 
 यदि किसी field की कोई मैचिंग registry entry नहीं है और उसमें explicit `filters=[]` override भी नहीं है, तो वह filterable नहीं होगा। TinyDB example `filters=[]` override technique का उपयोग करके जान-बूझकर `id` field को unfilterable छोड़ता है।

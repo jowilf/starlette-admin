@@ -24,17 +24,31 @@ Then open <http://localhost:8000/admin/>.
 ```python
 class ProductView(ModelView):
     fields = [
-        StringField("name"),                       # default: contains, startswith, eq, …
-        EnumField("status", enum=ProductStatus),   # default: eq, in, is_null, …
-        DecimalField("price", filters=[            # override: only 3 of the 7 numeric ops
-            GreaterThanFilter, BetweenFilter, NumericEqualFilter,
-        ]),
-        TagsField("tags", filters=[                # no default → must set explicitly
-            IsNullFilter, IsNotNullFilter,
-        ]),
-        DateTimeField("created_at", filters=[      # built-ins + custom filter
-            DateTimeBetweenFilter, DateInPastFilter, ActiveThisMonthFilter,
-        ]),
+        StringField("name"),  # default: contains, startswith, eq, …
+        EnumField("status", enum=ProductStatus),  # default: eq, in, is_null, …
+        DecimalField(
+            "price",
+            filters=[  # override: only 3 of the 7 numeric ops
+                GreaterThanFilter,
+                BetweenFilter,
+                NumericEqualFilter,
+            ],
+        ),
+        TagsField(
+            "tags",
+            filters=[  # no default → must set explicitly
+                IsNullFilter,
+                IsNotNullFilter,
+            ],
+        ),
+        DateTimeField(
+            "created_at",
+            filters=[  # built-ins + custom filter
+                DateTimeBetweenFilter,
+                DateInPastFilter,
+                ActiveThisMonthFilter,
+            ],
+        ),
     ]
 ```
 
@@ -44,7 +58,7 @@ class ProductView(ModelView):
 class ActiveThisMonthFilter(BaseFilter):
     name = "this_month"
     label = "Created this month"
-    data_type = FilterDataType.NONE   # no value input needed
+    data_type = FilterDataType.NONE  # no value input needed
 
     def apply(self, ctx: FilterApplyContext) -> Any:
         now = datetime.utcnow()

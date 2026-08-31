@@ -162,8 +162,7 @@ Plugins अपना अलग extension path बनाने के बजा�
 
 
   @dataclass
-  class MyGeoField(StringField):
-    ...
+  class MyGeoField(StringField): ...
 
 
   @register_converter("Geometry")

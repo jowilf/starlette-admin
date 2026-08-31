@@ -162,8 +162,7 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 
   @dataclass
-  class MyGeoField(StringField):
-    ...
+  class MyGeoField(StringField): ...
 
 
   @register_converter("Geometry")

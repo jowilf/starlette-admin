@@ -105,7 +105,6 @@ class ArticleView(ModelView):
     ) -> Response:
         data = await request.form()
         return RedirectResponse(f"https://example.com/?value={data['value']}")
-
 ```
 
 ## Global actions
@@ -143,7 +142,6 @@ class ArticleView(ModelView):
         # Executes without a selection; ignores the selection object entirely
         drafts = await delete_all_draft_articles()
         flash(request, f"{len(drafts)} draft article(s) were purged.", "success")
-
 ```
 
 ### The "select all matching" feature
@@ -153,15 +151,12 @@ When a user checks every row on the current page and more rows match the filter 
 That option sends `all=1` to the action API instead of a list of primary keys. Use `selection.is_select_all` to branch your logic, or let `selection.rows()` resolve the data either way:
 
 ```python
-    @action(name="archive", text="Archive")
-    async def archive_action(
-        self, request: Request, selection: ActionSelection
-    ) -> None:
-        if selection.is_select_all:
-            await self.bulk_archive_where(request, selection.filters, selection.q)
-        else:
-            await self.bulk_archive_pks(request, await selection.pks())
-
+@action(name="archive", text="Archive")
+async def archive_action(self, request: Request, selection: ActionSelection) -> None:
+    if selection.is_select_all:
+        await self.bulk_archive_where(request, selection.filters, selection.q)
+    else:
+        await self.bulk_archive_pks(request, await selection.pks())
 ```
 
 !!! important "Materialization limits"
@@ -230,7 +225,6 @@ class ArticleView(ModelView):
     )
     def go_to_example_row_action(self, request: Request, pk: Any) -> str:
         return f"https://example.com/?pk={pk}"
-
 ```
 
 ### Restricting row actions
@@ -245,6 +239,7 @@ from typing import Any
 from starlette.requests import Request
 from starlette_admin.contrib.sqla import ModelView
 
+
 class ArticleView(ModelView):
     async def is_row_action_allowed(self, request: Request, name: str) -> bool:
         if name == "make_published":
@@ -257,7 +252,6 @@ class ArticleView(ModelView):
         if name == "make_published":
             return not obj.is_published
         return await super().is_row_action_allowed_for_obj(request, name, obj)
-
 ```
 
 !!! warning
@@ -283,9 +277,9 @@ By default, the actions column renders before your data columns. To move it to t
 ```python
 from starlette_admin.types import RowActionsPosition
 
+
 class ArticleView(ModelView):
     row_actions_position = RowActionsPosition.AFTER_COLUMNS
-
 ```
 
 ## Dynamic action forms
@@ -351,7 +345,6 @@ class ArticleView(ModelView):
         data = await request.form()
         article = await self.find_by_pk(request, pk)
         article.title = data["title"]
-
 ```
 
 !!! important

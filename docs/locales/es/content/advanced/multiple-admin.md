@@ -102,7 +102,6 @@ root_admin = Admin(
 root_admin.add_view(ModelView(Order))
 root_admin.add_view(ModelView(User))
 root_admin.mount_to(app)
-
 ```
 
 En este ejemplo, `/staff` muestra una página de inicio de sesión respaldada por `StaffAuth` y `/root` muestra otra independiente respaldada por `SuperAdminAuth`. Iniciar sesión en uno no otorga acceso al otro: cada `SessionMiddleware` firma su cookie con su propio `secret_key`, por lo que cada instancia de `Admin` solo lee los datos de sesión que escribió su propio proveedor de autenticación.
@@ -140,8 +139,9 @@ Para evitarlo, asigne a cada admin una instancia nueva de la **clase** `ModelVie
 
 ```python
 staff_admin.add_view(ModelView(Order))
-root_admin.add_view(ModelView(Order))  # separate instance of the same class; this is safe
-
+root_admin.add_view(
+    ModelView(Order)
+)  # separate instance of the same class; this is safe
 ```
 
 Cuando los dos admins necesitan comportamientos diferentes, como reglas de visibilidad distintas o permisos de `can_delete`, escriba una subclase para cada uno en lugar de modificar una instancia compartida en tiempo de ejecución:
@@ -160,7 +160,6 @@ class RootOrderView(ModelView):
 
 staff_admin.add_view(StaffOrderView(Order))
 root_admin.add_view(RootOrderView(Order))
-
 ```
 
 ---

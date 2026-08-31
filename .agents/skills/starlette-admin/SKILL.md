@@ -109,19 +109,22 @@ class PostView(ModelView):
     exclude_fields_from_create = ["created_at"]
 
     # List page behavior
-    searchable_fields = ["title", "content"]   # enables search box + filter builder
+    searchable_fields = ["title", "content"]  # enables search box + filter builder
     sortable_fields = ["title", "created_at"]
-    fields_default_sort = [("created_at", True)]   # True = descending
+    fields_default_sort = [("created_at", True)]  # True = descending
     page_size = 25
-    page_size_options = [25, 50, 100, -1]          # -1 renders as "All"
+    page_size_options = [25, 50, 100, -1]  # -1 renders as "All"
 
     # Feature lists
-    actions = ["make_published", "delete"]          # batch actions ("delete" is built in)
-    row_actions = ["view", "edit", "delete"]        # built-in row actions
-    inline_editable_fields = ["title", "published"] # single-field edit popovers on the list page
-    inlines = [CommentInline]                       # nested child forms
-    exporters = ["csv", "xlsx"]                     # default: ["csv", "json"]
-    importers = ["csv"]                             # default: ["csv", "json"]
+    actions = ["make_published", "delete"]  # batch actions ("delete" is built in)
+    row_actions = ["view", "edit", "delete"]  # built-in row actions
+    inline_editable_fields = [
+        "title",
+        "published",
+    ]  # single-field edit popovers on the list page
+    inlines = [CommentInline]  # nested child forms
+    exporters = ["csv", "xlsx"]  # default: ["csv", "json"]
+    importers = ["csv"]  # default: ["csv", "json"]
     form_layout = [("title", "author"), "content"]  # tuple = shared row
 
     # Permission hooks (all default to True): is_accessible, can_create, can_edit,

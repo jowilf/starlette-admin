@@ -123,7 +123,6 @@ class ArticleView(ModelView):
     ) -> Response:
         data = await request.form()
         return RedirectResponse(f"https://example.com/?value={data['value']}")
-
 ```
 
 ## Globale Aktionen
@@ -161,7 +160,6 @@ class ArticleView(ModelView):
         # Executes without a selection; ignores the selection object entirely
         drafts = await delete_all_draft_articles()
         flash(request, f"{len(drafts)} draft article(s) were purged.", "success")
-
 ```
 
 ### Die Funktion „alle passenden auswählen"
@@ -171,15 +169,12 @@ Wenn ein Benutzer alle Zeilen der aktuellen Seite anhakt und weitere Zeilen den 
 Diese Option sendet `all=1` an die Action-API statt einer Liste von Primärschlüsseln. Verwenden Sie `selection.is_select_all`, um Ihre Logik zu verzweigen, oder lassen Sie `selection.rows()` die Daten in beiden Fällen auflösen:
 
 ```python
-    @action(name="archive", text="Archive")
-    async def archive_action(
-        self, request: Request, selection: ActionSelection
-    ) -> None:
-        if selection.is_select_all:
-            await self.bulk_archive_where(request, selection.filters, selection.q)
-        else:
-            await self.bulk_archive_pks(request, await selection.pks())
-
+@action(name="archive", text="Archive")
+async def archive_action(self, request: Request, selection: ActionSelection) -> None:
+    if selection.is_select_all:
+        await self.bulk_archive_where(request, selection.filters, selection.q)
+    else:
+        await self.bulk_archive_pks(request, await selection.pks())
 ```
 
 !!! important "Materialisierungsgrenzen"
@@ -248,7 +243,6 @@ class ArticleView(ModelView):
     )
     def go_to_example_row_action(self, request: Request, pk: Any) -> str:
         return f"https://example.com/?pk={pk}"
-
 ```
 
 ### Zeilenaktionen einschränken
@@ -263,6 +257,7 @@ from typing import Any
 from starlette.requests import Request
 from starlette_admin.contrib.sqla import ModelView
 
+
 class ArticleView(ModelView):
     async def is_row_action_allowed(self, request: Request, name: str) -> bool:
         if name == "make_published":
@@ -275,7 +270,6 @@ class ArticleView(ModelView):
         if name == "make_published":
             return not obj.is_published
         return await super().is_row_action_allowed_for_obj(request, name, obj)
-
 ```
 
 !!! warning
@@ -301,9 +295,9 @@ Standardmäßig wird die Aktionsspalte vor Ihren Datenspalten gerendert. Um sie 
 ```python
 from starlette_admin.types import RowActionsPosition
 
+
 class ArticleView(ModelView):
     row_actions_position = RowActionsPosition.AFTER_COLUMNS
-
 ```
 
 ## Dynamische Aktionsformulare
@@ -369,7 +363,6 @@ class ArticleView(ModelView):
         data = await request.form()
         article = await self.find_by_pk(request, pk)
         article.title = data["title"]
-
 ```
 
 !!! important

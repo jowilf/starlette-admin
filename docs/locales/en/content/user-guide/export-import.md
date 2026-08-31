@@ -25,8 +25,10 @@ from starlette_admin.contrib.sqla import Admin, ModelView
 
 engine = create_engine("sqlite:///store.sqlite")
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -36,15 +38,16 @@ class Product(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     price: Mapped[float] = mapped_column()
 
+
 class ProductView(ModelView):
     fields = ["id", "name", "description", "price"]
     exporters = ["csv", "xlsx", "json"]
     importers = ["csv", "xlsx"]
 
+
 Base.metadata.create_all(engine)
 admin = Admin(engine, title="Store Admin", secret_key="change-me")
 admin.add_view(ProductView(Product, icon="fa fa-box"))
-
 ```
 
 `ProductView` now shows an **Export** button and an **Import** button in the list toolbar. Each dialog offers exactly the formats you list in `exporters` and `importers`.
@@ -58,7 +61,6 @@ The `exporters` attribute lists the formats to expose, as plain extension string
 ```python hl_lines="2"
 class ProductView(ModelView):
     exporters = ["csv", "xlsx", "json"]
-
 ```
 
 The default is `["csv", "json"]`. The table below lists every built-in format and the package it needs. The `csv`, `tsv`, and `json` formats need no extra dependencies. Every other tabular format uses `tablib`, and `pdf` uses `reportlab`. An unknown format string, or a format whose package isn't installed, raises an error at startup.
@@ -80,9 +82,9 @@ Each format string resolves to a preconfigured exporter instance with sensible d
 ```python hl_lines="5"
 from starlette_admin.export import CsvExporter
 
+
 class ProductView(ModelView):
     exporters = [CsvExporter(delimiter=";"), "xlsx", "json"]
-
 ```
 
 `CsvExporter` forwards keyword arguments to `csv.writer` and accepts an `escape_formulas` parameter. `TablibExporter(format, **kwargs)` covers every tablib format and forwards keyword arguments to `tablib.Dataset.export()`.
@@ -95,10 +97,10 @@ Export is on by default. The **Export** button appears in the toolbar whenever t
 ```python hl_lines="5 6"
 from starlette.requests import Request
 
+
 class ProductView(ModelView):
     def can_export(self, request: Request) -> bool:
         return request.state.admin_user.username == "admin"
-
 ```
 
 ### The export dialog
@@ -124,7 +126,6 @@ admin = Admin(
     secret_key="change-me",
     export_config=ExportConfig(max_rows=50_000),
 )
-
 ```
 
 `ExportConfig.max_rows` defaults to 100,000. The cap applies to the number of rows the chosen scope would actually produce, and the admin checks the count before it fetches any row. When the count goes over the limit, the admin flashes an error and redirects back to the list page instead of generating the file. This keeps a broad, unfiltered export on a large table from hanging the request. Set `max_rows=None` to remove the limit.
@@ -138,7 +139,6 @@ The `importers` attribute works exactly like `exporters` and accepts format stri
 ```python hl_lines="2"
 class ProductView(ModelView):
     importers = ["csv", "xlsx"]
-
 ```
 
 The built-in import formats are `csv`, `tsv`, `json`, `yaml`, `xlsx`, `xls`, `ods`, `dbf`, and `html`, with the same dependencies as their export counterparts. To override a format's defaults, pass an importer instance, such as `CsvImporter(delimiter=";")` from `starlette_admin.importers`.
@@ -148,10 +148,10 @@ Import is on by default, with `["csv", "json"]`. The **Import** button appears i
 ```python hl_lines="5 6"
 from starlette.requests import Request
 
+
 class ProductView(ModelView):
     def can_import(self, request: Request) -> bool:
         return request.state.admin_user.username == "admin"
-
 ```
 
 ### The import wizard
@@ -199,8 +199,10 @@ from starlette_admin.storage import LocalStorage
 engine = create_engine("sqlite:///catalog.sqlite")
 covers_storage = LocalStorage(base_dir="uploads/covers", name="covers")
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -209,12 +211,14 @@ class Product(Base):
     name: Mapped[str] = mapped_column(String(200))
     photo: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
+
 class ProductView(ModelView):
     fields = [
         "id",
         "name",
         ImageField("photo", storage=covers_storage, upload_folder="products"),
     ]
+
 
 Base.metadata.create_all(engine)
 admin = Admin(engine, title="Catalog Admin", secret_key="change-me")
@@ -248,6 +252,7 @@ from typing import Any
 from starlette_admin.export import BaseExporter
 from starlette_admin.fields import BaseField
 
+
 class MarkdownExporter(BaseExporter):
     content_type = "text/markdown"
     extension = "md"
@@ -275,6 +280,7 @@ import json
 from collections.abc import AsyncGenerator
 from typing import Any
 from starlette_admin.importers import BaseImporter, ImportContext
+
 
 class NdjsonImporter(BaseImporter):
     extension = "ndjson"
