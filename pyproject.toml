@@ -120,7 +120,7 @@ test = [
     "tortoise-orm >=0.21.0",
 ]
 
-cov = ["coverage[toml] >=7.0.0, <7.16.0"]
+cov = ["coverage[toml] >=7.0.0, <7.17.0"]
 docs = [
     "mkdocstrings[python] >=0.27.0",
     "zensical >=0.0.44",
