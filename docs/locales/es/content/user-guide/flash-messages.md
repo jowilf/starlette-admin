@@ -33,13 +33,13 @@ from starlette.requests import Request
 from starlette_admin import BaseModelView
 from starlette_admin.flash import flash
 
+
 class PostView(BaseModelView):
     async def before_create(self, request: Request, data: dict) -> None:
         if not data.get("title", "").strip():
             # Queue the message for the next page load
             flash(request, "Title cannot be blank.", category="error")
             raise ValueError("Title cannot be blank.")
-
 ```
 
 ## Categorías de mensajes
@@ -53,7 +53,6 @@ flash(request, "Report generated.", category="success")
 flash(request, "3 rows were skipped.", category="info")
 flash(request, "This action can't be undone.", category="warning")
 flash(request, "Upload failed: file too large.", category="error")
-
 ```
 
 El argumento `category` tiene `"info"` como valor predeterminado. Debe ser exactamente uno de `success`, `info`, `warning` o `error`. Cualquier otro valor lanza una `ValueError`.
@@ -80,6 +79,7 @@ Los manejadores de acciones personalizadas (`@action` y `@row_action`) devuelven
 from starlette.requests import Request
 from starlette_admin import BaseModelView, action, flash
 
+
 class PostView(BaseModelView):
     @action(
         name="publish",
@@ -94,7 +94,6 @@ class PostView(BaseModelView):
 
         # Notify the user that the custom action succeeded
         flash(request, f"{len(pks)} post(s) published.", category="success")
-
 ```
 
 * **Si omite `flash()`:** La acción se ejecuta igualmente, pero el usuario no recibe ninguna confirmación visual después de que la página se redirige.
@@ -109,7 +108,6 @@ from starlette_admin.flash import get_flashed_messages
 
 messages = get_flashed_messages(request)
 # Returns: [{"message": "The item \"My First Post\" was added successfully.", "category": "success"}]
-
 ```
 
 Leer la cola de mensajes flash es **destructivo**. La primera llamada a `get_flashed_messages(request)` extrae y limpia la cola. Las llamadas posteriores durante la misma solicitud devuelven una lista vacía, `[]`.

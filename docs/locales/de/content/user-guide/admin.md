@@ -149,7 +149,10 @@ Eine vollständige Anleitung finden Sie unter [Internationalization & Timezones]
 
 ```python
 admin = Admin(
-    session_provider=engine, title="My Admin", secret_key="a-long-random-string", debug=True
+    session_provider=engine,
+    title="My Admin",
+    secret_key="a-long-random-string",
+    debug=True,
 )
 ```
 
@@ -165,7 +168,9 @@ Für einen leichtgewichtigeren Ansatz rufen Sie stattdessen selbst `starlette_ad
 Nachdem Sie die Instanz `Admin` erstellt haben, registrieren Sie Ihre Views und mounten den Admin in Ihre Anwendung.
 
 ```python
-admin.add_view(ModelView(Post))  # Register a view (BaseModelView, CustomView, and so on)
+admin.add_view(
+    ModelView(Post)
+)  # Register a view (BaseModelView, CustomView, and so on)
 admin.mount_to(app)  # Mount the admin onto your Starlette or FastAPI app
 ```
 

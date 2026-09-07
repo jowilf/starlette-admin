@@ -64,9 +64,7 @@ from sqlalchemy import String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-engine = create_engine(
-    "sqlite:///blog.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
 class Base(DeclarativeBase):
@@ -94,7 +92,6 @@ app = FastAPI(lifespan=lifespan)
 admin = Admin(engine, title="Blog Admin", secret_key="dev-only-change-me")
 admin.add_view(ModelView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
-
 ```
 
 注意这里省去了什么：没有模板，没有管理页面的路由处理器，没有序列化器，也没有字段配置。`starlette-admin` 会读取 SQLAlchemy 的列元数据并自动推导出整个界面：两个 `String` 列对应带长度限制的文本输入框，`Text` 内容对应多行文本域，`published_at` 对应日期时间选择器。
@@ -155,7 +152,6 @@ class PostView(ModelView):
 
 
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
-
 ```
 
 这一个类带来了四项强大的升级：
@@ -188,7 +184,6 @@ class PostIn(BaseModel):
         if len(v.split()) < 3:
             raise ValueError("Must contain at least 3 words")
         return v
-
 ```
 
 与其把校验逻辑写两遍，不如把你现有的模型直接交给管理后台。`ext.pydantic` 扩展提供了一个 `ModelView`，它会在每次表单提交抵达数据库之前，先通过一个 Pydantic 模型对其进行处理。把你的 `ModelView` 导入指向该扩展，保持 `Admin` 原样不动，再传入这个模型即可：
@@ -197,14 +192,12 @@ class PostIn(BaseModel):
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 
-class PostView(ModelView):
-    ...  # configuration from Minute 5, unchanged
+class PostView(ModelView): ...  # configuration from Minute 5, unchanged
 
 
 admin.add_view(
     PostView(Post, pydantic_model=PostIn, icon="fa fa-blog", menu_label="Blog Posts")
 )
-
 ```
 
 `PostView` 的主体保持完全一致；通过新的导入，发生变化的仅仅是它的基类。
@@ -231,7 +224,6 @@ class User(Base):
     website: Mapped[str | None] = mapped_column(String(512))
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
-
 ```
 
 ```python title="main.py" hl_lines="4 5"
@@ -240,7 +232,6 @@ class Post(Base):
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="posts")
-
 ```
 
 按照同样的基于模型的方式注册用户模型。`EmailStr` 和 `HttpUrl` 会自动提供格式校验，而 `email-validator` 已随 `fastapi[standard]` 一并提供：
@@ -257,7 +248,6 @@ class UserIn(BaseModel):
 
 
 admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
-
 ```
 
 由于这一次没有任何需要配置的内容，可以直接使用扩展的 `ModelView`，无需再进行子类化。
@@ -271,7 +261,6 @@ class PostIn(BaseModel):
 
     # ... fields from before ...
     user: User
-
 ```
 
 `user: User` 没有默认值，也就是说，缺少作者的文章会像其他任何校验错误一样遭到拒绝。这里的类型之所以是 SQLAlchemy 的 `User` 类本身，是因为管理后台会在校验开始之前先把选中的 ID 解析为一个 ORM 实例。这正是必须设置 `arbitrary_types_allowed` 的原因（`ConfigDict` 从 `pydantic` 导入）。

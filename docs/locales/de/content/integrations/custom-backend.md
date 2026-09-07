@@ -48,32 +48,24 @@ class MyBackendView(BaseModelView):
         q: str | None = None,
         sorts: Sequence[tuple[str, str]] | None = None,
         filters: FilterGroup | None = None,
-    ) -> Sequence[Any]:
-        ...
+    ) -> Sequence[Any]: ...
 
     async def count(
         self,
         request: Request,
         q: str | None = None,
         filters: FilterGroup | None = None,
-    ) -> int:
-        ...
+    ) -> int: ...
 
-    async def find_by_pk(self, request: Request, pk: Any) -> Any:
-        ...
+    async def find_by_pk(self, request: Request, pk: Any) -> Any: ...
 
-    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]:
-        ...
+    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]: ...
 
-    async def create(self, request: Request, data: dict) -> Any:
-        ...
+    async def create(self, request: Request, data: dict) -> Any: ...
 
-    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
-        ...
+    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any: ...
 
-    async def delete(self, request: Request, pks: list[Any]) -> int | None:
-        ...
-
+    async def delete(self, request: Request, pks: list[Any]) -> int | None: ...
 ```
 
 | Methode | Aufgerufen für | Rückgabe |
@@ -122,7 +114,6 @@ class PostView(BaseModelView):
         TextAreaField("body"),
         IntegerField("views"),
     ]
-
 ```
 
 Das explizite Auflisten der Felder ist der einfachste Ansatz für einmalige Views. Wenn Sie jedoch eine wiederverwendbare `ModelView`-Basisklasse entwickeln, die für mehrere Modelle auf einem eigenen Backend gedacht ist, sollten Sie stattdessen einen eigenen `BaseModelConverter` schreiben. Implementieren Sie die Methoden `convert()` und `convert_fields_list()`, dekorieren Sie Ihre Typ-Handler mit `@converts(...)` und rufen Sie den Konverter während der Initialisierung auf. So erben konkrete Views die Felddefinitionen automatisch – analog zum Verhalten der integrierten Backends.
@@ -135,15 +126,15 @@ Filter werden Ihren Methoden als `FilterGroup` übergeben. Diese Struktur ist ei
 @dataclass
 class FilterRule:
     field: str
-    filter: str         # The slug of the BaseFilter to apply (e.g., "contains", "gte")
+    filter: str  # The slug of the BaseFilter to apply (e.g., "contains", "gte")
     value: Any = None
     value2: Any = None  # Only populated for filters with has_value2 (e.g., "between")
+
 
 @dataclass
 class FilterGroup:
     logic: str = "and"  # Accepts "and" or "or"
     rules: list["FilterGroup | FilterRule"] = field(default_factory=list)
-
 ```
 
 Um diesen Baum in eine Datenbankabfrage umzuwandeln, müssen Sie ihn rekursiv durchlaufen. Für jede `FilterRule` holen Sie die passende konkrete Filterklasse aus Ihrem `FilterRegistry` und rufen deren `apply()`-Methode auf. Bei verschachtelten `FilterGroup`-Knoten rekursieren Sie und kombinieren die resultierenden Fragmente mit dem jeweiligen logischen Operator.
@@ -170,7 +161,9 @@ def build_query(
 
     combined = fragments[0]
     for fragment in fragments[1:]:
-        combined = (combined | fragment) if group.logic == "or" else (combined & fragment)
+        combined = (
+            (combined | fragment) if group.logic == "or" else (combined & fragment)
+        )
     return combined
 
 
@@ -186,7 +179,6 @@ def _build_rule_fragment(
         query=None, field_name=rule.field, value=rule.value, value2=rule.value2
     )
     return filter_cls().apply(ctx)
-
 ```
 
 Die `apply(ctx)`-Methode jedes konkreten Filters erhält ein `FilterApplyContext`-Objekt mit dem `query`, dem `field name` und den `values`. Sie gibt ein Abfragefragment zurück, das spezifisch für die Abfragesprache Ihres Backends ist. Da dieser Prozess ohne Mutation gemeinsamer Zustände auskommt, lassen sich die resultierenden Regeln unabhängig von Ihrer zugrunde liegenden Datenbankarchitektur sauber kombinieren.
@@ -224,9 +216,10 @@ class Post:
         return (
             q.title.search(term, flags=re.IGNORECASE)
             | q.body.search(term, flags=re.IGNORECASE)
-            | q.tags.test(lambda tags: any(re.match(term, tag, re.IGNORECASE) for tag in tags))
+            | q.tags.test(
+                lambda tags: any(re.match(term, tag, re.IGNORECASE) for tag in tags)
+            )
         )
-
 ```
 
 Die `search_query`-Methode behandelt den Parameter `q`, indem sie eine Volltextsuche über die relevanten Felder generiert.
@@ -252,6 +245,7 @@ async def _build_query(
             query = filter_query if query is None else (query & filter_query)
     return query
 
+
 async def find_all(
     self,
     request: Request,
@@ -273,6 +267,7 @@ async def find_all(
         return values[skip : skip + limit]
     return values[skip:]
 
+
 async def count(
     self,
     request: Request,
@@ -281,7 +276,6 @@ async def count(
 ) -> int:
     query = await self._build_query(request, q, filters)
     return len(self.db.search(query)) if query is not None else len(self.db.all())
-
 ```
 
 Da TinyDB keine nativen Sortiermöglichkeiten bietet, erfolgt die Sortierlogik in Python. Die Anwendung der Sortierungen in umgekehrter Reihenfolge erzeugt eine zuverlässige Multi-Key-Sortierung.
@@ -298,16 +292,24 @@ async def create(self, request: Request, data: dict) -> Any:
     await self._emit_after_create(request, obj)
     return obj
 
+
 async def delete(self, request: Request, pks: list[Any]) -> int | None:
     ids = list(map(int, pks))
-    objs = [Post.from_document(self.db.get(doc_id=i)) for i in ids if self.db.contains(doc_id=i)]
+    objs = [
+        Post.from_document(self.db.get(doc_id=i))
+        for i in ids
+        if self.db.contains(doc_id=i)
+    ]
     for obj in objs:
-        await self._emit_before_delete(request, await self.get_pk_value(request, obj), obj)
+        await self._emit_before_delete(
+            request, await self.get_pk_value(request, obj), obj
+        )
     removed = self.db.remove(doc_ids=ids)
     for obj in objs:
-        await self._emit_after_delete(request, await self.get_pk_value(request, obj), obj)
+        await self._emit_after_delete(
+            request, await self.get_pk_value(request, obj), obj
+        )
     return len(removed)
-
 ```
 
 ### Verdrahtung der Anwendung (`app.py`)
@@ -332,7 +334,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 Um diese Implementierung zu testen, führen Sie `uv run app.py` im Beispielverzeichnis aus und öffnen Sie `http://localhost:8000/admin/`.
@@ -355,7 +356,6 @@ from tinydb.queries import QueryInstance
 class TinyDBContainsFilter(ContainsFilter):
     def apply(self, ctx: FilterApplyContext) -> QueryInstance:
         return Query()[ctx.field_name].search(re.escape(ctx.value), flags=re.IGNORECASE)
-
 ```
 
 Als Best Practice für den Aufbau der Registry gilt, `FilterRegistry` zu subclassen und feldspezifische Methoden mit `@filters(...)` zu dekorieren. Genau dieses Muster verwenden die mitgelieferten Backends:
@@ -365,7 +365,11 @@ from starlette_admin import IntegerField, StringField
 from starlette_admin.fields import BaseField
 from starlette_admin.filters import FilterRegistry, filters
 from starlette_admin.filters.generic import IsNotNullFilter, IsNullFilter
-from starlette_admin.filters.numeric import EqualFilter, GreaterThanFilter, LessThanFilter
+from starlette_admin.filters.numeric import (
+    EqualFilter,
+    GreaterThanFilter,
+    LessThanFilter,
+)
 
 
 class TinyDBFilterRegistry(FilterRegistry):
@@ -380,13 +384,18 @@ class TinyDBFilterRegistry(FilterRegistry):
 
     @filters(IntegerField)
     def integer_filters(self, field: BaseField) -> list[type]:
-        return [EqualFilter, GreaterThanFilter, LessThanFilter, IsNullFilter, IsNotNullFilter]
+        return [
+            EqualFilter,
+            GreaterThanFilter,
+            LessThanFilter,
+            IsNullFilter,
+            IsNotNullFilter,
+        ]
 
 
 class PostView(BaseModelView):
     def get_filter_registry(self) -> FilterRegistry:
         return TinyDBFilterRegistry()
-
 ```
 
 Besitzt ein Feld keinen passenden Registry-Eintrag und verfügt es auch nicht über eine explizite `filters=[]`-Überschreibung, ist es nicht filterbar. Das TinyDB-Beispiel lässt das Feld `id` bewusst mithilfe der `filters=[]`-Technik unfilterbar.

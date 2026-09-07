@@ -74,9 +74,7 @@ Tortoise.init_models(["app"], "models")
 
 @asynccontextmanager
 async def lifespan(app: Starlette):
-    await Tortoise.init(
-        db_url="sqlite://library.sqlite3", modules={"models": ["app"]}
-    )
+    await Tortoise.init(db_url="sqlite://library.sqlite3", modules={"models": ["app"]})
     await Tortoise.generate_schemas()
     yield
     await Tortoise.close_connections()
@@ -90,7 +88,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 `ModelView` Tortoise `Model` क्लास को सीधे स्वीकार करता है और मॉडल के स्कीमा से फ़ील्ड सूची, फ़ॉर्म और फ़िल्टर स्वचालित रूप से तैयार कर लेता है।

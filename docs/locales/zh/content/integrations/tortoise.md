@@ -69,9 +69,7 @@ Tortoise.init_models(["app"], "models")
 
 @asynccontextmanager
 async def lifespan(app: Starlette):
-    await Tortoise.init(
-        db_url="sqlite://library.sqlite3", modules={"models": ["app"]}
-    )
+    await Tortoise.init(db_url="sqlite://library.sqlite3", modules={"models": ["app"]})
     await Tortoise.generate_schemas()
     yield
     await Tortoise.close_connections()
@@ -85,7 +83,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 `ModelView` 直接接受 Tortoise 的 `Model` 类，并自动根据模型的 schema 推导出字段列表、表单和过滤器。

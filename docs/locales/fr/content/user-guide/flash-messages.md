@@ -33,13 +33,13 @@ from starlette.requests import Request
 from starlette_admin import BaseModelView
 from starlette_admin.flash import flash
 
+
 class PostView(BaseModelView):
     async def before_create(self, request: Request, data: dict) -> None:
         if not data.get("title", "").strip():
             # Queue the message for the next page load
             flash(request, "Title cannot be blank.", category="error")
             raise ValueError("Title cannot be blank.")
-
 ```
 
 ## Catégories de messages
@@ -53,7 +53,6 @@ flash(request, "Report generated.", category="success")
 flash(request, "3 rows were skipped.", category="info")
 flash(request, "This action can't be undone.", category="warning")
 flash(request, "Upload failed: file too large.", category="error")
-
 ```
 
 L'argument `category` vaut `"info"` par défaut. Il doit correspondre exactement à l'une des valeurs suivantes : `success`, `info`, `warning` ou `error`. Toute autre valeur lève une `ValueError`.
@@ -80,6 +79,7 @@ Les gestionnaires d'actions personnalisées (`@action` et `@row_action`) renvoie
 from starlette.requests import Request
 from starlette_admin import BaseModelView, action, flash
 
+
 class PostView(BaseModelView):
     @action(
         name="publish",
@@ -94,7 +94,6 @@ class PostView(BaseModelView):
 
         # Notify the user that the custom action succeeded
         flash(request, f"{len(pks)} post(s) published.", category="success")
-
 ```
 
 * **Si vous omettez `flash()` :** l'action s'exécute toujours, mais l'utilisateur ne reçoit aucune confirmation visuelle après la redirection de la page.
@@ -109,7 +108,6 @@ from starlette_admin.flash import get_flashed_messages
 
 messages = get_flashed_messages(request)
 # Returns: [{"message": "The item \"My First Post\" was added successfully.", "category": "success"}]
-
 ```
 
 La lecture de la file des messages flash est **destructive**. Le premier appel à `get_flashed_messages(request)` extrait et vide la file. Les appels suivants durant la même requête renvoient une liste vide, `[]`.

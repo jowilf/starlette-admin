@@ -58,14 +58,20 @@ from authlib.integrations.starlette_client import OAuth
 from starlette_admin.auth import AdminUser, OAuthProvider
 
 oauth = OAuth()
-oauth.register("auth0", client_id=..., client_secret=...,
-               client_kwargs={"scope": "openid profile email"},
-               server_metadata_url=f"https://{AUTH0_DOMAIN}/.well-known/openid-configuration")
+oauth.register(
+    "auth0",
+    client_id=...,
+    client_secret=...,
+    client_kwargs={"scope": "openid profile email"},
+    server_metadata_url=f"https://{AUTH0_DOMAIN}/.well-known/openid-configuration",
+)
 
 
 class Auth0Provider(OAuthProvider):
     async def redirect_to_provider(self, request, callback_url):
-        return await oauth.create_client("auth0").authorize_redirect(request, callback_url)
+        return await oauth.create_client("auth0").authorize_redirect(
+            request, callback_url
+        )
 
     async def handle_callback(self, request) -> None:
         token = await oauth.create_client("auth0").authorize_access_token(request)
@@ -88,6 +94,7 @@ class Auth0Provider(OAuthProvider):
 ```python
 from dataclasses import dataclass, field
 
+
 @dataclass
 class MyAdminUser(AdminUser):
     roles: list[str] = field(default_factory=list)
@@ -97,7 +104,7 @@ Return `MyAdminUser(username=..., roles=...)` from `authenticate()`, then read `
 
 ```python
 class ArticleView(ModelView):
-    def is_accessible(self, request) -> bool:          # hides the view entirely
+    def is_accessible(self, request) -> bool:  # hides the view entirely
         return "read" in request.state.admin_user.roles
 
     def can_create(self, request) -> bool:
@@ -129,7 +136,7 @@ from starlette_admin.auth import login_not_required
 
 class AccountsView(CustomView):
     @route("/register", methods=["GET", "POST"], name="register")
-    @login_not_required            # decorator order does not matter
+    @login_not_required  # decorator order does not matter
     async def register(self, request): ...
 ```
 

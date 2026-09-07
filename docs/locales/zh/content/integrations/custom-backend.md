@@ -42,32 +42,24 @@ class MyBackendView(BaseModelView):
         q: str | None = None,
         sorts: Sequence[tuple[str, str]] | None = None,
         filters: FilterGroup | None = None,
-    ) -> Sequence[Any]:
-        ...
+    ) -> Sequence[Any]: ...
 
     async def count(
         self,
         request: Request,
         q: str | None = None,
         filters: FilterGroup | None = None,
-    ) -> int:
-        ...
+    ) -> int: ...
 
-    async def find_by_pk(self, request: Request, pk: Any) -> Any:
-        ...
+    async def find_by_pk(self, request: Request, pk: Any) -> Any: ...
 
-    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]:
-        ...
+    async def find_by_pks(self, request: Request, pks: list[Any]) -> Sequence[Any]: ...
 
-    async def create(self, request: Request, data: dict) -> Any:
-        ...
+    async def create(self, request: Request, data: dict) -> Any: ...
 
-    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
-        ...
+    async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any: ...
 
-    async def delete(self, request: Request, pks: list[Any]) -> int | None:
-        ...
-
+    async def delete(self, request: Request, pks: list[Any]) -> int | None: ...
 ```
 
 | 方法 | 调用场景 | 返回值 |
@@ -116,7 +108,6 @@ class PostView(BaseModelView):
         TextAreaField("body"),
         IntegerField("views"),
     ]
-
 ```
 
 对于一次性视图，显式列出字段是最简单的方式。但如果你要构建一个可复用的 `ModelView` 基类，以支持自定义后端上的多个模型，则应改为编写自定义的 `BaseModelConverter`：实现 `convert()` 和 `convert_fields_list()` 方法，用 `@converts(...)` 装饰类型处理器，并在初始化时调用转换器。这样具体视图即可自动继承字段定义，与内置后端的行为保持一致。
@@ -129,15 +120,15 @@ class PostView(BaseModelView):
 @dataclass
 class FilterRule:
     field: str
-    filter: str         # The slug of the BaseFilter to apply (e.g., "contains", "gte")
+    filter: str  # The slug of the BaseFilter to apply (e.g., "contains", "gte")
     value: Any = None
     value2: Any = None  # Only populated for filters with has_value2 (e.g., "between")
+
 
 @dataclass
 class FilterGroup:
     logic: str = "and"  # Accepts "and" or "or"
     rules: list["FilterGroup | FilterRule"] = field(default_factory=list)
-
 ```
 
 要把这棵树转换为数据库查询，必须递归遍历它。对每个 `FilterRule`，从你的 `FilterRegistry` 中取出匹配的具体过滤器类并调用其 `apply()` 方法；对嵌套的 `FilterGroup` 节点则递归处理，并用相应的逻辑运算符组合得到的片段。
@@ -164,7 +155,9 @@ def build_query(
 
     combined = fragments[0]
     for fragment in fragments[1:]:
-        combined = (combined | fragment) if group.logic == "or" else (combined & fragment)
+        combined = (
+            (combined | fragment) if group.logic == "or" else (combined & fragment)
+        )
     return combined
 
 
@@ -180,7 +173,6 @@ def _build_rule_fragment(
         query=None, field_name=rule.field, value=rule.value, value2=rule.value2
     )
     return filter_cls().apply(ctx)
-
 ```
 
 每个具体过滤器的 `apply(ctx)` 方法都会接收一个包含 `query`、`field name` 和 `values` 的 `FilterApplyContext` 对象，并返回一段特定于你所用的后端查询语言的查询片段。由于这一过程不会修改共享状态，因此无论底层数据库架构如何，都能干净地组合出最终的规则。
@@ -218,9 +210,10 @@ class Post:
         return (
             q.title.search(term, flags=re.IGNORECASE)
             | q.body.search(term, flags=re.IGNORECASE)
-            | q.tags.test(lambda tags: any(re.match(term, tag, re.IGNORECASE) for tag in tags))
+            | q.tags.test(
+                lambda tags: any(re.match(term, tag, re.IGNORECASE) for tag in tags)
+            )
         )
-
 ```
 
 `search_query` 方法通过在相关字段上生成全文搜索来处理 `q` 参数。
@@ -246,6 +239,7 @@ async def _build_query(
             query = filter_query if query is None else (query & filter_query)
     return query
 
+
 async def find_all(
     self,
     request: Request,
@@ -267,6 +261,7 @@ async def find_all(
         return values[skip : skip + limit]
     return values[skip:]
 
+
 async def count(
     self,
     request: Request,
@@ -275,7 +270,6 @@ async def count(
 ) -> int:
     query = await self._build_query(request, q, filters)
     return len(self.db.search(query)) if query is not None else len(self.db.all())
-
 ```
 
 由于 TinyDB 缺少原生排序能力，排序逻辑在 Python 中执行。按相反顺序依次应用各项排序即可得到可靠的多键排序。
@@ -292,16 +286,24 @@ async def create(self, request: Request, data: dict) -> Any:
     await self._emit_after_create(request, obj)
     return obj
 
+
 async def delete(self, request: Request, pks: list[Any]) -> int | None:
     ids = list(map(int, pks))
-    objs = [Post.from_document(self.db.get(doc_id=i)) for i in ids if self.db.contains(doc_id=i)]
+    objs = [
+        Post.from_document(self.db.get(doc_id=i))
+        for i in ids
+        if self.db.contains(doc_id=i)
+    ]
     for obj in objs:
-        await self._emit_before_delete(request, await self.get_pk_value(request, obj), obj)
+        await self._emit_before_delete(
+            request, await self.get_pk_value(request, obj), obj
+        )
     removed = self.db.remove(doc_ids=ids)
     for obj in objs:
-        await self._emit_after_delete(request, await self.get_pk_value(request, obj), obj)
+        await self._emit_after_delete(
+            request, await self.get_pk_value(request, obj), obj
+        )
     return len(removed)
-
 ```
 
 ### 应用组装（`app.py`）
@@ -326,7 +328,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 要测试此实现，请在示例目录中运行 `uv run app.py`，然后访问 `http://localhost:8000/admin/`。
@@ -349,7 +350,6 @@ from tinydb.queries import QueryInstance
 class TinyDBContainsFilter(ContainsFilter):
     def apply(self, ctx: FilterApplyContext) -> QueryInstance:
         return Query()[ctx.field_name].search(re.escape(ctx.value), flags=re.IGNORECASE)
-
 ```
 
 构建注册表的最佳实践是继承 `FilterRegistry`，并用 `@filters(...)` 装饰针对特定字段类型的方法。这正是随库发布的各后端所采用的模式：
@@ -359,7 +359,11 @@ from starlette_admin import IntegerField, StringField
 from starlette_admin.fields import BaseField
 from starlette_admin.filters import FilterRegistry, filters
 from starlette_admin.filters.generic import IsNotNullFilter, IsNullFilter
-from starlette_admin.filters.numeric import EqualFilter, GreaterThanFilter, LessThanFilter
+from starlette_admin.filters.numeric import (
+    EqualFilter,
+    GreaterThanFilter,
+    LessThanFilter,
+)
 
 
 class TinyDBFilterRegistry(FilterRegistry):
@@ -374,13 +378,18 @@ class TinyDBFilterRegistry(FilterRegistry):
 
     @filters(IntegerField)
     def integer_filters(self, field: BaseField) -> list[type]:
-        return [EqualFilter, GreaterThanFilter, LessThanFilter, IsNullFilter, IsNotNullFilter]
+        return [
+            EqualFilter,
+            GreaterThanFilter,
+            LessThanFilter,
+            IsNullFilter,
+            IsNotNullFilter,
+        ]
 
 
 class PostView(BaseModelView):
     def get_filter_registry(self) -> FilterRegistry:
         return TinyDBFilterRegistry()
-
 ```
 
 如果某个字段既没有匹配的注册项，也没有显式的 `filters=[]` 覆盖，它将不可过滤。TinyDB 示例正是利用 `filters=[]` 这一覆盖技巧，有意让 `id` 字段保持不可过滤。

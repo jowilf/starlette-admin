@@ -144,7 +144,10 @@ admin = Admin(engine, title="My Admin", logo_url=logo_for_tenant)
 
 ```python
 admin = Admin(
-    session_provider=engine, title="My Admin", secret_key="a-long-random-string", debug=True
+    session_provider=engine,
+    title="My Admin",
+    secret_key="a-long-random-string",
+    debug=True,
 )
 ```
 
@@ -160,7 +163,9 @@ admin = Admin(
 创建 `Admin` 实例后，注册你的视图，并将管理挂载到你的应用程序上。
 
 ```python
-admin.add_view(ModelView(Post))  # Register a view (BaseModelView, CustomView, and so on)
+admin.add_view(
+    ModelView(Post)
+)  # Register a view (BaseModelView, CustomView, and so on)
 admin.mount_to(app)  # Mount the admin onto your Starlette or FastAPI app
 ```
 

@@ -162,8 +162,7 @@ Les plugins utilisent les registres publics existants plutôt qu'un chemin d'ext
 
 
   @dataclass
-  class MyGeoField(StringField):
-    ...
+  class MyGeoField(StringField): ...
 
 
   @register_converter("Geometry")

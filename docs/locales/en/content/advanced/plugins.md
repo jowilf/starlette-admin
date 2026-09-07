@@ -144,8 +144,7 @@ Plugins use the existing public registries rather than a separate extension path
 
 
   @dataclass
-  class MyGeoField(StringField):
-    ...
+  class MyGeoField(StringField): ...
 
 
   @register_converter("Geometry")

@@ -162,8 +162,7 @@ Plugins nutzen die vorhandenen öffentlichen Registries statt eines separaten ei
 
 
   @dataclass
-  class MyGeoField(StringField):
-    ...
+  class MyGeoField(StringField): ...
 
 
   @register_converter("Geometry")

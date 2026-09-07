@@ -15,7 +15,7 @@ class ArticleView(ModelView):
     @action(
         name="make_published",
         text="Mark selected articles as published",
-        confirmation="Publish selected articles?",   # optional confirm dialog
+        confirmation="Publish selected articles?",  # optional confirm dialog
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn btn-success",
         form='<form><input type="text" class="form-control" name="note"></form>',
@@ -23,7 +23,7 @@ class ArticleView(ModelView):
     async def make_published_action(
         self, request: Request, selection: ActionSelection
     ) -> None:
-        data = await request.form()                  # values from the optional form
+        data = await request.form()  # values from the optional form
         for article in await selection.rows():
             article.status = "published"
         flash(request, f"{await selection.count()} article(s) published.", "success")
@@ -69,7 +69,7 @@ class ArticleView(ModelView):
         icon_class="fas fa-arrow-up-right-from-square",
     )
     def go_to_example_row_action(self, request: Request, pk: Any) -> str:
-        return f"https://example.com/?pk={pk}"   # plain href, no API round trip
+        return f"https://example.com/?pk={pk}"  # plain href, no API round trip
 ```
 
 Display options: `row_actions_display_type = RowActionsDisplayType.ICON_LIST | DROPDOWN | KEBAB | INLINE_LINKS` (list page only; the detail page always shows full buttons) and `row_actions_position = RowActionsPosition.BEFORE_COLUMNS | AFTER_COLUMNS` (both enums in `starlette_admin.types`).
@@ -85,7 +85,9 @@ Restricting: `is_row_action_allowed(request, name)` gates by name (role checks);
 ```python
 from starlette_admin import flash  # also starlette_admin.flash.flash
 
-flash(request, "Report generated.", "success")   # categories: success, info, warning, error
+flash(
+    request, "Report generated.", "success"
+)  # categories: success, info, warning, error
 ```
 
 - Category defaults to `"info"`; anything else raises `ValueError`. `message` must be a non-empty string.
@@ -101,7 +103,9 @@ Method hooks live inside one view; events let external code react to any view. B
 from starlette_admin.events import AdminEvent, AfterCreateContext
 
 
-@admin.events.on(AdminEvent.AFTER_CREATE, keys=["order"])   # keys=None reaches every view
+@admin.events.on(
+    AdminEvent.AFTER_CREATE, keys=["order"]
+)  # keys=None reaches every view
 async def notify_new_order(ctx: AfterCreateContext) -> None:
     print(f"created {ctx.view_key} pk={ctx.pk}")
 ```
@@ -120,8 +124,8 @@ from starlette_admin.events import AdminEventSubscriber, on
 
 
 class AuditSubscriber(AdminEventSubscriber):
-    @on(AdminEvent.AFTER_CREATE)                       # module-level `on`, stackable,
-    async def record_create(self, ctx): ...            # accepts several events at once
+    @on(AdminEvent.AFTER_CREATE)  # module-level `on`, stackable,
+    async def record_create(self, ctx): ...  # accepts several events at once
 
     @on(AdminEvent.AFTER_EDIT, AdminEvent.AFTER_DELETE)
     async def record_change(self, ctx): ...

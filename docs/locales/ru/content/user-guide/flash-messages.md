@@ -33,13 +33,13 @@ from starlette.requests import Request
 from starlette_admin import BaseModelView
 from starlette_admin.flash import flash
 
+
 class PostView(BaseModelView):
     async def before_create(self, request: Request, data: dict) -> None:
         if not data.get("title", "").strip():
             # Ставим сообщение в очередь для следующей загрузки страницы
             flash(request, "Title cannot be blank.", category="error")
             raise ValueError("Title cannot be blank.")
-
 ```
 
 ## Категории сообщений
@@ -53,7 +53,6 @@ flash(request, "Report generated.", category="success")
 flash(request, "3 rows were skipped.", category="info")
 flash(request, "This action can't be undone.", category="warning")
 flash(request, "Upload failed: file too large.", category="error")
-
 ```
 
 Аргумент `category` по умолчанию имеет значение `"info"`. Он должен быть строго одним из следующих: `success`, `info`, `warning` или `error`. Любое другое значение приведёт к исключению `ValueError`.
@@ -80,6 +79,7 @@ flash(request, "Upload failed: file too large.", category="error")
 from starlette.requests import Request
 from starlette_admin import BaseModelView, action, flash
 
+
 class PostView(BaseModelView):
     @action(
         name="publish",
@@ -94,7 +94,6 @@ class PostView(BaseModelView):
 
         # Уведомляем пользователя об успешном выполнении кастомного действия
         flash(request, f"{len(pks)} post(s) published.", category="success")
-
 ```
 
 * **Если вы не вызываете `flash()`:** действие всё равно выполнится, но после редиректа страницы пользователь не получит визуального подтверждения.
@@ -109,7 +108,6 @@ from starlette_admin.flash import get_flashed_messages
 
 messages = get_flashed_messages(request)
 # Returns: [{"message": "The item \"My First Post\" was added successfully.", "category": "success"}]
-
 ```
 
 Чтение очереди flash-сообщений — операция **разрушающая**. Первый вызов `get_flashed_messages(request)` извлекает и очищает очередь. Последующие вызовы в рамках того же запроса вернут пустой список `[]`.
