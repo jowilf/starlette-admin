@@ -68,7 +68,9 @@ from datetime import datetime
 from starlette_admin import DateTimeField, StringField
 
 StringField("status", default="draft")  # Statischer Wert
-DateTimeField("created_at", default=datetime.utcnow)  # Aufrufbare Funktion ohne Argumente
+DateTimeField(
+    "created_at", default=datetime.utcnow
+)  # Aufrufbare Funktion ohne Argumente
 StringField(
     "locale", default=lambda request: request.state.admin_user.locale
 )  # Request-bezogen

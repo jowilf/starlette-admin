@@ -123,7 +123,6 @@ class ArticleView(ModelView):
     ) -> Response:
         data = await request.form()
         return RedirectResponse(f"https://example.com/?value={data['value']}")
-
 ```
 
 ## Acciones globales
@@ -161,7 +160,6 @@ class ArticleView(ModelView):
         # Executes without a selection; ignores the selection object entirely
         drafts = await delete_all_draft_articles()
         flash(request, f"{len(drafts)} draft article(s) were purged.", "success")
-
 ```
 
 ### La función «seleccionar todas las coincidencias»
@@ -171,15 +169,12 @@ Cuando un usuario marca todas las filas de la página actual y hay más filas qu
 Esa opción envía `all=1` a la API de acciones en lugar de una lista de claves primarias. Utilice `selection.is_select_all` para bifurcar su lógica, o deje que `selection.rows()` resuelva los datos en cualquier caso:
 
 ```python
-    @action(name="archive", text="Archive")
-    async def archive_action(
-        self, request: Request, selection: ActionSelection
-    ) -> None:
-        if selection.is_select_all:
-            await self.bulk_archive_where(request, selection.filters, selection.q)
-        else:
-            await self.bulk_archive_pks(request, await selection.pks())
-
+@action(name="archive", text="Archive")
+async def archive_action(self, request: Request, selection: ActionSelection) -> None:
+    if selection.is_select_all:
+        await self.bulk_archive_where(request, selection.filters, selection.q)
+    else:
+        await self.bulk_archive_pks(request, await selection.pks())
 ```
 
 !!! important "Límites de materialización"
@@ -248,7 +243,6 @@ class ArticleView(ModelView):
     )
     def go_to_example_row_action(self, request: Request, pk: Any) -> str:
         return f"https://example.com/?pk={pk}"
-
 ```
 
 ### Restricción de las acciones de fila
@@ -263,6 +257,7 @@ from typing import Any
 from starlette.requests import Request
 from starlette_admin.contrib.sqla import ModelView
 
+
 class ArticleView(ModelView):
     async def is_row_action_allowed(self, request: Request, name: str) -> bool:
         if name == "make_published":
@@ -275,7 +270,6 @@ class ArticleView(ModelView):
         if name == "make_published":
             return not obj.is_published
         return await super().is_row_action_allowed_for_obj(request, name, obj)
-
 ```
 
 !!! warning
@@ -301,9 +295,9 @@ De forma predeterminada, la columna de acciones se muestra antes de sus columnas
 ```python
 from starlette_admin.types import RowActionsPosition
 
+
 class ArticleView(ModelView):
     row_actions_position = RowActionsPosition.AFTER_COLUMNS
-
 ```
 
 ## Formularios de acción dinámicos
@@ -369,7 +363,6 @@ class ArticleView(ModelView):
         data = await request.form()
         article = await self.find_by_pk(request, pk)
         article.title = data["title"]
-
 ```
 
 !!! important

@@ -68,7 +68,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 The `ModelView` accepts the Beanie `Document` class directly. It automatically derives the field list, forms, and filters from the document's fields.

@@ -102,7 +102,6 @@ root_admin = Admin(
 root_admin.add_view(ModelView(Order))
 root_admin.add_view(ModelView(User))
 root_admin.mount_to(app)
-
 ```
 
 इस उदाहरण में `/staff` पर `StaffAuth` द्वारा समर्थित एक sign-in पेज और `/root` पर `SuperAdminAuth` द्वारा समर्थित एक अलग sign-in पेज दिखता है। एक में sign in करना दूसरे तक पहुँच नहीं देता: प्रत्येक `SessionMiddleware` अपनी cookie को अपनी ही `secret_key` से साइन करता है, इसलिए प्रत्येक `Admin` इंस्टेंस केवल उही session डेटा पढ़ता है जो उसका अपना authentication provider लिखा था।
@@ -140,8 +139,9 @@ def __init__(
 
 ```python
 staff_admin.add_view(ModelView(Order))
-root_admin.add_view(ModelView(Order))  # separate instance of the same class; this is safe
-
+root_admin.add_view(
+    ModelView(Order)
+)  # separate instance of the same class; this is safe
 ```
 
 जब दोनों एडमिन को अलग व्यवहार चाहिए — जैसे अलग visibility rules या `can_delete` permissions — तो shared instance को runtime पर patch करने के बजाय प्रत्येक के लिए एक subclass लिखें:
@@ -160,7 +160,6 @@ class RootOrderView(ModelView):
 
 staff_admin.add_view(StaffOrderView(Order))
 root_admin.add_view(RootOrderView(Order))
-
 ```
 
 ---

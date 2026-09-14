@@ -86,7 +86,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 `ModelView` Beanie `Document` क्लास को सीधे स्वीकार करता है। यह डॉक्यूमेंट के फ़ील्ड्स से फ़ील्ड सूची, फ़ॉर्म, तथा फ़िल्टर्स स्वतः प्राप्त कर लेता है।
