@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import io
 import urllib.request
+import urllib.error
 import zipfile
 from abc import ABC, abstractmethod
 from collections.abc import Callable
@@ -369,7 +370,16 @@ class BaseExporter(ABC):
             try:
 
                 def _download(u: str, limit: int | None = max_size) -> bytes:
-                    with urllib.request.urlopen(u, timeout=30) as resp:
+                    # Security: build a no-redirect opener to prevent SSRF
+                    # via HTTP redirect chains (CWE-918). is_allowed_url()
+                    # only validates the initial URL; urlopen's default
+                    # HTTPRedirectHandler would follow redirects to any dest.
+                    _no_redirect_opener = urllib.request.build_opener()
+                    _no_redirect_opener.handlers = [
+                        h for h in _no_redirect_opener.handlers
+                        if not isinstance(h, urllib.request.HTTPRedirectHandler)
+                    ]
+                    with _no_redirect_opener.open(u, timeout=30) as resp:
                         if limit is not None:
                             data = resp.read(limit + 1)
                             if len(data) > limit:
