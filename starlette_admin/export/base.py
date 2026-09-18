@@ -5,8 +5,8 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import io
-import urllib.request
 import urllib.error
+import urllib.request
 import zipfile
 from abc import ABC, abstractmethod
 from collections.abc import Callable
@@ -376,7 +376,8 @@ class BaseExporter(ABC):
                     # HTTPRedirectHandler would follow redirects to any dest.
                     _no_redirect_opener = urllib.request.build_opener()
                     _no_redirect_opener.handlers = [
-                        h for h in _no_redirect_opener.handlers
+                        h
+                        for h in _no_redirect_opener.handlers
                         if not isinstance(h, urllib.request.HTTPRedirectHandler)
                     ]
                     with _no_redirect_opener.open(u, timeout=30) as resp:
