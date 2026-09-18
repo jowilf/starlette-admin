@@ -17,14 +17,13 @@ class CsvExporter(BaseExporter):
     content_type = "text/csv"
     extension = "csv"
 
-    def __init__(self, escape_formulas: bool = False, **fmtparams: Any) -> None:
+    def __init__(self, escape_formulas: bool = True, **fmtparams: Any) -> None:
         """
         Args:
-            escape_formulas: When ``True``, cell values starting with ``=``,
-                ``+``, ``-`` or ``@`` are prefixed with a single quote to
-                prevent formula injection when the CSV is opened in a
-                spreadsheet application. Disabled by default; enable it when
-                exported data can contain user-supplied strings.
+            escape_formulas: When ``True`` (the default), cell values starting
+                with ``=``, ``+``, ``-`` or ``@`` are prefixed with a single
+                quote to prevent formula injection (CWE-1236) when the CSV is
+                opened in a spreadsheet application.
             fmtparams: Forwarded to ``csv.writer`` (``delimiter``,
                 ``quotechar``, ``quoting``, ``lineterminator``,
                 ``escapechar``, ``doublequote``, ...).
