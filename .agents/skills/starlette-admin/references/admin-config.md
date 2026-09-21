@@ -86,7 +86,7 @@ admin = Admin(
     engine,
     theme=DefaultTheme(
         settings=TablerSettings(base="slate", primary="blue", radius=2, mode="dark")
-    )
+    ),
 )
 ```
 

@@ -33,13 +33,13 @@ from starlette.requests import Request
 from starlette_admin import BaseModelView
 from starlette_admin.flash import flash
 
+
 class PostView(BaseModelView):
     async def before_create(self, request: Request, data: dict) -> None:
         if not data.get("title", "").strip():
             # Queue the message for the next page load
             flash(request, "Title cannot be blank.", category="error")
             raise ValueError("Title cannot be blank.")
-
 ```
 
 ## Meldungskategorien
@@ -53,7 +53,6 @@ flash(request, "Report generated.", category="success")
 flash(request, "3 rows were skipped.", category="info")
 flash(request, "This action can't be undone.", category="warning")
 flash(request, "Upload failed: file too large.", category="error")
-
 ```
 
 Das Argument `category` ist standardmäßig `"info"`. Es muss exakt einer der Werte `success`, `info`, `warning` oder `error` sein. Jeder andere Wert löst einen `ValueError` aus.
@@ -80,6 +79,7 @@ Handler für eigene Aktionen (`@action` und `@row_action`) geben standardmäßig
 from starlette.requests import Request
 from starlette_admin import BaseModelView, action, flash
 
+
 class PostView(BaseModelView):
     @action(
         name="publish",
@@ -94,7 +94,6 @@ class PostView(BaseModelView):
 
         # Notify the user that the custom action succeeded
         flash(request, f"{len(pks)} post(s) published.", category="success")
-
 ```
 
 * **Wenn Sie `flash()` weglassen:** Die Aktion läuft weiterhin durch, aber der Benutzer erhält nach der Weiterleitung keine visuelle Bestätigung.
@@ -109,7 +108,6 @@ from starlette_admin.flash import get_flashed_messages
 
 messages = get_flashed_messages(request)
 # Returns: [{"message": "The item \"My First Post\" was added successfully.", "category": "success"}]
-
 ```
 
 Der Lesezugriff auf die Flash-Warteschlange ist **destruktiv**. Der erste Aufruf von `get_flashed_messages(request)` holt die Meldungen ab und leert die Warteschlange. Weitere Aufrufe innerhalb desselben Requests geben eine leere Liste zurück, `[]`.

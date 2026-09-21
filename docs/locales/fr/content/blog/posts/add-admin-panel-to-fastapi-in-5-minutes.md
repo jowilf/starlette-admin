@@ -68,9 +68,7 @@ from sqlalchemy import String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-engine = create_engine(
-    "sqlite:///blog.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
 class Base(DeclarativeBase):
@@ -98,7 +96,6 @@ app = FastAPI(lifespan=lifespan)
 admin = Admin(engine, title="Blog Admin", secret_key="dev-only-change-me")
 admin.add_view(ModelView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
-
 ```
 
 Remarquez ce qui est absent. Il n'y a aucun template, aucun gestionnaire de routes pour les pages d'administration, aucun sérialiseur ni aucune configuration de champs. `starlette-admin` lit les métadonnées des colonnes SQLAlchemy et dérive toute l'interface automatiquement : des champs texte bornés pour les deux colonnes `String`, une zone de texte pour le contenu `Text`, et un sélecteur de date et heure pour `published_at`.
@@ -159,7 +156,6 @@ class PostView(ModelView):
 
 
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
-
 ```
 
 Quatre améliorations puissantes interviennent dans cette seule classe :
@@ -192,7 +188,6 @@ class PostIn(BaseModel):
         if len(v.split()) < 3:
             raise ValueError("Must contain at least 3 words")
         return v
-
 ```
 
 Plutôt que d'écrire la logique de validation deux fois, confiez au panneau d'administration votre modèle existant. L'extension `ext.pydantic` fournit un `ModelView` qui traite chaque soumission de formulaire à travers un modèle Pydantic avant qu'elle n'atteigne la base de données. Orientez votre import de `ModelView` vers l'extension, conservez `Admin` tel quel, et passez le schéma :
@@ -201,14 +196,12 @@ Plutôt que d'écrire la logique de validation deux fois, confiez au panneau d'a
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 
-class PostView(ModelView):
-    ...  # configuration from Minute 5, unchanged
+class PostView(ModelView): ...  # configuration from Minute 5, unchanged
 
 
 admin.add_view(
     PostView(Post, pydantic_model=PostIn, icon="fa fa-blog", menu_label="Blog Posts")
 )
-
 ```
 
 Le corps de `PostView` reste strictement identique ; seule sa classe de base change grâce au nouvel import.
@@ -235,7 +228,6 @@ class User(Base):
     website: Mapped[str | None] = mapped_column(String(512))
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
-
 ```
 
 ```python title="main.py" hl_lines="4 5"
@@ -244,7 +236,6 @@ class Post(Base):
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="posts")
-
 ```
 
 Enregistrez le modèle utilisateur en suivant le même schéma piloté par validation. `EmailStr` et `HttpUrl` fournissent automatiquement la validation de format, et `email-validator` est déjà inclus avec `fastapi[standard]` :
@@ -261,7 +252,6 @@ class UserIn(BaseModel):
 
 
 admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
-
 ```
 
 Comme il n'y a rien à configurer cette fois-ci, l'extension `ModelView` est utilisée directement, sans dérivation.
@@ -275,7 +265,6 @@ class PostIn(BaseModel):
 
     # ... fields from before ...
     user: User
-
 ```
 
 `user: User` ne possède pas de valeur par défaut, ce qui signifie qu'un article sans auteur est rejeté comme n'importe quelle autre erreur de validation. Le type est la classe SQLAlchemy `User` elle-même car le panneau d'administration résout l'ID sélectionné en une instance ORM avant que la validation ne s'exécute. C'est précisément pourquoi `arbitrary_types_allowed` est requis (`ConfigDict` est importé depuis `pydantic`).

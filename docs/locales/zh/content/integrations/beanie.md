@@ -81,7 +81,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 `ModelView` 直接接受 Beanie 的 `Document` 类。它会自动根据文档的字段推导出字段列表、表单和过滤器。

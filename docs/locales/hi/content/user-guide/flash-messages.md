@@ -33,13 +33,13 @@ from starlette.requests import Request
 from starlette_admin import BaseModelView
 from starlette_admin.flash import flash
 
+
 class PostView(BaseModelView):
     async def before_create(self, request: Request, data: dict) -> None:
         if not data.get("title", "").strip():
             # Queue the message for the next page load
             flash(request, "Title cannot be blank.", category="error")
             raise ValueError("Title cannot be blank.")
-
 ```
 
 ## संदेश श्रेणियाँ {#message-categories}
@@ -53,7 +53,6 @@ flash(request, "Report generated.", category="success")
 flash(request, "3 rows were skipped.", category="info")
 flash(request, "This action can't be undone.", category="warning")
 flash(request, "Upload failed: file too large.", category="error")
-
 ```
 
 `category` आर्ग्युमेंट का डिफ़ॉल्ट `"info"` होता है। यह ठीक-ठीक `success`, `info`, `warning`, या `error` में से एक होना चाहिए। कोई अन्य मान `ValueError` उठाता है।
@@ -80,6 +79,7 @@ flash(request, "Upload failed: file too large.", category="error")
 from starlette.requests import Request
 from starlette_admin import BaseModelView, action, flash
 
+
 class PostView(BaseModelView):
     @action(
         name="publish",
@@ -94,7 +94,6 @@ class PostView(BaseModelView):
 
         # Notify the user that the custom action succeeded
         flash(request, f"{len(pks)} post(s) published.", category="success")
-
 ```
 
 * **यदि आप `flash()` छोड़ दें:** एक्शन फिर भी चलता है, लेकिन पेज रीडायरेक्ट होने के बाद उपयोगकर्ता को कोई विज़ुअल पुष्टि नहीं मिलती।
@@ -109,7 +108,6 @@ from starlette_admin.flash import get_flashed_messages
 
 messages = get_flashed_messages(request)
 # Returns: [{"message": "The item \"My First Post\" was added successfully.", "category": "success"}]
-
 ```
 
 फ़्लैश कतार को पढ़ना **विध्वंसक (destructive)** है। `get_flashed_messages(request)` का पहला कॉल कतार को पॉप और साफ़ कर देता है। उसी रिक्वेस्ट के दौरान बाद के कॉल एक खाली लिस्ट `[]` रिटर्न करते हैं।

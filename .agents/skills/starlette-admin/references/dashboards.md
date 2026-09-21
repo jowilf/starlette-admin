@@ -51,7 +51,9 @@ admin = Admin(
     engine,
     title="My Admin",
     secret_key="change-me",
-    index_view=CustomView(menu_label="Dashboard", icon="fa fa-home", widget=build_dashboard),
+    index_view=CustomView(
+        menu_label="Dashboard", icon="fa fa-home", widget=build_dashboard
+    ),
 )
 ```
 
@@ -74,7 +76,8 @@ class ReportsView(CustomView):
     @route("")
     async def index(self, request):
         return self.templates.TemplateResponse(
-            request=request, name="reports/index.html",
+            request=request,
+            name="reports/index.html",
             context={"title": self.title(request)},
         )
 

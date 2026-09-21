@@ -149,7 +149,10 @@ Pour une présentation complète, consultez [Internationalisation & fuseaux hora
 
 ```python
 admin = Admin(
-    session_provider=engine, title="My Admin", secret_key="a-long-random-string", debug=True
+    session_provider=engine,
+    title="My Admin",
+    secret_key="a-long-random-string",
+    debug=True,
 )
 ```
 
