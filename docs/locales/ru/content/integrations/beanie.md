@@ -86,7 +86,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 `ModelView` принимает класс Beanie `Document` напрямую. Он автоматически выводит список полей, формы и фильтры из полей документа.

@@ -52,6 +52,7 @@ async def unique_slug(request, field, value, form_values):
     if await slug_exists(request.state.session, value):
         raise ValueError("This slug is already taken")
 
+
 StringField("slug", validators=[unique_slug])
 ```
 
@@ -61,6 +62,7 @@ A field validator can reach another field through `form_values`, which raises th
 def not_before_start(request, field, value, form_values):
     if form_values.get("start") and value < form_values["start"]:
         raise ValueError("End date must be after the start date")
+
 
 DateField("end", validators=[not_before_start])
 ```
@@ -133,10 +135,14 @@ from starlette_admin.converters import converts
 
 
 class MyModelConverter(ModelConverter):
-    @converts("Enum")   # sqla keys are column type NAMES: "String", "Integer", "Enum", ...
+    @converts(
+        "Enum"
+    )  # sqla keys are column type NAMES: "String", "Integer", "Enum", ...
     def conv_enum(self, *args, **kwargs):
         _type = kwargs["type"]
-        return StatusBadgeField(**self._field_common(*args, **kwargs), enum=_type.enum_class)
+        return StatusBadgeField(
+            **self._field_common(*args, **kwargs), enum=_type.enum_class
+        )
 
 
 admin.add_view(EmployeeView(Employee, converter=MyModelConverter()))

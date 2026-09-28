@@ -15,8 +15,9 @@ class BookView(ModelView):
     fields = [
         "id",
         "title",
-        ImageField("cover", storage=covers, upload_folder="covers",
-                   max_size=5 * 1024 * 1024),
+        ImageField(
+            "cover", storage=covers, upload_folder="covers", max_size=5 * 1024 * 1024
+        ),
     ]
 ```
 
