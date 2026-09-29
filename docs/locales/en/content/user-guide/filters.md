@@ -22,7 +22,7 @@ class PostView(ModelView):
 
 See [examples/02-filters](https://github.com/jowilf/starlette-admin/tree/main/examples/02-filters) for a runnable app that covers default filters, per-field overrides, and a custom `BaseFilter` subclass.
 
-Every field you list in `searchable_fields` gets a **Filters** dropdown in the list toolbar. From there, users combine any number of filters to find the rows they need.
+Every field you list in `searchable_fields`, plus every relation field, gets a **Filters** dropdown in the list toolbar (see `filterable_fields` below to choose them explicitly). From there, users combine any number of filters to find the rows they need.
 
 ## How the filter builder works
 
@@ -109,7 +109,30 @@ Wrap a value in quotes when it contains a space or a parenthesis: `name__eq="quo
 When the URL contains an invalid `filter` string, such as an unknown field, an unavailable operator, or an unparseable value, the application returns an `HTTP 400` error instead of silently dropping part of the condition.
 
 !!! important
-    Only the fields you list in `searchable_fields` receive filters. If you leave `searchable_fields` unset, every field receives them.
+    By default, the fields you list in `searchable_fields` receive filters, plus every relation field (`HasOne`/`HasMany`), even though relations are not text-searchable. If you leave `searchable_fields` unset, every field receives them. Set `filterable_fields` to choose the filterable fields explicitly, independent of search:
+
+    ```python
+    class PostView(ModelView):
+        searchable_fields = ["title", "content"]
+        filterable_fields = ["title", "published", "author", "tags"]
+    ```
+
+## Filtering by relation
+
+Relation fields can be filtered by related record. When a user picks an `Is one of`-style operator on a `HasOne` or `HasMany` field, the value input becomes a searchable dropdown of the related view's records. It uses the same lookup API as the relation widget in forms, so it supports search and pagination.
+
+* **`HasOne`**: `Is one of` (`in`) and `Is not one of` (`not_in`). `not_in` also matches rows with no related record.
+* **`HasMany`**: `Has any of` (`any_of`) and `Has none of` (`none_of`). `none_of` also matches rows with no related records.
+* Both kinds also keep `is_null`/`is_not_null`, except on Tortoise to-many and backward relations, which have no key column to null-check.
+
+In the URL, the value is a comma-separated list of the related records' primary keys:
+
+```text
+/admin/book/list?filter=author__in=1,2
+/admin/author/list?filter=books__none_of=42
+```
+
+Active-filter pills show each selected record's label (its `__admin_repr__`) instead of the raw key. The record picker is only offered when the related view is registered and accessible to the current user. Otherwise, only the null checks remain.
 
 
 ## Built-in filter reference
@@ -135,8 +158,10 @@ The following table lists every filter available out of the box, the URL slug yo
 | Is in the future | `in_future` | *(none)* |  |
 | Is true | `is_true` | *(none)* |  |
 | Is false | `is_false` | *(none)* |  |
-| Is one of | `in` | comma-separated list |  |
-| Is not one of | `not_in` | comma-separated list |  |
+| Is one of | `in` | comma-separated list (record picker on `HasOne`) |  |
+| Is not one of | `not_in` | comma-separated list (record picker on `HasOne`) |  |
+| Has any of | `any_of` | related primary keys (record picker on `HasMany`) |  |
+| Has none of | `none_of` | related primary keys (record picker on `HasMany`) |  |
 
 If you need a filter for a data type the built-ins don't cover, such as a JSON field or a geo-point, see [Custom Filters](../advanced/custom-filters.md) to write a `BaseFilter` subclass and register it globally or per field instance.
 

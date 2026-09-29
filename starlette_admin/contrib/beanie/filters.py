@@ -69,6 +69,16 @@ from starlette_admin.filters.numeric import (
     LessThanOrEqualFilter as BaseLessThanOrEqualFilter,
 )
 from starlette_admin.filters.numeric import NotEqualFilter as BaseNumericNotEqualFilter
+from starlette_admin.filters.relation import (
+    RelationAnyOfFilter as BaseRelationAnyOfFilter,
+)
+from starlette_admin.filters.relation import RelationInFilter as BaseRelationInFilter
+from starlette_admin.filters.relation import (
+    RelationNoneOfFilter as BaseRelationNoneOfFilter,
+)
+from starlette_admin.filters.relation import (
+    RelationNotInFilter as BaseRelationNotInFilter,
+)
 from starlette_admin.filters.string import ContainsFilter as BaseContainsFilter
 from starlette_admin.filters.string import EndsWithFilter as BaseEndsWithFilter
 from starlette_admin.filters.string import NotContainsFilter as BaseNotContainsFilter
@@ -354,6 +364,46 @@ class ObjectIdNotInFilter(BaseArrayNotInFilter):
         return {ctx.field_name: {"$nin": ctx.value}}
 
 
+# Relations by related record. Beanie stores a `Link` (or each element of a
+# `list[Link]`) as a DBRef, so the referenced document's id lives under
+# `<field>.$id`, which matches array elements too. Keys that look like an
+# ObjectId are converted; any other key type is matched as-is.
+
+
+def _link_ids(values: list[str]) -> list[Any]:
+    result: list[Any] = []
+    for v in values:
+        try:
+            result.append(ObjectId(v))
+        except (bson.errors.InvalidId, TypeError):
+            result.append(v)
+    return result
+
+
+def _link_query(ctx: FilterApplyContext, op: str) -> dict:
+    return {f"{ctx.field_name}.$id": {op: _link_ids(ctx.value)}}
+
+
+class RelationInFilter(BaseRelationInFilter):
+    def apply(self, ctx: FilterApplyContext) -> dict:
+        return _link_query(ctx, "$in")
+
+
+class RelationNotInFilter(BaseRelationNotInFilter):
+    def apply(self, ctx: FilterApplyContext) -> dict:
+        return _link_query(ctx, "$nin")
+
+
+class RelationAnyOfFilter(BaseRelationAnyOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> dict:
+        return _link_query(ctx, "$in")
+
+
+class RelationNoneOfFilter(BaseRelationNoneOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> dict:
+        return _link_query(ctx, "$nin")
+
+
 # FilterGroup-to-MongoDB-query conversion
 
 # Beanie and pymongo use "_id" internally; the admin field is named "id".
@@ -539,9 +589,18 @@ class BeanieFilterRegistry(FilterRegistry):
     def boolean_filters(self, field: BaseField) -> list[type[BaseFilter]]:
         return [IsTrueFilter, IsFalseFilter, IsNullFilter, IsNotNullFilter]
 
-    @filters(HasOne, HasMany)
+    @filters(HasOne)
     def relation_filters(self, field: BaseField) -> list[type[BaseFilter]]:
-        return [IsNullFilter, IsNotNullFilter]
+        return [RelationInFilter, RelationNotInFilter, IsNullFilter, IsNotNullFilter]
+
+    @filters(HasMany)
+    def to_many_relation_filters(self, field: BaseField) -> list[type[BaseFilter]]:
+        return [
+            RelationAnyOfFilter,
+            RelationNoneOfFilter,
+            IsNullFilter,
+            IsNotNullFilter,
+        ]
 
     @filters(TagsField)
     def tags_filters(self, field: BaseField) -> list[type[BaseFilter]]:

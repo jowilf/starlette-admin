@@ -54,6 +54,10 @@ from starlette_admin.contrib.sqla.filters import (
     NotInFilter,
     NumericEqualFilter,
     NumericNotEqualFilter,
+    RelationAnyOfFilter,
+    RelationInFilter,
+    RelationNoneOfFilter,
+    RelationNotInFilter,
     StartsWithFilter,
     TimeBetweenFilter,
     TimeEqualFilter,
@@ -234,6 +238,57 @@ def test_is_null_on_collection_relationship(seeded_session):
 
 def test_is_not_null_on_collection_relationship(seeded_session):
     clause = IsNotNullFilter().apply(_ctx("items", view_cls=_CategoryView))
+    rows = seeded_session.execute(select(Category).where(clause)).scalars().all()
+    assert [r.name for r in rows] == ["Widgets"]
+
+
+# ── Relations by related record ───────────────────────────────────────────────
+
+
+def _category_id(session: Session) -> str:
+    return str(session.execute(select(Category.id)).scalar_one())
+
+
+def _item_id(session: Session, name: str) -> str:
+    return str(session.execute(select(Item.id).where(Item.name == name)).scalar_one())
+
+
+def test_relation_in_on_scalar_relationship(seeded_session):
+    clause = RelationInFilter().apply(_ctx("category", [_category_id(seeded_session)]))
+    rows = seeded_session.execute(select(Item).where(clause)).scalars().all()
+    assert [r.name for r in rows] == ["Alpha"]
+
+
+def test_relation_not_in_on_scalar_relationship_includes_null(seeded_session):
+    clause = RelationNotInFilter().apply(
+        _ctx("category", [_category_id(seeded_session)])
+    )
+    rows = seeded_session.execute(select(Item).where(clause)).scalars().all()
+    assert [r.name for r in rows] == ["Beta"]
+
+
+def test_relation_in_unknown_pk_matches_nothing(seeded_session):
+    clause = RelationInFilter().apply(_ctx("category", ["999999"]))
+    rows = seeded_session.execute(select(Item).where(clause)).scalars().all()
+    assert rows == []
+
+
+def test_relation_any_of_on_collection_relationship(seeded_session):
+    clause = RelationAnyOfFilter().apply(
+        _ctx("items", [_item_id(seeded_session, "Alpha")], view_cls=_CategoryView)
+    )
+    rows = seeded_session.execute(select(Category).where(clause)).scalars().all()
+    assert [r.name for r in rows] == ["Widgets"]
+
+
+def test_relation_none_of_on_collection_relationship(seeded_session):
+    alpha = _item_id(seeded_session, "Alpha")
+    beta = _item_id(seeded_session, "Beta")
+    clause = RelationNoneOfFilter().apply(
+        _ctx("items", [alpha], view_cls=_CategoryView)
+    )
+    assert seeded_session.execute(select(Category).where(clause)).all() == []
+    clause = RelationNoneOfFilter().apply(_ctx("items", [beta], view_cls=_CategoryView))
     rows = seeded_session.execute(select(Category).where(clause)).scalars().all()
     assert [r.name for r in rows] == ["Widgets"]
 

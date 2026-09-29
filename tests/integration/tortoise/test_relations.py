@@ -147,11 +147,66 @@ class TestRelationFilters:
         assert response.status_code == 200
         assert _list_total(response.text) == 1
 
-    async def test_to_many_relation_offers_no_filters(self, client):
+    async def test_to_many_relation_offers_no_null_filters(self, client):
         response = await client.get(
             "/admin/post/list", params={"filter": "tags__is_null"}
         )
         assert response.status_code == 400
+
+    async def test_to_one_relation_in(self, client):
+        alice = await Author.get(name="Alice")
+        response = await client.get(
+            "/admin/post/list", params={"filter": f"author__in={alice.id}"}
+        )
+        assert response.status_code == 200
+        assert _list_total(response.text) == 1
+
+    async def test_to_one_relation_not_in_includes_null(self, client):
+        alice = await Author.get(name="Alice")
+        response = await client.get(
+            "/admin/post/list", params={"filter": f"author__not_in={alice.id}"}
+        )
+        assert response.status_code == 200
+        assert _list_total(response.text) == 1
+
+    async def test_to_many_relation_any_of(self, client):
+        python = await Tag.get(name="python")
+        web = await Tag.get(name="web")
+        response = await client.get(
+            "/admin/post/list",
+            params={"filter": f"tags__any_of={python.id},{web.id}"},
+        )
+        assert response.status_code == 200
+        assert _list_total(response.text) == 1
+
+    async def test_to_many_relation_none_of(self, client):
+        python = await Tag.get(name="python")
+        response = await client.get(
+            "/admin/post/list", params={"filter": f"tags__none_of={python.id}"}
+        )
+        assert response.status_code == 200
+        assert _list_total(response.text) == 1
+
+    async def test_backward_relations_filterable(self, client):
+        post = await Post.get(title="Hello")
+        alice = await Author.get(name="Alice")
+        profile = await Profile.get(author=alice)
+        response = await client.get(
+            "/admin/author/list", params={"filter": f"posts__any_of={post.id}"}
+        )
+        assert response.status_code == 200
+        assert _list_total(response.text) == 1
+        response = await client.get(
+            "/admin/author/list", params={"filter": f"profile__not_in={profile.id}"}
+        )
+        assert response.status_code == 200
+        assert _list_total(response.text) == 1
+
+    async def test_filter_builder_offers_relation_lookup(self, client):
+        response = await client.get("/admin/post/list")
+        assert response.status_code == 200
+        assert '"data_type": "relation"' in response.text
+        assert "/admin/_api/author/relation-lookup" in response.text
 
 
 class TestRelationForms:

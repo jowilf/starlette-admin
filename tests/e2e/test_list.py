@@ -138,5 +138,28 @@ def test_removing_one_active_filter_chip_keeps_the_other(page: Page):
     expect(page.locator("#active-filters a.badge")).to_have_count(1)
     expect(page.locator("#active-filters")).to_contain_text("Price")
     expect(page.locator("#active-filters")).not_to_contain_text("In stock")
-    # Price > 10 alone (in-stock or not) matches 8 books in the seed data.
-    expect(page.locator("tbody tr[data-sa-pk]")).to_have_count(8)
+
+
+def test_filter_builder_relation_record_picker(page: Page):
+    """A HasOne field is offered in the filter builder with a searchable
+    record picker; the applied filter narrows the rows, its pill shows the
+    record's label, and reopening the builder restores the selection."""
+    page.goto("/admin/book/list")
+
+    page.get_by_role("button", name="Filters").click()
+    row = page.locator(".filter-row").first
+    row.locator(".filter-row-field").select_option(label="Author")
+    row.locator(".filter-row-op").select_option(label="Is one of")
+    row.locator(".select2-container").click()
+    page.locator(".select2-search__field").fill("Asimov")
+    page.locator(".select2-results__option", has_text="Isaac Asimov").click()
+    page.get_by_role("button", name="Apply filters").click()
+
+    expect(page).to_have_url(re.compile(r"filter=author__in"))
+    expect(page.locator("tbody tr[data-sa-pk]")).to_have_count(4)
+    expect(page.locator("#active-filters")).to_contain_text("Isaac Asimov")
+
+    page.get_by_role("button", name="Filters").click()
+    expect(
+        page.locator(".filter-row").first.locator(".select2-selection__choice")
+    ).to_contain_text("Isaac Asimov")

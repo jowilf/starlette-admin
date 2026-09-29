@@ -159,6 +159,8 @@ class ModelView(BaseModelView):
             if (self.sortable_fields is not None)
             else _default_list
         )
+        if self.filterable_fields is not None:
+            self.filterable_fields = normalize_list(self.filterable_fields)
         self.fields_default_sort = normalize_list(
             self.fields_default_sort, is_default_sort_list=True
         )
@@ -170,6 +172,27 @@ class ModelView(BaseModelView):
             self.pk_attr,
             len(self.fields),
         )
+
+    def _is_filterable_by_default(self, field: BaseField, name: str) -> bool:
+        """Also require a SQL-expressible model attribute: SQLAlchemy filters
+        resolve the field with `getattr(model, name)`, so a field backed by
+        a plain Python `property` (or no attribute at all) cannot be queried
+        and is left out of the filter builder. Columns, relationships,
+        `column_property` and `hybrid_property` attributes all qualify.
+        Declare `filterable_fields` explicitly to override this.
+        """
+        if not super()._is_filterable_by_default(field, name):
+            return False
+        attr = getattr(self.model, name, None) if "." not in name else None
+        if attr is None or not hasattr(attr, "__clause_element__"):
+            _log.debug(
+                "ModelView %r: field %r is not backed by a SQL expression; "
+                "excluded from the filter builder",
+                self.key,
+                name,
+            )
+            return False
+        return True
 
     def _setup_primary_key(self) -> None:
         # Detect the model's primary key attribute(s).

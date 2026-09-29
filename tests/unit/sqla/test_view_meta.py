@@ -186,10 +186,18 @@ def test_attachment_fields_conversion():
         IntegerField(
             "id", required=True, exclude_from_create=True, exclude_from_edit=True
         ),
-        ImageField("image", orderable=False, searchable=False),
-        ImageField("images", multiple=True, orderable=False, searchable=False),
-        FileField("file", orderable=False, searchable=False),
-        FileField("files", multiple=True, orderable=False, searchable=False),
+        ImageField("image", orderable=False, searchable=False, filterable=False),
+        ImageField(
+            "images",
+            multiple=True,
+            orderable=False,
+            searchable=False,
+            filterable=False,
+        ),
+        FileField("file", orderable=False, searchable=False, filterable=False),
+        FileField(
+            "files", multiple=True, orderable=False, searchable=False, filterable=False
+        ),
         HasOne("document", key="document", orderable=False, searchable=False),
     ]
 

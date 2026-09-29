@@ -286,3 +286,32 @@ class TestBeanieRelations:
         assert response.status_code == 303, response.text
         store = await Store.find(Store.name == "Jewelry store").first_or_none()
         assert store.products == []
+
+    async def test_filter_by_relations(self, client):
+        import re
+
+        def total(html: str) -> int:
+            m = re.search(r"Showing \d+ to \d+ of (\d+)", html)
+            return int(m.group(1)) if m else 0
+
+        iphone = await Product.find(Product.title == "IPhone 9").first_or_none()
+        huawei = await Product.find(Product.title == "Huawei P30").first_or_none()
+        jewelry = await Store(name="Jewelry store", products=[iphone]).insert()
+        await Store(name="Phone store", products=[iphone, huawei]).insert()
+        await User(name="John", store=jewelry).insert()
+        await User(name="Jane").insert()
+
+        async def count(url: str, filter_str: str) -> int:
+            response = await client.get(url, params={"filter": filter_str})
+            assert response.status_code == 200, response.text
+            return total(response.text)
+
+        assert await count("/admin/user/list", f"store__in={jewelry.id}") == 1
+        assert await count("/admin/user/list", f"store__not_in={jewelry.id}") == 1
+        assert await count("/admin/store/list", f"products__any_of={iphone.id}") == 2
+        assert await count("/admin/store/list", f"products__any_of={huawei.id}") == 1
+        assert await count("/admin/store/list", f"products__none_of={huawei.id}") == 1
+
+        # The builder offers a relation-lookup record picker for Link fields.
+        response = await client.get("/admin/user/list")
+        assert "/admin/_api/store/relation-lookup" in response.text

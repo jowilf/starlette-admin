@@ -17,6 +17,7 @@ from sqlalchemy import String, and_, cast, false, func, not_, or_, true
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
 from starlette.requests import Request
+from starlette_admin.contrib.sqla.helpers import extract_column_python_type
 from starlette_admin.fields import (
     BaseField,
     BooleanField,
@@ -75,12 +76,25 @@ from starlette_admin.filters.numeric import (
 from starlette_admin.filters.numeric import (
     NotEqualFilter as BaseNumericNotEqualFilter,
 )
+from starlette_admin.filters.relation import (
+    RelationAnyOfFilter as BaseRelationAnyOfFilter,
+)
+from starlette_admin.filters.relation import (
+    RelationInFilter as BaseRelationInFilter,
+)
+from starlette_admin.filters.relation import (
+    RelationNoneOfFilter as BaseRelationNoneOfFilter,
+)
+from starlette_admin.filters.relation import (
+    RelationNotInFilter as BaseRelationNotInFilter,
+)
 from starlette_admin.filters.string import ContainsFilter as BaseContainsFilter
 from starlette_admin.filters.string import EndsWithFilter as BaseEndsWithFilter
 from starlette_admin.filters.string import (
     NotContainsFilter as BaseNotContainsFilter,
 )
 from starlette_admin.filters.string import StartsWithFilter as BaseStartsWithFilter
+from starlette_admin.tools import iterdecode
 
 
 def _column(ctx: FilterApplyContext) -> InstrumentedAttribute:
@@ -127,6 +141,67 @@ class IsNullFilter(BaseIsNullFilter):
 class IsNotNullFilter(BaseIsNotNullFilter):
     def apply(self, ctx: FilterApplyContext) -> Any:
         return _is_not_null(_column(ctx))
+
+
+# Relations (filter by related record primary key)
+
+
+def _coerce_pk(coerce: type, raw: str) -> Any:
+    return raw == "True" if coerce is bool else coerce(raw)
+
+
+def _related_pk_clause(column: InstrumentedAttribute, pks: list[str]) -> Any:
+    """Build a clause over the *related* model's primary key column(s)
+    matching any of `pks` (raw strings as sent by the filter builder; a
+    composite key arrives comma-encoded, as produced by `MultiplePKField`).
+    Used as the criterion of `relationship.has()` / `relationship.any()`.
+    """
+    pk_columns = list(column.property.mapper.primary_key)
+    coercers = [extract_column_python_type(c) for c in pk_columns]  # type: ignore[arg-type]
+    if len(pk_columns) == 1:
+        return pk_columns[0].in_([_coerce_pk(coercers[0], pk) for pk in pks])
+    return or_(
+        *[
+            and_(
+                *[
+                    col == _coerce_pk(coerce, part)
+                    for col, coerce, part in zip(
+                        pk_columns, coercers, iterdecode(pk), strict=False
+                    )
+                ]
+            )
+            for pk in pks
+        ]
+    )
+
+
+def _relation_match(ctx: FilterApplyContext) -> Any:
+    """`EXISTS` clause: the row is related to at least one of `ctx.value`."""
+    column = _column(ctx)
+    criterion = _related_pk_clause(column, ctx.value)
+    if isinstance(column.impl, ScalarObjectAttributeImpl):
+        return column.has(criterion)
+    return column.any(criterion)
+
+
+class RelationInFilter(BaseRelationInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return _relation_match(ctx)
+
+
+class RelationNotInFilter(BaseRelationNotInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return not_(_relation_match(ctx))
+
+
+class RelationAnyOfFilter(BaseRelationAnyOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return _relation_match(ctx)
+
+
+class RelationNoneOfFilter(BaseRelationNoneOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return not_(_relation_match(ctx))
 
 
 # String
@@ -449,4 +524,20 @@ class SqlaFilterRegistry(FilterRegistry):
 
     @filters(RelationField)
     def relation_filters(self, field: BaseField) -> list[type[BaseFilter]]:
-        return [IsNullFilter, IsNotNullFilter]
+        """Relations are filterable by related record (picked from a
+        searchable dropdown of the foreign view) or by whether any related
+        record exists at all.
+        """
+        if getattr(field, "multiple", False):
+            return [
+                RelationAnyOfFilter,
+                RelationNoneOfFilter,
+                IsNullFilter,
+                IsNotNullFilter,
+            ]
+        return [
+            RelationInFilter,
+            RelationNotInFilter,
+            IsNullFilter,
+            IsNotNullFilter,
+        ]

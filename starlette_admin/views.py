@@ -88,6 +88,7 @@ from starlette_admin.helpers import (
     list_url,
     maybe_async,
     not_none,
+    relation_lookup_url,
     safe_redirect_url,
 )
 from starlette_admin.helpers import (
@@ -541,6 +542,11 @@ class BaseModelView(BaseView):
         exclude_fields_from_create: List of fields to exclude from creation page.
         exclude_fields_from_edit: List of fields to exclude from editing page.
         searchable_fields: List of searchable fields.
+        filterable_fields: List of fields offered in the list page's filter
+            builder. Defaults to `None`, meaning every searchable field plus
+            every relation field (`HasOne`/`HasMany`), which can be filtered
+            by related record even though it is not text-searchable.
+            `ComputedField`s are never filterable.
         sortable_fields: List of sortable fields.
         fields_default_sort: Initial order (sort) to apply to the table.
             Should be a sequence of field names or a tuple of
@@ -620,6 +626,7 @@ class BaseModelView(BaseView):
     exclude_fields_from_create: Sequence[str] = []
     exclude_fields_from_edit: Sequence[str] = []
     searchable_fields: Sequence[str] | None = None
+    filterable_fields: Sequence[str] | None = None
     sortable_fields: Sequence[str] | None = None
     fields_default_sort: Sequence[tuple[str, bool] | str] | None = None
     exporters: Sequence[BaseExporter | str] = ["csv", "json"]
@@ -746,6 +753,12 @@ class BaseModelView(BaseView):
                 field.searchable = (self.searchable_fields is None) or (
                     name in self.searchable_fields
                 )
+                if isinstance(field, ComputedField):
+                    field.filterable = False
+                elif self.filterable_fields is not None:
+                    field.filterable = name in self.filterable_fields
+                else:
+                    field.filterable = self._is_filterable_by_default(field, name)
                 field.orderable = (self.sortable_fields is None) or (
                     name in self.sortable_fields
                 )
@@ -767,6 +780,19 @@ class BaseModelView(BaseView):
             len(self._all_fields),
             all_field_names,
         )
+
+    def _is_filterable_by_default(self, field: BaseField, name: str) -> bool:
+        """Whether `field` is offered in the filter builder when the view does
+        not set `filterable_fields`: searchable fields plus every relation
+        field. Backends override this to drop fields their filters cannot
+        query (e.g. SQLAlchemy fields backed by a plain Python `property`).
+
+        Args:
+            field: The (non-container, non-computed) field.
+            name: The field's full dotted name (`parent.child` for nested
+                fields).
+        """
+        return bool(field.searchable) or isinstance(field, RelationField)
 
     def _validate_inline_editable_fields(self) -> None:
         """Validates `inline_editable_fields` at startup (fail fast): every
@@ -2389,10 +2415,14 @@ class BaseModelView(BaseView):
         return _resolve_form_layout_node(root, accessible, obj, errors)
 
     def _has_array_filter(self, request: Request) -> bool:
+        """Whether any filter offered on the list page renders a Select2
+        input (tag input for ARRAY, record picker for RELATION), so the
+        Select2 assets must be loaded."""
         registry = self.get_filter_registry()
         return any(
-            f.data_type == FilterDataType.ARRAY
+            f.data_type in (FilterDataType.ARRAY, FilterDataType.RELATION)
             for field in self.get_fields_list(request)
+            if field.filterable
             for f in registry.filters_for(field)
         )
 
@@ -2672,7 +2702,9 @@ class BaseModelView(BaseView):
                     node["value"] = unquote(left)
                     node["value2"] = unquote(right)
                 elif "," in value_str:
-                    node["value"] = split_commas_outside_quotes(value_str)
+                    node["value"] = [
+                        unquote(part) for part in split_commas_outside_quotes(value_str)
+                    ]
                 else:
                     node["value"] = unquote(value_str)
             return node
@@ -2819,7 +2851,7 @@ class BaseModelView(BaseView):
         fields_by_name = {
             f.name: f
             for f in self.get_fields_list(request, include_nested=True)
-            if f.searchable
+            if f.filterable
         }
         registry = self.get_filter_registry()
         try:
@@ -2911,11 +2943,18 @@ class BaseModelView(BaseView):
         )
 
     def _active_filter_chips(
-        self, request: Request, list_params: ListParams
+        self,
+        request: Request,
+        list_params: ListParams,
+        relation_labels: dict[str, dict[str, str]] | None = None,
     ) -> tuple[str, list[FilterChip]]:
         """Build the active-filter pills shown by `_filter_bar.html`, one per
         top-level rule/group in the `filter` query param tree (already known,
         via `list_params.filters.is_empty()`, to be non-empty and valid).
+
+        `relation_labels` (see `_relation_filter_labels`) maps a relation
+        field name to `{pk: label}` so relation-filter pills show the
+        selected records' labels instead of their raw primary keys.
 
         Walks the re-parsed raw filter string rather than `list_params.filters`:
         a pill's `remove_url` is the current filter tree re-serialized with that
@@ -2951,13 +2990,13 @@ class BaseModelView(BaseView):
         fields_by_name = {
             getattr(f, "_name", f.name): f
             for f in self.get_fields_list(request, include_nested=True)
-            if f.searchable
+            if f.filterable
         }
         registry = self.get_filter_registry()
         return logic, [
             FilterChip(
                 label=self._describe_filter_node(
-                    node, fields_by_name, registry, request
+                    node, fields_by_name, registry, request, relation_labels
                 ),
                 remove_url=self._filter_tree_url(
                     request, logic, rules[:i] + rules[i + 1 :]
@@ -2972,6 +3011,7 @@ class BaseModelView(BaseView):
         fields_by_name: dict[str, BaseField],
         registry: FilterRegistry,
         request: Request,
+        relation_labels: dict[str, dict[str, str]] | None = None,
     ) -> str:
         """Human-readable description of a raw filter-tree node for its pill
         label: `"{field}: {filter} {value}"` for a leaf rule (only the
@@ -3003,7 +3043,7 @@ class BaseModelView(BaseView):
             parts = []
             for rule in rules:
                 desc = BaseModelView._describe_filter_node(
-                    rule, fields_by_name, registry, request
+                    rule, fields_by_name, registry, request, relation_labels
                 )
                 parts.append(desc)
             return f"({joiner.join(parts)})"
@@ -3022,6 +3062,12 @@ class BaseModelView(BaseView):
             return f"{field_label}: {filter_label}"
 
         labels = BaseModelView._filter_value_labels(field, filter_cls, request)
+        if (
+            relation_labels
+            and filter_cls is not None
+            and filter_cls.data_type == FilterDataType.RELATION
+        ):
+            labels = relation_labels.get(node.get("field"), labels)  # type: ignore[arg-type]
 
         def display(value: Any) -> str:
             if value is None:
@@ -3080,13 +3126,29 @@ class BaseModelView(BaseView):
         [BaseFilter.get_choices][starlette_admin.filters.BaseFilter.get_choices]
         returns a non-empty result, taking precedence over the field-level
         `choices` set below for `EnumField`.
+
+        A `RelationField` additionally carries `relation: {url, pk}`: the
+        foreign view's `relation-lookup` API URL and primary key attribute,
+        which `filter-builder.js` uses to drive the Select2 record picker of
+        [RELATION][starlette_admin.filters.FilterDataType] filters. When the
+        foreign view cannot be resolved or is not accessible to the current
+        user, RELATION filters are omitted for that field.
         """
         registry = self.get_filter_registry()
         result = []
         for f in self.get_fields_list(request, include_nested=True):
-            if not f.searchable:
+            if not f.filterable:
                 continue
             available = registry.filters_for(f)
+            relation_data = (
+                self._relation_filter_lookup(request, f)
+                if isinstance(f, RelationField)
+                else None
+            )
+            if relation_data is None:
+                available = [
+                    fc for fc in available if fc.data_type != FilterDataType.RELATION
+                ]
             if available:
                 filters_data = []
                 for fc in available:
@@ -3111,8 +3173,121 @@ class BaseModelView(BaseView):
                     field_data["choices"] = [
                         [str(v), str(label)] for v, label in f._get_choices(request)
                     ]
+                if relation_data is not None:
+                    field_data["relation"] = relation_data
                 result.append(field_data)
         return result
+
+    def _relation_filter_foreign_view(
+        self, request: Request, field: RelationField
+    ) -> Optional["BaseModelView"]:
+        """The accessible foreign view backing `field`, or `None` when it
+        cannot be resolved (e.g. the view is not registered with an admin)
+        or the current user may not access it."""
+        if field.key is None or not hasattr(self, "_find_foreign_view"):
+            return None
+        try:
+            foreign_view = self._find_foreign_view(field.key)
+        except Exception:
+            _log.debug(
+                "relation filter: foreign view %r of field %r not found",
+                field.key,
+                field.name,
+            )
+            return None
+        if not foreign_view.is_accessible(request):
+            return None
+        return foreign_view
+
+    def _relation_filter_lookup(
+        self, request: Request, field: RelationField
+    ) -> dict[str, Any] | None:
+        """`{url, pk}` for the filter builder's relation record picker, or
+        `None` if the foreign view is unavailable (see
+        `_relation_filter_foreign_view`)."""
+        foreign_view = self._relation_filter_foreign_view(request, field)
+        if foreign_view is None:
+            return None
+        try:
+            url = relation_lookup_url(request, not_none(foreign_view.key))
+        except Exception:
+            return None
+        return {"url": url, "pk": foreign_view.pk_attr}
+
+    async def _relation_filter_labels(
+        self, request: Request, filters: FilterGroup
+    ) -> dict[str, dict[str, str]]:
+        """Resolve the primary keys selected in RELATION filters of the
+        parsed `filters` tree into `{field_name: {pk: label}}`, using each
+        foreign view's `find_by_pks` and `repr`, so the active-filter pills
+        read "Author: Is one of John Doe" rather than "... 42". Keys that
+        cannot be resolved are left out (the pill then shows the raw key).
+        """
+        wanted: dict[str, set[str]] = {}
+
+        def collect(node: FilterGroup | FilterRule) -> None:
+            if isinstance(node, FilterGroup):
+                for child in node.rules:
+                    collect(child)
+                return
+            values = node.value if isinstance(node.value, list) else []
+            if values:
+                wanted.setdefault(node.field, set()).update(str(v) for v in values)
+
+        collect(filters)
+        if not wanted:
+            return {}
+
+        registry = self.get_filter_registry()
+        fields = {
+            f.name: f
+            for f in self.get_fields_list(request, include_nested=True)
+            if isinstance(f, RelationField) and f.filterable
+        }
+        result: dict[str, dict[str, str]] = {}
+        for field_name, pks in wanted.items():
+            field = fields.get(field_name)
+            if field is None or not any(
+                fc.data_type == FilterDataType.RELATION
+                for fc in registry.filters_for(field)
+            ):
+                continue
+            labels = await self._resolve_relation_labels(request, field, pks)
+            if labels is not None:
+                result[field_name] = labels
+        return result
+
+    async def _resolve_relation_labels(
+        self, request: Request, field: RelationField, pks: set[str]
+    ) -> dict[str, str] | None:
+        """`{pk: repr}` for the records of `field`'s foreign view whose
+        primary keys are in `pks`, or `None` if they cannot be looked up."""
+        foreign_view = self._relation_filter_foreign_view(request, field)
+        if foreign_view is None:
+            return None
+        # Look the records up exactly like the `relation-lookup` endpoint
+        # does (the record picker's own data source): under
+        # RELATION_LOOKUP, so the foreign view sees the same action (and can
+        # e.g. skip eager-loading its own relations, which a label does not
+        # need) instead of the current page's LIST action.
+        previous_action = getattr(request.state, "action", None)
+        request.state.action = RequestAction.RELATION_LOOKUP
+        try:
+            objs = await foreign_view.find_by_pks(request, sorted(pks))
+            labels: dict[str, str] = {}
+            for obj in objs:
+                pk = await foreign_view.get_serialized_pk_value(request, obj)
+                labels[str(pk)] = await foreign_view.repr(obj, request)
+        except Exception:
+            _log.debug(
+                "relation filter: could not resolve labels for %r",
+                field.name,
+                exc_info=True,
+            )
+            return None
+        finally:
+            request.state.action = previous_action
+        return labels
 
 
 class DefaultIndexView(CustomView):

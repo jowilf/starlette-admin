@@ -291,6 +291,13 @@ def import_url(request: Request, key: str) -> str:
     return str(request.url_for(route_name + ":import", key=key))
 
 
+def relation_lookup_url(request: Request, key: str) -> str:
+    """Build the `relation-lookup` JSON API URL for the given view key (used
+    by relation Select2 widgets in forms and in the filter builder)."""
+    route_name = request.app.state.ROUTE_NAME
+    return str(request.url_for(route_name + ":relation-lookup", key=key))
+
+
 def static_url(request: Request, path: str, v: Any = None) -> str:
     """Build a URL for a static asset served by the admin's static mount."""
     route_name = request.app.state.ROUTE_NAME

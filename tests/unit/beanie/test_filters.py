@@ -367,3 +367,28 @@ def test_register_filters_plugin_api():
         assert registry.filters_for(_PluginField("x")) == [_PluginFilter]
     finally:
         del beanie_filters._EXTERNAL_FILTERS[_PluginField]
+
+
+def test_registry_relation_fields():
+    from starlette_admin.fields import HasMany, HasOne
+
+    has_one = {f.name for f in filter_registry.filters_for(HasOne("x", key="x"))}
+    has_many = {f.name for f in filter_registry.filters_for(HasMany("x", key="x"))}
+    assert has_one == {"in", "not_in", "is_null", "is_not_null"}
+    assert has_many == {"any_of", "none_of", "is_null", "is_not_null"}
+
+
+def test_relation_filters_match_link_ids():
+    from starlette_admin.contrib.beanie.filters import (
+        RelationAnyOfFilter,
+        RelationInFilter,
+        RelationNoneOfFilter,
+        RelationNotInFilter,
+    )
+
+    oid = ObjectId()
+    ctx = FilterApplyContext(query=None, field_name="author", value=[str(oid), "x"])
+    assert RelationInFilter().apply(ctx) == {"author.$id": {"$in": [oid, "x"]}}
+    assert RelationAnyOfFilter().apply(ctx) == {"author.$id": {"$in": [oid, "x"]}}
+    assert RelationNotInFilter().apply(ctx) == {"author.$id": {"$nin": [oid, "x"]}}
+    assert RelationNoneOfFilter().apply(ctx) == {"author.$id": {"$nin": [oid, "x"]}}

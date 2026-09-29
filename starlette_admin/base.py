@@ -1738,7 +1738,14 @@ class BaseAdmin:
             list_params.q,
             list_params.filters,
         )
-        filter_logic, filter_chips = view._active_filter_chips(request, list_params)
+        relation_labels = (
+            await view._relation_filter_labels(request, list_params.filters)
+            if not list_params.filters.is_empty()
+            else None
+        )
+        filter_logic, filter_chips = view._active_filter_chips(
+            request, list_params, relation_labels
+        )
         return self._template_response(
             request=request,
             name=view.list_template,

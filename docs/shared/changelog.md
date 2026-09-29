@@ -10,6 +10,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[Unreleased\]
+
+### Added
+
+- Filter list pages by relation fields (`HasOne`/`HasMany`) on every backend. The filter builder now offers relation
+  fields, with a searchable record picker backed by the related view's `relation-lookup` API. The new operators are
+  `in`/`not_in` for `HasOne` and `any_of`/`none_of` for `HasMany`, plus the new `FilterDataType.RELATION`. Active-filter
+  pills show the selected records' labels instead of their primary keys.
+- Add `BaseModelView.filterable_fields` (and `BaseField.filterable`) to choose the fields offered in the filter
+  builder independently of `searchable_fields`. It defaults to the searchable fields plus every relation field.
+
+### Fixed
+
+- Unquote the items of a comma-separated filter value (e.g. `tag__in="a, b",c`), so a quoted list item no longer
+  keeps its quotes and survives a round trip when a filter pill is removed.
+- SQLAlchemy: fields backed by a plain Python `property` (not a column, relationship, `column_property` or
+  `hybrid_property`) are no longer offered in the filter builder by default; applying a filter on them failed with a
+  server error.
+
 ## \[1.0.1\] - 2026-08-24
 
 ### Added
