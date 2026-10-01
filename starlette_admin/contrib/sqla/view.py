@@ -787,12 +787,11 @@ class ModelView(BaseModelView):
         sorts: Sequence[tuple[str, str]],
         stmt: Select,
     ) -> Select:
+        mapper = inspect(self.model)
         for sort_by, sort_dir in sorts:
             _log.debug("Ordering %s by %r %s", self.model.__name__, sort_by, sort_dir)
             model_attr = getattr(self.model, sort_by, None)
-            if model_attr is not None and isinstance(
-                model_attr.property, RelationshipProperty
-            ):
+            if sort_by in mapper.relationships:
                 stmt = stmt.outerjoin(model_attr)
             sorting_attr = self.sortable_field_mapping.get(sort_by, model_attr)
             stmt = stmt.order_by(
