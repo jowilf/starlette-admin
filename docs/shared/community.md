@@ -33,6 +33,6 @@ You can build reusable extensions by using the official Cookiecutter templates. 
 
 ## See also
 
-* [Plugins](advanced/plugins.md)
-* [Custom Themes](advanced/custom-themes.md)
-* [Extension Points](advanced/extension-points.md)
+* **[Plugins](advanced/plugins.md)**
+* **[Custom Themes](advanced/custom-themes.md)**
+* **[Extension Points](advanced/extension-points.md)**
