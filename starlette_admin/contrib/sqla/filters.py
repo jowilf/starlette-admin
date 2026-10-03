@@ -15,7 +15,6 @@ from typing import Any
 
 from sqlalchemy import String, and_, cast, false, func, not_, or_, true
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
-from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
 from starlette.requests import Request
 from starlette_admin.fields import (
     BaseField,
@@ -92,7 +91,7 @@ def _column(ctx: FilterApplyContext) -> InstrumentedAttribute:
 
 def _is_null(column: InstrumentedAttribute) -> Any:
     if isinstance(column.property, RelationshipProperty):
-        if isinstance(column.impl, ScalarObjectAttributeImpl):
+        if not column.property.uselist:
             return ~column.has()
         return ~column.any()
     return column.is_(None)
@@ -100,7 +99,7 @@ def _is_null(column: InstrumentedAttribute) -> Any:
 
 def _is_not_null(column: InstrumentedAttribute) -> Any:
     if isinstance(column.property, RelationshipProperty):
-        if isinstance(column.impl, ScalarObjectAttributeImpl):
+        if not column.property.uselist:
             return column.has()
         return column.any()
     return column.is_not(None)
