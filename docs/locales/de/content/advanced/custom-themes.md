@@ -2,7 +2,7 @@
 title: Eigene Themes
 description: Überschreiben Sie Tabler-CSS-Variablen, binden Sie eigene Stylesheets
   ein und verändern Sie das Gesamtbild Ihres starlette-admin-Dashboards.
-source_hash: 385a0c0718253e051a98f4f310990ad32d3e3babcae40ccddf75e59b931fe937
+source_hash: 835dc22fa56a25d844ae42f9071060b2cc80319e8e99624ebb86294b5bb900b3
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -105,7 +105,7 @@ Eine vollständige Übersicht aller Rollen finden Sie in `CoreClasses.classes` i
 * **Component-Klassen:** Framework-spezifische Klassen, die ein anderes CSS-Framework austauschen muss, beispielsweise `list.table`, `modal.base` oder `filter.chip`.
 * **Runtime-Klassen:** Klassen, die das Core-JavaScript dynamisch anwendet, etwa `alert.success` oder `import.status_badge`.
 
-## Eigene Themes erstellen und teilen
+## Eigene Themes erstellen und teilen {#building-and-sharing-custom-themes}
 
 Sie können ein Theme als Paket schnüren und auf PyPI veröffentlichen – ganz ähnlich wie ein Plugin. Leiten Sie `BaseTheme` ab, um ein wiederverwendbares Python-Paket zu bauen, das Layout und Styling des Admin-Bereichs über mehrere Projekte hinweg ersetzt, oder um ein visuelles System mit anderen Personen zu teilen.
 
@@ -221,6 +221,7 @@ Binden Sie das Stylesheet in Ihren Templates so ein:
 
 ## Wie es weitergeht
 
+* **[Community-Erweiterungen](../community.md#themes):** Entdecke Themes von Drittanbietern, die von der Community veröffentlicht wurden.
 * **[Templates](templates.md):** Überschreiben Sie eine einzelne Seite, Zelle oder ein Widget, ohne den gesamten Template-Baum zu forken.
 * **[Extension Points](extension-points.md):** Entdecken Sie Hooks und Anpassungspunkte jenseits der grundlegenden Themes.
 * **[Quickstart](../getting-started/quickstart.md):** Bauen Sie eine funktionsfähige Admin-Oberfläche von Grund auf.

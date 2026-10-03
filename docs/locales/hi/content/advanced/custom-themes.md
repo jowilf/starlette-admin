@@ -2,7 +2,7 @@
 title: कस्टम थीम
 description: Tabler CSS वेरिएबल को ओवरराइड करें, कस्टम स्टाइलशीट इंजेक्ट करें, और
   अपने starlette-admin डैशबोर्ड की समग्र look को बदलें।
-source_hash: 385a0c0718253e051a98f4f310990ad32d3e3babcae40ccddf75e59b931fe937
+source_hash: 835dc22fa56a25d844ae42f9071060b2cc80319e8e99624ebb86294b5bb900b3
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -221,6 +221,7 @@ admin = Admin(engine, title="My Admin", static_dir="my_static/")
 
 ## आगे क्या {#whats-next}
 
+* **[सामुदायिक एक्सटेंशन](../community.md#themes):** समुदाय द्वारा प्रकाशित थर्ड-पार्टी थीम खोजें।
 * **[टेम्पलेट](templates.md):** पूरे टेम्पलेट ट्री को fork किए बिना एक single पेज, सेल, या विजेट को ओवरराइड करें।
 * **[एक्सटेंशन पॉइंट्स](extension-points.md):** बुनियादी थीम से आगे hooks और customization points देखें।
 * **[क्विकस्टार्ट](../getting-started/quickstart.md):** शुरुआत से एक चालू एडमिन इंटरफ़ेस बनाएँ।

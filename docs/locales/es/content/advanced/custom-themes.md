@@ -2,7 +2,7 @@
 title: Temas personalizados
 description: Sobrescriba las variables CSS de Tabler, inyecte hojas de estilo personalizadas
   y modifique la estética general de su panel de starlette-admin.
-source_hash: 385a0c0718253e051a98f4f310990ad32d3e3babcae40ccddf75e59b931fe937
+source_hash: 835dc22fa56a25d844ae42f9071060b2cc80319e8e99624ebb86294b5bb900b3
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -105,7 +105,7 @@ Lea `CoreClasses.classes` en `starlette_admin/theme.py` para conocer todo el voc
 * **Clases de componentes:** Clases específicas de un framework que otro framework CSS debe sustituir, como `list.table`, `modal.base` o `filter.chip`.
 * **Clases en tiempo de ejecución:** Clases que el JavaScript principal aplica dinámicamente, como `alert.success` o `import.status_badge`.
 
-## Creación y distribución de temas personalizados
+## Creación y distribución de temas personalizados {#building-and-sharing-custom-themes}
 
 Puede empaquetar un tema y publicarlo en PyPI, de manera similar a un plugin. Herede de `BaseTheme` para crear un paquete de Python reutilizable que reemplace el diseño y el estilo del panel en varios proyectos, o para compartir un sistema visual con otras personas.
 
@@ -221,6 +221,7 @@ Referencie la hoja de estilo desde sus plantillas de esta manera:
 
 ## Próximos pasos
 
+* **[Extensiones comunitarias](../community.md#themes):** Descubre los temas de terceros publicados por la comunidad.
 * **[Templates](templates.md):** Sobrescriba una sola página, celda o widget sin bifurcar el árbol de plantillas completo.
 * **[Extension Points](extension-points.md):** Explore hooks y puntos de personalización más allá de los temas básicos.
 * **[Quickstart](../getting-started/quickstart.md):** Cree una interfaz de administración funcional desde cero.

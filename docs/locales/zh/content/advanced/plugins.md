@@ -1,7 +1,7 @@
 ---
 title: 插件
 description: 将可复用的 admin 功能与扩展打包为 starlette-admin 的即插即用插件。
-source_hash: c9ecd9e51a7426d12b628b06c9c664579e5f269d456e93e9d985c4d2853ac758
+source_hash: d4a820df8fc69e7fb5af4ac514503dd322d197273a20ae2e623852a9bbd02228
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -33,7 +33,7 @@ admin = Admin(engine, plugins=[GeospatialPlugin(default_zoom=13)])
 
 选项由插件的构造函数接收，列表则直接传给 `Admin`，无需任何额外的设置或注册。选项会从构造函数一路传递到 Python 后端、Jinja 模板和前端 JavaScript。
 
-## 构建插件
+## 构建插件 {#building-a-plugin}
 
 编写插件时，请从官方 Cookiecutter 模板开始。它会生成一个目录结构和配置正确、可直接发布的包。
 
@@ -206,6 +206,7 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 ## 下一步
 
+* **[社区扩展](../community.md#plugins)：** 发现社区发布的第三方插件。
 * **[自定义主题](custom-themes.md)：** 使用相同的 Cookiecutter 工作流打包并分享完整的视觉体系。
 * **[事件](events.md)：** 插件在其 `setup()` 钩子中注册的订阅者 API。
 * **[扩展点](extension-points.md)：** 插件可以挂接到的所有注册表和基类。

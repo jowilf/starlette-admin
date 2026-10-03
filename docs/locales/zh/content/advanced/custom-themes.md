@@ -1,7 +1,7 @@
 ---
 title: 自定义主题
 description: 覆盖 Tabler CSS 变量、注入自定义样式表，调整 starlette-admin 仪表盘的整体外观。
-source_hash: 385a0c0718253e051a98f4f310990ad32d3e3babcae40ccddf75e59b931fe937
+source_hash: 835dc22fa56a25d844ae42f9071060b2cc80319e8e99624ebb86294b5bb900b3
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -100,7 +100,7 @@ admin = Admin(engine, title="My Admin", theme=MyTheme())
 * **组件类：** 更换其他 CSS 框架时必须替换的框架特定类名，例如 `list.table`、`modal.base` 或 `filter.chip`。
 * **运行时类：** 由核心 JavaScript 动态应用的类名，例如 `alert.success` 或 `import.status_badge`。
 
-## 构建并分享自定义主题
+## 构建并分享自定义主题 {#building-and-sharing-custom-themes}
 
 你可以将主题打包并发布到 PyPI，就像插件一样。继承 `BaseTheme` 可以构建一个可复用的 Python 包，用于在多个项目中替换管理后台的布局和样式，或与他人共享一套视觉体系。
 
@@ -216,6 +216,7 @@ admin = Admin(engine, title="My Admin", static_dir="my_static/")
 
 ## 下一步
 
+* **[社区扩展](../community.md#themes)：** 发现社区发布的第三方主题。
 * **[模板](templates.md)：** 覆盖单个页面、单元格或部件，而无需分叉整个模板树。
 * **[扩展点](extension-points.md)：** 探索基础主题之外的钩子和自定义点。
 * **[快速上手](../getting-started/quickstart.md)：** 从零构建一个可用的管理界面。

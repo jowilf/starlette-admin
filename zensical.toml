@@ -64,6 +64,7 @@ nav = [
     { "Add an Admin Panel to FastAPI in 5 Minutes" = "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md" },
     { "Building Soft Deletes and a Trash View in FastAPI Using Starlette Admin" = "blog/posts/soft-deletes-trash-view.md" },
   ] },
+  { Community = "community.md" },
   { "API Reference" = [
     { "Admin" = "api/admin.md" },
     { "Views" = "api/views.md" },

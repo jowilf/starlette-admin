@@ -146,6 +146,9 @@
       ]
     },
     {
+      "Communauté": "community.md"
+    },
+    {
       "Référence de l'API :": [
         {
           "Admin": "api/admin.md"

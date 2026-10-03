@@ -146,6 +146,9 @@
       ]
     },
     {
+      "समुदाय": "community.md"
+    },
+    {
       "API संदर्भ": [
         {
           "Admin": "api/admin.md"

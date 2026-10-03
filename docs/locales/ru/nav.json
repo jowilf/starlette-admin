@@ -146,6 +146,9 @@
       ]
     },
     {
+      "Сообщество": "community.md"
+    },
+    {
       "Справочник API": [
         {
           "Admin": "api/admin.md"

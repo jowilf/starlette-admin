@@ -203,6 +203,7 @@ Reference the stylesheet from your templates like this:
 
 ## What's next
 
+* **[Community extensions](../community.md#themes):** Discover third party themes published by the community.
 * **[Templates](templates.md):** Override a single page, cell, or widget without forking the entire template tree.
 * **[Extension Points](extension-points.md):** Explore hooks and customization points beyond basic themes.
 * **[Quickstart](../getting-started/quickstart.md):** Build a working admin interface from scratch.

@@ -18,7 +18,7 @@ DOCS_DIR = PROJECT_ROOT / "docs"
 LOCALES_DIR = DOCS_DIR / "locales"
 SHARED_DIR = DOCS_DIR / "shared"
 #: Files and directories synced from `shared/` into every locale content dir.
-SHARED_ITEMS = ["assets", "javascripts", "stylesheets", "changelog.md"]
+SHARED_ITEMS = ["assets", "javascripts", "stylesheets", "changelog.md", "community.md"]
 CONTENT_SUBDIR = "content"
 SOURCE_LOCALE = "en"
 EN_CONTENT_DIR = LOCALES_DIR / "en" / CONTENT_SUBDIR
