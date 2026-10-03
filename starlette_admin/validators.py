@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 _log = get_logger(__name__)
 
 Validator = Callable[
-    [Request, "BaseField", Any, "dict[str, Any]"], "None | Awaitable[None]"
+    [Request, "BaseField", Any, "dict[str, Any]"], "Awaitable[None] | None"
 ]
 
 

@@ -76,7 +76,7 @@ if TYPE_CHECKING:
 try:
     import arrow
 except ImportError:
-    arrow = None  # ty: ignore[invalid-assignment]
+    arrow = None
 
 
 @dataclass
@@ -1579,6 +1579,7 @@ class ArrowField(DateTimeField):
         super().__post_init__()
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
+        assert arrow is not None
         raw = form_data.get(self.id)
         _log.debug("ArrowField.parse_form_data: field=%r raw=%r", self.name, raw)
         # Preserves pre-timezone conversion behavior.
@@ -1611,7 +1612,9 @@ class ArrowField(DateTimeField):
         return result
 
     async def serialize_value(self, request: Request, value: Any) -> str:
-        assert isinstance(value, arrow.Arrow), f"Expected Arrow, got  {type(value)}"
+        assert arrow is not None and isinstance(value, arrow.Arrow), (
+            f"Expected Arrow, got  {type(value)}"
+        )
         action = request.state.action
         _log.debug(
             "ArrowField.serialize_value: field=%r action=%s value=%r",

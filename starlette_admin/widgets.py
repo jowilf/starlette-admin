@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 try:
     import markdown as _markdown
 except ImportError:  # pragma: no cover
-    _markdown = None  # ty: ignore[invalid-assignment]
+    _markdown = None
 
 
 @dataclass

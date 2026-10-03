@@ -164,7 +164,7 @@ class StandardModelConverter(BaseStandardModelConverter):
 
     @classmethod
     def _ensure_get_args_is_not_null(cls, *args: Any, **kwargs: Any) -> None:
-        if not get_args or not get_origin:  # type: ignore [truthy-function]
+        if get_args is None or get_origin is None:
             raise ImportError(  # pragma: no cover
                 f"'typing_extensions' package is required to convert '{kwargs.get('type')}'"
             )
