@@ -1,4 +1,4 @@
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 from .actions import ActionSelection as ActionSelection
 from .actions import action as action
