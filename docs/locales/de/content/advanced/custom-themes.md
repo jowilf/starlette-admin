@@ -105,7 +105,7 @@ Eine vollständige Übersicht aller Rollen finden Sie in `CoreClasses.classes` i
 * **Component-Klassen:** Framework-spezifische Klassen, die ein anderes CSS-Framework austauschen muss, beispielsweise `list.table`, `modal.base` oder `filter.chip`.
 * **Runtime-Klassen:** Klassen, die das Core-JavaScript dynamisch anwendet, etwa `alert.success` oder `import.status_badge`.
 
-## Eigene Themes erstellen und teilen
+## Eigene Themes erstellen und teilen {#building-and-sharing-custom-themes}
 
 Sie können ein Theme als Paket schnüren und auf PyPI veröffentlichen – ganz ähnlich wie ein Plugin. Leiten Sie `BaseTheme` ab, um ein wiederverwendbares Python-Paket zu bauen, das Layout und Styling des Admin-Bereichs über mehrere Projekte hinweg ersetzt, oder um ein visuelles System mit anderen Personen zu teilen.
 

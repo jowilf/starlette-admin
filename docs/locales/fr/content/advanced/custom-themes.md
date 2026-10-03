@@ -105,7 +105,7 @@ Lisez `CoreClasses.classes` dans `starlette_admin/theme.py` pour connaître l'en
 * **Classes de composants :** classes spécifiques à un framework CSS devant être remplacées si vous utilisez un autre framework, telles que `list.table`, `modal.base` ou `filter.chip`.
 * **Classes d'exécution :** classes appliquées dynamiquement par le JavaScript principal, telles que `alert.success` ou `import.status_badge`.
 
-## Créer et partager des thèmes personnalisés
+## Créer et partager des thèmes personnalisés {#building-and-sharing-custom-themes}
 
 Vous pouvez empaqueter un thème et le publier sur PyPI, à la manière d'un plugin. Dérivez de `BaseTheme` pour construire un package Python réutilisable remplaçant la mise en page et le style de l'administration dans plusieurs projets, ou pour partager un système visuel avec d'autres personnes.
 

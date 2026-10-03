@@ -33,7 +33,7 @@ admin = Admin(engine, plugins=[GeospatialPlugin(default_zoom=13)])
 
 选项由插件的构造函数接收，列表则直接传给 `Admin`，无需任何额外的设置或注册。选项会从构造函数一路传递到 Python 后端、Jinja 模板和前端 JavaScript。
 
-## 构建插件
+## 构建插件 {#building-a-plugin}
 
 编写插件时，请从官方 Cookiecutter 模板开始。它会生成一个目录结构和配置正确、可直接发布的包。
 

@@ -100,7 +100,7 @@ admin = Admin(engine, title="My Admin", theme=MyTheme())
 * **组件类：** 更换其他 CSS 框架时必须替换的框架特定类名，例如 `list.table`、`modal.base` 或 `filter.chip`。
 * **运行时类：** 由核心 JavaScript 动态应用的类名，例如 `alert.success` 或 `import.status_badge`。
 
-## 构建并分享自定义主题
+## 构建并分享自定义主题 {#building-and-sharing-custom-themes}
 
 你可以将主题打包并发布到 PyPI，就像插件一样。继承 `BaseTheme` 可以构建一个可复用的 Python 包，用于在多个项目中替换管理后台的布局和样式，或与他人共享一套视觉体系。
 

@@ -38,7 +38,7 @@ admin = Admin(engine, plugins=[GeospatialPlugin(default_zoom=13)])
 
 Le constructeur du plugin prend les options, et la liste est transmise directement à `Admin`. Rien d'autre à configurer ni à enregistrer. Les options circulent du constructeur vers le backend Python, les templates Jinja et le JavaScript frontend.
 
-## Créer un plugin
+## Créer un plugin {#building-a-plugin}
 
 Pour écrire un plugin, partez du template cookiecutter officiel. Il génère un package publiable avec la structure de répertoires et la configuration appropriées.
 

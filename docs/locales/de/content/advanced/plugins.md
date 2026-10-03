@@ -38,7 +38,7 @@ admin = Admin(engine, plugins=[GeospatialPlugin(default_zoom=13)])
 
 Der Plugin-Konstruktor nimmt die Optionen entgegen, und die Liste geht direkt an `Admin`. Es gibt nichts weiter einzurichten oder zu registrieren. Die Optionen fließen vom Konstruktor bis zum Python-Backend, den Jinja-Templates und dem Frontend-JavaScript durch.
 
-## Ein Plugin entwickeln
+## Ein Plugin entwickeln {#building-a-plugin}
 
 Um ein Plugin zu schreiben, beginnen Sie mit der offiziellen Cookiecutter-Vorlage. Sie erzeugt ein veröffentlichbares Paket mit der richtigen Verzeichnisstruktur und Konfiguration.
 
