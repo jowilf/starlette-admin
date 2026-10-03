@@ -238,7 +238,7 @@ class ModelConverter(BaseMongoEngineModelConverter):
         field = kwargs["field"]
         document_type_obj: me.EmbeddedDocument = field.document_type
         _fields = []
-        for _field in document_type_obj._fields_ordered:
+        for _field in document_type_obj._fields_ordered:  # ty: ignore[unresolved-attribute]
             kwargs["field"] = getattr(document_type_obj, _field)
             _fields.append(self.convert(*args, **kwargs))
         return sa.CollectionField(field.name, _fields, field.required)
