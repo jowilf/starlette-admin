@@ -2,7 +2,7 @@
 title: Plugins
 description: Wiederverwendbare Admin-Funktionen und Erweiterungen als Drop-in-Plugins
   für starlette-admin paketieren.
-source_hash: c9ecd9e51a7426d12b628b06c9c664579e5f269d456e93e9d985c4d2853ac758
+source_hash: d4a820df8fc69e7fb5af4ac514503dd322d197273a20ae2e623852a9bbd02228
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -211,6 +211,7 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 ## Wie es weitergeht
 
+* **[Community-Erweiterungen](../community.md#plugins):** Entdecke Plugins von Drittanbietern, die von der Community veröffentlicht wurden.
 * **[Eigene Themes](custom-themes.md):** Paketieren und teilen Sie ein vollständiges visuelles System – mit demselben Cookiecutter-Workflow.
 * **[Events](events.md):** Die Subscriber-API, die ein Plugin über seinen `setup()`-Hook registriert.
 * **[Erweiterungspunkte](extension-points.md):** Jede Registry und jede Basisklasse, in die ein Plugin eingreifen kann.

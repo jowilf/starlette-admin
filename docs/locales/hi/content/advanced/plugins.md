@@ -2,7 +2,7 @@
 title: प्लगइन
 description: starlette-admin के लिए reusable admin features और extensions को drop-in
   प्लगइन के रूप में package करें।
-source_hash: c9ecd9e51a7426d12b628b06c9c664579e5f269d456e93e9d985c4d2853ac758
+source_hash: d4a820df8fc69e7fb5af4ac514503dd322d197273a20ae2e623852a9bbd02228
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -211,6 +211,7 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 ## आगे क्या {#whats-next}
 
+* **[सामुदायिक एक्सटेंशन](../community.md#plugins):** समुदाय द्वारा प्रकाशित थर्ड-पार्टी प्लगइन्स खोजें।
 * **[कस्टम थीम](custom-themes.md):** उसी cookiecutter workflow का उपयोग करके एक पूरा visual system package और share करें।
 * **[इवेंट](events.md):** Subscriber API जिसे plugin अपने `setup()` hook से register करता है।
 * **[एक्सटेंशन पॉइंट्स](extension-points.md):** हर registry और base class जिसमें plugin hook कर सकता है।

@@ -193,6 +193,7 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 ## What's next
 
+* **[Community extensions](../community.md#plugins):** Discover third party plugins published by the community.
 * **[Custom Themes](custom-themes.md):** Package and share a full visual system, using the same cookiecutter workflow.
 * **[Events](events.md):** The subscriber API a plugin registers from its `setup()` hook.
 * **[Extension Points](extension-points.md):** Every registry and base class a plugin can hook into.

@@ -146,6 +146,9 @@
       ]
     },
     {
+      "社区": "community.md"
+    },
+    {
       "API 参考": [
         {
           "Admin": "api/admin.md"

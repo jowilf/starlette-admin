@@ -2,7 +2,7 @@
 title: Thèmes personnalisés
 description: Remplacez les variables CSS de Tabler, injectez des feuilles de style
   personnalisées et modifiez l'esthétique générale de votre tableau de bord starlette-admin.
-source_hash: 385a0c0718253e051a98f4f310990ad32d3e3babcae40ccddf75e59b931fe937
+source_hash: 835dc22fa56a25d844ae42f9071060b2cc80319e8e99624ebb86294b5bb900b3
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -221,6 +221,7 @@ Référencez la feuille de style depuis vos templates comme suit :
 
 ## Et ensuite ?
 
+* **[Extensions communautaires](../community.md#themes) :** Découvrez les thèmes tiers publiés par la communauté.
 * **[Templates](templates.md) :** remplacez une page, une cellule ou un widget unique sans dupliquer l'intégralité de l'arborescence de templates.
 * **[Extension Points](extension-points.md) :** explorez les hooks et points de personnalisation au-delà des thèmes de base.
 * **[Quickstart](../getting-started/quickstart.md) :** construisez une interface d'administration fonctionnelle à partir de zéro.

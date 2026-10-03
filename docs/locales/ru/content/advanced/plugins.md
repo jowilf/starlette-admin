@@ -2,7 +2,7 @@
 title: Плагины
 description: Упаковывайте переиспользуемые функции и расширения администрирования
   в виде подключаемых плагинов для starlette-admin.
-source_hash: c9ecd9e51a7426d12b628b06c9c664579e5f269d456e93e9d985c4d2853ac758
+source_hash: d4a820df8fc69e7fb5af4ac514503dd322d197273a20ae2e623852a9bbd02228
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -211,6 +211,7 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 ## Что дальше
 
+* **[Расширения сообщества](../community.md#plugins):** Откройте для себя сторонние плагины, опубликованные сообществом.
 * **[Кастомные темы](custom-themes.md):** упаковывайте и делитесь полноценными визуальными системами, используя тот же workflow на основе cookiecutter.
 * **[События](events.md):** subscriber API, который плагин регистрирует из своего hook'а `setup()`.
 * **[Точки расширения](extension-points.md):** все реестры и базовые классы, которые может использовать плагин.
