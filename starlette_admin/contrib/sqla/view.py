@@ -216,7 +216,7 @@ class ModelView(BaseModelView):
 
     async def handle_action(
         self, request: Request, selection: ActionSelection, name: str
-    ) -> None | Response:
+    ) -> Response | None:
         try:
             return await super().handle_action(request, selection, name)
         except SQLAlchemyError as exc:
@@ -231,7 +231,7 @@ class ModelView(BaseModelView):
 
     async def handle_row_action(
         self, request: Request, pk: Any, name: str
-    ) -> None | Response:
+    ) -> Response | None:
         try:
             return await super().handle_row_action(request, pk, name)
         except SQLAlchemyError as exc:

@@ -48,6 +48,7 @@ _MINIO_BUCKET = "test-bucket"
 @pytest.fixture(scope="session")
 def minio_container():
     with MinioContainer(
+        image="ghcr.io/coollabsio/minio",
         access_key=_MINIO_ACCESS_KEY,
         secret_key=_MINIO_SECRET_KEY,
     ) as container:

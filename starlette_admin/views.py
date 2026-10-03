@@ -1156,7 +1156,7 @@ class BaseModelView(BaseView):
 
     async def handle_action(
         self, request: Request, selection: ActionSelection, name: str
-    ) -> None | Response:
+    ) -> Response | None:
         """
         Handle action with `name`.
         Raises:
@@ -1213,7 +1213,7 @@ class BaseModelView(BaseView):
 
     async def handle_row_action(
         self, request: Request, pk: Any, name: str
-    ) -> None | Response:
+    ) -> Response | None:
         """
         Handle row action with `name`.
         Raises:

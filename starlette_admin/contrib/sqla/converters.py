@@ -227,7 +227,7 @@ class BaseSQLAModelConverter(BaseModelConverter):
                         # other model, so it can't be derived here.
                         required = attr.direction.name == "MANYTOONE" and all(
                             not local_col.nullable
-                            for local_col, _ in attr.local_remote_pairs
+                            for local_col, _ in (attr.local_remote_pairs or [])
                         )
                         converted_fields.append(
                             HasOne(attr.key, key=key, required=required)
