@@ -68,9 +68,7 @@ from sqlalchemy import String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-engine = create_engine(
-    "sqlite:///blog.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
 class Base(DeclarativeBase):
@@ -98,7 +96,6 @@ app = FastAPI(lifespan=lifespan)
 admin = Admin(engine, title="Blog Admin", secret_key="dev-only-change-me")
 admin.add_view(ModelView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
-
 ```
 
 ग़ौर करें कि क्या मौजूद नहीं है। यहाँ कोई टेम्पलेट नहीं है, एडमिन पेजों के लिए कोई रूट हैंडलर नहीं है, कोई सीरिएलाइज़र नहीं है, और न ही कोई फ़ील्ड कॉन्फ़िगरेशन है। `starlette-admin` SQLAlchemy की कॉलम मेटाडेटा पढ़ता है और पूरा इंटरफ़ेस अपने आप तैयार कर लेता है: दोनों `String` कॉलम के लिए लिमिट वाले टेक्स्ट इनपुट, `Text` कंटेंट के लिए टेक्स्टएरिया, और `published_at` के लिए डेटाटाइम पिकर।
@@ -159,7 +156,6 @@ class PostView(ModelView):
 
 
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
-
 ```
 
 इस एक क्लास में चार दमदार अपग्रेड होते हैं:
@@ -192,7 +188,6 @@ class PostIn(BaseModel):
         if len(v.split()) < 3:
             raise ValueError("Must contain at least 3 words")
         return v
-
 ```
 
 वही वैलिडेशन लॉजिक दो बार लिखने की बजाय, एडमिन को अपना मौजूदा मॉडल सौंप दें। `ext.pydantic` एक्सटेंशन एक ऐसा `ModelView` देता है जो डेटाबेस तक पहुँचने से पहले हर फ़ॉर्म सबमिशन को एक Pydantic मॉडल से प्रोसेस करता है। अपना `ModelView` इम्पोर्ट एक्सटेंशन की ओर पॉइंट करें, `Admin` को जैसा है वैसा रहने दें, और स्कीमा पास कर दें:
@@ -201,14 +196,12 @@ class PostIn(BaseModel):
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 
-class PostView(ModelView):
-    ...  # configuration from Minute 5, unchanged
+class PostView(ModelView): ...  # configuration from Minute 5, unchanged
 
 
 admin.add_view(
     PostView(Post, pydantic_model=PostIn, icon="fa fa-blog", menu_label="Blog Posts")
 )
-
 ```
 
 `PostView` की क्लास बॉडी बिल्कुल वही रहती है; सिर्फ़ नए इम्पोर्ट के ज़रिए उसकी बेस क्लास बदलती है।
@@ -235,7 +228,6 @@ class User(Base):
     website: Mapped[str | None] = mapped_column(String(512))
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
-
 ```
 
 ```python title="main.py" hl_lines="4 5"
@@ -244,7 +236,6 @@ class Post(Base):
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="posts")
-
 ```
 
 यूज़र मॉडल को उसी स्कीमा-चालित पैटर्न से रजिस्टर करें। `EmailStr` और `HttpUrl` फ़ॉर्मैट वैलिडेशन अपने आप देते हैं, और `email-validator` पहले से ही `fastapi[standard]` में शामिल है:
@@ -261,7 +252,6 @@ class UserIn(BaseModel):
 
 
 admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
-
 ```
 
 इस बार कॉन्फ़िगर करने को कुछ नहीं है, इसलिए एक्सटेंशन वाले `ModelView` का इस्तेमाल बिना सबक्लास बनाए सीधे किया गया है।
@@ -275,7 +265,6 @@ class PostIn(BaseModel):
 
     # ... fields from before ...
     user: User
-
 ```
 
 `user: User` की कोई डिफ़ॉल्ट वैल्यू नहीं है, यानी बिना लेखक वाली पोस्ट किसी और वैलिडेशन एरर की तरह ठुकरा दी जाएगी। टाइप सीधे SQLAlchemy की `User` क्लास है, क्योंकि वैलिडेशन चलने से पहले एडमिन चुनी गई ID को एक ORM इंस्टेंस में बदल देता है। इसीलिए `arbitrary_types_allowed` ज़रूरी है (`ConfigDict` `pydantic` से इम्पोर्ट होता है)।

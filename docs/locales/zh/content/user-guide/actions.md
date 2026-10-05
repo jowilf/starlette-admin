@@ -118,7 +118,6 @@ class ArticleView(ModelView):
     ) -> Response:
         data = await request.form()
         return RedirectResponse(f"https://example.com/?value={data['value']}")
-
 ```
 
 ## 全局动作
@@ -156,7 +155,6 @@ class ArticleView(ModelView):
         # Executes without a selection; ignores the selection object entirely
         drafts = await delete_all_draft_articles()
         flash(request, f"{len(drafts)} draft article(s) were purged.", "success")
-
 ```
 
 ### “全选匹配项”功能
@@ -166,15 +164,12 @@ class ArticleView(ModelView):
 该选项向动作 API 发送的是 `all=1`，而不是主键列表。使用 `selection.is_select_all` 来分支你的逻辑，或者让 `selection.rows()` 以任一方式解析数据：
 
 ```python
-    @action(name="archive", text="Archive")
-    async def archive_action(
-        self, request: Request, selection: ActionSelection
-    ) -> None:
-        if selection.is_select_all:
-            await self.bulk_archive_where(request, selection.filters, selection.q)
-        else:
-            await self.bulk_archive_pks(request, await selection.pks())
-
+@action(name="archive", text="Archive")
+async def archive_action(self, request: Request, selection: ActionSelection) -> None:
+    if selection.is_select_all:
+        await self.bulk_archive_where(request, selection.filters, selection.q)
+    else:
+        await self.bulk_archive_pks(request, await selection.pks())
 ```
 
 !!! important "物化限制"
@@ -243,7 +238,6 @@ class ArticleView(ModelView):
     )
     def go_to_example_row_action(self, request: Request, pk: Any) -> str:
         return f"https://example.com/?pk={pk}"
-
 ```
 
 ### 限制行级动作
@@ -258,6 +252,7 @@ from typing import Any
 from starlette.requests import Request
 from starlette_admin.contrib.sqla import ModelView
 
+
 class ArticleView(ModelView):
     async def is_row_action_allowed(self, request: Request, name: str) -> bool:
         if name == "make_published":
@@ -270,7 +265,6 @@ class ArticleView(ModelView):
         if name == "make_published":
             return not obj.is_published
         return await super().is_row_action_allowed_for_obj(request, name, obj)
-
 ```
 
 !!! warning
@@ -296,9 +290,9 @@ class ArticleView(ModelView):
 ```python
 from starlette_admin.types import RowActionsPosition
 
+
 class ArticleView(ModelView):
     row_actions_position = RowActionsPosition.AFTER_COLUMNS
-
 ```
 
 ## 动态动作表单
@@ -364,7 +358,6 @@ class ArticleView(ModelView):
         data = await request.form()
         article = await self.find_by_pk(request, pk)
         article.title = data["title"]
-
 ```
 
 !!! important

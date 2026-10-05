@@ -113,6 +113,7 @@ Ohne diese Angaben akzeptiert ein `FileField` beliebige Dateitypen und -größen
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
 
+
     def validate_document_type(
         request: Request, field: BaseField, upload: UploadFile, form_values: dict
     ) -> None:

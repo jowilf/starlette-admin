@@ -196,6 +196,7 @@ hide:
             col = getattr(ctx.view.model, ctx.field_name)
             return col.between(start, now)
 
+
     class ProductView(ModelView):
         fields = [
             DateTimeField(
