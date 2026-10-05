@@ -102,7 +102,6 @@ root_admin = Admin(
 root_admin.add_view(ModelView(Order))
 root_admin.add_view(ModelView(User))
 root_admin.mount_to(app)
-
 ```
 
 В этом примере `/staff` отображает страницу входа, работающую на основе `StaffAuth`, а `/root` — отдельную страницу, основанную на `SuperAdminAuth`. Вход в одну панель не даёт доступа к другой: каждый `SessionMiddleware` подписывает свой cookie собственным `secret_key`, поэтому каждый экземпляр `Admin` читает только те данные сессии, которые записал его собственный провайдер аутентификации.
@@ -140,8 +139,9 @@ def __init__(
 
 ```python
 staff_admin.add_view(ModelView(Order))
-root_admin.add_view(ModelView(Order))  # separate instance of the same class; this is safe
-
+root_admin.add_view(
+    ModelView(Order)
+)  # separate instance of the same class; this is safe
 ```
 
 Когда двум admin-панелям требуется различное поведение — например, разные правила видимости или права `can_delete`, — напишите отдельный subclass для каждой вместо изменения общего экземпляра во время выполнения:
@@ -160,7 +160,6 @@ class RootOrderView(ModelView):
 
 staff_admin.add_view(StaffOrderView(Order))
 root_admin.add_view(RootOrderView(Order))
-
 ```
 
 ---

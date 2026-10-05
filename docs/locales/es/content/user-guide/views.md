@@ -229,7 +229,9 @@ class PostView(ModelView):
     fields = ["id", "title", "content", "published", "created_at"]
     searchable_fields = ["title", "content"]
     sortable_fields = ["title", "created_at"]
-    fields_default_sort = [("created_at", True)]  # Ordenar del más reciente al más antiguo
+    fields_default_sort = [
+        ("created_at", True)
+    ]  # Ordenar del más reciente al más antiguo
 ```
 
 * **`searchable_fields`**: Activa el generador de filtros y el cuadro de búsqueda global. La búsqueda global ejecuta una consulta de texto completo sobre estos campos.

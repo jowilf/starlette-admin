@@ -8,8 +8,11 @@ Pass `filters=` on the field with concrete classes from YOUR backend's module (`
 
 ```python
 from starlette_admin.contrib.sqla.filters import (
-    BetweenFilter, DateInPastFilter, DateTimeBetweenFilter,
-    GreaterThanFilter, NumericEqualFilter,
+    BetweenFilter,
+    DateInPastFilter,
+    DateTimeBetweenFilter,
+    GreaterThanFilter,
+    NumericEqualFilter,
 )
 
 
@@ -17,7 +20,9 @@ class ProductView(ModelView):
     fields = [
         "id",
         "name",  # keeps default filter set
-        DecimalField("price", filters=[GreaterThanFilter, BetweenFilter, NumericEqualFilter]),
+        DecimalField(
+            "price", filters=[GreaterThanFilter, BetweenFilter, NumericEqualFilter]
+        ),
         DateTimeField("created_at", filters=[DateTimeBetweenFilter, DateInPastFilter]),
     ]
 ```
@@ -43,14 +48,20 @@ Subclass `BaseFilter` and implement `apply()`; override `parse_value()` for anyt
 
 ```python
 from starlette_admin.filters import (
-    BaseFilter, FilterApplyContext, FilterDataType, FilterValidationError, filters,
+    BaseFilter,
+    FilterApplyContext,
+    FilterDataType,
+    FilterValidationError,
+    filters,
 )
 
 
 class DivisibleByFilter(BaseFilter):
     name = "divisible_by"
     label = "Is divisible by"
-    data_type = FilterDataType.NUMBER   # NUMBER, STRING, ENUM, DATE, DATETIME, TIME, ARRAY, NONE
+    data_type = (
+        FilterDataType.NUMBER
+    )  # NUMBER, STRING, ENUM, DATE, DATETIME, TIME, ARRAY, NONE
 
     def parse_value(self, raw: str) -> int:
         # Converts the raw URL string; raise FilterValidationError -> HTTP 400
@@ -65,7 +76,7 @@ class DivisibleByFilter(BaseFilter):
     def apply(self, ctx: FilterApplyContext) -> Any:
         # ctx: query, field_name, value, value2, request, view
         column = getattr(ctx.view.model, ctx.field_name)
-        return column % ctx.value == 0   # return a backend-native query fragment
+        return column % ctx.value == 0  # return a backend-native query fragment
 ```
 
 `data_type=NONE` filters (like `is_null`) take no value and never call `parse_value`.
