@@ -1,7 +1,13 @@
 ---
-source_hash: 407757442fad75a534f382375e48ae12d4b0d56b21f2b5c4ee126b8d6ce698c7
+source_hash: 8ae54757226d0f52a5ff6435a3b3d57e03e83e0add4d3a91062a36e080d5ac49
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-10
+authors:
+- jowilf
+categories:
+- Guides
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,7 +26,6 @@ machine_translated: true
 
 # Soft Deletes y una vista de papelera con FastAPI y starlette-admin
 
-_2026-07-10_
 
 Una operación `DELETE` estándar es implacable. Si un operador hace clic por error o un trabajo automatizado de limpieza se ejecuta con el filtro equivocado, los datos desaparecen a menos que realice una restauración compleja de la base de datos. Implementar un "soft delete" mitiga este riesgo al marcar un registro como eliminado en lugar de eliminarlo permanentemente de la base de datos. Este enfoque convierte la recuperación de datos en una simple operación de actualización.
 
@@ -32,6 +37,9 @@ Esta guía demuestra cómo implementar el patrón de soft delete en una aplicaci
 - Una interfaz de papelera dedicada para restaurar o purgar permanentemente registros
 
 **Consulte el código completo y ejecutable:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete).
+
+<!-- more -->
+
 
 ## El modelo
 

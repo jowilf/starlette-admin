@@ -1,7 +1,13 @@
 ---
-source_hash: 407757442fad75a534f382375e48ae12d4b0d56b21f2b5c4ee126b8d6ce698c7
+source_hash: 8ae54757226d0f52a5ff6435a3b3d57e03e83e0add4d3a91062a36e080d5ac49
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-10
+authors:
+- jowilf
+categories:
+- Guides
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -16,7 +22,6 @@ machine_translated: true
 
 # 使用 FastAPI 与 starlette-admin 实现软删除和回收站视图
 
-_2026-07-10_
 
 标准的 `DELETE` 操作是不可挽回的。如果操作员误点了一下，或者某个自动化清理任务用错了过滤器，数据就会丢失，除非你执行一次复杂的数据库恢复。实现"软删除"可以缓解这一风险：它只是把记录标记为已删除，而不是将其从数据库中永久移除。这样一来，数据恢复就变成了一次简单的更新操作。
 
@@ -28,6 +33,9 @@ _2026-07-10_
 - 一个专用的回收站界面，用于恢复或永久清除记录
 
 **查看完整的可运行代码：**[`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete)。
+
+<!-- more -->
+
 
 ## 模型
 

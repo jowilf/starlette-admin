@@ -1,7 +1,13 @@
 ---
-source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
+source_hash: ced99bde979f3d77e20e72e48190ca3f1cf34c7a76be013c56c7f36e703e1263
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-13
+authors:
+- jowilf
+categories:
+- Tutorials
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -16,9 +22,8 @@ machine_translated: true
 
 # 使用 starlette-admin 在 5 分钟内为 FastAPI 添加管理后台
 
-_2026-07-13_
 
-你的 API 已经上线。现在，团队里有人需要编辑它背后的数据：修正某条记录里的错别字、下架一篇文章，或者查一下用户到底提交了什么。常见的几种标准做法往往代价高昂：
+你的后端已经上线运行，但很快就需要非工程师来修改线上数据：修正某条记录里的错别字、下架一篇文章，或者查一下用户到底提交了什么。常见的变通做法往往并不理想：
 
 | 方案                       | 缺点                                                                                                       |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -31,7 +36,10 @@ _2026-07-13_
 
 本指南将带你从一个空文件开始，在 5 分钟内搭建出一套可用的后台管理系统。你将构建分页列表、搜索功能、可排序的列、由现有 Pydantic 模型校验的创建与编辑表单、删除确认以及 CSV 导出——所有这些都直接由一个 SQLAlchemy 模型生成。
 
-完整的可运行代码位于 [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>)。
+
+<!-- more -->
+
+完整的可运行代码位于 [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)。
 
 ## 第 1 分钟：安装
 

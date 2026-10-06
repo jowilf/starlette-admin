@@ -1,6 +1,13 @@
-# Soft Deletes and a Trash View with FastAPI & starlette-admin
+---
+date: 2026-07-10
+authors:
+  - jowilf
+categories:
+  - Guides
+  - FastAPI
+---
 
-_2026-07-10_
+# Soft Deletes and a Trash View with FastAPI & starlette-admin
 
 A standard `DELETE` operation is unforgiving. If an operator misclicks or an automated cleanup job runs against the wrong filter, the data is gone unless you perform a complex database restore. Implementing a "soft delete" mitigates this risk by flagging a record as deleted instead of permanently removing it from the database. This approach turns data recovery into a simple update operation.
 
@@ -12,6 +19,8 @@ This guide demonstrates how to implement the soft delete pattern in a FastAPI ap
 - A dedicated Trash interface for restoring or permanently purging records
 
 **View the complete runnable code:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete).
+
+<!-- more -->
 
 ## The Model
 

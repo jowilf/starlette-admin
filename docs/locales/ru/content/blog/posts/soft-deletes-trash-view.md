@@ -1,7 +1,13 @@
 ---
-source_hash: 407757442fad75a534f382375e48ae12d4b0d56b21f2b5c4ee126b8d6ce698c7
+source_hash: 8ae54757226d0f52a5ff6435a3b3d57e03e83e0add4d3a91062a36e080d5ac49
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-10
+authors:
+- jowilf
+categories:
+- Guides
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,7 +26,6 @@ machine_translated: true
 
 # Мягкое удаление и представление «Корзина» с FastAPI и starlette-admin
 
-_2026-07-10_
 
 Стандартная операция `DELETE` беспощадна. Если оператор промахнётся или автоматизированная задача очистки выполнится с неверным фильтром, данные будут потеряны — восстановить их можно только с помощью сложной процедуры восстановления базы данных. Реализация «мягкого удаления» (soft delete) снижает этот риск: вместо безвозвратного удаления записи из базы данных она помечается как удалённая. Такой подход превращает восстановление данных в простую операцию обновления.
 
@@ -32,6 +37,9 @@ _2026-07-10_
 - специализированного интерфейса Trash для восстановления или окончательного удаления записей.
 
 **Полный исполняемый код:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete).
+
+<!-- more -->
+
 
 ## Модель
 

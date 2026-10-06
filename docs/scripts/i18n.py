@@ -18,7 +18,14 @@ DOCS_DIR = PROJECT_ROOT / "docs"
 LOCALES_DIR = DOCS_DIR / "locales"
 SHARED_DIR = DOCS_DIR / "shared"
 #: Files and directories synced from `shared/` into every locale content dir.
-SHARED_ITEMS = ["assets", "javascripts", "stylesheets", "changelog.md", "community.md"]
+SHARED_ITEMS = [
+    "assets",
+    "javascripts",
+    "stylesheets",
+    "changelog.md",
+    "community.md",
+    "blog/.authors.yml",
+]
 CONTENT_SUBDIR = "content"
 SOURCE_LOCALE = "en"
 EN_CONTENT_DIR = LOCALES_DIR / "en" / CONTENT_SUBDIR
@@ -218,6 +225,32 @@ def load_nav_json(code: str) -> dict[str, Any]:
     return data
 
 
+def _validate_nav_item(en_item: Any, loc_item: Any, spot: str) -> None:
+    # Unlabeled pages (e.g. "blog/index.md" inside a Blog section).
+    if isinstance(en_item, str) or isinstance(loc_item, str):
+        if not isinstance(en_item, str) or not isinstance(loc_item, str):
+            raise I18nError(f"nav mismatch at {spot}: labeled vs unlabeled")
+        if en_item != loc_item:
+            raise I18nError(f"nav mismatch at {spot}: path {loc_item!r} != {en_item!r}")
+        return
+    if not isinstance(en_item, dict) or not isinstance(loc_item, dict):
+        raise I18nError(f"nav mismatch at {spot}: expected objects")
+    if len(en_item) != 1 or len(loc_item) != 1:
+        raise I18nError(f"nav mismatch at {spot}: each entry needs exactly one label")
+    en_value = next(iter(en_item.values()))
+    loc_value = next(iter(loc_item.values()))
+    en_is_str = isinstance(en_value, str)
+    if en_is_str != isinstance(loc_value, str):
+        raise I18nError(f"nav mismatch at {spot}: page vs section")
+    if en_is_str:
+        if en_value != loc_value:
+            raise I18nError(
+                f"nav mismatch at {spot}: path {loc_value!r} != {en_value!r}"
+            )
+    else:
+        validate_nav_structure(en_value, loc_value, spot)
+
+
 def validate_nav_structure(
     en_nav: list[Any], loc_nav: list[Any], where: str = "nav"
 ) -> None:
@@ -227,25 +260,7 @@ def validate_nav_structure(
             f"{len(loc_nav)} in translation"
         )
     for index, (en_item, loc_item) in enumerate(zip(en_nav, loc_nav)):
-        spot = f"{where}[{index}]"
-        if not isinstance(en_item, dict) or not isinstance(loc_item, dict):
-            raise I18nError(f"nav mismatch at {spot}: expected objects")
-        if len(en_item) != 1 or len(loc_item) != 1:
-            raise I18nError(
-                f"nav mismatch at {spot}: each entry needs exactly one label"
-            )
-        en_value = next(iter(en_item.values()))
-        loc_value = next(iter(loc_item.values()))
-        en_is_str = isinstance(en_value, str)
-        if en_is_str != isinstance(loc_value, str):
-            raise I18nError(f"nav mismatch at {spot}: page vs section")
-        if en_is_str:
-            if en_value != loc_value:
-                raise I18nError(
-                    f"nav mismatch at {spot}: path {loc_value!r} != {en_value!r}"
-                )
-        else:
-            validate_nav_structure(en_value, loc_value, spot)
+        _validate_nav_item(en_item, loc_item, f"{where}[{index}]")
 
 
 def validate_nav(code: str) -> None:
@@ -530,6 +545,10 @@ def staleness_pass(content_dir: Path) -> int:
 def _prune_nav(nav: list[Any], content_dir: Path) -> list[Any]:
     pruned: list[Any] = []
     for item in nav:
+        if isinstance(item, str):
+            if (content_dir / item).is_file():
+                pruned.append(item)
+            continue
         if not isinstance(item, dict) or len(item) != 1:
             pruned.append(item)
             continue
@@ -550,6 +569,13 @@ def _nav_translation_stats(
     """Return (translated, expected) nav leaf counts, excluding skipped pages."""
     translated = expected = 0
     for item in nav:
+        if isinstance(item, str):
+            if is_skipped(item, skip):
+                continue
+            expected += 1
+            if (content_dir / item).is_file():
+                translated += 1
+            continue
         if not isinstance(item, dict) or len(item) != 1:
             continue
         value = next(iter(item.values()))

@@ -1,7 +1,13 @@
 ---
-source_hash: 407757442fad75a534f382375e48ae12d4b0d56b21f2b5c4ee126b8d6ce698c7
+source_hash: 8ae54757226d0f52a5ff6435a3b3d57e03e83e0add4d3a91062a36e080d5ac49
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-10
+authors:
+- jowilf
+categories:
+- Guides
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,7 +26,6 @@ machine_translated: true
 
 # Soft Deletes und eine Trash-Ansicht mit FastAPI & starlette-admin
 
-_2026-07-10_
 
 Eine Standard-`DELETE`-Operation ist unerbittlich. Wenn ein Operator verklickt oder ein automatisierter Aufräum-Job mit dem falschen Filter läuft, sind die Daten verloren – es sei denn, Sie führen eine komplexe Datenbank-Wiederherstellung durch. Die Implementierung eines „Soft Delete" mildert dieses Risiko ab, indem ein Datensatz als gelöscht markiert wird, statt ihn dauerhaft aus der Datenbank zu entfernen. Dieser Ansatz macht die Datenwiederherstellung zu einer einfachen Update-Operation.
 
@@ -32,6 +37,9 @@ Dieser Leitfaden zeigt, wie Sie das Soft-Delete-Muster in einer FastAPI-Anwendun
 - Einer dedizierten Trash-Oberfläche zum Wiederherstellen oder endgültigen Löschen von Datensätzen
 
 **Den vollständigen lauffähigen Code anzeigen:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete).
+
+<!-- more -->
+
 
 ## Das Modell
 

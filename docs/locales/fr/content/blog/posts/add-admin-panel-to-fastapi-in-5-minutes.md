@@ -1,7 +1,13 @@
 ---
-source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
+source_hash: ced99bde979f3d77e20e72e48190ca3f1cf34c7a76be013c56c7f36e703e1263
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-13
+authors:
+- jowilf
+categories:
+- Tutorials
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,9 +26,8 @@ machine_translated: true
 
 # Ajouter un panneau d'administration à FastAPI en 5 minutes avec starlette-admin
 
-_2026-07-13_
 
-Vous avez livré l'API. Maintenant, quelqu'un dans votre équipe doit modifier les données qui se trouvent derrière : corriger une coquille dans un enregistrement, dépublier un article, ou vérifier ce qu'un utilisateur a réellement soumis. Les options habituelles sont généralement coûteuses :
+Votre backend est opérationnel, mais des non-ingénieurs doivent bientôt modifier les données de production. Quelqu'un doit corriger une coquille dans un enregistrement, dépublier un article ou vérifier ce qu'un utilisateur a réellement soumis. Les solutions habituelles sont rarement satisfaisantes :
 
 | Option                   | L'inconvénient                                                                                             |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -35,7 +40,10 @@ Vous avez livré l'API. Maintenant, quelqu'un dans votre équipe doit modifier l
 
 Ce guide vous conduit d'un fichier vide à un back office fonctionnel en cinq minutes. Vous allez construire des listes paginées, une fonctionnalité de recherche, des colonnes triables, des formulaires de création et d'édition validés par vos schémas Pydantic existants, des confirmations de suppression et des exports CSV, le tout généré directement à partir d'un modèle SQLAlchemy.
 
-Le code complet et exécutable est disponible dans [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>).
+
+<!-- more -->
+
+Le code complet et exécutable est disponible dans [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi).
 
 ## Minute 1 : Installation
 

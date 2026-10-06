@@ -134,15 +134,7 @@
     },
     {
       "Блог": [
-        {
-          "Обзор": "blog/index.md"
-        },
-        {
-          "Добавляем панель администрирования в FastAPI за 5 минут": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
-        },
-        {
-          "Мягкое удаление и представление корзины в FastAPI с помощью Starlette Admin": "blog/posts/soft-deletes-trash-view.md"
-        }
+        "blog/index.md"
       ]
     },
     {

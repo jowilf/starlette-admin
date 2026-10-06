@@ -1,7 +1,13 @@
 ---
-source_hash: 407757442fad75a534f382375e48ae12d4b0d56b21f2b5c4ee126b8d6ce698c7
+source_hash: 8ae54757226d0f52a5ff6435a3b3d57e03e83e0add4d3a91062a36e080d5ac49
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-10
+authors:
+- jowilf
+categories:
+- Guides
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,7 +26,6 @@ machine_translated: true
 
 # FastAPI & starlette-admin के साथ सॉफ़्ट डिलीट और ट्रैश व्यू {#soft-deletes-and-a-trash-view-with-fastapi-starlette-admin}
 
-_2026-07-10_
 
 मानक `DELETE` ऑपरेशन कठोर होता है। अगर ऑपरेटर ग़लत जगह क्लिक कर दे, या कोई ऑटोमेटेड क्लीनअप जॉब ग़लत फ़िल्टर पर चल जाए, तो डेटा चला गया — जब तक आप कोई जटिल डेटाबेस रीस्टोर न करें। "सॉफ़्ट डिलीट" लागू करने से यह जोखिम कम हो जाता है: रिकॉर्ड को डेटाबेस से हमेशा के लिए हटाने की बजाय उसे डिलीटेड फ़्लैग कर दिया जाता है। इस तरीक़े से डेटा रिकवरी एक साधारण अपडेट ऑपरेशन बन जाती है।
 
@@ -32,6 +37,9 @@ _2026-07-10_
 - रिकॉर्ड रीस्टोर करने या हमेशा के लिए परमानेंटली पर्ज करने के लिए एक समर्पित Trash इंटरफ़ेस
 
 **पूरा चलने योग्य कोड देखें:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete)।
+
+<!-- more -->
+
 
 ## मॉडल {#the-model}
 

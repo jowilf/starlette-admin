@@ -1,7 +1,13 @@
 ---
-source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
+source_hash: ced99bde979f3d77e20e72e48190ca3f1cf34c7a76be013c56c7f36e703e1263
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-13
+authors:
+- jowilf
+categories:
+- Tutorials
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,9 +26,8 @@ machine_translated: true
 
 # starlette-admin के साथ FastAPI में 5 मिनट में एडमिन पैनल जोड़ें {#add-an-admin-panel-to-fastapi-in-5-minutes-with-starlette-admin}
 
-_2026-07-13_
 
-आपने API शिप कर दी है। अब आपकी टीम में किसी को इसके पीछे का डेटा एडिट करने की ज़रूरत है: किसी रिकॉर्ड की टाइपिंग की ग़लती ठीक करना, कोई पोस्ट अनपब्लिश करना, या देखना कि यूज़र ने असल में क्या सबमिट किया। मानक विकल्प आम तौर पर महँगे होते हैं:
+आपका backend चालू है और चल रहा है, लेकिन जल्द ही non-engineers को live data बदलने की ज़रूरत पड़ेगी। किसी को किसी रिकॉर्ड की टाइपिंग की ग़लती ठीक करनी होगी, कोई पोस्ट अनपब्लिश करनी होगी, या देखना होगा कि यूज़र ने असल में क्या सबमिट किया। मानक जुगाड़ शायद ही कभी साफ़ होते हैं:
 
 | विकल्प | दिक़्क़त |
 | --- | --- |
@@ -35,7 +40,10 @@ _2026-07-13_
 
 यह गाइड आपको पाँच मिनट में एक ख़ाली फ़ाइल से लेकर चलने वाले बैक ऑफ़िस तक ले जाती है। आप पेजिनेटेड लिस्ट, सर्च फ़ंक्शनैलिटी, सॉर्ट करने योग्य कॉलम, अपने मौजूदा Pydantic स्कीमा से वैलिडेट होने वाले क्रिएट और एडिट फ़ॉर्म, डिलीशन कन्फ़र्मेशन और CSV एक्सपोर्ट बनाएँगे — सब कुछ सीधे एक SQLAlchemy मॉडल से जनरेट होकर।
 
-पूरा चलने योग्य कोड [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>) में उपलब्ध है।
+
+<!-- more -->
+
+पूरा चलने योग्य कोड [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi) में उपलब्ध है।
 
 ## मिनट 1: इंस्टॉल {#minute-1-install}
 
