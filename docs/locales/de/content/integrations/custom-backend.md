@@ -3,7 +3,7 @@ title: Eigene Backend-Integration
 description: Erfahren Sie, wie Sie einen eigenen Backend-Adapter für starlette-admin
   erstellen, um Ihren eigenen ORM- oder API-Datenspeicher mit der Admin-Oberfläche
   zu verbinden.
-source_hash: 1e6a2e4cecb72a0dcb27f5f1988cd060ce3e1085b9261aec475fb4ed3bf33b8a
+source_hash: cbbe8133de0ebdfd1dc324e44fe883cb1a6ec0f81fd212f262d095fdbe675245
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

@@ -5,7 +5,7 @@
 - Default filter sets work out-of-the-box for every field type (`name`, `status`).
 - Per-field `filters=[...]` override narrows or extends the available operations (`price`).
 - `TagsField` has no default registry entry: `filters=[...]` is required to expose any filters.
-- A custom `BaseFilter` subclass needs only `name`, `label`, `data_type`, and `apply` (`ActiveThisMonthFilter`).
+- A custom `BaseFilter` subclass needs only `name`, `label`, `data_type`, and `apply` (`CreatedThisMonthFilter`).
 - The filter builder serialises to bookmarkable URLs (see sample below).
 
 ## Run
@@ -46,7 +46,7 @@ class ProductView(ModelView):
             filters=[  # built-ins + custom filter
                 DateTimeBetweenFilter,
                 DateInPastFilter,
-                ActiveThisMonthFilter,
+                CreatedThisMonthFilter,
             ],
         ),
     ]
@@ -55,7 +55,7 @@ class ProductView(ModelView):
 ### Custom filter: `filters.py`
 
 ```python
-class ActiveThisMonthFilter(BaseFilter):
+class CreatedThisMonthFilter(BaseFilter):
     name = "this_month"
     label = "Created this month"
     data_type = FilterDataType.NONE  # no value input needed

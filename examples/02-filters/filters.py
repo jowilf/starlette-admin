@@ -6,7 +6,7 @@ from typing import Any
 from starlette_admin.filters.base import BaseFilter, FilterApplyContext, FilterDataType
 
 
-class ActiveThisMonthFilter(BaseFilter):
+class CreatedThisMonthFilter(BaseFilter):
     """Products created on or after the first day of the current month."""
 
     name = "this_month"

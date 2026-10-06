@@ -2,7 +2,7 @@
 title: एक्शन
 description: लिस्ट व्यू से सीधे कस्टम पुष्टि और फ़ॉर्म के साथ बैच तथा पंक्ति-स्तरीय
   ऑपरेशन निष्पादित करें।
-source_hash: 91835b28170a6a3e07ed477b89c2b03aabc37254d3037ef4e47467e6ee240fca
+source_hash: a0c31f3a788c98cdcb3d03c28d30ad8aa4e0483f945cfbaf1b5d224484aac684
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

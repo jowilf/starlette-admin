@@ -2,7 +2,7 @@
 title: सुरक्षा
 description: starlette-admin में बिल्ट-इन सुरक्षा फ़ीचर्स देखें, जिनमें CSRF सुरक्षा,
   file upload safety, और access control शामिल हैं।
-source_hash: d16d4b0beefd5dc8580f8d65abaa28fda407896efff2ea2c3988ec3bf93277a4
+source_hash: 2bf7219b860a9b64e5cf3879ccb551b908f0a8b11800cf72c4e9d7530dae8ed2
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

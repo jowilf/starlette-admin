@@ -2,7 +2,7 @@
 title: Интеграция с Beanie
 description: Интегрируйте Beanie ODM со starlette-admin, чтобы создать расширяемый
   административный интерфейс для ваших коллекций MongoDB в FastAPI.
-source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
+source_hash: 4c3a967cd4944de6c88512328c46312c460aa24a74cde2f4b6aa6964cc603aa9
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

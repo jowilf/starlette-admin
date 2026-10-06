@@ -1,7 +1,7 @@
 ---
 title: 插件
 description: 将可复用的 admin 功能与扩展打包为 starlette-admin 的即插即用插件。
-source_hash: d4a820df8fc69e7fb5af4ac514503dd322d197273a20ae2e623852a9bbd02228
+source_hash: f964135e901f81cf3d01cae356db6a6fb1a6dde4dd6b8f0dab2f289f88970189
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

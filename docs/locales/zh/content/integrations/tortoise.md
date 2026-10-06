@@ -1,7 +1,7 @@
 ---
 title: Tortoise ORM 集成
 description: 使用 starlette-admin 在 FastAPI 中轻松为你的 Tortoise ORM 模型创建管理界面。
-source_hash: 1cf5d85b26decc7ad12c8dd48040809f644a91e9c46410d700a5e5a72f72c39f
+source_hash: a3a4afd1116aa0cdb8511ff8c1dcc94ae057b2eda587ad2e12f03f0c7577a227
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

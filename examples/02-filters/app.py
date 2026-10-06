@@ -11,7 +11,7 @@ from decimal import Decimal
 from enum import StrEnum
 
 import uvicorn
-from filters import ActiveThisMonthFilter
+from filters import CreatedThisMonthFilter
 from sqlalchemy import JSON, DateTime, Integer, Numeric, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette.applications import Starlette
@@ -93,7 +93,7 @@ class ProductView(ModelView):
         # DateTimeField gets a custom filter bolted on alongside the built-in two.
         DateTimeField(
             "created_at",
-            filters=[DateTimeBetweenFilter, DateInPastFilter, ActiveThisMonthFilter],
+            filters=[DateTimeBetweenFilter, DateInPastFilter, CreatedThisMonthFilter],
         ),
     ]
     exclude_fields_from_create = ("created_at",)

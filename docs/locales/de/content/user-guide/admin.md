@@ -2,7 +2,7 @@
 title: Admin-Konfiguration
 description: Konfigurieren Sie Ihre starlette-admin-Instanz und passen Sie Theming,
   Routing und übergreifende Sicherheitseinstellungen an.
-source_hash: 9e9a48b9e7e2e565b504c6d831eaf0e7a911489399ffb480ea19e50d0f8ad843
+source_hash: 40f75ba0bdf9c8ddd86ba1d25a8ece6a42063d38d80c25fbb2599268c0d05c16
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
