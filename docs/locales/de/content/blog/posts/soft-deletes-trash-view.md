@@ -1,7 +1,13 @@
 ---
-source_hash: 407757442fad75a534f382375e48ae12d4b0d56b21f2b5c4ee126b8d6ce698c7
+source_hash: b58d07c5674623b4af0e3c5780c6c783c30a19737ead543fb02ab63a2774e893
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-10
+authors:
+- jowilf
+categories:
+- Guides
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,7 +26,6 @@ machine_translated: true
 
 # Soft Deletes und eine Trash-Ansicht mit FastAPI & starlette-admin
 
-_2026-07-10_
 
 Eine Standard-`DELETE`-Operation ist unerbittlich. Wenn ein Operator verklickt oder ein automatisierter Aufräum-Job mit dem falschen Filter läuft, sind die Daten verloren – es sei denn, Sie führen eine komplexe Datenbank-Wiederherstellung durch. Die Implementierung eines „Soft Delete" mildert dieses Risiko ab, indem ein Datensatz als gelöscht markiert wird, statt ihn dauerhaft aus der Datenbank zu entfernen. Dieser Ansatz macht die Datenwiederherstellung zu einer einfachen Update-Operation.
 
@@ -32,6 +37,9 @@ Dieser Leitfaden zeigt, wie Sie das Soft-Delete-Muster in einer FastAPI-Anwendun
 - Einer dedizierten Trash-Oberfläche zum Wiederherstellen oder endgültigen Löschen von Datensätzen
 
 **Den vollständigen lauffähigen Code anzeigen:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete).
+
+<!-- more -->
+
 
 ## Das Modell
 
@@ -71,7 +79,7 @@ class PostView(ModelView):
 Sie müssen `deleted_at` außerdem von den Create- und Edit-Formularen ausschließen. Operatoren sollten dieses Feld niemals manuell setzen; es sollte ausschließlich programmatisch durch die Methode `delete()` und die Restore-Aktion geändert werden.
 
 !!! warning
-Ein fehlendes `get_count_query` führt zu einem Leak bei der Datensichtbarkeit: Paginierungs- und Suchergebnis-Zähler schließen gelöschte Zeilen ein, obwohl diese nicht in der Liste gerendert werden. `get_detail_query` benötigt hier keine separate Überschreibung, da es standardmäßig auf `get_list_query` zurückgreift und denselben Filter automatisch erbt. Wenn Sie einer Ansicht jedoch ein eigenes `get_detail_query` geben, erbt sie nicht mehr von `get_list_query` und muss `deleted_at` selbst filtern.
+    Ein fehlendes `get_count_query` führt zu einem Leak bei der Datensichtbarkeit: Paginierungs- und Suchergebnis-Zähler schließen gelöschte Zeilen ein, obwohl diese nicht in der Liste gerendert werden. `get_detail_query` benötigt hier keine separate Überschreibung, da es standardmäßig auf `get_list_query` zurückgreift und denselben Filter automatisch erbt. Wenn Sie einer Ansicht jedoch ein eigenes `get_detail_query` geben, erbt sie nicht mehr von `get_list_query` und muss `deleted_at` selbst filtern.
 
 ## Delete neu definieren
 

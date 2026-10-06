@@ -2,7 +2,7 @@
 title: Tortoise ORM इंटीग्रेशन
 description: starlette-admin का उपयोग करके FastAPI में अपने Tortoise ORM मॉडल के लिए
   आसानी से एडमिन इंटरफ़ेस बनाएं।
-source_hash: 1cf5d85b26decc7ad12c8dd48040809f644a91e9c46410d700a5e5a72f72c39f
+source_hash: a3a4afd1116aa0cdb8511ff8c1dcc94ae057b2eda587ad2e12f03f0c7577a227
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

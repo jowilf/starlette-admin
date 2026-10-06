@@ -2,7 +2,7 @@
 title: Flash-Meldungen
 description: Senden Sie flüchtige Erfolgs-, Warn- oder Fehlermeldungen an Benutzer,
   nachdem Aktionen in starlette-admin abgeschlossen wurden.
-source_hash: 597d52f90701d02e1620bfc199dbd2bdebc85f958d6f79d8458d1f8d50a0f9ec
+source_hash: 69eff0b8239bc8165c1e2ada234451bd69b561db705eaf878381d8f3b0d33515
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

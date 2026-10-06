@@ -2,7 +2,7 @@
 title: Intégration de Beanie
 description: Intégrez Beanie ODM avec starlette-admin pour créer une interface d'administration
   extensible pour vos collections MongoDB dans FastAPI.
-source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
+source_hash: bf031e2c51f854912d88da4be10bfeb563bd43ec1fd63f6fab5626b940c511e9
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -139,7 +139,7 @@ Lorsque les utilisateurs interagissent avec le champ de recherche sur une page d
 Le panneau d'administration détecte les index texte existants mais ne les crée pas. Vous devez définir l'index sur votre document Beanie pour activer la recherche plein texte native. Par exemple, vous pouvez y parvenir en ajoutant `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` à votre modèle.
 
 !!! note
-Si vous activez un index texte, vous pouvez définir `full_text_override_order_by = True` sur votre sous-classe de `ModelView` pour trier les résultats de recherche selon le score de pertinence de MongoDB plutôt que selon le tri de colonne par défaut.
+    Si vous activez un index texte, vous pouvez définir `full_text_override_order_by = True` sur votre sous-classe de `ModelView` pour trier les résultats de recherche selon le score de pertinence de MongoDB plutôt que selon le tri de colonne par défaut.
 
 ## Exemple complet fonctionnel
 

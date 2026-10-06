@@ -1,6 +1,13 @@
-# Soft Deletes and a Trash View with FastAPI & starlette-admin
+---
+date: 2026-07-10
+authors:
+  - jowilf
+categories:
+  - Guides
+  - FastAPI
+---
 
-_2026-07-10_
+# Soft Deletes and a Trash View with FastAPI & starlette-admin
 
 A standard `DELETE` operation is unforgiving. If an operator misclicks or an automated cleanup job runs against the wrong filter, the data is gone unless you perform a complex database restore. Implementing a "soft delete" mitigates this risk by flagging a record as deleted instead of permanently removing it from the database. This approach turns data recovery into a simple update operation.
 
@@ -12,6 +19,8 @@ This guide demonstrates how to implement the soft delete pattern in a FastAPI ap
 - A dedicated Trash interface for restoring or permanently purging records
 
 **View the complete runnable code:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete).
+
+<!-- more -->
 
 ## The Model
 
@@ -51,7 +60,7 @@ class PostView(ModelView):
 You must also exclude `deleted_at` from the create and edit forms. Operators should never set this field manually; it should only be modified programmatically by the `delete()` method and the restore action.
 
 !!! warning
-Missing `get_count_query` creates a data visibility leak: pagination and search-result totals will include deleted rows even though they do not render in the list. `get_detail_query` does not need a separate override here, since it defaults to `get_list_query` and inherits the same filter automatically. If you do give a view a custom `get_detail_query`, it stops inheriting from `get_list_query` and must filter `deleted_at` itself.
+    Missing `get_count_query` creates a data visibility leak: pagination and search-result totals will include deleted rows even though they do not render in the list. `get_detail_query` does not need a separate override here, since it defaults to `get_list_query` and inherits the same filter automatically. If you do give a view a custom `get_detail_query`, it stops inheriting from `get_list_query` and must filter `deleted_at` itself.
 
 ## Redefining Delete
 

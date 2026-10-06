@@ -1,7 +1,7 @@
 ---
 title: 导出与导入
 description: 在 starlette-admin 中启用 CSV、JSON 和 PDF 导出功能，并支持带校验的批量数据导入。
-source_hash: 90cb474355c091c80bb8d0e65e3b1aefa9a94e31738fb71b4e28e71590b29ce1
+source_hash: cbc3c5bd652cb1ef24bf5448002ce9e6c0fa6b1a9e228bb771869b0f457e58cd
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

@@ -134,15 +134,7 @@
     },
     {
       "ब्लॉग": [
-        {
-          "अवलोकन": "blog/index.md"
-        },
-        {
-          "FastAPI में 5 मिनट में एडमिन पैनल जोड़ें": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
-        },
-        {
-          "Starlette Admin से FastAPI में सॉफ़्ट डिलीट और ट्रैश व्यू बनाना": "blog/posts/soft-deletes-trash-view.md"
-        }
+        "blog/index.md"
       ]
     },
     {

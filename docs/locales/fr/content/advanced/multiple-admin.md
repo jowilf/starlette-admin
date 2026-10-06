@@ -2,7 +2,7 @@
 title: Instances Admin multiples
 description: Montez plusieurs tableaux de bord admin isolés sur une seule application
   FastAPI pour différents rôles d'utilisateurs ou domaines.
-source_hash: 8b8c561c0c44bf9cb942e4e0d074f7a7e10c1e1fadb7339f4c76acce70d3a9a2
+source_hash: 9b826ebd92cd8db5ab4cc7ccc1e3961e605b585662c09aef2dfe215c1c7ee62b
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

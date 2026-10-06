@@ -2,7 +2,7 @@
 title: प्लगइन
 description: starlette-admin के लिए reusable admin features और extensions को drop-in
   प्लगइन के रूप में package करें।
-source_hash: d4a820df8fc69e7fb5af4ac514503dd322d197273a20ae2e623852a9bbd02228
+source_hash: f964135e901f81cf3d01cae356db6a6fb1a6dde4dd6b8f0dab2f289f88970189
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---

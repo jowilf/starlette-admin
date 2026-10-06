@@ -2,7 +2,7 @@
 title: Configuration de l'Admin
 description: Configurez votre instance starlette-admin, personnalisez le thème, le
   routage et les paramètres généraux de sécurité.
-source_hash: 9e9a48b9e7e2e565b504c6d831eaf0e7a911489399ffb480ea19e50d0f8ad843
+source_hash: 40f75ba0bdf9c8ddd86ba1d25a8ece6a42063d38d80c25fbb2599268c0d05c16
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -168,8 +168,10 @@ Pour une approche plus légère, appelez vous-même `starlette_admin.logging.con
 Après avoir créé l'instance `Admin`, enregistrez vos vues et montez l'admin sur votre application.
 
 ```python
-admin.add_view(ModelView(Post))  # Enregistre une vue (BaseModelView, CustomView, etc.)
-admin.mount_to(app)  # Monte l'admin sur votre application Starlette ou FastAPI
+admin.add_view(
+    ModelView(Post)
+)  # Register a view (BaseModelView, CustomView, and so on)
+admin.mount_to(app)  # Mount the admin onto your Starlette or FastAPI app
 ```
 
 ### Enregistrement des vues
@@ -187,12 +189,12 @@ Une fois toutes vos vues enregistrées, appelez `mount_to(app)` exactement une f
     * Enregistrer une autre vue ou appeler `mount_to` une seconde fois après le premier montage déclenche également une `RuntimeError`.
 
 ```python
-admin.app  # Déclenche RuntimeError: pas encore monté
+admin.app  # Raises RuntimeError: not mounted yet
 
 admin.mount_to(app)
-admin.app  # Renvoie la sous-application montée
+admin.app  # Returns the mounted sub-application
 
-admin.add_view(ModelView(Comment))  # Déclenche RuntimeError: déjà monté
+admin.add_view(ModelView(Comment))  # Raises RuntimeError: already mounted
 ```
 
 ---

@@ -1,8 +1,15 @@
+---
+date: 2026-07-13
+authors:
+  - jowilf
+categories:
+  - Tutorials
+  - FastAPI
+---
+
 # Add an Admin Panel to FastAPI in 5 Minutes with starlette-admin
 
-_2026-07-13_
-
-You shipped the API. Now, someone on your team needs to edit the data behind it: fix a typo in a record, unpublish a post, or check what a user actually submitted. The standard options are usually costly:
+Your backend is up and running, but non-engineers soon need to modify live data. Someone has to fix a typo in a record, unpublish a post, or inspect a user submission. The standard workarounds are rarely clean:
 
 | Option                   | The Drawback                                                                                               |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -15,7 +22,9 @@ You shipped the API. Now, someone on your team needs to edit the data behind it:
 
 This guide takes you from an empty file to a working back office in five minutes. You will build paginated lists, search functionality, sortable columns, create and edit forms validated by your existing Pydantic schemas, deletion confirmations, and CSV exports, all generated directly from a SQLAlchemy model.
 
-The full runnable code is available at [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>).
+<!-- more -->
+
+The full runnable code is available at [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi).
 
 ## Minute 1: Install
 
@@ -252,15 +261,15 @@ class PostIn(BaseModel):
 Next, add `"user"` to `PostView.fields` and `form_layout` so the author appears in the post form. This field is not a standard dropdown. It is a select input featuring server-side autocomplete that searches your users as the operator types, and the user detail page links back to every related post.
 
 !!! note
-`create_all` does not alter existing tables, so you will need to delete `blog.db` before restarting to pick up the new `user_id` column.
+    `create_all` does not alter existing tables, so you will need to delete `blog.db` before restarting to pick up the new `user_id` column.
 
 ## Before You Deploy
 
 !!! warning
-The `secret_key` parameter signs the session cookie used for CSRF protection and flash messages. Replace the placeholder with a long, random value from your settings before deployment, and ensure you load it from your environment variables rather than hardcoding it into the source code.
+    The `secret_key` parameter signs the session cookie used for CSRF protection and flash messages. Replace the placeholder with a long, random value from your settings before deployment, and ensure you load it from your environment variables rather than hardcoding it into the source code.
 
 !!! note
-`Base.metadata.create_all(engine)` in the lifespan is a convenience for the quickstart. In a production project, your tables are managed by migrations (like Alembic). Drop that call and point the `Admin` directly at your existing engine. `starlette-admin` never modifies your schema; it only reads and writes rows.
+    `Base.metadata.create_all(engine)` in the lifespan is a convenience for the quickstart. In a production project, your tables are managed by migrations (like Alembic). Drop that call and point the `Admin` directly at your existing engine. `starlette-admin` never modifies your schema; it only reads and writes rows.
 
 ## This Scales Past the Demo
 

@@ -134,15 +134,7 @@
     },
     {
       "Blog": [
-        {
-          "Vue d'ensemble": "blog/index.md"
-        },
-        {
-          "Ajouter un panneau d'administration à FastAPI en 5 minutes": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
-        },
-        {
-          "Créer des suppressions logiques et une vue corbeille dans FastAPI avec Starlette Admin": "blog/posts/soft-deletes-trash-view.md"
-        }
+        "blog/index.md"
       ]
     },
     {

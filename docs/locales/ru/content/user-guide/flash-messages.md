@@ -2,7 +2,7 @@
 title: Flash-сообщения
 description: Отправляйте пользователям временные уведомления об успехе, предупреждения
   или сообщения об ошибках после выполнения действий в starlette-admin.
-source_hash: 597d52f90701d02e1620bfc199dbd2bdebc85f958d6f79d8458d1f8d50a0f9ec
+source_hash: 69eff0b8239bc8165c1e2ada234451bd69b561db705eaf878381d8f3b0d33515
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -37,7 +37,7 @@ from starlette_admin.flash import flash
 class PostView(BaseModelView):
     async def before_create(self, request: Request, data: dict) -> None:
         if not data.get("title", "").strip():
-            # Ставим сообщение в очередь для следующей загрузки страницы
+            # Queue the message for the next page load
             flash(request, "Title cannot be blank.", category="error")
             raise ValueError("Title cannot be blank.")
 ```
@@ -92,7 +92,7 @@ class PostView(BaseModelView):
             obj.published = True
             await self.edit(request, pk, {"published": True})
 
-        # Уведомляем пользователя об успешном выполнении кастомного действия
+        # Notify the user that the custom action succeeded
         flash(request, f"{len(pks)} post(s) published.", category="success")
 ```
 

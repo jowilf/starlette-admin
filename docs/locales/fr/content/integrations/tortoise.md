@@ -2,7 +2,7 @@
 title: Intégration de Tortoise ORM
 description: Créez facilement une interface d'administration pour vos modèles Tortoise
   ORM dans FastAPI à l'aide de starlette-admin.
-source_hash: 1cf5d85b26decc7ad12c8dd48040809f644a91e9c46410d700a5e5a72f72c39f
+source_hash: a3a4afd1116aa0cdb8511ff8c1dcc94ae057b2eda587ad2e12f03f0c7577a227
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -68,7 +68,7 @@ class Genre(Model):
     description = fields.TextField(null=True)
 
 
-# Résolvez les relations au moment de l'import avant la construction des vues d'administration.
+# Resolve relations at import time before the admin views are built.
 Tortoise.init_models(["app"], "models")
 
 
@@ -226,7 +226,7 @@ class Post(Model):
         return self.title
 
 
-# Résolvez les relations au moment de l'import avant la construction des vues d'administration.
+# Resolve relations at import time before the admin views are built.
 Tortoise.init_models(["main"], "models")
 
 

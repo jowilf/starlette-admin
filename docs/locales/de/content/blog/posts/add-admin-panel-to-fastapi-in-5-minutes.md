@@ -1,7 +1,13 @@
 ---
-source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
+source_hash: 6b599f7ed96f051005ec84f7dcc5792ae570edae938be9bd1ac9b2e48a66c843
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-13
+authors:
+- jowilf
+categories:
+- Tutorials
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,9 +26,8 @@ machine_translated: true
 
 # Fügen Sie mit starlette-admin in 5 Minuten ein Admin-Panel zu FastAPI hinzu
 
-_2026-07-13_
 
-Sie haben die API ausgeliefert. Jetzt muss jemand in Ihrem Team die Daten dahinter bearbeiten: einen Tippfehler in einem Datensatz korrigieren, einen Beitrag zurückziehen oder prüfen, was ein Benutzer tatsächlich übermittelt hat. Die üblichen Optionen sind meist kostspielig:
+Ihr Backend läuft, doch schon bald müssen auch Nicht-Entwickler Live-Daten ändern. Jemand muss einen Tippfehler in einem Datensatz korrigieren, einen Beitrag zurückziehen oder prüfen, was ein Benutzer tatsächlich übermittelt hat. Die üblichen Behelfslösungen sind selten sauber:
 
 | Option                   | Der Nachteil                                                                                               |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -35,7 +40,10 @@ Sie haben die API ausgeliefert. Jetzt muss jemand in Ihrem Team die Daten dahint
 
 Diese Anleitung führt Sie in fünf Minuten von einer leeren Datei zu einer funktionierenden Back-Office-Anwendung. Sie bauen paginierte Listen, Suchfunktionalität, sortierbare Spalten, Erstellungs- und Bearbeitungsformulare, die durch Ihre vorhandenen Pydantic-Schemas validiert werden, Löschbestätigungen sowie CSV-Exporte – alles direkt aus einem SQLAlchemy-Modell generiert.
 
-Der vollständige, lauffähige Code ist unter [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>) verfügbar.
+
+<!-- more -->
+
+Der vollständige, lauffähige Code ist unter [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi) verfügbar.
 
 ## Minute 1: Installation
 
@@ -272,15 +280,15 @@ class PostIn(BaseModel):
 Fügen Sie als Nächstes `"user"` zu `PostView.fields` und `form_layout` hinzu, damit der Autor im Beitragsformular erscheint. Dieses Feld ist kein gewöhnliches Dropdown. Es handelt sich um ein Select-Eingabefeld mit serverseitiger Autovervollständigung, das Ihre Benutzer während der Eingabe durchsucht, und die Benutzer-Detailseite verlinkt zurück zu jedem zugehörigen Beitrag.
 
 !!! note
-`create_all` ändert bestehende Tabellen nicht, daher müssen Sie `blog.db` löschen, bevor Sie neu starten, um die neue Spalte `user_id` zu übernehmen.
+    `create_all` ändert bestehende Tabellen nicht, daher müssen Sie `blog.db` löschen, bevor Sie neu starten, um die neue Spalte `user_id` zu übernehmen.
 
 ## Vor dem Deployment
 
 !!! warning
-Der Parameter `secret_key` signiert das Session-Cookie, das für den CSRF-Schutz und Flash-Messages verwendet wird. Ersetzen Sie den Platzhalter vor dem Deployment durch einen langen, zufälligen Wert aus Ihrer Konfiguration, und laden Sie ihn unbedingt aus Ihren Umgebungsvariablen, statt ihn fest in den Quellcode zu schreiben.
+    Der Parameter `secret_key` signiert das Session-Cookie, das für den CSRF-Schutz und Flash-Messages verwendet wird. Ersetzen Sie den Platzhalter vor dem Deployment durch einen langen, zufälligen Wert aus Ihrer Konfiguration, und laden Sie ihn unbedingt aus Ihren Umgebungsvariablen, statt ihn fest in den Quellcode zu schreiben.
 
 !!! note
-`Base.metadata.create_all(engine)` im lifespan ist eine Annehmlichkeit für den Schnellstart. In einem Produktionsprojekt werden Ihre Tabellen durch Migrationen verwaltet (z. B. mit Alembic). Entfernen Sie diesen Aufruf und richten Sie `Admin` direkt auf Ihre vorhandene Engine. `starlette-admin` modifiziert niemals Ihr Schema; es liest und schreibt ausschließlich Zeilen.
+    `Base.metadata.create_all(engine)` im lifespan ist eine Annehmlichkeit für den Schnellstart. In einem Produktionsprojekt werden Ihre Tabellen durch Migrationen verwaltet (z. B. mit Alembic). Entfernen Sie diesen Aufruf und richten Sie `Admin` direkt auf Ihre vorhandene Engine. `starlette-admin` modifiziert niemals Ihr Schema; es liest und schreibt ausschließlich Zeilen.
 
 ## Das skaliert weit über die Demo hinaus
 

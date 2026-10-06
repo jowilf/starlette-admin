@@ -1,7 +1,13 @@
 ---
-source_hash: 407757442fad75a534f382375e48ae12d4b0d56b21f2b5c4ee126b8d6ce698c7
+source_hash: b58d07c5674623b4af0e3c5780c6c783c30a19737ead543fb02ab63a2774e893
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-10
+authors:
+- jowilf
+categories:
+- Guides
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,7 +26,6 @@ machine_translated: true
 
 # Soft Deletes y una vista de papelera con FastAPI y starlette-admin
 
-_2026-07-10_
 
 Una operación `DELETE` estándar es implacable. Si un operador hace clic por error o un trabajo automatizado de limpieza se ejecuta con el filtro equivocado, los datos desaparecen a menos que realice una restauración compleja de la base de datos. Implementar un "soft delete" mitiga este riesgo al marcar un registro como eliminado en lugar de eliminarlo permanentemente de la base de datos. Este enfoque convierte la recuperación de datos en una simple operación de actualización.
 
@@ -32,6 +37,9 @@ Esta guía demuestra cómo implementar el patrón de soft delete en una aplicaci
 - Una interfaz de papelera dedicada para restaurar o purgar permanentemente registros
 
 **Consulte el código completo y ejecutable:** [`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete).
+
+<!-- more -->
+
 
 ## El modelo
 
@@ -71,7 +79,7 @@ class PostView(ModelView):
 También debe excluir `deleted_at` de los formularios de creación y edición. Los operadores nunca deben establecer este campo manualmente; solo debe modificarse programáticamente mediante el método `delete()` y la acción de restauración.
 
 !!! warning
-Omitir `get_count_query` crea una fuga de visibilidad de datos: los totales de paginación y de resultados de búsqueda incluirán filas eliminadas aunque no se rendericen en la lista. `get_detail_query` no necesita una sobreescritura separada aquí, ya que toma como valor predeterminado `get_list_query` y hereda automáticamente el mismo filtro. Si asigna a una vista un `get_detail_query` personalizado, deja de heredar de `get_list_query` y debe filtrar `deleted_at` por sí misma.
+    Omitir `get_count_query` crea una fuga de visibilidad de datos: los totales de paginación y de resultados de búsqueda incluirán filas eliminadas aunque no se rendericen en la lista. `get_detail_query` no necesita una sobreescritura separada aquí, ya que toma como valor predeterminado `get_list_query` y hereda automáticamente el mismo filtro. Si asigna a una vista un `get_detail_query` personalizado, deja de heredar de `get_list_query` y debe filtrar `deleted_at` por sí misma.
 
 ## Redefinir delete
 
