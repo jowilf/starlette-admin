@@ -1,5 +1,5 @@
 ---
-source_hash: de063cf6bb094eb31d60edfa62aada2f1faa4a1970ce1cc81495c23890f3bee8
+source_hash: 6b599f7ed96f051005ec84f7dcc5792ae570edae938be9bd1ac9b2e48a66c843
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 date: 2026-07-13
@@ -280,15 +280,15 @@ class PostIn(BaseModel):
 A continuación, añada `"user"` a `PostView.fields` y a `form_layout` para que el autor aparezca en el formulario de entradas. Este campo no es un desplegable estándar. Es un campo de selección con autocompletado del lado del servidor que busca entre sus usuarios mientras el operador escribe, y la página de detalle del usuario enlaza de vuelta con cada entrada relacionada.
 
 !!! note
-`create_all` no modifica las tablas existentes, por lo que deberá eliminar `blog.db` antes de reiniciar para incorporar la nueva columna `user_id`.
+    `create_all` no modifica las tablas existentes, por lo que deberá eliminar `blog.db` antes de reiniciar para incorporar la nueva columna `user_id`.
 
 ## Antes de desplegar
 
 !!! warning
-El parámetro `secret_key` firma la cookie de sesión utilizada para la protección CSRF y los mensajes flash. Sustituya el marcador de posición por un valor largo y aleatorio procedente de su configuración antes del despliegue, y asegúrese de cargarlo desde sus variables de entorno en lugar de codificarlo directamente en el código fuente.
+    El parámetro `secret_key` firma la cookie de sesión utilizada para la protección CSRF y los mensajes flash. Sustituya el marcador de posición por un valor largo y aleatorio procedente de su configuración antes del despliegue, y asegúrese de cargarlo desde sus variables de entorno en lugar de codificarlo directamente en el código fuente.
 
 !!! note
-`Base.metadata.create_all(engine)` en el lifespan es una comodidad para la guía rápida. En un proyecto de producción, sus tablas se gestionan mediante migraciones (como Alembic). Elimine esa llamada y apunte el `Admin` directamente a su motor existente. `starlette-admin` nunca modifica su esquema; solo lee y escribe filas.
+    `Base.metadata.create_all(engine)` en el lifespan es una comodidad para la guía rápida. En un proyecto de producción, sus tablas se gestionan mediante migraciones (como Alembic). Elimine esa llamada y apunte el `Admin` directamente a su motor existente. `starlette-admin` nunca modifica su esquema; solo lee y escribe filas.
 
 ## Esto escala más allá de la demostración
 

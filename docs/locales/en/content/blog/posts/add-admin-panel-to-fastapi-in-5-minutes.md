@@ -261,15 +261,15 @@ class PostIn(BaseModel):
 Next, add `"user"` to `PostView.fields` and `form_layout` so the author appears in the post form. This field is not a standard dropdown. It is a select input featuring server-side autocomplete that searches your users as the operator types, and the user detail page links back to every related post.
 
 !!! note
-`create_all` does not alter existing tables, so you will need to delete `blog.db` before restarting to pick up the new `user_id` column.
+    `create_all` does not alter existing tables, so you will need to delete `blog.db` before restarting to pick up the new `user_id` column.
 
 ## Before You Deploy
 
 !!! warning
-The `secret_key` parameter signs the session cookie used for CSRF protection and flash messages. Replace the placeholder with a long, random value from your settings before deployment, and ensure you load it from your environment variables rather than hardcoding it into the source code.
+    The `secret_key` parameter signs the session cookie used for CSRF protection and flash messages. Replace the placeholder with a long, random value from your settings before deployment, and ensure you load it from your environment variables rather than hardcoding it into the source code.
 
 !!! note
-`Base.metadata.create_all(engine)` in the lifespan is a convenience for the quickstart. In a production project, your tables are managed by migrations (like Alembic). Drop that call and point the `Admin` directly at your existing engine. `starlette-admin` never modifies your schema; it only reads and writes rows.
+    `Base.metadata.create_all(engine)` in the lifespan is a convenience for the quickstart. In a production project, your tables are managed by migrations (like Alembic). Drop that call and point the `Admin` directly at your existing engine. `starlette-admin` never modifies your schema; it only reads and writes rows.
 
 ## This Scales Past the Demo
 

@@ -1,5 +1,5 @@
 ---
-source_hash: 8ae54757226d0f52a5ff6435a3b3d57e03e83e0add4d3a91062a36e080d5ac49
+source_hash: b58d07c5674623b4af0e3c5780c6c783c30a19737ead543fb02ab63a2774e893
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 date: 2026-07-10
@@ -79,7 +79,7 @@ class PostView(ModelView):
 Vous devez également exclure `deleted_at` des formulaires de création et d'édition. Les opérateurs ne doivent jamais définir ce champ manuellement ; il ne doit être modifié que programmatiquement, par la méthode `delete()` et l'action de restauration.
 
 !!! warning
-L'omission de `get_count_query` crée une fuite de visibilité des données : la pagination et les totaux des résultats de recherche incluront les lignes supprimées même si elles ne s'affichent pas dans la liste. `get_detail_query` n'a pas besoin d'une redéfinition séparée ici, puisqu'elle utilise `get_list_query` par défaut et hérite automatiquement du même filtre. Si vous attribuez toutefois une `get_detail_query` personnalisée à une vue, elle cesse d'hériter de `get_list_query` et doit filtrer elle-même sur `deleted_at`.
+    L'omission de `get_count_query` crée une fuite de visibilité des données : la pagination et les totaux des résultats de recherche incluront les lignes supprimées même si elles ne s'affichent pas dans la liste. `get_detail_query` n'a pas besoin d'une redéfinition séparée ici, puisqu'elle utilise `get_list_query` par défaut et hérite automatiquement du même filtre. Si vous attribuez toutefois une `get_detail_query` personnalisée à une vue, elle cesse d'hériter de `get_list_query` et doit filtrer elle-même sur `deleted_at`.
 
 ## Redéfinir la suppression
 

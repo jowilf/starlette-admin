@@ -1,5 +1,5 @@
 ---
-source_hash: 8ae54757226d0f52a5ff6435a3b3d57e03e83e0add4d3a91062a36e080d5ac49
+source_hash: b58d07c5674623b4af0e3c5780c6c783c30a19737ead543fb02ab63a2774e893
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 date: 2026-07-10
@@ -79,7 +79,7 @@ class PostView(ModelView):
 También debe excluir `deleted_at` de los formularios de creación y edición. Los operadores nunca deben establecer este campo manualmente; solo debe modificarse programáticamente mediante el método `delete()` y la acción de restauración.
 
 !!! warning
-Omitir `get_count_query` crea una fuga de visibilidad de datos: los totales de paginación y de resultados de búsqueda incluirán filas eliminadas aunque no se rendericen en la lista. `get_detail_query` no necesita una sobreescritura separada aquí, ya que toma como valor predeterminado `get_list_query` y hereda automáticamente el mismo filtro. Si asigna a una vista un `get_detail_query` personalizado, deja de heredar de `get_list_query` y debe filtrar `deleted_at` por sí misma.
+    Omitir `get_count_query` crea una fuga de visibilidad de datos: los totales de paginación y de resultados de búsqueda incluirán filas eliminadas aunque no se rendericen en la lista. `get_detail_query` no necesita una sobreescritura separada aquí, ya que toma como valor predeterminado `get_list_query` y hereda automáticamente el mismo filtro. Si asigna a una vista un `get_detail_query` personalizado, deja de heredar de `get_list_query` y debe filtrar `deleted_at` por sí misma.
 
 ## Redefinir delete
 

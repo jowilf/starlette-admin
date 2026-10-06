@@ -1,5 +1,5 @@
 ---
-source_hash: 8ae54757226d0f52a5ff6435a3b3d57e03e83e0add4d3a91062a36e080d5ac49
+source_hash: b58d07c5674623b4af0e3c5780c6c783c30a19737ead543fb02ab63a2774e893
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 date: 2026-07-10
@@ -75,7 +75,7 @@ class PostView(ModelView):
 你还必须把 `deleted_at` 从创建和编辑表单中排除。操作员绝不应该手动设置这个字段；它只应通过 `delete()` 方法和恢复动作以编程方式进行修改。
 
 !!! warning
-缺少 `get_count_query` 会造成数据可见性泄露：分页和搜索结果的统计总数会把已删除的行计算在内，尽管它们并不会在列表中渲染。这里的 `get_detail_query` 不需要单独覆盖，因为它默认取自 `get_list_query`，会自动继承同一个过滤器。不过，如果你确实为某个视图提供了自定义的 `get_detail_query`，它就不再继承 `get_list_query`，必须自行过滤 `deleted_at`。
+    缺少 `get_count_query` 会造成数据可见性泄露：分页和搜索结果的统计总数会把已删除的行计算在内，尽管它们并不会在列表中渲染。这里的 `get_detail_query` 不需要单独覆盖，因为它默认取自 `get_list_query`，会自动继承同一个过滤器。不过，如果你确实为某个视图提供了自定义的 `get_detail_query`，它就不再继承 `get_list_query`，必须自行过滤 `deleted_at`。
 
 ## 重新定义删除
 

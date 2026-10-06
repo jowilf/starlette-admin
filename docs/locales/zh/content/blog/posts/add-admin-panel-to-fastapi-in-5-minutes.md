@@ -1,5 +1,5 @@
 ---
-source_hash: de063cf6bb094eb31d60edfa62aada2f1faa4a1970ce1cc81495c23890f3bee8
+source_hash: 6b599f7ed96f051005ec84f7dcc5792ae570edae938be9bd1ac9b2e48a66c843
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 date: 2026-07-13
@@ -276,15 +276,15 @@ class PostIn(BaseModel):
 接下来，把 `"user"` 加入 `PostView.fields` 和 `form_layout`，让作者显示在文章表单里。这个字段不是普通的下拉框，而是一个带有服务端自动补全的选择框，会随着操作员的输入实时搜索你的用户；同时，用户详情页面还会链接回每一篇相关文章。
 
 !!! note
-`create_all` 不会修改已有的表，因此重启之前你需要删除 `blog.db`，才能用上新添的 `user_id` 列。
+    `create_all` 不会修改已有的表，因此重启之前你需要删除 `blog.db`，才能用上新添的 `user_id` 列。
 
 ## 部署之前
 
 !!! warning
-`secret_key` 参数用于为 CSRF 保护和Flash 消息所使用的会话 Cookie 签名。部署之前，请把其中的占位符替换为你配置中的长随机值，并确保从环境变量加载它，而不是硬编码在源代码里。
+    `secret_key` 参数用于为 CSRF 保护和Flash 消息所使用的会话 Cookie 签名。部署之前，请把其中的占位符替换为你配置中的长随机值，并确保从环境变量加载它，而不是硬编码在源代码里。
 
 !!! note
-lifespan 中的 `Base.metadata.create_all(engine)` 只是为快速上手提供的便利。在生产项目中，你的表应由迁移工具（如 Alembic）管理。去掉那个调用，让 `Admin` 直接指向你现有的引擎即可。`starlette-admin` 从不修改你的表结构；它只会读取和写入数据行。
+    lifespan 中的 `Base.metadata.create_all(engine)` 只是为快速上手提供的便利。在生产项目中，你的表应由迁移工具（如 Alembic）管理。去掉那个调用，让 `Admin` 直接指向你现有的引擎即可。`starlette-admin` 从不修改你的表结构；它只会读取和写入数据行。
 
 ## 这套机制可以扩展到演示之外
 

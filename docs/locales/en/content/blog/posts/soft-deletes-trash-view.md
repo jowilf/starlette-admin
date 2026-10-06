@@ -60,7 +60,7 @@ class PostView(ModelView):
 You must also exclude `deleted_at` from the create and edit forms. Operators should never set this field manually; it should only be modified programmatically by the `delete()` method and the restore action.
 
 !!! warning
-Missing `get_count_query` creates a data visibility leak: pagination and search-result totals will include deleted rows even though they do not render in the list. `get_detail_query` does not need a separate override here, since it defaults to `get_list_query` and inherits the same filter automatically. If you do give a view a custom `get_detail_query`, it stops inheriting from `get_list_query` and must filter `deleted_at` itself.
+    Missing `get_count_query` creates a data visibility leak: pagination and search-result totals will include deleted rows even though they do not render in the list. `get_detail_query` does not need a separate override here, since it defaults to `get_list_query` and inherits the same filter automatically. If you do give a view a custom `get_detail_query`, it stops inheriting from `get_list_query` and must filter `deleted_at` itself.
 
 ## Redefining Delete
 

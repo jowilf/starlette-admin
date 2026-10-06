@@ -1,5 +1,5 @@
 ---
-source_hash: 8ae54757226d0f52a5ff6435a3b3d57e03e83e0add4d3a91062a36e080d5ac49
+source_hash: b58d07c5674623b4af0e3c5780c6c783c30a19737ead543fb02ab63a2774e893
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 date: 2026-07-10
@@ -79,7 +79,7 @@ class PostView(ModelView):
 Sie müssen `deleted_at` außerdem von den Create- und Edit-Formularen ausschließen. Operatoren sollten dieses Feld niemals manuell setzen; es sollte ausschließlich programmatisch durch die Methode `delete()` und die Restore-Aktion geändert werden.
 
 !!! warning
-Ein fehlendes `get_count_query` führt zu einem Leak bei der Datensichtbarkeit: Paginierungs- und Suchergebnis-Zähler schließen gelöschte Zeilen ein, obwohl diese nicht in der Liste gerendert werden. `get_detail_query` benötigt hier keine separate Überschreibung, da es standardmäßig auf `get_list_query` zurückgreift und denselben Filter automatisch erbt. Wenn Sie einer Ansicht jedoch ein eigenes `get_detail_query` geben, erbt sie nicht mehr von `get_list_query` und muss `deleted_at` selbst filtern.
+    Ein fehlendes `get_count_query` führt zu einem Leak bei der Datensichtbarkeit: Paginierungs- und Suchergebnis-Zähler schließen gelöschte Zeilen ein, obwohl diese nicht in der Liste gerendert werden. `get_detail_query` benötigt hier keine separate Überschreibung, da es standardmäßig auf `get_list_query` zurückgreift und denselben Filter automatisch erbt. Wenn Sie einer Ansicht jedoch ein eigenes `get_detail_query` geben, erbt sie nicht mehr von `get_list_query` und muss `deleted_at` selbst filtern.
 
 ## Delete neu definieren
 
