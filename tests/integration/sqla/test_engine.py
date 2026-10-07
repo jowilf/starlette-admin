@@ -19,6 +19,7 @@ import sqlalchemy_file as sf
 from httpx2 import AsyncClient
 from sqlalchemy import (
     Boolean,
+    ColumnElement,
     Enum,
     Float,
     ForeignKey,
@@ -27,11 +28,11 @@ from sqlalchemy import (
     Text,
     func,
     select,
-    ColumnElement,
 )
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -41,7 +42,6 @@ from sqlalchemy.orm import (
     selectinload,
 )
 from sqlalchemy_file.storage import StorageManager
-from sqlalchemy.ext.hybrid import hybrid_property
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette_admin import StringField
@@ -211,7 +211,12 @@ def _seed(session_or_async_session, fake_image) -> None:
     products[0].image = sf.File(fake_image, filename="image.png")
     session_or_async_session.add_all(products)
     users = [
-        User(name="Doe", files=[sf.File("Hello", filename="hello.txt")], first_name="John", last_name="Doe"),
+        User(
+            name="Doe",
+            files=[sf.File("Hello", filename="hello.txt")],
+            first_name="John",
+            last_name="Doe",
+        ),
         User(name="Terry", files=[], first_name="Terry", last_name="Smith"),
         User(name="admin", first_name="Ada", last_name="Admin"),
     ]
@@ -697,6 +702,7 @@ async def test_sortable_field_mapping_2(client: AsyncClient):
         params={"sort": "user__asc", "page_size": 10},
     )
     assert response.status_code == 200
+
 
 async def test_sortable_field_hybrid_property(client: AsyncClient):
     response = await client.get(
