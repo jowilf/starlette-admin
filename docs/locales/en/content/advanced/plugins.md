@@ -20,22 +20,6 @@ admin = Admin(engine, plugins=[GeospatialPlugin(default_zoom=13)])
 
 The plugin constructor takes the options, and the list goes straight to `Admin`. Nothing else to set up or register. Options flow from the constructor down to the Python backend, the Jinja templates, and the frontend JavaScript.
 
-## Community plugins
-
-These plugins are maintained by the community, outside of this repository. Install them from PyPI and pass them to `Admin` like any other plugin.
-
-| Plugin | Description |
-| --- | --- |
-| [starlette-admin-infinite-scroll](https://github.com/Alwinator/starlette-admin-infinite-scroll) | Infinite scrolling for the list view. Appends the next page as you scroll, keeping search, sort, filters, and row actions working. |
-
-```python
-from starlette_admin_infinite_scroll import InfiniteScrollPlugin
-
-admin = Admin(engine, plugins=[InfiniteScrollPlugin()])
-```
-
-Built a plugin? Open a pull request that adds it to this table.
-
 ## Building a plugin
 
 To write a plugin, start from the official cookiecutter template. It generates a publishable package with the right directory structure and configuration.
