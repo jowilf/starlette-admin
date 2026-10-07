@@ -2,7 +2,7 @@
 title: Mensajes flash
 description: Envíe alertas efímeras de éxito, advertencia o error a los usuarios tras
   completar acciones en starlette-admin.
-source_hash: 597d52f90701d02e1620bfc199dbd2bdebc85f958d6f79d8458d1f8d50a0f9ec
+source_hash: 69eff0b8239bc8165c1e2ada234451bd69b561db705eaf878381d8f3b0d33515
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -33,13 +33,13 @@ from starlette.requests import Request
 from starlette_admin import BaseModelView
 from starlette_admin.flash import flash
 
+
 class PostView(BaseModelView):
     async def before_create(self, request: Request, data: dict) -> None:
         if not data.get("title", "").strip():
             # Queue the message for the next page load
             flash(request, "Title cannot be blank.", category="error")
             raise ValueError("Title cannot be blank.")
-
 ```
 
 ## Categorías de mensajes
@@ -53,7 +53,6 @@ flash(request, "Report generated.", category="success")
 flash(request, "3 rows were skipped.", category="info")
 flash(request, "This action can't be undone.", category="warning")
 flash(request, "Upload failed: file too large.", category="error")
-
 ```
 
 El argumento `category` tiene `"info"` como valor predeterminado. Debe ser exactamente uno de `success`, `info`, `warning` o `error`. Cualquier otro valor lanza una `ValueError`.
@@ -80,6 +79,7 @@ Los manejadores de acciones personalizadas (`@action` y `@row_action`) devuelven
 from starlette.requests import Request
 from starlette_admin import BaseModelView, action, flash
 
+
 class PostView(BaseModelView):
     @action(
         name="publish",
@@ -94,7 +94,6 @@ class PostView(BaseModelView):
 
         # Notify the user that the custom action succeeded
         flash(request, f"{len(pks)} post(s) published.", category="success")
-
 ```
 
 * **Si omite `flash()`:** La acción se ejecuta igualmente, pero el usuario no recibe ninguna confirmación visual después de que la página se redirige.
@@ -109,7 +108,6 @@ from starlette_admin.flash import get_flashed_messages
 
 messages = get_flashed_messages(request)
 # Returns: [{"message": "The item \"My First Post\" was added successfully.", "category": "success"}]
-
 ```
 
 Leer la cola de mensajes flash es **destructivo**. La primera llamada a `get_flashed_messages(request)` extrae y limpia la cola. Las llamadas posteriores durante la misma solicitud devuelven una lista vacía, `[]`.

@@ -1,8 +1,15 @@
+---
+date: 2026-07-13
+authors:
+  - jowilf
+categories:
+  - Tutorials
+  - FastAPI
+---
+
 # Add an Admin Panel to FastAPI in 5 Minutes with starlette-admin
 
-_2026-07-13_
-
-You shipped the API. Now, someone on your team needs to edit the data behind it: fix a typo in a record, unpublish a post, or check what a user actually submitted. The standard options are usually costly:
+Your backend is up and running, but non-engineers soon need to modify live data. Someone has to fix a typo in a record, unpublish a post, or inspect a user submission. The standard workarounds are rarely clean:
 
 | Option                   | The Drawback                                                                                               |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -15,7 +22,9 @@ You shipped the API. Now, someone on your team needs to edit the data behind it:
 
 This guide takes you from an empty file to a working back office in five minutes. You will build paginated lists, search functionality, sortable columns, create and edit forms validated by your existing Pydantic schemas, deletion confirmations, and CSV exports, all generated directly from a SQLAlchemy model.
 
-The full runnable code is available at [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>).
+<!-- more -->
+
+The full runnable code is available at [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi).
 
 ## Minute 1: Install
 
@@ -48,9 +57,7 @@ from sqlalchemy import String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-engine = create_engine(
-    "sqlite:///blog.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
 class Base(DeclarativeBase):
@@ -78,7 +85,6 @@ app = FastAPI(lifespan=lifespan)
 admin = Admin(engine, title="Blog Admin", secret_key="dev-only-change-me")
 admin.add_view(ModelView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
-
 ```
 
 Notice what is missing. There are no templates, route handlers for the admin pages, serializers, or field configurations. `starlette-admin` reads the SQLAlchemy column metadata and derives the entire interface automatically: bounded text inputs for the two `String` columns, a textarea for the `Text` content, and a datetime picker for `published_at`.
@@ -139,7 +145,6 @@ class PostView(ModelView):
 
 
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
-
 ```
 
 Four powerful upgrades occur in this single class:
@@ -172,7 +177,6 @@ class PostIn(BaseModel):
         if len(v.split()) < 3:
             raise ValueError("Must contain at least 3 words")
         return v
-
 ```
 
 Instead of writing validation logic twice, hand the admin your existing model. The `ext.pydantic` extension provides a `ModelView` that processes every form submission through a Pydantic model before it reaches the database. Point your `ModelView` import to the extension, keep `Admin` as is, and pass the schema:
@@ -181,14 +185,12 @@ Instead of writing validation logic twice, hand the admin your existing model. T
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 
-class PostView(ModelView):
-    ...  # configuration from Minute 5, unchanged
+class PostView(ModelView): ...  # configuration from Minute 5, unchanged
 
 
 admin.add_view(
     PostView(Post, pydantic_model=PostIn, icon="fa fa-blog", menu_label="Blog Posts")
 )
-
 ```
 
 The body of `PostView` remains exactly the same; only its base class changes through the new import.
@@ -215,7 +217,6 @@ class User(Base):
     website: Mapped[str | None] = mapped_column(String(512))
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
-
 ```
 
 ```python title="main.py" hl_lines="4 5"
@@ -224,7 +225,6 @@ class Post(Base):
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="posts")
-
 ```
 
 Register the user model using the same schema-driven pattern. `EmailStr` and `HttpUrl` provide format validation automatically, and `email-validator` is already included with `fastapi[standard]`:
@@ -241,7 +241,6 @@ class UserIn(BaseModel):
 
 
 admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
-
 ```
 
 Because there is nothing to configure this time, the extension `ModelView` is used directly without subclassing.
@@ -255,7 +254,6 @@ class PostIn(BaseModel):
 
     # ... fields from before ...
     user: User
-
 ```
 
 `user: User` lacks a default value, meaning a post without an author is rejected just like any other validation error. The type is the SQLAlchemy `User` class itself because the admin resolves the selected ID to an ORM instance before validation runs. This is exactly why `arbitrary_types_allowed` is required (`ConfigDict` is imported from `pydantic`).
@@ -263,15 +261,15 @@ class PostIn(BaseModel):
 Next, add `"user"` to `PostView.fields` and `form_layout` so the author appears in the post form. This field is not a standard dropdown. It is a select input featuring server-side autocomplete that searches your users as the operator types, and the user detail page links back to every related post.
 
 !!! note
-`create_all` does not alter existing tables, so you will need to delete `blog.db` before restarting to pick up the new `user_id` column.
+    `create_all` does not alter existing tables, so you will need to delete `blog.db` before restarting to pick up the new `user_id` column.
 
 ## Before You Deploy
 
 !!! warning
-The `secret_key` parameter signs the session cookie used for CSRF protection and flash messages. Replace the placeholder with a long, random value from your settings before deployment, and ensure you load it from your environment variables rather than hardcoding it into the source code.
+    The `secret_key` parameter signs the session cookie used for CSRF protection and flash messages. Replace the placeholder with a long, random value from your settings before deployment, and ensure you load it from your environment variables rather than hardcoding it into the source code.
 
 !!! note
-`Base.metadata.create_all(engine)` in the lifespan is a convenience for the quickstart. In a production project, your tables are managed by migrations (like Alembic). Drop that call and point the `Admin` directly at your existing engine. `starlette-admin` never modifies your schema; it only reads and writes rows.
+    `Base.metadata.create_all(engine)` in the lifespan is a convenience for the quickstart. In a production project, your tables are managed by migrations (like Alembic). Drop that call and point the `Admin` directly at your existing engine. `starlette-admin` never modifies your schema; it only reads and writes rows.
 
 ## This Scales Past the Demo
 

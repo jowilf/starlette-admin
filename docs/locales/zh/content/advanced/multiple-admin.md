@@ -1,7 +1,7 @@
 ---
 title: 多个 Admin 实例
 description: 在单个 FastAPI 应用上挂载多个相互隔离的管理后台，以服务不同的用户角色或业务领域。
-source_hash: 8b8c561c0c44bf9cb942e4e0d074f7a7e10c1e1fadb7339f4c76acce70d3a9a2
+source_hash: 9b826ebd92cd8db5ab4cc7ccc1e3961e605b585662c09aef2dfe215c1c7ee62b
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -97,7 +97,6 @@ root_admin = Admin(
 root_admin.add_view(ModelView(Order))
 root_admin.add_view(ModelView(User))
 root_admin.mount_to(app)
-
 ```
 
 在此示例中，`/staff` 显示一个由 `StaffAuth` 支持的登录页面，`/root` 则显示另一个由 `SuperAdminAuth` 支持的独立登录页面。登录其中之一并不会获得对另一个的访问权限：每个 `SessionMiddleware` 都使用自己的 `secret_key` 对 Cookie 签名，因此每个 `Admin` 实例只会读取由自身认证提供方写入的会话数据。
@@ -135,8 +134,9 @@ def __init__(
 
 ```python
 staff_admin.add_view(ModelView(Order))
-root_admin.add_view(ModelView(Order))  # separate instance of the same class; this is safe
-
+root_admin.add_view(
+    ModelView(Order)
+)  # separate instance of the same class; this is safe
 ```
 
 当两个管理后台需要不同的行为时，例如不同的可见性规则或 `can_delete` 权限，应为每个后台编写各自的子类，而不是在运行时修补共享实例：
@@ -155,7 +155,6 @@ class RootOrderView(ModelView):
 
 staff_admin.add_view(StaffOrderView(Order))
 root_admin.add_view(RootOrderView(Order))
-
 ```
 
 ---

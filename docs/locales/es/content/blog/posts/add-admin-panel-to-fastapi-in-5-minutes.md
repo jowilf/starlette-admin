@@ -1,7 +1,13 @@
 ---
-source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
+source_hash: 6b599f7ed96f051005ec84f7dcc5792ae570edae938be9bd1ac9b2e48a66c843
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-13
+authors:
+- jowilf
+categories:
+- Tutorials
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,9 +26,8 @@ machine_translated: true
 
 # Añada un panel de administración a FastAPI en 5 minutos con starlette-admin
 
-_2026-07-13_
 
-Ya publicó su API. Ahora, alguien de su equipo necesita editar los datos que hay detrás de ella: corregir una errata en un registro, despublicar una entrada o comprobar lo que un usuario envió realmente. Las opciones habituales suelen resultar costosas:
+Su backend ya está en funcionamiento, pero pronto personas no técnicas necesitarán modificar los datos en producción. Alguien tendrá que corregir una errata en un registro, despublicar una entrada o revisar lo que un usuario envió realmente. Las soluciones habituales rara vez son satisfactorias:
 
 | Opción                   | El inconveniente                                                                                           |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -35,7 +40,10 @@ Ya publicó su API. Ahora, alguien de su equipo necesita editar los datos que ha
 
 Esta guía le lleva desde un archivo vacío hasta un back office funcional en cinco minutos. Construirá listas paginadas, funcionalidad de búsqueda, columnas ordenables, formularios de creación y edición validados por sus esquemas Pydantic existentes, confirmaciones de borrado y exportaciones CSV, todo generado directamente a partir de un modelo de SQLAlchemy.
 
-El código completo y ejecutable está disponible en [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>).
+
+<!-- more -->
+
+El código completo y ejecutable está disponible en [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi).
 
 ## Minuto 1: Instalación
 
@@ -68,9 +76,7 @@ from sqlalchemy import String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-engine = create_engine(
-    "sqlite:///blog.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
 class Base(DeclarativeBase):
@@ -98,7 +104,6 @@ app = FastAPI(lifespan=lifespan)
 admin = Admin(engine, title="Blog Admin", secret_key="dev-only-change-me")
 admin.add_view(ModelView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
-
 ```
 
 Fíjese en lo que falta. No hay plantillas, ni manejadores de rutas para las páginas de administración, ni serializadores, ni configuraciones de campos. `starlette-admin` lee los metadatos de las columnas de SQLAlchemy y deriva toda la interfaz automáticamente: campos de texto acotados para las dos columnas `String`, un textarea para el contenido `Text` y un selector de fecha y hora para `published_at`.
@@ -159,7 +164,6 @@ class PostView(ModelView):
 
 
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
-
 ```
 
 Cuatro mejoras potentes ocurren en esta única clase:
@@ -192,7 +196,6 @@ class PostIn(BaseModel):
         if len(v.split()) < 3:
             raise ValueError("Must contain at least 3 words")
         return v
-
 ```
 
 En lugar de escribir la lógica de validación dos veces, entregue al panel de administración su modelo existente. La extensión `ext.pydantic` proporciona un `ModelView` que procesa cada envío de formulario a través de un modelo de Pydantic antes de que llegue a la base de datos. Apunte su importación de `ModelView` hacia la extensión, mantenga `Admin` tal cual y pase el esquema:
@@ -201,14 +204,12 @@ En lugar de escribir la lógica de validación dos veces, entregue al panel de a
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 
-class PostView(ModelView):
-    ...  # configuration from Minute 5, unchanged
+class PostView(ModelView): ...  # configuration from Minute 5, unchanged
 
 
 admin.add_view(
     PostView(Post, pydantic_model=PostIn, icon="fa fa-blog", menu_label="Blog Posts")
 )
-
 ```
 
 El cuerpo de `PostView` permanece exactamente igual; solo cambia su clase base mediante la nueva importación.
@@ -235,7 +236,6 @@ class User(Base):
     website: Mapped[str | None] = mapped_column(String(512))
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
-
 ```
 
 ```python title="main.py" hl_lines="4 5"
@@ -244,7 +244,6 @@ class Post(Base):
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="posts")
-
 ```
 
 Registre el modelo de usuario usando el mismo patrón guiado por esquemas. `EmailStr` y `HttpUrl` proporcionan validación de formato automáticamente, y `email-validator` ya viene incluido con `fastapi[standard]`:
@@ -261,7 +260,6 @@ class UserIn(BaseModel):
 
 
 admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
-
 ```
 
 Como esta vez no hay nada que configurar, se utiliza directamente el `ModelView` de la extensión sin heredar de él.
@@ -275,7 +273,6 @@ class PostIn(BaseModel):
 
     # ... fields from before ...
     user: User
-
 ```
 
 `user: User` no tiene valor predeterminado, lo que significa que una entrada sin autor se rechaza igual que cualquier otro error de validación. El tipo es la propia clase `User` de SQLAlchemy porque el panel de administración resuelve el ID seleccionado a una instancia del ORM antes de que se ejecute la validación. Es exactamente por esto que `arbitrary_types_allowed` es necesario (`ConfigDict` se importa de `pydantic`).
@@ -283,15 +280,15 @@ class PostIn(BaseModel):
 A continuación, añada `"user"` a `PostView.fields` y a `form_layout` para que el autor aparezca en el formulario de entradas. Este campo no es un desplegable estándar. Es un campo de selección con autocompletado del lado del servidor que busca entre sus usuarios mientras el operador escribe, y la página de detalle del usuario enlaza de vuelta con cada entrada relacionada.
 
 !!! note
-`create_all` no modifica las tablas existentes, por lo que deberá eliminar `blog.db` antes de reiniciar para incorporar la nueva columna `user_id`.
+    `create_all` no modifica las tablas existentes, por lo que deberá eliminar `blog.db` antes de reiniciar para incorporar la nueva columna `user_id`.
 
 ## Antes de desplegar
 
 !!! warning
-El parámetro `secret_key` firma la cookie de sesión utilizada para la protección CSRF y los mensajes flash. Sustituya el marcador de posición por un valor largo y aleatorio procedente de su configuración antes del despliegue, y asegúrese de cargarlo desde sus variables de entorno en lugar de codificarlo directamente en el código fuente.
+    El parámetro `secret_key` firma la cookie de sesión utilizada para la protección CSRF y los mensajes flash. Sustituya el marcador de posición por un valor largo y aleatorio procedente de su configuración antes del despliegue, y asegúrese de cargarlo desde sus variables de entorno en lugar de codificarlo directamente en el código fuente.
 
 !!! note
-`Base.metadata.create_all(engine)` en el lifespan es una comodidad para la guía rápida. En un proyecto de producción, sus tablas se gestionan mediante migraciones (como Alembic). Elimine esa llamada y apunte el `Admin` directamente a su motor existente. `starlette-admin` nunca modifica su esquema; solo lee y escribe filas.
+    `Base.metadata.create_all(engine)` en el lifespan es una comodidad para la guía rápida. En un proyecto de producción, sus tablas se gestionan mediante migraciones (como Alembic). Elimine esa llamada y apunte el `Admin` directamente a su motor existente. `starlette-admin` nunca modifica su esquema; solo lee y escribe filas.
 
 ## Esto escala más allá de la demostración
 

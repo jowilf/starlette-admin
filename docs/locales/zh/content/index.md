@@ -10,7 +10,7 @@ keywords:
 hide:
 - navigation
 - toc
-source_hash: d144ed398cb294767fbc083f9434f9ff94fb01c5c9c76618db5300ead610e8f6
+source_hash: 38468423870b375549c4fbea58af77b7e41399133c6e4858892398f6c246a354
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -198,7 +198,7 @@ machine_translated: true
     from starlette_admin.filters.base import BaseFilter, FilterApplyContext, FilterDataType
 
 
-    class ActiveThisMonthFilter(BaseFilter):
+    class CreatedThisMonthFilter(BaseFilter):
         name = "this_month"
         label = "Created this month"
         data_type = FilterDataType.NONE  # No value input. The range comes from now().
@@ -209,11 +209,12 @@ machine_translated: true
             col = getattr(ctx.view.model, ctx.field_name)
             return col.between(start, now)
 
+
     class ProductView(ModelView):
         fields = [
             DateTimeField(
                 "created_at",
-                filters=[ActiveThisMonthFilter, ...],
+                filters=[CreatedThisMonthFilter, ...],
             ),
         ]
     ```

@@ -2,7 +2,7 @@
 title: Integración con Beanie
 description: Integre Beanie ODM con starlette-admin para crear una interfaz de administración
   extensible para sus colecciones de MongoDB en FastAPI.
-source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
+source_hash: bf031e2c51f854912d88da4be10bfeb563bd43ec1fd63f6fab5626b940c511e9
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -86,7 +86,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 El `ModelView` acepta directamente la clase `Document` de Beanie. Deriva automáticamente la lista de campos, los formularios y los filtros a partir de los campos del documento.
@@ -140,7 +139,7 @@ Cuando los usuarios interactúan con el cuadro de búsqueda en una página de li
 El panel de administración detecta los índices de texto existentes, pero no los crea. Debe definir el índice en su documento de Beanie para habilitar la búsqueda nativa de texto. Por ejemplo, puede lograrlo añadiendo `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` a su modelo.
 
 !!! note
-Si habilita un índice de texto, puede establecer `full_text_override_order_by = True` en su subclase de `ModelView` para ordenar los resultados de búsqueda según la puntuación de relevancia de MongoDB en lugar del ordenamiento predeterminado por columnas.
+    Si habilita un índice de texto, puede establecer `full_text_override_order_by = True` en su subclase de `ModelView` para ordenar los resultados de búsqueda según la puntuación de relevancia de MongoDB en lugar del ordenamiento predeterminado por columnas.
 
 ## Ejemplo completo funcional
 

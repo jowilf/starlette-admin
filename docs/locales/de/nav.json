@@ -134,16 +134,11 @@
     },
     {
       "Blog": [
-        {
-          "Übersicht": "blog/index.md"
-        },
-        {
-          "Fügen Sie FastAPI in 5 Minuten ein Admin-Panel hinzu": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
-        },
-        {
-          "Soft Deletes und eine Papierkorb-Ansicht in FastAPI mit Starlette Admin erstellen": "blog/posts/soft-deletes-trash-view.md"
-        }
+        "blog/index.md"
       ]
+    },
+    {
+      "Community": "community.md"
     },
     {
       "API-Referenz": [

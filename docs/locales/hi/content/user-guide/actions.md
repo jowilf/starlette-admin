@@ -2,7 +2,7 @@
 title: एक्शन
 description: लिस्ट व्यू से सीधे कस्टम पुष्टि और फ़ॉर्म के साथ बैच तथा पंक्ति-स्तरीय
   ऑपरेशन निष्पादित करें।
-source_hash: 91835b28170a6a3e07ed477b89c2b03aabc37254d3037ef4e47467e6ee240fca
+source_hash: a0c31f3a788c98cdcb3d03c28d30ad8aa4e0483f945cfbaf1b5d224484aac684
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -123,7 +123,6 @@ class ArticleView(ModelView):
     ) -> Response:
         data = await request.form()
         return RedirectResponse(f"https://example.com/?value={data['value']}")
-
 ```
 
 ## ग्लोबल एक्शन {#global-actions}
@@ -161,7 +160,6 @@ class ArticleView(ModelView):
         # Executes without a selection; ignores the selection object entirely
         drafts = await delete_all_draft_articles()
         flash(request, f"{len(drafts)} draft article(s) were purged.", "success")
-
 ```
 
 ### "सभी मेल खाती पंक्तियाँ चुनें" सुविधा {#the-select-all-matching-feature}
@@ -171,15 +169,12 @@ class ArticleView(ModelView):
 यह विकल्प प्राइमरी की की सूची के बजाय एक्शन API को `all=1` भेजता है। अपने लॉजिक की शाखा (branch) बनाने के लिए `selection.is_select_all` का उपयोग करें, या `selection.rows()` को दोनों ही स्थितियों में डेटा रिज़ॉल्व करने दें:
 
 ```python
-    @action(name="archive", text="Archive")
-    async def archive_action(
-        self, request: Request, selection: ActionSelection
-    ) -> None:
-        if selection.is_select_all:
-            await self.bulk_archive_where(request, selection.filters, selection.q)
-        else:
-            await self.bulk_archive_pks(request, await selection.pks())
-
+@action(name="archive", text="Archive")
+async def archive_action(self, request: Request, selection: ActionSelection) -> None:
+    if selection.is_select_all:
+        await self.bulk_archive_where(request, selection.filters, selection.q)
+    else:
+        await self.bulk_archive_pks(request, await selection.pks())
 ```
 
 !!! important "मटेरियलाइज़ेशन सीमाएँ"
@@ -248,7 +243,6 @@ class ArticleView(ModelView):
     )
     def go_to_example_row_action(self, request: Request, pk: Any) -> str:
         return f"https://example.com/?pk={pk}"
-
 ```
 
 ### पंक्ति एक्शन को प्रतिबंधित करना {#restricting-row-actions}
@@ -263,6 +257,7 @@ from typing import Any
 from starlette.requests import Request
 from starlette_admin.contrib.sqla import ModelView
 
+
 class ArticleView(ModelView):
     async def is_row_action_allowed(self, request: Request, name: str) -> bool:
         if name == "make_published":
@@ -275,7 +270,6 @@ class ArticleView(ModelView):
         if name == "make_published":
             return not obj.is_published
         return await super().is_row_action_allowed_for_obj(request, name, obj)
-
 ```
 
 !!! warning
@@ -301,9 +295,9 @@ class ArticleView(ModelView):
 ```python
 from starlette_admin.types import RowActionsPosition
 
+
 class ArticleView(ModelView):
     row_actions_position = RowActionsPosition.AFTER_COLUMNS
-
 ```
 
 ## डायनामिक एक्शन फ़ॉर्म {#dynamic-action-forms}
@@ -369,7 +363,6 @@ class ArticleView(ModelView):
         data = await request.form()
         article = await self.find_by_pk(request, pk)
         article.title = data["title"]
-
 ```
 
 !!! important

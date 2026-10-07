@@ -1,7 +1,13 @@
 ---
-source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
+source_hash: 6b599f7ed96f051005ec84f7dcc5792ae570edae938be9bd1ac9b2e48a66c843
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-13
+authors:
+- jowilf
+categories:
+- Tutorials
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,9 +26,8 @@ machine_translated: true
 
 # Добавляем админ-панель в FastAPI за 5 минут с помощью starlette-admin
 
-_2026-07-13_
 
-API готово. Теперь кому-то в команде нужно редактировать данные за ним: исправить опечатку в записи, снять публикацию с поста или проверить, что именно отправил пользователь. Стандартные варианты обычно обходятся дорого:
+Бэкенд запущен и работает, но вскоре людям без инженерного опыта понадобится изменять боевые данные. Кому-то придётся исправлять опечатку в записи, снимать пост с публикации или проверять, что именно отправил пользователь. Стандартные обходные пути редко бывают удачными:
 
 | Вариант                  | Недостаток                                                                                                 |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -35,7 +40,10 @@ API готово. Теперь кому-то в команде нужно ред
 
 Это руководство проведёт вас от пустого файла до работающей back office-панели за пять минут. Вы создадите списки с пагинацией, поиск, сортируемые колонки, формы создания и редактирования, проверяемые вашими существующими Pydantic-схемами, подтверждение удаления и экспорт в CSV — всё генерируется напрямую из SQLAlchemy-модели.
 
-Полный исполняемый код доступен в [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>).
+
+<!-- more -->
+
+Полный исполняемый код доступен в [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi).
 
 ## Минута 1: Установка
 
@@ -68,9 +76,7 @@ from sqlalchemy import String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-engine = create_engine(
-    "sqlite:///blog.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
 class Base(DeclarativeBase):
@@ -98,7 +104,6 @@ app = FastAPI(lifespan=lifespan)
 admin = Admin(engine, title="Blog Admin", secret_key="dev-only-change-me")
 admin.add_view(ModelView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
-
 ```
 
 Обратите внимание на то, чего здесь нет. Ни шаблонов, ни обработчиков маршрутов для страниц панели, ни сериализаторов, ни конфигурации полей. `starlette-admin` считывает метаданные колонок SQLAlchemy и автоматически выводит весь интерфейс: текстовые поля ограниченной длины для двух колонок типа `String`, textarea для содержимого `Text` и виджет выбора даты и времени для `published_at`.
@@ -159,7 +164,6 @@ class PostView(ModelView):
 
 
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
-
 ```
 
 В одном этом классе происходят четыре мощных улучшения:
@@ -192,7 +196,6 @@ class PostIn(BaseModel):
         if len(v.split()) < 3:
             raise ValueError("Must contain at least 3 words")
         return v
-
 ```
 
 Вместо того чтобы писать логику валидации дважды, передайте админ-панели вашу существующую модель. Расширение `ext.pydantic` предоставляет класс `ModelView`, который пропускает каждую отправленную форму через Pydantic-модель до того, как она попадёт в базу данных. Направьте импорт `ModelView` на расширение, оставьте `Admin` как есть и укажите схему:
@@ -201,14 +204,12 @@ class PostIn(BaseModel):
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 
-class PostView(ModelView):
-    ...  # configuration from Minute 5, unchanged
+class PostView(ModelView): ...  # configuration from Minute 5, unchanged
 
 
 admin.add_view(
     PostView(Post, pydantic_model=PostIn, icon="fa fa-blog", menu_label="Blog Posts")
 )
-
 ```
 
 Тело класса `PostView` остаётся ровно тем же; меняется лишь его базовый класс благодаря новому импорту.
@@ -235,7 +236,6 @@ class User(Base):
     website: Mapped[str | None] = mapped_column(String(512))
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
-
 ```
 
 ```python title="main.py" hl_lines="4 5"
@@ -244,7 +244,6 @@ class Post(Base):
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="posts")
-
 ```
 
 Зарегистрируйте модель пользователя по той же схеме, основанной на схемах Pydantic. Валидация форматов `EmailStr` и `HttpUrl` выполняется автоматически, а пакет `email-validator` уже входит в состав `fastapi[standard]`:
@@ -261,7 +260,6 @@ class UserIn(BaseModel):
 
 
 admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
-
 ```
 
 Поскольку на этот раз настраивать нечего, расширение `ModelView` используется напрямую, без наследования.
@@ -275,7 +273,6 @@ class PostIn(BaseModel):
 
     # ... fields from before ...
     user: User
-
 ```
 
 У поля `user: User` нет значения по умолчанию, поэтому пост без автора будет отклонён так же, как любая другая ошибка валидации. Типом выступает сам класс `User` из SQLAlchemy, потому что админ-панель преобразует выбранный ID в ORM-экземпляр ещё до запуска валидации. Именно поэтому требуется параметр `arbitrary_types_allowed` (`ConfigDict` импортируется из `pydantic`).
@@ -283,15 +280,15 @@ class PostIn(BaseModel):
 Далее добавьте `"user"` в `PostView.fields` и `form_layout`, чтобы автор появился в форме поста. Это поле — не обычный выпадающий список. Это select с автодополнением на стороне сервера, который ищет ваших пользователей по мере ввода, а страница пользователя содержит обратные ссылки на все связанные посты.
 
 !!! note
-Функция `create_all` не изменяет существующие таблицы, поэтому перед перезапуском придётся удалить файл `blog.db`, чтобы появилась новая колонка `user_id`.
+    Функция `create_all` не изменяет существующие таблицы, поэтому перед перезапуском придётся удалить файл `blog.db`, чтобы появилась новая колонка `user_id`.
 
 ## Перед развёртыванием
 
 !!! warning
-Параметр `secret_key` подписывает session cookie, используемый для защиты от CSRF и flash-сообщений. Замените значение-заглушку длинным случайным значением из настроек перед развёртыванием и обязательно загружайте его из переменных окружения, а не прописывайте в исходном коде.
+    Параметр `secret_key` подписывает session cookie, используемый для защиты от CSRF и flash-сообщений. Замените значение-заглушку длинным случайным значением из настроек перед развёртыванием и обязательно загружайте его из переменных окружения, а не прописывайте в исходном коде.
 
 !!! note
-Вызов `Base.metadata.create_all(engine)` в lifespan — это удобство для быстрого старта. В производственном проекте таблицами управляют миграции (например, Alembic). Уберите этот вызов и направьте `Admin` напрямую на ваш существующий engine. `starlette-admin` никогда не изменяет вашу схему — он только читает и записывает строки.
+    Вызов `Base.metadata.create_all(engine)` в lifespan — это удобство для быстрого старта. В производственном проекте таблицами управляют миграции (например, Alembic). Уберите этот вызов и направьте `Admin` напрямую на ваш существующий engine. `starlette-admin` никогда не изменяет вашу схему — он только читает и записывает строки.
 
 ## Это масштабируется далеко за пределы демо
 

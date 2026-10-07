@@ -1,7 +1,13 @@
 ---
-source_hash: 407757442fad75a534f382375e48ae12d4b0d56b21f2b5c4ee126b8d6ce698c7
+source_hash: b58d07c5674623b4af0e3c5780c6c783c30a19737ead543fb02ab63a2774e893
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-10
+authors:
+- jowilf
+categories:
+- Guides
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -16,7 +22,6 @@ machine_translated: true
 
 # 使用 FastAPI 与 starlette-admin 实现软删除和回收站视图
 
-_2026-07-10_
 
 标准的 `DELETE` 操作是不可挽回的。如果操作员误点了一下，或者某个自动化清理任务用错了过滤器，数据就会丢失，除非你执行一次复杂的数据库恢复。实现"软删除"可以缓解这一风险：它只是把记录标记为已删除，而不是将其从数据库中永久移除。这样一来，数据恢复就变成了一次简单的更新操作。
 
@@ -28,6 +33,9 @@ _2026-07-10_
 - 一个专用的回收站界面，用于恢复或永久清除记录
 
 **查看完整的可运行代码：**[`examples/advanced/01-soft-delete`](https://github.com/jowilf/starlette-admin/tree/main/examples/advanced/01-soft-delete)。
+
+<!-- more -->
+
 
 ## 模型
 
@@ -67,7 +75,7 @@ class PostView(ModelView):
 你还必须把 `deleted_at` 从创建和编辑表单中排除。操作员绝不应该手动设置这个字段；它只应通过 `delete()` 方法和恢复动作以编程方式进行修改。
 
 !!! warning
-缺少 `get_count_query` 会造成数据可见性泄露：分页和搜索结果的统计总数会把已删除的行计算在内，尽管它们并不会在列表中渲染。这里的 `get_detail_query` 不需要单独覆盖，因为它默认取自 `get_list_query`，会自动继承同一个过滤器。不过，如果你确实为某个视图提供了自定义的 `get_detail_query`，它就不再继承 `get_list_query`，必须自行过滤 `deleted_at`。
+    缺少 `get_count_query` 会造成数据可见性泄露：分页和搜索结果的统计总数会把已删除的行计算在内，尽管它们并不会在列表中渲染。这里的 `get_detail_query` 不需要单独覆盖，因为它默认取自 `get_list_query`，会自动继承同一个过滤器。不过，如果你确实为某个视图提供了自定义的 `get_detail_query`，它就不再继承 `get_list_query`，必须自行过滤 `deleted_at`。
 
 ## 重新定义删除
 

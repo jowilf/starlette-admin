@@ -2,7 +2,7 @@
 title: Admin-Konfiguration
 description: Konfigurieren Sie Ihre starlette-admin-Instanz und passen Sie Theming,
   Routing und übergreifende Sicherheitseinstellungen an.
-source_hash: 9e9a48b9e7e2e565b504c6d831eaf0e7a911489399ffb480ea19e50d0f8ad843
+source_hash: 40f75ba0bdf9c8ddd86ba1d25a8ece6a42063d38d80c25fbb2599268c0d05c16
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -149,7 +149,10 @@ Eine vollständige Anleitung finden Sie unter [Internationalization & Timezones]
 
 ```python
 admin = Admin(
-    session_provider=engine, title="My Admin", secret_key="a-long-random-string", debug=True
+    session_provider=engine,
+    title="My Admin",
+    secret_key="a-long-random-string",
+    debug=True,
 )
 ```
 
@@ -165,7 +168,9 @@ Für einen leichtgewichtigeren Ansatz rufen Sie stattdessen selbst `starlette_ad
 Nachdem Sie die Instanz `Admin` erstellt haben, registrieren Sie Ihre Views und mounten den Admin in Ihre Anwendung.
 
 ```python
-admin.add_view(ModelView(Post))  # Register a view (BaseModelView, CustomView, and so on)
+admin.add_view(
+    ModelView(Post)
+)  # Register a view (BaseModelView, CustomView, and so on)
 admin.mount_to(app)  # Mount the admin onto your Starlette or FastAPI app
 ```
 

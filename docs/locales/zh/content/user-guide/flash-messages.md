@@ -1,7 +1,7 @@
 ---
 title: Flash 消息
 description: 在 starlette-admin 中完成动作后向用户发送临时的成功、警告或错误提示。
-source_hash: 597d52f90701d02e1620bfc199dbd2bdebc85f958d6f79d8458d1f8d50a0f9ec
+source_hash: 69eff0b8239bc8165c1e2ada234451bd69b561db705eaf878381d8f3b0d33515
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -28,13 +28,13 @@ from starlette.requests import Request
 from starlette_admin import BaseModelView
 from starlette_admin.flash import flash
 
+
 class PostView(BaseModelView):
     async def before_create(self, request: Request, data: dict) -> None:
         if not data.get("title", "").strip():
             # Queue the message for the next page load
             flash(request, "Title cannot be blank.", category="error")
             raise ValueError("Title cannot be blank.")
-
 ```
 
 ## 消息类别
@@ -48,7 +48,6 @@ flash(request, "Report generated.", category="success")
 flash(request, "3 rows were skipped.", category="info")
 flash(request, "This action can't be undone.", category="warning")
 flash(request, "Upload failed: file too large.", category="error")
-
 ```
 
 `category` 参数默认为 `"info"`。它必须恰好是 `success`、`info`、`warning` 或 `error` 之一。其他任何值都会引发 `ValueError`。
@@ -75,6 +74,7 @@ flash(request, "Upload failed: file too large.", category="error")
 from starlette.requests import Request
 from starlette_admin import BaseModelView, action, flash
 
+
 class PostView(BaseModelView):
     @action(
         name="publish",
@@ -89,7 +89,6 @@ class PostView(BaseModelView):
 
         # Notify the user that the custom action succeeded
         flash(request, f"{len(pks)} post(s) published.", category="success")
-
 ```
 
 * **如果省略 `flash()`：**动作仍会执行，但页面重定向后用户得不到任何视觉确认。
@@ -104,7 +103,6 @@ from starlette_admin.flash import get_flashed_messages
 
 messages = get_flashed_messages(request)
 # Returns: [{"message": "The item \"My First Post\" was added successfully.", "category": "success"}]
-
 ```
 
 读取 Flash 队列的操作是**破坏性的**。第一次调用 `get_flashed_messages(request)` 时会弹出并清空队列。同一请求中的后续调用将返回空列表 `[]`。

@@ -2,7 +2,7 @@
 title: Plugins
 description: Empaquetez des fonctionnalités et extensions d'administration réutilisables
   sous forme de plugins prêts à l'emploi pour starlette-admin.
-source_hash: c9ecd9e51a7426d12b628b06c9c664579e5f269d456e93e9d985c4d2853ac758
+source_hash: f964135e901f81cf3d01cae356db6a6fb1a6dde4dd6b8f0dab2f289f88970189
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -38,7 +38,7 @@ admin = Admin(engine, plugins=[GeospatialPlugin(default_zoom=13)])
 
 Le constructeur du plugin prend les options, et la liste est transmise directement à `Admin`. Rien d'autre à configurer ni à enregistrer. Les options circulent du constructeur vers le backend Python, les templates Jinja et le JavaScript frontend.
 
-## Créer un plugin
+## Créer un plugin {#building-a-plugin}
 
 Pour écrire un plugin, partez du template cookiecutter officiel. Il génère un package publiable avec la structure de répertoires et la configuration appropriées.
 
@@ -162,8 +162,7 @@ Les plugins utilisent les registres publics existants plutôt qu'un chemin d'ext
 
 
   @dataclass
-  class MyGeoField(StringField):
-    ...
+  class MyGeoField(StringField): ...
 
 
   @register_converter("Geometry")
@@ -211,6 +210,7 @@ def setup(self, admin: "BaseAdmin") -> None:
 
 ## Et ensuite ?
 
+* **[Extensions communautaires](../community.md#plugins) :** Découvrez les plugins tiers publiés par la communauté.
 * **[Thèmes personnalisés](custom-themes.md) :** empaquetez et partagez un système visuel complet, en suivant le même workflow cookiecutter.
 * **[Événements](events.md) :** l'API d'abonnement qu'un plugin enregistre depuis son hook `setup()`.
 * **[Points d'extension](extension-points.md) :** tous les registres et classes de base auxquels un plugin peut se raccrocher.

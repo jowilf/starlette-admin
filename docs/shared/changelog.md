@@ -10,6 +10,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[1.0.2\] - 2026-10-03
+
+### Added
+
+- Add dedicated page for community plugins and themes by [@jowilf](https://github.com/jowilf)
+  in [#856](https://github.com/jowilf/starlette-admin/pull/856)
+
+### Fixed
+
+- Fix ImportError with SQLAlchemy 2.1 by using `RelationshipProperty.uselist` instead of private `ScalarObjectAttributeImpl`
+  by [@moshfrid](https://github.com/moshfrid) in [#844](https://github.com/jowilf/starlette-admin/pull/844)
+
 ## \[1.0.1\] - 2026-08-24
 
 ### Added

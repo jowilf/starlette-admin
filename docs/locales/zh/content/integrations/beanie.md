@@ -1,7 +1,7 @@
 ---
 title: Beanie 集成
 description: 在 FastAPI 中集成 Beanie ODM 与 starlette-admin，为你的 MongoDB 集合创建可扩展的管理界面。
-source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
+source_hash: bf031e2c51f854912d88da4be10bfeb563bd43ec1fd63f6fab5626b940c511e9
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -81,7 +81,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 `ModelView` 直接接受 Beanie 的 `Document` 类。它会自动根据文档的字段推导出字段列表、表单和过滤器。
@@ -135,7 +134,7 @@ Beanie 使用 `PydanticObjectId` 作为主键。管理面板会使用专用的 `
 管理面板会检测已存在的文本索引，但不会创建它们。要启用原生文本搜索，必须在 Beanie 文档上定义该索引。例如，可以通过在模型中添加 `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` 来实现。
 
 !!! note
-如果启用了文本索引，可以在 `ModelView` 子类上设置 `full_text_override_order_by = True`，以便按照 MongoDB 的相关度得分而非默认列排序来排列搜索结果。
+    如果启用了文本索引，可以在 `ModelView` 子类上设置 `full_text_override_order_by = True`，以便按照 MongoDB 的相关度得分而非默认列排序来排列搜索结果。
 
 ## 完整示例
 

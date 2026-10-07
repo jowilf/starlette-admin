@@ -1,7 +1,13 @@
 ---
-source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
+source_hash: 6b599f7ed96f051005ec84f7dcc5792ae570edae938be9bd1ac9b2e48a66c843
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-13
+authors:
+- jowilf
+categories:
+- Tutorials
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,9 +26,8 @@ machine_translated: true
 
 # Ajouter un panneau d'administration à FastAPI en 5 minutes avec starlette-admin
 
-_2026-07-13_
 
-Vous avez livré l'API. Maintenant, quelqu'un dans votre équipe doit modifier les données qui se trouvent derrière : corriger une coquille dans un enregistrement, dépublier un article, ou vérifier ce qu'un utilisateur a réellement soumis. Les options habituelles sont généralement coûteuses :
+Votre backend est opérationnel, mais des non-ingénieurs doivent bientôt modifier les données de production. Quelqu'un doit corriger une coquille dans un enregistrement, dépublier un article ou vérifier ce qu'un utilisateur a réellement soumis. Les solutions habituelles sont rarement satisfaisantes :
 
 | Option                   | L'inconvénient                                                                                             |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -35,7 +40,10 @@ Vous avez livré l'API. Maintenant, quelqu'un dans votre équipe doit modifier l
 
 Ce guide vous conduit d'un fichier vide à un back office fonctionnel en cinq minutes. Vous allez construire des listes paginées, une fonctionnalité de recherche, des colonnes triables, des formulaires de création et d'édition validés par vos schémas Pydantic existants, des confirmations de suppression et des exports CSV, le tout généré directement à partir d'un modèle SQLAlchemy.
 
-Le code complet et exécutable est disponible dans [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>).
+
+<!-- more -->
+
+Le code complet et exécutable est disponible dans [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi).
 
 ## Minute 1 : Installation
 
@@ -68,9 +76,7 @@ from sqlalchemy import String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-engine = create_engine(
-    "sqlite:///blog.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
 class Base(DeclarativeBase):
@@ -98,7 +104,6 @@ app = FastAPI(lifespan=lifespan)
 admin = Admin(engine, title="Blog Admin", secret_key="dev-only-change-me")
 admin.add_view(ModelView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
-
 ```
 
 Remarquez ce qui est absent. Il n'y a aucun template, aucun gestionnaire de routes pour les pages d'administration, aucun sérialiseur ni aucune configuration de champs. `starlette-admin` lit les métadonnées des colonnes SQLAlchemy et dérive toute l'interface automatiquement : des champs texte bornés pour les deux colonnes `String`, une zone de texte pour le contenu `Text`, et un sélecteur de date et heure pour `published_at`.
@@ -159,7 +164,6 @@ class PostView(ModelView):
 
 
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
-
 ```
 
 Quatre améliorations puissantes interviennent dans cette seule classe :
@@ -192,7 +196,6 @@ class PostIn(BaseModel):
         if len(v.split()) < 3:
             raise ValueError("Must contain at least 3 words")
         return v
-
 ```
 
 Plutôt que d'écrire la logique de validation deux fois, confiez au panneau d'administration votre modèle existant. L'extension `ext.pydantic` fournit un `ModelView` qui traite chaque soumission de formulaire à travers un modèle Pydantic avant qu'elle n'atteigne la base de données. Orientez votre import de `ModelView` vers l'extension, conservez `Admin` tel quel, et passez le schéma :
@@ -201,14 +204,12 @@ Plutôt que d'écrire la logique de validation deux fois, confiez au panneau d'a
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 
-class PostView(ModelView):
-    ...  # configuration from Minute 5, unchanged
+class PostView(ModelView): ...  # configuration from Minute 5, unchanged
 
 
 admin.add_view(
     PostView(Post, pydantic_model=PostIn, icon="fa fa-blog", menu_label="Blog Posts")
 )
-
 ```
 
 Le corps de `PostView` reste strictement identique ; seule sa classe de base change grâce au nouvel import.
@@ -235,7 +236,6 @@ class User(Base):
     website: Mapped[str | None] = mapped_column(String(512))
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
-
 ```
 
 ```python title="main.py" hl_lines="4 5"
@@ -244,7 +244,6 @@ class Post(Base):
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="posts")
-
 ```
 
 Enregistrez le modèle utilisateur en suivant le même schéma piloté par validation. `EmailStr` et `HttpUrl` fournissent automatiquement la validation de format, et `email-validator` est déjà inclus avec `fastapi[standard]` :
@@ -261,7 +260,6 @@ class UserIn(BaseModel):
 
 
 admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
-
 ```
 
 Comme il n'y a rien à configurer cette fois-ci, l'extension `ModelView` est utilisée directement, sans dérivation.
@@ -275,7 +273,6 @@ class PostIn(BaseModel):
 
     # ... fields from before ...
     user: User
-
 ```
 
 `user: User` ne possède pas de valeur par défaut, ce qui signifie qu'un article sans auteur est rejeté comme n'importe quelle autre erreur de validation. Le type est la classe SQLAlchemy `User` elle-même car le panneau d'administration résout l'ID sélectionné en une instance ORM avant que la validation ne s'exécute. C'est précisément pourquoi `arbitrary_types_allowed` est requis (`ConfigDict` est importé depuis `pydantic`).
@@ -283,15 +280,15 @@ class PostIn(BaseModel):
 Ajoutez ensuite `"user"` à `PostView.fields` ainsi qu'à `form_layout` afin que l'auteur apparaisse dans le formulaire d'article. Ce champ n'est pas une simple liste déroulante standard. Il s'agit d'un champ de sélection doté d'une autocomplétion côté serveur qui recherche vos utilisateurs pendant la saisie, et la page de détail de chaque utilisateur renvoie vers tous ses articles associés.
 
 !!! note
-`create_all` ne modifie pas les tables existantes : vous devrez donc supprimer `blog.db` avant de redémarrer pour prendre en compte la nouvelle colonne `user_id`.
+    `create_all` ne modifie pas les tables existantes : vous devrez donc supprimer `blog.db` avant de redémarrer pour prendre en compte la nouvelle colonne `user_id`.
 
 ## Avant de déployer
 
 !!! warning
-Le paramètre `secret_key` signe le cookie de session utilisé pour la protection CSRF et les messages flash. Remplacez la valeur provisoire par une longue valeur aléatoire issue de vos paramètres avant le déploiement, et veillez à la charger depuis vos variables d'environnement plutôt qu'à la coder en dur dans le code source.
+    Le paramètre `secret_key` signe le cookie de session utilisé pour la protection CSRF et les messages flash. Remplacez la valeur provisoire par une longue valeur aléatoire issue de vos paramètres avant le déploiement, et veillez à la charger depuis vos variables d'environnement plutôt qu'à la coder en dur dans le code source.
 
 !!! note
-`Base.metadata.create_all(engine)` dans le lifespan est une commodité propre au démarrage rapide. Dans un projet de production, vos tables sont gérées par des migrations (comme Alembic). Supprimez cet appel et pointez `Admin` directement vers votre moteur existant. `starlette-admin` ne modifie jamais votre schéma ; il se contente de lire et d'écrire des lignes.
+    `Base.metadata.create_all(engine)` dans le lifespan est une commodité propre au démarrage rapide. Dans un projet de production, vos tables sont gérées par des migrations (comme Alembic). Supprimez cet appel et pointez `Admin` directement vers votre moteur existant. `starlette-admin` ne modifie jamais votre schéma ; il se contente de lire et d'écrire des lignes.
 
 ## Cela dépasse largement la démonstration
 

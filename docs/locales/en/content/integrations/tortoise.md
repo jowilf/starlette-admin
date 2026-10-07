@@ -56,9 +56,7 @@ Tortoise.init_models(["app"], "models")
 
 @asynccontextmanager
 async def lifespan(app: Starlette):
-    await Tortoise.init(
-        db_url="sqlite://library.sqlite3", modules={"models": ["app"]}
-    )
+    await Tortoise.init(db_url="sqlite://library.sqlite3", modules={"models": ["app"]})
     await Tortoise.generate_schemas()
     yield
     await Tortoise.close_connections()
@@ -72,7 +70,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 The `ModelView` accepts the Tortoise `Model` class directly and automatically derives the field list, forms, and filters from the model's schema.

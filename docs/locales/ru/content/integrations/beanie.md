@@ -2,7 +2,7 @@
 title: Интеграция с Beanie
 description: Интегрируйте Beanie ODM со starlette-admin, чтобы создать расширяемый
   административный интерфейс для ваших коллекций MongoDB в FastAPI.
-source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
+source_hash: bf031e2c51f854912d88da4be10bfeb563bd43ec1fd63f6fab5626b940c511e9
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -86,7 +86,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 `ModelView` принимает класс Beanie `Document` напрямую. Он автоматически выводит список полей, формы и фильтры из полей документа.
@@ -140,7 +139,7 @@ Beanie использует тип `PydanticObjectId` для первичных 
 Административная панель обнаруживает существующие текстовые индексы, но не создаёт их. Вы должны определить индекс в документе Beanie, чтобы включить нативный текстовый поиск. Например, этого можно добиться, добавив в модель `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]`.
 
 !!! note
-Если вы включите текстовый индекс, то можете установить `full_text_override_order_by = True` в подклассе `ModelView`, чтобы сортировать результаты поиска по показателю релевантности MongoDB вместо сортировки по столбцу по умолчанию.
+    Если вы включите текстовый индекс, то можете установить `full_text_override_order_by = True` в подклассе `ModelView`, чтобы сортировать результаты поиска по показателю релевантности MongoDB вместо сортировки по столбцу по умолчанию.
 
 ## Полный рабочий пример
 

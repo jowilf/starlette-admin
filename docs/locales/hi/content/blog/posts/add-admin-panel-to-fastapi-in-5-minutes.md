@@ -1,7 +1,13 @@
 ---
-source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
+source_hash: 6b599f7ed96f051005ec84f7dcc5792ae570edae938be9bd1ac9b2e48a66c843
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-13
+authors:
+- jowilf
+categories:
+- Tutorials
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -20,9 +26,8 @@ machine_translated: true
 
 # starlette-admin के साथ FastAPI में 5 मिनट में एडमिन पैनल जोड़ें {#add-an-admin-panel-to-fastapi-in-5-minutes-with-starlette-admin}
 
-_2026-07-13_
 
-आपने API शिप कर दी है। अब आपकी टीम में किसी को इसके पीछे का डेटा एडिट करने की ज़रूरत है: किसी रिकॉर्ड की टाइपिंग की ग़लती ठीक करना, कोई पोस्ट अनपब्लिश करना, या देखना कि यूज़र ने असल में क्या सबमिट किया। मानक विकल्प आम तौर पर महँगे होते हैं:
+आपका backend चालू है और चल रहा है, लेकिन जल्द ही non-engineers को live data बदलने की ज़रूरत पड़ेगी। किसी को किसी रिकॉर्ड की टाइपिंग की ग़लती ठीक करनी होगी, कोई पोस्ट अनपब्लिश करनी होगी, या देखना होगा कि यूज़र ने असल में क्या सबमिट किया। मानक जुगाड़ शायद ही कभी साफ़ होते हैं:
 
 | विकल्प | दिक़्क़त |
 | --- | --- |
@@ -35,7 +40,10 @@ _2026-07-13_
 
 यह गाइड आपको पाँच मिनट में एक ख़ाली फ़ाइल से लेकर चलने वाले बैक ऑफ़िस तक ले जाती है। आप पेजिनेटेड लिस्ट, सर्च फ़ंक्शनैलिटी, सॉर्ट करने योग्य कॉलम, अपने मौजूदा Pydantic स्कीमा से वैलिडेट होने वाले क्रिएट और एडिट फ़ॉर्म, डिलीशन कन्फ़र्मेशन और CSV एक्सपोर्ट बनाएँगे — सब कुछ सीधे एक SQLAlchemy मॉडल से जनरेट होकर।
 
-पूरा चलने योग्य कोड [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>) में उपलब्ध है।
+
+<!-- more -->
+
+पूरा चलने योग्य कोड [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi) में उपलब्ध है।
 
 ## मिनट 1: इंस्टॉल {#minute-1-install}
 
@@ -68,9 +76,7 @@ from sqlalchemy import String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-engine = create_engine(
-    "sqlite:///blog.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
 class Base(DeclarativeBase):
@@ -98,7 +104,6 @@ app = FastAPI(lifespan=lifespan)
 admin = Admin(engine, title="Blog Admin", secret_key="dev-only-change-me")
 admin.add_view(ModelView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
-
 ```
 
 ग़ौर करें कि क्या मौजूद नहीं है। यहाँ कोई टेम्पलेट नहीं है, एडमिन पेजों के लिए कोई रूट हैंडलर नहीं है, कोई सीरिएलाइज़र नहीं है, और न ही कोई फ़ील्ड कॉन्फ़िगरेशन है। `starlette-admin` SQLAlchemy की कॉलम मेटाडेटा पढ़ता है और पूरा इंटरफ़ेस अपने आप तैयार कर लेता है: दोनों `String` कॉलम के लिए लिमिट वाले टेक्स्ट इनपुट, `Text` कंटेंट के लिए टेक्स्टएरिया, और `published_at` के लिए डेटाटाइम पिकर।
@@ -159,7 +164,6 @@ class PostView(ModelView):
 
 
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
-
 ```
 
 इस एक क्लास में चार दमदार अपग्रेड होते हैं:
@@ -192,7 +196,6 @@ class PostIn(BaseModel):
         if len(v.split()) < 3:
             raise ValueError("Must contain at least 3 words")
         return v
-
 ```
 
 वही वैलिडेशन लॉजिक दो बार लिखने की बजाय, एडमिन को अपना मौजूदा मॉडल सौंप दें। `ext.pydantic` एक्सटेंशन एक ऐसा `ModelView` देता है जो डेटाबेस तक पहुँचने से पहले हर फ़ॉर्म सबमिशन को एक Pydantic मॉडल से प्रोसेस करता है। अपना `ModelView` इम्पोर्ट एक्सटेंशन की ओर पॉइंट करें, `Admin` को जैसा है वैसा रहने दें, और स्कीमा पास कर दें:
@@ -201,14 +204,12 @@ class PostIn(BaseModel):
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 
-class PostView(ModelView):
-    ...  # configuration from Minute 5, unchanged
+class PostView(ModelView): ...  # configuration from Minute 5, unchanged
 
 
 admin.add_view(
     PostView(Post, pydantic_model=PostIn, icon="fa fa-blog", menu_label="Blog Posts")
 )
-
 ```
 
 `PostView` की क्लास बॉडी बिल्कुल वही रहती है; सिर्फ़ नए इम्पोर्ट के ज़रिए उसकी बेस क्लास बदलती है।
@@ -235,7 +236,6 @@ class User(Base):
     website: Mapped[str | None] = mapped_column(String(512))
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
-
 ```
 
 ```python title="main.py" hl_lines="4 5"
@@ -244,7 +244,6 @@ class Post(Base):
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="posts")
-
 ```
 
 यूज़र मॉडल को उसी स्कीमा-चालित पैटर्न से रजिस्टर करें। `EmailStr` और `HttpUrl` फ़ॉर्मैट वैलिडेशन अपने आप देते हैं, और `email-validator` पहले से ही `fastapi[standard]` में शामिल है:
@@ -261,7 +260,6 @@ class UserIn(BaseModel):
 
 
 admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
-
 ```
 
 इस बार कॉन्फ़िगर करने को कुछ नहीं है, इसलिए एक्सटेंशन वाले `ModelView` का इस्तेमाल बिना सबक्लास बनाए सीधे किया गया है।
@@ -275,7 +273,6 @@ class PostIn(BaseModel):
 
     # ... fields from before ...
     user: User
-
 ```
 
 `user: User` की कोई डिफ़ॉल्ट वैल्यू नहीं है, यानी बिना लेखक वाली पोस्ट किसी और वैलिडेशन एरर की तरह ठुकरा दी जाएगी। टाइप सीधे SQLAlchemy की `User` क्लास है, क्योंकि वैलिडेशन चलने से पहले एडमिन चुनी गई ID को एक ORM इंस्टेंस में बदल देता है। इसीलिए `arbitrary_types_allowed` ज़रूरी है (`ConfigDict` `pydantic` से इम्पोर्ट होता है)।
@@ -283,15 +280,15 @@ class PostIn(BaseModel):
 इसके बाद, `"user"` को `PostView.fields` और `form_layout` में जोड़ें ताकि लेखक पोस्ट फ़ॉर्म में दिखे। यह फ़ील्ड कोई साधारण ड्रॉपडाउन नहीं है। यह एक सेलेक्ट इनपुट है जिसमें सर्वर-साइड ऑटोकम्प्लीट है — ऑपरेटर के टाइप करते ही यह आपके यूज़र्स में खोज करता है, और यूज़र डिटेल पेज हर संबंधित पोस्ट का लिंक वापस दिखाता है।
 
 !!! note
-`create_all` मौजूदा टेबल को नहीं बदलता, इसलिए नए `user_id` कॉलम को शामिल करने के लिए रीस्टार्ट करने से पहले `blog.db` को डिलीट करना होगा।
+    `create_all` मौजूदा टेबल को नहीं बदलता, इसलिए नए `user_id` कॉलम को शामिल करने के लिए रीस्टार्ट करने से पहले `blog.db` को डिलीट करना होगा।
 
 ## डिप्लॉय करने से पहले {#before-you-deploy}
 
 !!! warning
-`secret_key` पैरामीटर उस सेशन कुकी पर सिग्नेचर करता है जिसका इस्तेमाल CSRF सुरक्षा और फ़्लैश मैसेज के लिए होता है। डिप्लॉयमेंट से पहले प्लेसहोल्डर को अपनी सेटिंग्स से ली गई किसी लंबी, रैंडम वैल्यू से बदलें, और ध्यान रखें कि उसे सोर्स कोड में हार्डकोड करने की बजाय एनवायरनमेंट वेरिएबल से लोड किया जाए।
+    `secret_key` पैरामीटर उस सेशन कुकी पर सिग्नेचर करता है जिसका इस्तेमाल CSRF सुरक्षा और फ़्लैश मैसेज के लिए होता है। डिप्लॉयमेंट से पहले प्लेसहोल्डर को अपनी सेटिंग्स से ली गई किसी लंबी, रैंडम वैल्यू से बदलें, और ध्यान रखें कि उसे सोर्स कोड में हार्डकोड करने की बजाय एनवायरनमेंट वेरिएबल से लोड किया जाए।
 
 !!! note
-lifespan में दिया गया `Base.metadata.create_all(engine)` क्विकस्टार्ट की सुविधा के लिए है। प्रोडक्शन प्रोजेक्ट में आपकी टेबल माइग्रेशन (जैसे Alembic) से मैनेज होती हैं। उस कॉल को हटा दें और `Admin` को सीधे अपने मौजूदा इंजन पर पॉइंट करें। `starlette-admin` आपका स्कीमा कभी नहीं बदलता; वह सिर्फ़ रो पढ़ता और लिखता है।
+    lifespan में दिया गया `Base.metadata.create_all(engine)` क्विकस्टार्ट की सुविधा के लिए है। प्रोडक्शन प्रोजेक्ट में आपकी टेबल माइग्रेशन (जैसे Alembic) से मैनेज होती हैं। उस कॉल को हटा दें और `Admin` को सीधे अपने मौजूदा इंजन पर पॉइंट करें। `starlette-admin` आपका स्कीमा कभी नहीं बदलता; वह सिर्फ़ रो पढ़ता और लिखता है।
 
 ## यह डेमो से आगे स्केल होता है {#this-scales-past-the-demo}
 

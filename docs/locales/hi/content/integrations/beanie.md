@@ -2,7 +2,7 @@
 title: Beanie इंटीग्रेशन
 description: FastAPI में अपने MongoDB कलेक्शन के लिए एक विस्तारशील एडमिन इंटरफ़ेस
   बनाने हेतु Beanie ODM को starlette-admin के साथ एकीकृत करें।
-source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
+source_hash: bf031e2c51f854912d88da4be10bfeb563bd43ec1fd63f6fab5626b940c511e9
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -86,7 +86,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 `ModelView` Beanie `Document` क्लास को सीधे स्वीकार करता है। यह डॉक्यूमेंट के फ़ील्ड्स से फ़ील्ड सूची, फ़ॉर्म, तथा फ़िल्टर्स स्वतः प्राप्त कर लेता है।
@@ -140,7 +139,7 @@ Beanie प्राइमरी कीज़ के लिए `PydanticObjectId`
 एडमिनिस्ट्रेशन पैनल मौजूदा टेक्स्ट इंडेक्स का पता लगाता है, लेकिन उन्हें बनाता नहीं है। नेटिव टेक्स्ट सर्च सक्षम करने के लिए आपको अपने Beanie डॉक्यूमेंट पर इंडेक्स परिभाषित करना होगा। उदाहरण के लिए, आप अपने मॉडल में `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` जोड़कर यह कर सकते हैं।
 
 !!! note
-यदि आप टेक्स्ट इंडेक्स सक्षम करते हैं, तो आप अपनी `ModelView` सबक्लास पर `full_text_override_order_by = True` सेट करके डिफ़ॉल्ट कॉलम सॉर्ट के बजाय MongoDB के प्रासंगिकता स्कोर के अनुसार सर्च परिणामों को सॉर्ट कर सकते हैं।
+    यदि आप टेक्स्ट इंडेक्स सक्षम करते हैं, तो आप अपनी `ModelView` सबक्लास पर `full_text_override_order_by = True` सेट करके डिफ़ॉल्ट कॉलम सॉर्ट के बजाय MongoDB के प्रासंगिकता स्कोर के अनुसार सर्च परिणामों को सॉर्ट कर सकते हैं।
 
 ## पूर्ण कार्यशील उदाहरण {#full-working-example}
 

@@ -39,6 +39,7 @@ def sync_shared(content_dir: Path) -> None:
         if src.is_dir():
             shutil.copytree(src, dest)
         else:
+            dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest)
         rel = content_dir.relative_to(DOCS_DIR)
         print(f"synced shared/{item} -> {rel}/{item}", flush=True)

@@ -1,7 +1,13 @@
 ---
-source_hash: e3296a30419e22b9def685804be98cc6f9b065e152edce097f750f28d339bfc2
+source_hash: 6b599f7ed96f051005ec84f7dcc5792ae570edae938be9bd1ac9b2e48a66c843
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
+date: 2026-07-13
+authors:
+- jowilf
+categories:
+- Tutorials
+- FastAPI
 ---
 
 <!-- translation-notice:start -->
@@ -16,9 +22,8 @@ machine_translated: true
 
 # 使用 starlette-admin 在 5 分钟内为 FastAPI 添加管理后台
 
-_2026-07-13_
 
-你的 API 已经上线。现在，团队里有人需要编辑它背后的数据：修正某条记录里的错别字、下架一篇文章，或者查一下用户到底提交了什么。常见的几种标准做法往往代价高昂：
+你的后端已经上线运行，但很快就需要非工程师来修改线上数据：修正某条记录里的错别字、下架一篇文章，或者查一下用户到底提交了什么。常见的变通做法往往并不理想：
 
 | 方案                       | 缺点                                                                                                       |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -31,7 +36,10 @@ _2026-07-13_
 
 本指南将带你从一个空文件开始，在 5 分钟内搭建出一套可用的后台管理系统。你将构建分页列表、搜索功能、可排序的列、由现有 Pydantic 模型校验的创建与编辑表单、删除确认以及 CSV 导出——所有这些都直接由一个 SQLAlchemy 模型生成。
 
-完整的可运行代码位于 [`examples/11-sqla-pydantic-fastapi`](<%5Bhttps://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi%5D(https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)>)。
+
+<!-- more -->
+
+完整的可运行代码位于 [`examples/11-sqla-pydantic-fastapi`](https://github.com/jowilf/starlette-admin/tree/main/examples/11-sqla-pydantic-fastapi)。
 
 ## 第 1 分钟：安装
 
@@ -64,9 +72,7 @@ from sqlalchemy import String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from starlette_admin.contrib.sqla import Admin, ModelView
 
-engine = create_engine(
-    "sqlite:///blog.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine("sqlite:///blog.db", connect_args={"check_same_thread": False})
 
 
 class Base(DeclarativeBase):
@@ -94,7 +100,6 @@ app = FastAPI(lifespan=lifespan)
 admin = Admin(engine, title="Blog Admin", secret_key="dev-only-change-me")
 admin.add_view(ModelView(Post, icon="fa fa-blog"))
 admin.mount_to(app)
-
 ```
 
 注意这里省去了什么：没有模板，没有管理页面的路由处理器，没有序列化器，也没有字段配置。`starlette-admin` 会读取 SQLAlchemy 的列元数据并自动推导出整个界面：两个 `String` 列对应带长度限制的文本输入框，`Text` 内容对应多行文本域，`published_at` 对应日期时间选择器。
@@ -155,7 +160,6 @@ class PostView(ModelView):
 
 
 admin.add_view(PostView(Post, icon="fa fa-blog", menu_label="Blog Posts"))
-
 ```
 
 这一个类带来了四项强大的升级：
@@ -188,7 +192,6 @@ class PostIn(BaseModel):
         if len(v.split()) < 3:
             raise ValueError("Must contain at least 3 words")
         return v
-
 ```
 
 与其把校验逻辑写两遍，不如把你现有的模型直接交给管理后台。`ext.pydantic` 扩展提供了一个 `ModelView`，它会在每次表单提交抵达数据库之前，先通过一个 Pydantic 模型对其进行处理。把你的 `ModelView` 导入指向该扩展，保持 `Admin` 原样不动，再传入这个模型即可：
@@ -197,14 +200,12 @@ class PostIn(BaseModel):
 from starlette_admin.contrib.sqla.ext.pydantic import ModelView
 
 
-class PostView(ModelView):
-    ...  # configuration from Minute 5, unchanged
+class PostView(ModelView): ...  # configuration from Minute 5, unchanged
 
 
 admin.add_view(
     PostView(Post, pydantic_model=PostIn, icon="fa fa-blog", menu_label="Blog Posts")
 )
-
 ```
 
 `PostView` 的主体保持完全一致；通过新的导入，发生变化的仅仅是它的基类。
@@ -231,7 +232,6 @@ class User(Base):
     website: Mapped[str | None] = mapped_column(String(512))
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
-
 ```
 
 ```python title="main.py" hl_lines="4 5"
@@ -240,7 +240,6 @@ class Post(Base):
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="posts")
-
 ```
 
 按照同样的基于模型的方式注册用户模型。`EmailStr` 和 `HttpUrl` 会自动提供格式校验，而 `email-validator` 已随 `fastapi[standard]` 一并提供：
@@ -257,7 +256,6 @@ class UserIn(BaseModel):
 
 
 admin.add_view(ModelView(User, pydantic_model=UserIn, icon="fa fa-users"))
-
 ```
 
 由于这一次没有任何需要配置的内容，可以直接使用扩展的 `ModelView`，无需再进行子类化。
@@ -271,7 +269,6 @@ class PostIn(BaseModel):
 
     # ... fields from before ...
     user: User
-
 ```
 
 `user: User` 没有默认值，也就是说，缺少作者的文章会像其他任何校验错误一样遭到拒绝。这里的类型之所以是 SQLAlchemy 的 `User` 类本身，是因为管理后台会在校验开始之前先把选中的 ID 解析为一个 ORM 实例。这正是必须设置 `arbitrary_types_allowed` 的原因（`ConfigDict` 从 `pydantic` 导入）。
@@ -279,15 +276,15 @@ class PostIn(BaseModel):
 接下来，把 `"user"` 加入 `PostView.fields` 和 `form_layout`，让作者显示在文章表单里。这个字段不是普通的下拉框，而是一个带有服务端自动补全的选择框，会随着操作员的输入实时搜索你的用户；同时，用户详情页面还会链接回每一篇相关文章。
 
 !!! note
-`create_all` 不会修改已有的表，因此重启之前你需要删除 `blog.db`，才能用上新添的 `user_id` 列。
+    `create_all` 不会修改已有的表，因此重启之前你需要删除 `blog.db`，才能用上新添的 `user_id` 列。
 
 ## 部署之前
 
 !!! warning
-`secret_key` 参数用于为 CSRF 保护和Flash 消息所使用的会话 Cookie 签名。部署之前，请把其中的占位符替换为你配置中的长随机值，并确保从环境变量加载它，而不是硬编码在源代码里。
+    `secret_key` 参数用于为 CSRF 保护和Flash 消息所使用的会话 Cookie 签名。部署之前，请把其中的占位符替换为你配置中的长随机值，并确保从环境变量加载它，而不是硬编码在源代码里。
 
 !!! note
-lifespan 中的 `Base.metadata.create_all(engine)` 只是为快速上手提供的便利。在生产项目中，你的表应由迁移工具（如 Alembic）管理。去掉那个调用，让 `Admin` 直接指向你现有的引擎即可。`starlette-admin` 从不修改你的表结构；它只会读取和写入数据行。
+    lifespan 中的 `Base.metadata.create_all(engine)` 只是为快速上手提供的便利。在生产项目中，你的表应由迁移工具（如 Alembic）管理。去掉那个调用，让 `Admin` 直接指向你现有的引擎即可。`starlette-admin` 从不修改你的表结构；它只会读取和写入数据行。
 
 ## 这套机制可以扩展到演示之外
 

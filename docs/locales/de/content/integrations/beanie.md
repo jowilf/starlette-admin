@@ -2,7 +2,7 @@
 title: Beanie-Integration
 description: Integrieren Sie Beanie ODM mit starlette-admin, um eine erweiterbare
   Admin-Oberfläche für Ihre MongoDB-Collections in FastAPI zu erstellen.
-source_hash: 1b2f0bd151bdc41a3d8d605af17c01b6f8fa4c68e1d5397f15bdd134a391fb10
+source_hash: bf031e2c51f854912d88da4be10bfeb563bd43ec1fd63f6fab5626b940c511e9
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -86,7 +86,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 Die `ModelView` akzeptiert die Beanie-`Document`-Klasse direkt. Sie leitet automatisch die Feldliste, Formulare und Filter aus den Feldern des Dokuments ab.
@@ -140,7 +139,7 @@ Wenn Benutzer mit dem Suchfeld auf einer Listenseite interagieren, prüft das Ad
 Das Administrationspanel erkennt vorhandene Textindizes, erstellt sie jedoch nicht. Sie müssen den Index in Ihrem Beanie-Dokument definieren, um die native Textsuche zu aktivieren. Dies erreichen Sie beispielsweise, indem Sie `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` zu Ihrem Modell hinzufügen.
 
 !!! note
-Wenn Sie einen Textindex aktivieren, können Sie `full_text_override_order_by = True` in Ihrer `ModelView`-Unterklasse setzen, um Suchergebnisse nach dem Relevanz-Score von MongoDB statt nach der Standard-Spalten sortierung zu ordnen.
+    Wenn Sie einen Textindex aktivieren, können Sie `full_text_override_order_by = True` in Ihrer `ModelView`-Unterklasse setzen, um Suchergebnisse nach dem Relevanz-Score von MongoDB statt nach der Standard-Spalten sortierung zu ordnen.
 
 ## Vollständiges Arbeitsbeispiel
 

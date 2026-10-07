@@ -5,7 +5,7 @@
 - Default filter sets work out-of-the-box for every field type (`name`, `status`).
 - Per-field `filters=[...]` override narrows or extends the available operations (`price`).
 - `TagsField` has no default registry entry: `filters=[...]` is required to expose any filters.
-- A custom `BaseFilter` subclass needs only `name`, `label`, `data_type`, and `apply` (`ActiveThisMonthFilter`).
+- A custom `BaseFilter` subclass needs only `name`, `label`, `data_type`, and `apply` (`CreatedThisMonthFilter`).
 - The filter builder serialises to bookmarkable URLs (see sample below).
 
 ## Run
@@ -24,27 +24,41 @@ Then open <http://localhost:8000/admin/>.
 ```python
 class ProductView(ModelView):
     fields = [
-        StringField("name"),                       # default: contains, startswith, eq, …
-        EnumField("status", enum=ProductStatus),   # default: eq, in, is_null, …
-        DecimalField("price", filters=[            # override: only 3 of the 7 numeric ops
-            GreaterThanFilter, BetweenFilter, NumericEqualFilter,
-        ]),
-        TagsField("tags", filters=[                # no default → must set explicitly
-            IsNullFilter, IsNotNullFilter,
-        ]),
-        DateTimeField("created_at", filters=[      # built-ins + custom filter
-            DateTimeBetweenFilter, DateInPastFilter, ActiveThisMonthFilter,
-        ]),
+        StringField("name"),  # default: contains, startswith, eq, …
+        EnumField("status", enum=ProductStatus),  # default: eq, in, is_null, …
+        DecimalField(
+            "price",
+            filters=[  # override: only 3 of the 7 numeric ops
+                GreaterThanFilter,
+                BetweenFilter,
+                NumericEqualFilter,
+            ],
+        ),
+        TagsField(
+            "tags",
+            filters=[  # no default → must set explicitly
+                IsNullFilter,
+                IsNotNullFilter,
+            ],
+        ),
+        DateTimeField(
+            "created_at",
+            filters=[  # built-ins + custom filter
+                DateTimeBetweenFilter,
+                DateInPastFilter,
+                CreatedThisMonthFilter,
+            ],
+        ),
     ]
 ```
 
 ### Custom filter: `filters.py`
 
 ```python
-class ActiveThisMonthFilter(BaseFilter):
+class CreatedThisMonthFilter(BaseFilter):
     name = "this_month"
     label = "Created this month"
-    data_type = FilterDataType.NONE   # no value input needed
+    data_type = FilterDataType.NONE  # no value input needed
 
     def apply(self, ctx: FilterApplyContext) -> Any:
         now = datetime.utcnow()

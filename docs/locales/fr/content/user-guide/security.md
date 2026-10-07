@@ -3,7 +3,7 @@ title: Sécurité
 description: Découvrez les fonctionnalités de sécurité intégrées à starlette-admin,
   notamment la protection CSRF, la sécurité des téléversements de fichiers et le contrôle
   d'accès.
-source_hash: d16d4b0beefd5dc8580f8d65abaa28fda407896efff2ea2c3988ec3bf93277a4
+source_hash: 2bf7219b860a9b64e5cf3879ccb551b908f0a8b11800cf72c4e9d7530dae8ed2
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -113,6 +113,7 @@ Sans elles, un `FileField` accepte n'importe quel type et taille de fichier. `Im
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
+
 
     def validate_document_type(
         request: Request, field: BaseField, upload: UploadFile, form_values: dict

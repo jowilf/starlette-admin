@@ -68,7 +68,6 @@ admin.mount_to(app)
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
-
 ```
 
 The `ModelView` accepts the Beanie `Document` class directly. It automatically derives the field list, forms, and filters from the document's fields.
@@ -122,7 +121,7 @@ When users interact with the search box on a list page, the administration panel
 The administration panel detects existing text indexes but does not create them. You must define the index on your Beanie document to enable native text search. For example, you can achieve this by adding `class Settings: indexes = [[("title", "text"), ("synopsis", "text")]]` to your model.
 
 !!! note
-If you enable a text index, you can set `full_text_override_order_by = True` on your `ModelView` subclass to sort search results by MongoDB's relevance score instead of the default column sort.
+    If you enable a text index, you can set `full_text_override_order_by = True` on your `ModelView` subclass to sort search results by MongoDB's relevance score instead of the default column sort.
 
 ## Full working example
 

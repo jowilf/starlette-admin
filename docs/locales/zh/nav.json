@@ -134,16 +134,11 @@
     },
     {
       "博客": [
-        {
-          "概览": "blog/index.md"
-        },
-        {
-          "5 分钟为 FastAPI 添加管理后台": "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md"
-        },
-        {
-          "使用 starlette-admin 在 FastAPI 中构建软删除与回收站视图": "blog/posts/soft-deletes-trash-view.md"
-        }
+        "blog/index.md"
       ]
+    },
+    {
+      "社区": "community.md"
     },
     {
       "API 参考": [

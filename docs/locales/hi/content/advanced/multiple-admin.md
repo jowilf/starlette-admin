@@ -2,7 +2,7 @@
 title: एकाधिक एडमिन इंस्टेंस
 description: अलग-अलग उपयोगकर्ता भूमिकाओं या डोमेन के लिए एक ही FastAPI एप्लिकेशन पर
   कई पृथक एडमिन डैशबोर्ड माउंट करें।
-source_hash: 8b8c561c0c44bf9cb942e4e0d074f7a7e10c1e1fadb7339f4c76acce70d3a9a2
+source_hash: 9b826ebd92cd8db5ab4cc7ccc1e3961e605b585662c09aef2dfe215c1c7ee62b
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -102,7 +102,6 @@ root_admin = Admin(
 root_admin.add_view(ModelView(Order))
 root_admin.add_view(ModelView(User))
 root_admin.mount_to(app)
-
 ```
 
 इस उदाहरण में `/staff` पर `StaffAuth` द्वारा समर्थित एक sign-in पेज और `/root` पर `SuperAdminAuth` द्वारा समर्थित एक अलग sign-in पेज दिखता है। एक में sign in करना दूसरे तक पहुँच नहीं देता: प्रत्येक `SessionMiddleware` अपनी cookie को अपनी ही `secret_key` से साइन करता है, इसलिए प्रत्येक `Admin` इंस्टेंस केवल उही session डेटा पढ़ता है जो उसका अपना authentication provider लिखा था।
@@ -140,8 +139,9 @@ def __init__(
 
 ```python
 staff_admin.add_view(ModelView(Order))
-root_admin.add_view(ModelView(Order))  # separate instance of the same class; this is safe
-
+root_admin.add_view(
+    ModelView(Order)
+)  # separate instance of the same class; this is safe
 ```
 
 जब दोनों एडमिन को अलग व्यवहार चाहिए — जैसे अलग visibility rules या `can_delete` permissions — तो shared instance को runtime पर patch करने के बजाय प्रत्येक के लिए एक subclass लिखें:
@@ -160,7 +160,6 @@ class RootOrderView(ModelView):
 
 staff_admin.add_view(StaffOrderView(Order))
 root_admin.add_view(RootOrderView(Order))
-
 ```
 
 ---

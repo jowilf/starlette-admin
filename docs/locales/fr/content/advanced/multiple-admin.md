@@ -2,7 +2,7 @@
 title: Instances Admin multiples
 description: Montez plusieurs tableaux de bord admin isolés sur une seule application
   FastAPI pour différents rôles d'utilisateurs ou domaines.
-source_hash: 8b8c561c0c44bf9cb942e4e0d074f7a7e10c1e1fadb7339f4c76acce70d3a9a2
+source_hash: 9b826ebd92cd8db5ab4cc7ccc1e3961e605b585662c09aef2dfe215c1c7ee62b
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -102,7 +102,6 @@ root_admin = Admin(
 root_admin.add_view(ModelView(Order))
 root_admin.add_view(ModelView(User))
 root_admin.mount_to(app)
-
 ```
 
 Dans cet exemple, `/staff` affiche une page de connexion adossée à `StaffAuth` et `/root` en affiche une autre adossée à `SuperAdminAuth`. Se connecter à l'un ne donne pas accès à l'autre : chaque `SessionMiddleware` signe son cookie avec son propre `secret_key`, de sorte que chaque instance `Admin` ne lit que les données de session écrites par son propre fournisseur d'authentification.
@@ -140,8 +139,9 @@ Pour éviter cela, donnez à chaque admin une nouvelle instance de la **classe**
 
 ```python
 staff_admin.add_view(ModelView(Order))
-root_admin.add_view(ModelView(Order))  # separate instance of the same class; this is safe
-
+root_admin.add_view(
+    ModelView(Order)
+)  # separate instance of the same class; this is safe
 ```
 
 Lorsque les deux admins nécessitent des comportements différents, comme des règles de visibilité ou des permissions `can_delete` distinctes, écrivez une sous-classe pour chacun au lieu de modifier une instance partagée à l'exécution :
@@ -160,7 +160,6 @@ class RootOrderView(ModelView):
 
 staff_admin.add_view(StaffOrderView(Order))
 root_admin.add_view(RootOrderView(Order))
-
 ```
 
 ---

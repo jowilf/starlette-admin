@@ -59,11 +59,8 @@ nav = [
     { "Coming from Django Admin" = "comparison/django-admin.md" },
     { "Coming from Flask-Admin" = "comparison/flask-admin.md" },
   ] },
-  { "Blog" = [
-    { "Overview" = "blog/index.md" },
-    { "Add an Admin Panel to FastAPI in 5 Minutes" = "blog/posts/add-admin-panel-to-fastapi-in-5-minutes.md" },
-    { "Building Soft Deletes and a Trash View in FastAPI Using Starlette Admin" = "blog/posts/soft-deletes-trash-view.md" },
-  ] },
+  { "Blog" = ["blog/index.md"] },
+  { Community = "community.md" },
   { "API Reference" = [
     { "Admin" = "api/admin.md" },
     { "Views" = "api/views.md" },
@@ -96,6 +93,7 @@ features = [
   "search.suggest",
   "search.highlight",
   "navigation.tabs",
+  "navigation.indexes",
   "navigation.footer",
   "content.tabs.link",
 ]
@@ -134,6 +132,8 @@ anchor_linenums = true
 alternate_style = true
 
 [project.markdown_extensions.attr_list]
+
+[project.plugins.blog]
 
 [project.plugins.social]
 

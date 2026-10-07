@@ -16,15 +16,19 @@ The primary key is auto-detected; set `pk_attr` only when detection fails. Prima
 
 ```python
 class PostView(ModelView):
-    searchable_fields = ["title", "content"]      # global search + filter builder
-    sortable_fields = ["title", "created_at"]     # clickable column headers
-    fields_default_sort = [("created_at", True)]  # tuple with True = descending; chain for multi-column
+    searchable_fields = ["title", "content"]  # global search + filter builder
+    sortable_fields = ["title", "created_at"]  # clickable column headers
+    fields_default_sort = [
+        ("created_at", True)
+    ]  # tuple with True = descending; chain for multi-column
     page_size = 25
     page_size_options = [25, 50, 100, -1]
-    show_goto_page = True         # "go to page" input
-    search_auto_submit = True     # filter as the user types
-    show_detail_search = True     # search box for inline relationship tables on detail page
-    row_click_navigate = False    # default True: clicking a row opens the detail page
+    show_goto_page = True  # "go to page" input
+    search_auto_submit = True  # filter as the user types
+    show_detail_search = (
+        True  # search box for inline relationship tables on detail page
+    )
+    row_click_navigate = False  # default True: clicking a row opens the detail page
 ```
 
 Unauthorized sort parameters in the URL are silently ignored. Rows are never clickable for users failing `can_view_detail`.
@@ -57,10 +61,11 @@ Include the relationship attribute in `fields` and register both views; the UI r
 
 ```python
 class AuthorView(ModelView):
-    fields = ["id", "name", "books"]      # HasMany, auto-detected
+    fields = ["id", "name", "books"]  # HasMany, auto-detected
+
 
 class PostView(ModelView):
-    fields = ["id", "title", "author"]    # HasOne, auto-detected
+    fields = ["id", "title", "author"]  # HasOne, auto-detected
 ```
 
 Dropdowns load lazily through the related view's `/_api/{key}/relation-lookup` endpoint, so large tables stay fast. Manual `HasOne`/`HasMany` declaration is required only when the target view is registered under a custom `key`:
@@ -140,7 +145,12 @@ admin.add_view(
         views=[
             PostView(Post, icon="fa fa-newspaper"),
             AuthorView(Author, icon="fa fa-user"),
-            Link(menu_label="View Live Site", icon="fa fa-external-link", url="/", target="_blank"),
+            Link(
+                menu_label="View Live Site",
+                icon="fa fa-external-link",
+                url="/",
+                target="_blank",
+            ),
         ],
     )
 )
@@ -188,7 +198,8 @@ from starlette_admin.contrib.sqla import InlineModelView, ModelView
 class CommentInline(InlineModelView):
     model = Comment
     fields = ["author", "body"]
-    extra = 1                 # empty rows shown in addition to existing rows
+    extra = 1  # empty rows shown in addition to existing rows
+
 
 class ArticleView(ModelView):
     fields = ["title", "body"]

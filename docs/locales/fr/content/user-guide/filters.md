@@ -92,8 +92,12 @@ class ProductStatus(str, Enum):
 class ProductView(ModelView):
     fields = [
         "id",
-        StringField("name"),  # Utilise l'ensemble de filtres par défaut, aucun remplacement nécessaire
-        EnumField("status", enum=ProductStatus),  # Utilise l'ensemble de filtres par défaut
+        StringField(
+            "name"
+        ),  # Utilise l'ensemble de filtres par défaut, aucun remplacement nécessaire
+        EnumField(
+            "status", enum=ProductStatus
+        ),  # Utilise l'ensemble de filtres par défaut
         DecimalField(
             "price",
             # Restreint à seulement 3 des 9 filtres numériques par défaut

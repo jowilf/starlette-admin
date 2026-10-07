@@ -1,5 +1,5 @@
 ---
-source_hash: d16d4b0beefd5dc8580f8d65abaa28fda407896efff2ea2c3988ec3bf93277a4
+source_hash: 2bf7219b860a9b64e5cf3879ccb551b908f0a8b11800cf72c4e9d7530dae8ed2
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -90,7 +90,7 @@ from starlette_admin.fields import FileField
 
 
 class DocumentView:
-    invoice = FileField(accept=".pdf,.docx", max_size=5 * 1024 * 1024)  # лимит 5 МБ
+    invoice = FileField(accept=".pdf,.docx", max_size=5 * 1024 * 1024)  # 5 MB limit
 ```
 
 Без них `FileField` принимает файлы любого типа и размера. Исключение составляет `ImageField`: по умолчанию он использует значение `accept="image/*"`, а при установленном Pillow добавляет валидатор, который открывает загрузку через `PIL.Image`, чтобы убедиться, что байты действительно декодируются как изображение, вместо доверия метаданным, переданным браузером.
@@ -114,6 +114,7 @@ class DocumentView:
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
+
 
     def validate_document_type(
         request: Request, field: BaseField, upload: UploadFile, form_values: dict

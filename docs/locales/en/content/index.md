@@ -185,7 +185,7 @@ hide:
     from starlette_admin.filters.base import BaseFilter, FilterApplyContext, FilterDataType
 
 
-    class ActiveThisMonthFilter(BaseFilter):
+    class CreatedThisMonthFilter(BaseFilter):
         name = "this_month"
         label = "Created this month"
         data_type = FilterDataType.NONE  # No value input. The range comes from now().
@@ -196,11 +196,12 @@ hide:
             col = getattr(ctx.view.model, ctx.field_name)
             return col.between(start, now)
 
+
     class ProductView(ModelView):
         fields = [
             DateTimeField(
                 "created_at",
-                filters=[ActiveThisMonthFilter, ...],
+                filters=[CreatedThisMonthFilter, ...],
             ),
         ]
     ```

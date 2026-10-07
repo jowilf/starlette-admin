@@ -2,7 +2,7 @@
 title: Mehrere Admin-Instanzen
 description: Binden Sie mehrere isolierte Admin-Dashboards in eine einzige FastAPI-Anwendung
   ein – für verschiedene Benutzerrollen oder Domänen.
-source_hash: 8b8c561c0c44bf9cb942e4e0d074f7a7e10c1e1fadb7339f4c76acce70d3a9a2
+source_hash: 9b826ebd92cd8db5ab4cc7ccc1e3961e605b585662c09aef2dfe215c1c7ee62b
 prompt_hash: 8069042d0b0fb6ced5d0faa52da31ad04aa7f9a9dffdc142711ed8fbdffe7e42
 machine_translated: true
 ---
@@ -102,7 +102,6 @@ root_admin = Admin(
 root_admin.add_view(ModelView(Order))
 root_admin.add_view(ModelView(User))
 root_admin.mount_to(app)
-
 ```
 
 In diesem Beispiel zeigt `/staff` eine Anmeldeseite, die von `StaffAuth` bereitgestellt wird, während `/root` eine separate Seite mit `SuperAdminAuth` anbietet. Die Anmeldung bei dem einen gewährt keinen Zugriff auf den anderen: Jede `SessionMiddleware` signiert ihr Cookie mit ihrem eigenen `secret_key`, sodass jede `Admin`-Instanz ausschließlich die Session-Daten liest, die ihr eigener Authentifizierungsprovider geschrieben hat.
@@ -140,8 +139,9 @@ Um dies zu vermeiden, geben Sie jedem Admin eine frische Instanz der `ModelView`
 
 ```python
 staff_admin.add_view(ModelView(Order))
-root_admin.add_view(ModelView(Order))  # separate instance of the same class; this is safe
-
+root_admin.add_view(
+    ModelView(Order)
+)  # separate instance of the same class; this is safe
 ```
 
 Wenn die beiden Admins unterschiedliches Verhalten benötigen – etwa unterschiedliche Sichtbarkeitsregeln oder `can_delete`-Berechtigungen – schreiben Sie für jeden eine eigene Subklasse, statt eine geteilte Instanz zur Laufzeit zu patchen:
@@ -160,7 +160,6 @@ class RootOrderView(ModelView):
 
 staff_admin.add_view(StaffOrderView(Order))
 root_admin.add_view(RootOrderView(Order))
-
 ```
 
 ---
