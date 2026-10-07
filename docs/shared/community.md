@@ -22,7 +22,7 @@ This article lists third-party extensions that are available for installation. F
 
 | Package | Description | Links |
 | --- | --- | --- |
-| *None available* | There are currently no community plugins published. |  |
+| **starlette-admin-infinite-scroll** | Infinite scrolling for the list view. This plugin appends the next page as you scroll and keeps search, sorting, filters, and row actions working. | [GitHub](https://github.com/Alwinator/starlette-admin-infinite-scroll) |
 
 ## Create an extension
 
