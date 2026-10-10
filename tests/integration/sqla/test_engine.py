@@ -44,7 +44,7 @@ from sqlalchemy.orm import (
 from sqlalchemy_file.storage import StorageManager
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette_admin import StringField
+from starlette_admin import IntegerField, StringField
 from starlette_admin.contrib.sqla import Admin
 from starlette_admin.contrib.sqla.view import ModelView
 
@@ -88,28 +88,15 @@ class User(Base):
     products: Mapped[list["Product"]] = relationship("Product", back_populates="user")
     # reproduces https://github.com/jowilf/starlette-admin/issues/507
     product_titles = association_proxy("products", "titles")
-    last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    first_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     @hybrid_property
-    def full_name(self) -> str:
-        parts = [p for p in (self.first_name, self.last_name) if p]
-        return " ".join(parts) if parts else self.name
+    def name_length(self) -> int:
+        return len(self.name)
 
-    @full_name.inplace.expression
+    @name_length.inplace.expression
     @classmethod
-    def _full_name_expression(cls) -> ColumnElement[str]:
-        return func.coalesce(
-            func.nullif(
-                func.trim(
-                    func.coalesce(cls.first_name, "")
-                    + " "
-                    + func.coalesce(cls.last_name, "")
-                ),
-                "",
-            ),
-            cls.name,
-        )
+    def _name_length_expression(cls) -> ColumnElement[int]:
+        return func.length(cls.name)
 
 
 # Views
@@ -165,13 +152,11 @@ class UserView(ModelView):
         "name",
         "files",
         "products",
-        "last_name",
-        "first_name",
-        StringField("full_name", read_only=True),
+        IntegerField("name_length", read_only=True),
     ]
     show_pk_in_forms = True
     searchable_fields = ["name", "products"]
-    sortable_fields = ["name", "full_name"]
+    sortable_fields = ["name", "name_length"]
 
 
 # Sync-to-async session adapter
@@ -211,14 +196,9 @@ def _seed(session_or_async_session, fake_image) -> None:
     products[0].image = sf.File(fake_image, filename="image.png")
     session_or_async_session.add_all(products)
     users = [
-        User(
-            name="Doe",
-            files=[sf.File("Hello", filename="hello.txt")],
-            first_name="John",
-            last_name="Doe",
-        ),
-        User(name="Terry", files=[], first_name="Terry", last_name="Smith"),
-        User(name="admin", first_name="Ada", last_name="Admin"),
+        User(name="Doe", files=[sf.File("Hello", filename="hello.txt")]),
+        User(name="Terry", files=[]),
+        User(name="admin"),
     ]
     products[3].user = users[0]
     products[4].user = users[1]
@@ -707,6 +687,6 @@ async def test_sortable_field_mapping_2(client: AsyncClient):
 async def test_sortable_field_hybrid_property(client: AsyncClient):
     response = await client.get(
         "/admin/user/list",
-        params={"sort": "full_name__asc", "page_size": 10},
+        params={"sort": "name_length__asc", "page_size": 10},
     )
     assert response.status_code == 200
