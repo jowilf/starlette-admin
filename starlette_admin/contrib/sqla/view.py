@@ -791,7 +791,7 @@ class ModelView(BaseModelView):
             _log.debug("Ordering %s by %r %s", self.model.__name__, sort_by, sort_dir)
             model_attr = getattr(self.model, sort_by, None)
             if model_attr is not None and isinstance(
-                model_attr.property, RelationshipProperty
+                getattr(model_attr, "property", None), RelationshipProperty
             ):
                 stmt = stmt.outerjoin(model_attr)
             sorting_attr = self.sortable_field_mapping.get(sort_by, model_attr)

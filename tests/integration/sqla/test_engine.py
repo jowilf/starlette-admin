@@ -19,6 +19,7 @@ import sqlalchemy_file as sf
 from httpx2 import AsyncClient
 from sqlalchemy import (
     Boolean,
+    ColumnElement,
     Enum,
     Float,
     ForeignKey,
@@ -31,6 +32,7 @@ from sqlalchemy import (
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -42,7 +44,7 @@ from sqlalchemy.orm import (
 from sqlalchemy_file.storage import StorageManager
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette_admin import StringField
+from starlette_admin import IntegerField, StringField
 from starlette_admin.contrib.sqla import Admin
 from starlette_admin.contrib.sqla.view import ModelView
 
@@ -86,6 +88,15 @@ class User(Base):
     products: Mapped[list["Product"]] = relationship("Product", back_populates="user")
     # reproduces https://github.com/jowilf/starlette-admin/issues/507
     product_titles = association_proxy("products", "titles")
+
+    @hybrid_property
+    def name_length(self) -> int:
+        return len(self.name)
+
+    @name_length.inplace.expression
+    @classmethod
+    def _name_length_expression(cls) -> ColumnElement[int]:
+        return func.length(cls.name)
 
 
 # Views
@@ -137,8 +148,15 @@ class ProductView(ModelView):
 
 
 class UserView(ModelView):
+    fields = [
+        "name",
+        "files",
+        "products",
+        IntegerField("name_length", read_only=True),
+    ]
     show_pk_in_forms = True
     searchable_fields = ["name", "products"]
+    sortable_fields = ["name", "name_length"]
 
 
 # Sync-to-async session adapter
@@ -662,5 +680,13 @@ async def test_sortable_field_mapping_2(client: AsyncClient):
     response = await client.get(
         "/admin/product/list",
         params={"sort": "user__asc", "page_size": 10},
+    )
+    assert response.status_code == 200
+
+
+async def test_sortable_field_hybrid_property(client: AsyncClient):
+    response = await client.get(
+        "/admin/user/list",
+        params={"sort": "name_length__asc", "page_size": 10},
     )
     assert response.status_code == 200
