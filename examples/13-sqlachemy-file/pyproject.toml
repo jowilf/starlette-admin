@@ -8,7 +8,7 @@ dependencies = [
     "fasteners>=0.20",
     "pillow>=12.2.0",
     "sqlalchemy>=2",
-    "sqlalchemy-file>=0.6.0",
+    "sqlalchemy-file>=0.7.0",
     "starlette-admin",
     "uvicorn[standard]",
 ]
