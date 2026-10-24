@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'win32'",
@@ -403,7 +403,7 @@ requires-dist = [
     { name = "fasteners", specifier = ">=0.20" },
     { name = "pillow", specifier = ">=12.2.0" },
     { name = "sqlalchemy", specifier = ">=2" },
-    { name = "sqlalchemy-file", specifier = ">=0.6.0" },
+    { name = "sqlalchemy-file", specifier = ">=0.7.0rc2" },
     { name = "starlette-admin", editable = "." },
     { name = "uvicorn", extras = ["standard"] },
 ]
@@ -4102,15 +4102,15 @@ asyncio = [
 
 [[package]]
 name = "sqlalchemy-file"
-version = "0.6.0"
+version = "0.7.0rc2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "apache-libcloud" },
     { name = "sqlalchemy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8c/9b/81c240992d7691412975f8cc3cd60087713f3f72a49fe22bf7314809b97e/sqlalchemy_file-0.6.0.tar.gz", hash = "sha256:3d578d1b968bdf755f432305845e1831178f351032d8ae61e0441f3522c5bba8", size = 17316, upload-time = "2023-10-07T22:57:09.823Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/6a/682f323674cf053fc4b76ae7c8913f7ddedd3c92204cfffdf196e395afa2/sqlalchemy_file-0.7.0rc2.tar.gz", hash = "sha256:53e6924434ea0da5a968852e004a4aed86daa81b87674e579bba377a72454d78", size = 18523, upload-time = "2026-10-24T06:13:51.055Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/92/cd/4c2e93ca055ea401528927f0e7f36f8fa45eaa34999291a61a0a943b79de/sqlalchemy_file-0.6.0-py3-none-any.whl", hash = "sha256:7297d3d74142bd0e73496450c4664f6d67d13ad375ecf0b1c9f73deed8a870f3", size = 21427, upload-time = "2023-10-07T22:57:11.527Z" },
+    { url = "https://files.pythonhosted.org/packages/60/15/9398e5eb77a4ab5e1fdd38b07f0fbfc7b648fa36e0475a92e6cdc89e7f17/sqlalchemy_file-0.7.0rc2-py3-none-any.whl", hash = "sha256:91e9c0e38bfdb09a6b88a77f21a380047b7a5189dbdde649e3bf9eecebc720a5", size = 22274, upload-time = "2026-10-24T06:13:49.831Z" },
 ]
 
 [[package]]
@@ -4155,6 +4155,7 @@ wheels = [
 [[package]]
 name = "starlette-admin"
 source = { editable = "." }
+default-groups = ["cov", "dev", "docs", "e2e", "lint", "test"]
 dependencies = [
     { name = "itsdangerous" },
     { name = "jinja2" },
@@ -4304,7 +4305,7 @@ test = [
     { name = "pytest-asyncio", specifier = ">=0.24.0,<1.5.0" },
     { name = "reportlab", specifier = ">=4.0.0" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.0,<2.2.0" },
-    { name = "sqlalchemy-file", specifier = ">=0.5.0,<0.7.0" },
+    { name = "sqlalchemy-file", specifier = ">=0.7.0rc2,<0.8.0" },
     { name = "sqlalchemy-utils", specifier = ">=0.40.0,<0.43.0" },
     { name = "sqlmodel", specifier = ">=0.0.11,<0.1.0" },
     { name = "tablib", extras = ["all"], specifier = ">=3.9.0" },
