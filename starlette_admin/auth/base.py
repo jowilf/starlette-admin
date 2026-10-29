@@ -142,6 +142,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
             request.client.host if request.client else "unknown",
         )
 
+        if route_name == "static":
+            # Static assets never need the current user, so skip the provider
+            # lookup (which may hit a database or session store) for them.
+            return await call_next(request)
+
         user = await self.provider.authenticate(request)
 
         if user is not None:

@@ -536,6 +536,33 @@ class TestOAuthProvider:
         assert response.headers["location"] == "http://testserver/admin/"
 
 
+class TestStaticFiles:
+    @pytest.mark.asyncio
+    async def test_static_files_skip_authenticate(self):
+        calls = []
+
+        class CountingAuthProvider(MyAuthProvider):
+            async def authenticate(self, request: Request) -> AdminUser | None:
+                calls.append(request.url.path)
+                return await super().authenticate(request)
+
+        admin = BaseAdmin(auth_provider=CountingAuthProvider())
+        app = Starlette()
+        admin.mount_to(app)
+        client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
+        client.cookies.set("session", "admin")
+
+        response = await client.get("/admin/static/css/panel_widget.css")
+        assert response.status_code == 200
+        assert calls == []
+
+        # Non-static routes still go through the provider.
+        await client.get("/admin/", follow_redirects=False)
+        assert calls == ["/admin/"]
+
+
 class TestLogoutEdgeCases:
     @pytest.mark.asyncio
     async def test_logout_exception_is_raised(self):
