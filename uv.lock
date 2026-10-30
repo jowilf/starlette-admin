@@ -403,7 +403,7 @@ requires-dist = [
     { name = "fasteners", specifier = ">=0.20" },
     { name = "pillow", specifier = ">=12.2.0" },
     { name = "sqlalchemy", specifier = ">=2" },
-    { name = "sqlalchemy-file", specifier = ">=0.7.0rc2" },
+    { name = "sqlalchemy-file", specifier = ">=0.7.0" },
     { name = "starlette-admin", editable = "." },
     { name = "uvicorn", extras = ["standard"] },
 ]
@@ -1523,11 +1523,11 @@ wheels = [
 
 [[package]]
 name = "dnspython"
-version = "2.8.0"
+version = "2.9.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8c/8b/57666417c0f90f08bcafa776861060426765fdb422eb10212086fb811d26/dnspython-2.8.0.tar.gz", hash = "sha256:181d3c6996452cb1189c4046c61599b84a5a86e099562ffde77d26984ff26d0f", size = 368251, upload-time = "2025-09-07T18:58:00.022Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ef/4a/50822184bd67cc6493f0fb6a880749158fcd31ab3fa07409acfd91f9fc85/dnspython-2.9.0.tar.gz", hash = "sha256:b44dc6b18f07a8b1c56676a19fbfdb5209415b046a9cece286baafa87ff3f7f1", size = 423560, upload-time = "2026-10-09T00:07:24.352Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/5a/18ad964b0086c6e62e2e7500f7edc89e3faa45033c71c1893d34eed2b2de/dnspython-2.8.0-py3-none-any.whl", hash = "sha256:01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af", size = 331094, upload-time = "2025-09-07T18:57:58.071Z" },
+    { url = "https://files.pythonhosted.org/packages/10/02/cdcc9b7c051786a103c3b09e1003a82fa0c66bcb91ffbdabcfbf7b4163b9/dnspython-2.9.0-py3-none-any.whl", hash = "sha256:9a4aedb833c3c1b49214d04d44d3032ab7a9135f7c1d29a549b4ff78fd82fda9", size = 354822, upload-time = "2026-10-09T00:07:22.622Z" },
 ]
 
 [[package]]
@@ -4144,15 +4144,15 @@ asyncio = [
 
 [[package]]
 name = "sqlalchemy-file"
-version = "0.7.0rc2"
+version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "apache-libcloud" },
     { name = "sqlalchemy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b0/6a/682f323674cf053fc4b76ae7c8913f7ddedd3c92204cfffdf196e395afa2/sqlalchemy_file-0.7.0rc2.tar.gz", hash = "sha256:53e6924434ea0da5a968852e004a4aed86daa81b87674e579bba377a72454d78", size = 18523, upload-time = "2026-10-24T06:13:51.055Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/35/58/9a990cd2d8a758c6a33dc13c1bb0554dd54444a1063843caa107b183a4a7/sqlalchemy_file-0.7.0.tar.gz", hash = "sha256:231af3800797cbfeff66d233c4b75b46d6e3da7b8a41962505f4dc0882dcee13", size = 18518, upload-time = "2026-10-24T07:24:06.059Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/60/15/9398e5eb77a4ab5e1fdd38b07f0fbfc7b648fa36e0475a92e6cdc89e7f17/sqlalchemy_file-0.7.0rc2-py3-none-any.whl", hash = "sha256:91e9c0e38bfdb09a6b88a77f21a380047b7a5189dbdde649e3bf9eecebc720a5", size = 22274, upload-time = "2026-10-24T06:13:49.831Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/61/15e23ddcdb105aebe6ea56dc9ea405616665cbf6092c04c78c63e3f4baf6/sqlalchemy_file-0.7.0-py3-none-any.whl", hash = "sha256:d297a28ee158c3a08edff1dae58dc240b81133449a2f3c345f39451ea4020426", size = 22242, upload-time = "2026-10-24T07:24:04.925Z" },
 ]
 
 [[package]]
@@ -4347,7 +4347,7 @@ test = [
     { name = "pytest-asyncio", specifier = ">=0.24.0,<1.5.0" },
     { name = "reportlab", specifier = ">=4.0.0" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.0,<2.2.0" },
-    { name = "sqlalchemy-file", specifier = ">=0.7.0rc2,<0.8.0" },
+    { name = "sqlalchemy-file", specifier = ">=0.7.0,<0.8.0" },
     { name = "sqlalchemy-utils", specifier = ">=0.40.0,<0.43.0" },
     { name = "sqlmodel", specifier = ">=0.0.11,<0.1.0" },
     { name = "tablib", extras = ["all"], specifier = ">=3.9.0" },
@@ -5153,7 +5153,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/00/93/86a85b421dd27cad4414f3a8775c3cd72676f2d6df0816e059a9acd87337/zensical-0.0.68-cp311-abi3-macosx_10_12_x86_64.whl", hash = "sha256:61fe8425f22a36dfd34962811f651c0a69faaf39e38518c90f55c09b381974df", size = 18070895, upload-time = "2026-10-05T15:41:14.36Z" },
     { url = "https://files.pythonhosted.org/packages/1f/80/a4ff13b5ba86dd4498d7b210e5137abbeb924d318297536b2c7a89514ebf/zensical-0.0.68-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:5b40756883e6ebe6638f91fffde6146a894731d52aee965d514202b7648be671", size = 17603220, upload-time = "2026-10-05T15:41:17.573Z" },
     { url = "https://files.pythonhosted.org/packages/9a/21/c60fdb42ed358b509a2f688a34cc1ee462272b2ebbf8c94f71d824b77c8e/zensical-0.0.68-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c21a3d5e06e7c9c7761fbd7c9322cd6a69c4ea6d26db98e8110ac7bfdb70c921", size = 18110355, upload-time = "2026-10-05T15:41:20.528Z" },
-    { url = "https://files.pythonhosted.org/packages/31/60/2611203cd0ad006ccbd6c4889f4745beecb76115fdc6ee6ea1435c0c1261/zensical-0.0.68-cp311-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:46e5600dc78ca811f0079c3766038a46419bf6e9bdba30e3e1302a13b8ae9b9b", size = 18045909, upload-time = "2026-10-05T15:41:23.132Z" },
     { url = "https://files.pythonhosted.org/packages/1f/67/b2f1d61b312ffd9f8f37754f931a089967f75c929e3b0dcc2947f2692bd3/zensical-0.0.68-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:09cb5caf676375d1586e1d6d114e9b6812e0f153120a477246b80b1478243b0e", size = 18586515, upload-time = "2026-10-05T15:41:25.698Z" },
     { url = "https://files.pythonhosted.org/packages/04/02/552b3c461514ae53379b34f79adae303cfc08745614b2abe7667085b9014/zensical-0.0.68-cp311-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:ac5015e27c17e8ab02c83b36858c56808dde7891a50c70a9498dbc3edd882874", size = 18276394, upload-time = "2026-10-05T15:41:28.365Z" },
     { url = "https://files.pythonhosted.org/packages/3c/8a/76245b9a2053c2466662a3891730d081a8c9349cc67bc147ec394bc6cd9a/zensical-0.0.68-cp311-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:d24a7caf0c14e5e3fb4ff1521ee5836c7fbf7767f59d3ecf2d9c01fd69ccfc2c", size = 18844257, upload-time = "2026-10-05T15:41:31.294Z" },
