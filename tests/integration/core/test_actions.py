@@ -8,7 +8,7 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
 from starlette.testclient import TestClient
 from starlette_admin import BaseAdmin, EnumField, IntegerField, StringField, action
-from starlette_admin.actions import ActionSelection, row_action
+from starlette_admin.actions import ActionSelection, link_row_action, row_action
 from starlette_admin.exceptions import ActionFailed
 
 from tests.integration.core.tinydb_model_view import TinydbBaseModel, TinydbModelView
@@ -275,6 +275,57 @@ def test_action_modal_size_defaults_to_sm(client: TestClient):
     assert re.search(
         r'data-sa-modal-size="sm"[^>]*data-sa-name="make_published"', response.text
     )
+
+
+def test_link_row_action_target_is_rendered_and_defaults_to_none(client: TestClient):
+    # Built-in link actions (`view`, `edit`) have no `target`; the rendered
+    # anchor must not carry a target attribute.
+    response = client.get("/admin/article/list")
+    assert response.status_code == 200
+    row_html = re.search(
+        r'<tr data-sa-pk="1"[^>]*>(.*?)</tr>', response.text, re.DOTALL
+    )
+    assert row_html is not None
+    for name in ("view", "edit"):
+        link = re.search(
+            r'<a[^>]*data-sa-name="' + name + r'"[^>]*>', row_html.group(1)
+        )
+        assert link is not None
+        assert "target=" not in link.group(0)
+
+    # A link row action can opt into opening in a new tab.
+    class TargetedArticleView(ArticleView):
+        row_actions = [
+            *ArticleView.row_actions,
+            "open_external",
+        ]
+
+        @link_row_action(
+            name="open_external",
+            text="Open externally",
+            icon_class="fas fa-arrow-up-right-from-square",
+            target="_blank",
+        )
+        def open_external_row_action(self, request: Request, pk: Any) -> str:
+            return f"https://example.com/items/{pk}"
+
+    app = Starlette()
+    admin = BaseAdmin()
+    admin.add_view(TargetedArticleView(Article))
+    admin.mount_to(app)
+    targeted_client = CsrfTestClient(app, base_url="http://testserver")
+
+    response = targeted_client.get("/admin/article/list")
+    assert response.status_code == 200
+    row_html = re.search(
+        r'<tr data-sa-pk="1"[^>]*>(.*?)</tr>', response.text, re.DOTALL
+    )
+    assert row_html is not None
+    link = re.search(
+        r'<a[^>]*target="_blank"[^>]*data-sa-name="open_external"[^>]*>',
+        row_html.group(1),
+    )
+    assert link is not None
 
 
 def test_action_modal_size_is_configurable():

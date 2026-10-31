@@ -1,6 +1,9 @@
 {% macro action_data_attributes(action) -%}
     {% if action.is_link -%}
         href="{{ view._row_actions_handlers.get(action.name) (request, pk) }}"
+        {% if action.target -%}
+            target="{{ action.target }}"
+        {% endif %}
     {% else %}
         href="#"
         {% if action.confirmation is not none -%}

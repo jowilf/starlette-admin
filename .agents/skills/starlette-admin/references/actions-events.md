@@ -70,6 +70,16 @@ class ArticleView(ModelView):
     )
     def go_to_example_row_action(self, request: Request, pk: Any) -> str:
         return f"https://example.com/?pk={pk}"  # plain href, no API round trip
+
+    # `target` renders an HTML target attribute (e.g. open in a new tab)
+    @link_row_action(
+        name="open_external",
+        text="Open externally",
+        icon_class="fas fa-arrow-up-right-from-square",
+        target="_blank",
+    )
+    def open_external_row_action(self, request: Request, pk: Any) -> str:
+        return f"https://example.com/items/{pk}"
 ```
 
 Display options: `row_actions_display_type = RowActionsDisplayType.ICON_LIST | DROPDOWN | KEBAB | INLINE_LINKS` (list page only; the detail page always shows full buttons) and `row_actions_position = RowActionsPosition.BEFORE_COLUMNS | AFTER_COLUMNS` (both enums in `starlette_admin.types`).
