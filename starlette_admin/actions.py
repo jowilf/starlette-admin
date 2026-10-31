@@ -410,15 +410,6 @@ def link_row_action(
         )
         def go_to_example_row_action(self, request: Request, pk: Any) -> str:
             return f"https://example.com/?pk={pk}"
-
-        @link_row_action(
-            name="go_to_external",
-            text="Open externally",
-            icon_class="fas fa-arrow-up-right-from-square",
-            target="_blank",
-        )
-        def go_to_external_row_action(self, request: Request, pk: Any) -> str:
-            return f"https://example.com/?pk={pk}"
         ```
 
     """

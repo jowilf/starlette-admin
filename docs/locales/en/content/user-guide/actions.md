@@ -225,16 +225,6 @@ class ArticleView(ModelView):
     )
     def go_to_example_row_action(self, request: Request, pk: Any) -> str:
         return f"https://example.com/?pk={pk}"
-
-    # Set `target` to open the link in a new tab (any HTML target value works)
-    @link_row_action(
-        name="open_external",
-        text="Open externally",
-        icon_class="fas fa-arrow-up-right-from-square",
-        target="_blank",
-    )
-    def open_external_row_action(self, request: Request, pk: Any) -> str:
-        return f"https://example.com/items/{pk}"
 ```
 
 ### Restricting row actions
