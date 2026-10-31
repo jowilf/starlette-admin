@@ -377,6 +377,7 @@ def link_row_action(
     icon_class: str | None = None,
     exclude_from_list: bool = False,
     exclude_from_detail: bool = False,
+    target: str | None = None,
 ) -> Callable[[Callable[..., str]], Any]:
     """Decorator to add a custom row action that redirects to a URL instead of running
     server-side logic.
@@ -395,6 +396,9 @@ def link_row_action(
         icon_class: Icon class (e.g. `fa-lite fa-folder`, `fa-duotone fa-circle-right`).
         exclude_from_list: Set to True to exclude the action from the list view.
         exclude_from_detail: Set to True to exclude the action from the detail view.
+        target: HTML `target` attribute for the rendered link (e.g. `_blank` to
+            open in a new tab). Defaults to None, which renders no `target`
+            attribute.
 
     !!! usage
 
@@ -419,6 +423,7 @@ def link_row_action(
             "is_link": True,
             "exclude_from_list": exclude_from_list,
             "exclude_from_detail": exclude_from_detail,
+            "target": target,
         }
         return f
 
