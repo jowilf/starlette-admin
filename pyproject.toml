@@ -80,7 +80,7 @@ dev = [
     "uvicorn >=0.20.0, <0.55.0",
 ]
 
-lint = ["ty ==0.0.84", "ruff ==0.16.9"]
+lint = ["ty ==0.0.84", "ruff ==0.17.3"]
 
 test = [
     "aiobotocore >=2.5.0",
