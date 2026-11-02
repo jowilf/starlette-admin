@@ -2104,7 +2104,7 @@ class BaseAdmin:
     ) -> bool:
         """Return True when a new inline row has no meaningful user input."""
         prefix = f"{inline._prefix()}.{index}."
-        for field in inline.fields:
+        for field in inline._resolved_fields:
             name = f"{prefix}{field.name}"
             if form_data.get(name):
                 return False
