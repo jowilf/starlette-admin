@@ -505,7 +505,9 @@ class BaseModelView(BaseView):
         key: Unique key to identify the model associated to this view.
             Will be used for URL of the endpoints.
         display_name: Name of the view to be displayed
-        fields: List of fields
+        fields: Fields to display, as model field names or
+            [BaseField][starlette_admin.fields.BaseField] instances, e.g.
+            `fields = ["name", ImageField("avatar")]`.
         form_layout: Arranges `fields` on the create/edit forms using the
             same composable widgets as
             [CustomView.widget][starlette_admin.views.CustomView.widget]:
@@ -611,7 +613,7 @@ class BaseModelView(BaseView):
 
     key: str | None = None
     display_name: str | None = None
-    fields: Sequence[BaseField] = []
+    fields: Sequence[str | BaseField] = []
     form_layout: Sequence[WidgetShorthand] | None = None
     pk_attr: str | None = None
     show_pk_in_forms: bool = False
@@ -687,6 +689,16 @@ class BaseModelView(BaseView):
         self.exporters = [resolve_exporter(e) for e in self.exporters]
         self.importers = [resolve_importer(i) for i in self.importers]
 
+    @property
+    def _resolved_fields(self) -> Sequence[BaseField]:
+        """``fields`` as ``BaseField`` instances.
+
+        Backend ``ModelView`` classes replace field names with concrete fields
+        in ``__init__`` (through ``ModelConverter.convert_fields_list``) before
+        ``_init_fields`` runs.
+        """
+        return cast("Sequence[BaseField]", self.fields)
+
     def _init_fields(self) -> None:  # noqa: C901
         """Walk ``self.fields`` depth-first, set ``_name`` / ``_view`` on every
         field, apply exclusion overrides, and populate ``self._all_fields`` (the
@@ -699,7 +711,7 @@ class BaseModelView(BaseView):
         )
         self._all_fields: list[BaseField] = []
         all_field_names: list[str] = []
-        queue: deque[BaseField] = deque(self.fields)
+        queue: deque[BaseField] = deque(self._resolved_fields)
         while queue:
             field = queue.popleft()
             if not field._name:
@@ -779,7 +791,7 @@ class BaseModelView(BaseView):
         """
         if not self.inline_editable_fields:
             return
-        fields_by_name = {f.name: f for f in self.fields}
+        fields_by_name = {f.name: f for f in self._resolved_fields}
         for name in self.inline_editable_fields:
             field = fields_by_name.get(name)
             if field is None:
@@ -821,7 +833,7 @@ class BaseModelView(BaseView):
         if not self.form_layout:
             return
         nodes = [normalize_widget(entry) for entry in self.form_layout]
-        declared_names = [f.name for f in self.fields]
+        declared_names = [f.name for f in self._resolved_fields]
         declared_names_set = set(declared_names)
         seen: set[str] = set()
         for node in nodes:
@@ -2331,7 +2343,7 @@ class BaseModelView(BaseView):
         ``edit()`` safe to call with a single-field data dict.
         """
         action = action if action is not None else request.state.action
-        source = self._all_fields if include_nested else self.fields
+        source = self._all_fields if include_nested else self._resolved_fields
         # Set only by the inline-edit endpoint, always as a field-name string.
         inline_edit_field = getattr(request.state, "inline_edit_field", None)
         if isinstance(inline_edit_field, str):
@@ -3322,7 +3334,7 @@ class InlineModelView(BaseModelView):
         can be invoked directly inside ``{{ }}`` without printing anything.
         """
         prefix = self._prefix()
-        for field in self.fields:
+        for field in self._resolved_fields:
             field.id = f"{prefix}.{index}.{field.name}"
             if isinstance(field, CollectionField):
                 field._propagate_id()

@@ -202,7 +202,9 @@ class ModelView(BaseModelView):
             self._pk_coerce = extract_column_python_type(self._pk_column)  # type: ignore[arg-type]
             try:
                 # Reuse the already-converted field if the PK is declared.
-                self.pk_field = next(f for f in self.fields if f.name == _pk_attrs[0])
+                self.pk_field = next(
+                    f for f in self._resolved_fields if f.name == _pk_attrs[0]
+                )
             except StopIteration:
                 # The PK is not among the declared fields, so fall back to
                 # treating its value as a plain string.
