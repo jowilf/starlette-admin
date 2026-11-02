@@ -505,10 +505,9 @@ class BaseModelView(BaseView):
         key: Unique key to identify the model associated to this view.
             Will be used for URL of the endpoints.
         display_name: Name of the view to be displayed
-        fields: Fields to display, either as model field names or as
-            [BaseField][starlette_admin.fields.BaseField] instances (the names
-            are resolved against the model by the backend `ModelView`
-            classes), e.g. `fields = ["name", ImageField("avatar")]`.
+        fields: Fields to display, as model field names or
+            [BaseField][starlette_admin.fields.BaseField] instances, e.g.
+            `fields = ["name", ImageField("avatar")]`.
         form_layout: Arranges `fields` on the create/edit forms using the
             same composable widgets as
             [CustomView.widget][starlette_admin.views.CustomView.widget]:
@@ -694,11 +693,9 @@ class BaseModelView(BaseView):
     def _resolved_fields(self) -> Sequence[BaseField]:
         """``fields`` as ``BaseField`` instances.
 
-        ``fields`` accepts both field names and field instances, but backend
-        ``ModelView`` classes replace the names with concrete fields in their
-        ``__init__`` (through ``ModelConverter.convert_fields_list``) before
-        ``_init_fields`` runs, so every entry is a ``BaseField`` by the time
-        the view is initialized.
+        Backend ``ModelView`` classes replace field names with concrete fields
+        in ``__init__`` (through ``ModelConverter.convert_fields_list``) before
+        ``_init_fields`` runs.
         """
         return cast("Sequence[BaseField]", self.fields)
 
