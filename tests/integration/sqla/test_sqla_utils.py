@@ -3,6 +3,8 @@ import ipaddress
 import uuid
 from uuid import UUID
 
+from starlette.requests import Request
+
 try:
     import zoneinfo
 except ImportError:
@@ -53,6 +55,7 @@ from starlette_admin import (
     ListField,
     PasswordField,
     PhoneField,
+    RequestAction,
     StringField,
     TimeZoneField,
     URLField,
@@ -283,3 +286,50 @@ async def test_composite_type():
     ]
     for listener in listeners:
         event.remove(*listener)
+
+
+async def test_get_search_query_includes_ip_address_field() -> None:
+    from sqlalchemy.dialects import sqlite
+
+    request = Request({"type": "http", "state": {"action": RequestAction.LIST}})
+    clause = ModelView(Model).get_search_query(request, "192.168")
+    compiled = str(
+        clause.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True})
+    )
+
+    assert "model.ip_address" in compiled
+    assert "model.email" in compiled
+    assert "model.url" in compiled
+    assert " OR " in compiled
+
+
+async def test_get_search_query_does_not_match_field_subclasses() -> None:
+    from sqlalchemy.dialects import sqlite
+
+    request = Request({"type": "http", "state": {"action": RequestAction.LIST}})
+    clause = ModelView(BaseItem).get_search_query(request, "foo")
+    compiled = str(
+        clause.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True})
+    )
+
+    assert "base_items.name" in compiled
+    assert "base_items._type" in compiled
+    assert "base_items.id" not in compiled
+
+
+async def test_get_search_query_returns_false_when_no_searchable_fields() -> None:
+    from sqlalchemy.dialects import sqlite
+
+    class NonSearchableRecord(Base):
+        __tablename__ = "search_query_non_searchable"
+
+        id: Mapped[int] = mapped_column(primary_key=True)
+        count: Mapped[int] = mapped_column()
+
+    request = Request({"type": "http", "state": {"action": RequestAction.LIST}})
+    clause = ModelView(NonSearchableRecord).get_search_query(request, "anything")
+    compiled = str(
+        clause.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True})
+    )
+
+    assert compiled.strip() == "0"
