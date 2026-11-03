@@ -9,7 +9,8 @@ from unittest.mock import MagicMock
 import arrow
 import pytest
 from starlette.datastructures import FormData
-from starlette_admin import BooleanField, IntegerField, StringField
+from starlette.requests import Request
+from starlette_admin import BooleanField, IntegerField, PasswordField, StringField
 from starlette_admin.fields import (
     ArrowField,
     CollectionField,
@@ -2115,3 +2116,24 @@ class TestToFormEntry:
         import json
 
         assert to_form_entry(None) == json.dumps(None)
+
+
+async def test_password_field_serialize_value_hides_value_except_on_create() -> None:
+    field = PasswordField("password")
+
+    # On CREATE, the value is passed through to super() (typically the
+    # default value of a new record, never an existing hash).
+    request_create = Request(
+        {"type": "http", "state": {"action": RequestAction.CREATE}}
+    )
+    assert await field.serialize_value(request_create, "initial_value") != ""
+
+    # On every other action, the stored value must never reach the client.
+    for action in (
+        RequestAction.LIST,
+        RequestAction.DETAIL,
+        RequestAction.EDIT,
+        RequestAction.EXPORT,
+    ):
+        request = Request({"type": "http", "state": {"action": action}})
+        assert await field.serialize_value(request, "hashed_secret_123") == ""

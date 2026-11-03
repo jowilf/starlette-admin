@@ -1033,6 +1033,18 @@ class PasswordField(StringField):
     input_type: str = "password"
     class_: str = "field-password form-control"
 
+    async def serialize_value(self, request: Request, value: Any) -> Any:
+        """Return the raw value only on CREATE; hide it everywhere else.
+
+        Password hashes must never be exposed to the client. Only the
+        CREATE action may serialize the value (e.g. an explicit default),
+        so that the new record form can pre-fill it if needed. On EDIT,
+        LIST, DETAIL, and any future action, return an empty string.
+        """
+        if request.state.action == RequestAction.CREATE:
+            return await super().serialize_value(request, value)
+        return ""
+
 
 @dataclass
 class UUIDField(StringField):

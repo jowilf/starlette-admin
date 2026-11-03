@@ -34,6 +34,7 @@ from starlette_admin.fields import (
     EmailField,
     EnumField,
     FileField,
+    PasswordField,
     PhoneField,
     RelationField,
     SlugField,
@@ -715,6 +716,8 @@ class ModelView(BaseModelView):
             if field.read_only:
                 continue
             name, value = field.name, data.get(field.name)
+            if is_edit and isinstance(field, PasswordField) and not value:
+                continue
             if isinstance(field, FileField) and field.storage is None:
                 value, should_be_deleted = not_none(value)
                 if should_be_deleted:
