@@ -540,3 +540,34 @@ def test_sort_unknown_field_still_falls_back():
 
     response = c.get("/admin/article/list", params={"sort": "nonexistent_xyz__asc"})
     assert response.status_code == 200
+
+
+def test_filter_on_field_excluded_from_list():
+    """`exclude_from_list=True` must not block filtering on the field.
+
+    `exclude_from_list` only hides the column from the table; filtering
+    by the field (e.g., a foreign-key column like `user_id`) is a
+    legitimate use case.
+    """
+
+    class ExcludedBodyArticleView(ArticleView):
+        fields = [
+            IntegerField("id"),
+            StringField("title"),
+            TextAreaField("body", exclude_from_list=True),
+        ]
+
+    app = Starlette()
+    admin = BaseAdmin()
+    admin.add_view(ExcludedBodyArticleView(Article))
+    admin.mount_to(app)
+    c = TestClient(app)
+
+    # Confirm the column is absent from the list table...
+    listing = c.get("/admin/article/list")
+    assert listing.status_code == 200
+    assert 'data-column="body"' not in listing.text
+
+    # ...but filtering by it still works.
+    response = c.get("/admin/article/list", params={"filter": "body__contains=Body"})
+    assert response.status_code == 200

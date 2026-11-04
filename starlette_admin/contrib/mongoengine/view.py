@@ -443,7 +443,7 @@ class ModelView(BaseModelView):
         if q is not None:
             qs = await self.build_full_text_search_query(request, q)
         if filters is not None and not filters.is_empty():
-            fields_by_name = {f.name: f for f in self.get_fields_list(request)}
+            fields_by_name = {f.name: f for f in self.get_filterable_fields(request)}
             registry = self.get_filter_registry()
             filter_q = build_filter_query(
                 filters, fields_by_name, registry, self, request
