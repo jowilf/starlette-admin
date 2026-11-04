@@ -822,3 +822,39 @@ def test_delete_action_works_with_select_all_matching(filter_client: TestClient)
     assert FilterArticleView._get(1) is None
     assert FilterArticleView._get(2) is not None
     assert FilterArticleView._get(3) is None
+
+
+def test_default_row_actions_order_places_standard_first() -> None:
+    """With `row_actions = None`, built-in actions (view, edit, delete) must
+    come first in their logical order, followed by custom actions in their
+    class-definition order instead of the alphabetical order from
+    inspect.getmembers."""
+
+    class DefaultOrderArticleView(ArticleView):
+        row_actions = None
+
+    assert DefaultOrderArticleView(Article).row_actions == [
+        "view",
+        "edit",
+        "delete",
+        "make_published",
+        "always_failed",
+        "forbidden",
+        "invalid_redirect",
+        "redirect",
+    ]
+
+
+def test_explicit_row_actions_order_is_preserved() -> None:
+    """When `row_actions` is set explicitly on the view, the user's order
+    must be preserved verbatim."""
+
+    class ExplicitOrderArticleView(ArticleView):
+        row_actions = ["delete", "make_published", "view", "edit"]
+
+    assert ExplicitOrderArticleView(Article).row_actions == [
+        "delete",
+        "make_published",
+        "view",
+        "edit",
+    ]

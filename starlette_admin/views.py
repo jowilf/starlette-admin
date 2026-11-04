@@ -903,18 +903,51 @@ class BaseModelView(BaseView):
         )
 
     def _init_row_actions(self) -> None:
+        standard_actions = ("view", "edit", "delete")
+        discovered = {}
+
+        # Collect row action methods in class-definition order (base -> subclass).
+        for cls in reversed(type(self).__mro__):
+            for method_name, attr in cls.__dict__.items():
+                row_action_meta = getattr(attr, "_row_action", None)
+                if not isinstance(row_action_meta, dict):
+                    continue
+                action_name = row_action_meta.get("name")
+                if not isinstance(action_name, str):
+                    continue
+                discovered[action_name] = (
+                    getattr(self, method_name),
+                    row_action_meta,
+                )
+
+        # Fallback for any dynamically attached bound methods on the instance.
         for _method_name, method in inspect.getmembers(
             self, predicate=inspect.ismethod
         ):
-            if hasattr(method, "_row_action"):
-                name = method._row_action.get("name")
-                self._row_actions[name] = method._row_action
-                self._row_actions_handlers[name] = method
-                _log.debug(
-                    "_init_row_actions: discovered row action %r on %s",
-                    name,
-                    type(self).__name__,
-                )
+            row_action_meta = getattr(method, "_row_action", None)
+            if not isinstance(row_action_meta, dict):
+                continue
+            action_name = row_action_meta.get("name")
+            if not isinstance(action_name, str) or action_name in discovered:
+                continue
+            discovered[action_name] = (method, row_action_meta)
+
+        ordered_names: list[str] = [
+            name for name in standard_actions if name in discovered
+        ]
+        ordered_names.extend(
+            name for name in discovered if name not in standard_actions
+        )
+
+        for name in ordered_names:
+            handler, metadata = discovered[name]
+            self._row_actions[name] = metadata
+            self._row_actions_handlers[name] = handler
+            _log.debug(
+                "_init_row_actions: discovered row action %r on %s",
+                name,
+                type(self).__name__,
+            )
 
         if self.row_actions is None:
             self.row_actions = list(self._row_actions_handlers.keys())
