@@ -1121,6 +1121,8 @@ class EnumField(StringField):
     choices_loader: (
         Callable[[Request], Sequence[str] | Sequence[tuple[Any, str]]] | None
     ) = dc_field(default=None, compare=False)
+    list_template: str = "fields/list/enum.html"
+    detail_template: str = "fields/detail/enum.html"
     form_template: str = "fields/form/enum.html"
     class_: str = "form-control form-select"
     coerce: Callable[[Any], Any] = str
