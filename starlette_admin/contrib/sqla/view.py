@@ -7,6 +7,7 @@ from sqlalchemy.exc import DBAPIError, NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     InstrumentedAttribute,
+    Mapped,
     Mapper,
     RelationshipProperty,
     Session,
@@ -56,7 +57,7 @@ from starlette_admin.views import InlineModelView as BaseInlineModelView
 _log = get_logger(__name__)
 
 
-class ModelView(BaseModelView):
+class ModelView(BaseModelView[Mapped[Any]]):
     """A view for managing SQLAlchemy models."""
 
     sortable_field_mapping: ClassVar[dict[str, InstrumentedAttribute]] = {}
@@ -822,7 +823,7 @@ class ModelView(BaseModelView):
         raise exc  # pragma: no cover
 
 
-class InlineModelView(BaseInlineModelView, ModelView):
+class InlineModelView(BaseInlineModelView[Mapped[Any]], ModelView):
     """Inline editing of SQLAlchemy-backed related records inside a parent form.
 
     Declare `model` as a class attribute. `fk_attr` is optional: when omitted,

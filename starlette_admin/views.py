@@ -13,8 +13,10 @@ from dataclasses import replace as dc_replace
 from typing import (
     TYPE_CHECKING,
     Any,
+    Generic,
     Literal,
     Optional,
+    TypeVar,
     Union,
     cast,
 )
@@ -125,6 +127,16 @@ from starlette_admin.widgets import (
 )
 
 _log = get_logger(__name__)
+
+if TYPE_CHECKING:
+    # Type checkers ship typing_extensions; the default is only needed there.
+    from typing_extensions import TypeVar as _TypeVar
+
+    FieldReferenceT = _TypeVar("FieldReferenceT", default=Any)
+else:
+    FieldReferenceT = TypeVar("FieldReferenceT")
+"""What a view's field lists accept besides field names, such as SQLAlchemy
+column attributes (`User.name`). Backends resolve these to names on init."""
 
 
 def _form_layout_field_names(node: BaseWidget) -> Iterator[str]:
@@ -496,7 +508,7 @@ async def build_export_form(request: Request, view: "BaseModelView") -> str:
     )
 
 
-class BaseModelView(BaseView):
+class BaseModelView(BaseView, Generic[FieldReferenceT]):
     """
     Base administrative view.
     Derive from this class to implement your administrative interface piece.
@@ -505,9 +517,11 @@ class BaseModelView(BaseView):
         key: Unique key to identify the model associated to this view.
             Will be used for URL of the endpoints.
         display_name: Name of the view to be displayed
-        fields: Fields to display, as model field names or
+        fields: Fields to display, as model field names, model attributes or
             [BaseField][starlette_admin.fields.BaseField] instances, e.g.
-            `fields = ["name", ImageField("avatar")]`.
+            `fields = ["name", User.email, ImageField("avatar")]`. Model
+            attributes, accepted here and in the other field lists by backends
+            that resolve them, let type checkers catch misspelled names.
         form_layout: Arranges `fields` on the create/edit forms using the
             same composable widgets as
             [CustomView.widget][starlette_admin.views.CustomView.widget]:
@@ -613,21 +627,23 @@ class BaseModelView(BaseView):
 
     key: str | None = None
     display_name: str | None = None
-    fields: Sequence[str | BaseField] = []
+    fields: Sequence[str | FieldReferenceT | BaseField] = []
     form_layout: Sequence[WidgetShorthand] | None = None
     pk_attr: str | None = None
     show_pk_in_forms: bool = False
-    exclude_fields_from_list: Sequence[str] = []
-    exclude_fields_from_detail: Sequence[str] = []
-    exclude_fields_from_create: Sequence[str] = []
-    exclude_fields_from_edit: Sequence[str] = []
-    searchable_fields: Sequence[str] | None = None
-    sortable_fields: Sequence[str] | None = None
-    fields_default_sort: Sequence[tuple[str, bool] | str] | None = None
+    exclude_fields_from_list: Sequence[str | FieldReferenceT] = []
+    exclude_fields_from_detail: Sequence[str | FieldReferenceT] = []
+    exclude_fields_from_create: Sequence[str | FieldReferenceT] = []
+    exclude_fields_from_edit: Sequence[str | FieldReferenceT] = []
+    searchable_fields: Sequence[str | FieldReferenceT] | None = None
+    sortable_fields: Sequence[str | FieldReferenceT] | None = None
+    fields_default_sort: (
+        Sequence[tuple[str | FieldReferenceT, bool] | str | FieldReferenceT] | None
+    ) = None
     exporters: Sequence[BaseExporter | str] = ["csv", "json"]
     importers: Sequence[BaseImporter | str] = ["csv", "json"]
-    exclude_fields_from_export: Sequence[str] = []
-    exclude_fields_from_import: Sequence[str] = []
+    exclude_fields_from_export: Sequence[str | FieldReferenceT] = []
+    exclude_fields_from_import: Sequence[str | FieldReferenceT] = []
     column_visibility: bool = True
     search_highlight: bool = True
     search_auto_submit: bool = False
@@ -2463,8 +2479,16 @@ class BaseModelView(BaseView):
         from the full ``fields_default_sort`` list, with a fallback to the primary key
         if no other sort is specified.
         """
-        defaults = self.fields_default_sort or [not_none(self.pk_attr)]
-        return [(d, False) if isinstance(d, str) else d for d in defaults]
+        sorts: list[tuple[str, bool]] = []
+        for item in self.fields_default_sort or [not_none(self.pk_attr)]:
+            name, descending = item if isinstance(item, tuple) else (item, False)
+            if not isinstance(name, str):
+                raise TypeError(
+                    f"{type(self).__name__}.fields_default_sort has an unresolved"
+                    f" field reference {name!r}; resolve it to a name on init"
+                )
+            sorts.append((name, descending))
+        return sorts
 
     def _parse_sorts(
         self,
@@ -3219,7 +3243,7 @@ class DefaultIndexView(CustomView):
         )
 
 
-class InlineModelView(BaseModelView):
+class InlineModelView(BaseModelView[FieldReferenceT]):
     """Inline editing of related records inside a parent model's create/edit form.
 
     Like Django's ``TabularInline``/``StackedInline``, an inline lets users
