@@ -2,7 +2,7 @@ from collections.abc import Callable, Sequence
 from typing import Any, ClassVar
 
 import anyio.to_thread
-from sqlalchemy import String, and_, cast, false, func, inspect, or_, select, tuple_
+from sqlalchemy import String, and_, cast, func, inspect, or_, select, tuple_
 from sqlalchemy.exc import DBAPIError, NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
@@ -321,22 +321,21 @@ class ModelView(BaseModelView):
            ```
         """
         clauses = []
-        searchable_types = (
-            StringField,
-            SlugField,
-            TextAreaField,
-            EmailField,
-            URLField,
-            PhoneField,
-            ColorField,
-            EnumField,
-            IPAddressField,
-        )
         for field in self.get_fields_list(request):
-            if field.searchable and type(field) in searchable_types:
+            if field.searchable and type(field) in [
+                StringField,
+                SlugField,
+                TextAreaField,
+                EmailField,
+                URLField,
+                PhoneField,
+                ColorField,
+                EnumField,
+                IPAddressField,
+            ]:
                 attr = getattr(self.model, field.name)
                 clauses.append(cast(attr, String).ilike(f"%{term}%"))
-        return or_(*clauses) if clauses else false()
+        return or_(*clauses)
 
     def get_filter_registry(self) -> FilterRegistry:
         """Return the [FilterRegistry][starlette_admin.filters.FilterRegistry]
