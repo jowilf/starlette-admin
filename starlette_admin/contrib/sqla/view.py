@@ -34,6 +34,7 @@ from starlette_admin.fields import (
     EmailField,
     EnumField,
     FileField,
+    IPAddressField,
     PhoneField,
     RelationField,
     SlugField,
@@ -330,6 +331,7 @@ class ModelView(BaseModelView):
                 PhoneField,
                 ColorField,
                 EnumField,
+                IPAddressField,
             ]:
                 attr = getattr(self.model, field.name)
                 clauses.append(cast(attr, String).ilike(f"%{term}%"))
