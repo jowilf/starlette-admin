@@ -2,7 +2,7 @@
     <li class="nav-item">
         <a class="nav-link" href="{{ view.url }}" target="{{ view.target }}">
             {% if view.icon %}
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon d-lg-inline-block">
                     <i class="{{ icon(view.icon) }}"></i>
                 </span>
             {% endif %}
@@ -15,7 +15,7 @@
         <a class="nav-link {% if view.is_active(request) %}active fw-bold{% endif %}"
            href="{{ url_for(__name__,path=view.path) }}">
             {% if view.icon %}
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon d-lg-inline-block">
                     <i class="{{ icon(view.icon) }}"></i>
                 </span>
             {% endif %}
@@ -28,7 +28,7 @@
         <a class="nav-link {% if view.is_active(request) %}active fw-bold{% endif %}"
            href="{{ url_for(__name__ ~ ':list', key=view.key) }}">
             {% if view.icon %}
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon d-lg-inline-block">
                     <i class="{{ icon(view.icon) }}"></i>
                 </span>
             {% endif %}
@@ -45,7 +45,7 @@
            role="button"
            aria-expanded="{% if view.is_active(request) %}true{% else %}false{% endif %}">
             {% if view.icon %}
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon d-lg-inline-block">
                     <i class="{{ icon(view.icon) }}"></i>
                 </span>
             {% endif %}
