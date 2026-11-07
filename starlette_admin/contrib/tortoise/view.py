@@ -231,7 +231,7 @@ class ModelView(BaseModelView):
             stmt = stmt.filter(await self.build_full_text_search_query(request, q))
         if filters is not None and not filters.is_empty():
             _log.debug("Applying filter group to %s", self.model.__name__)
-            fields_by_name = {f.name: f for f in self.get_fields_list(request)}
+            fields_by_name = {f.name: f for f in self.get_filterable_fields(request)}
             query = build_filter_query(
                 filters, fields_by_name, self.get_filter_registry(), self, request
             )
