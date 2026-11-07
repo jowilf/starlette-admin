@@ -765,14 +765,20 @@ class TestViews:
         assert (
             text.count(
                 '<a href="http://testserver/admin/report"'
-                ' class="dropdown-item">Report</a>'
+                ' class="dropdown-item">'
+                '<span class="dropdown-item-icon">'
+                '<i class="fa fa-report"></i>'
+                "</span>Report</a>"
             )
             == 1
         )
         assert (
             text.count(
                 '<a href="https://google.com" class="dropdown-item"'
-                ' target="_self">LinkToGoogle</a>'
+                ' target="_self">'
+                '<span class="dropdown-item-icon">'
+                '<i class="fa fa-link"></i>'
+                "</span>LinkToGoogle</a>"
             )
             == 1
         )
@@ -799,3 +805,51 @@ class TestViews:
         assert "Users" in response.text
         assert "42" in response.text
         assert 'class="row row-deck row-cards"' in response.text
+
+
+def test_dropdown_item_icon_rendered() -> None:
+    app = Starlette()
+    admin = BaseAdmin()
+    admin.add_view(
+        DropDown(
+            "Management",
+            icon="fa fa-gears",
+            views=[
+                PostView(model=Post, icon="fa fa-envelope"),
+                Link(menu_label="Logs", icon="fa fa-key", url="/logs"),
+                CustomView(
+                    menu_label="Reports", icon="fa fa-chart-line", path="/reports"
+                ),
+            ],
+        )
+    )
+    admin.mount_to(app)
+
+    client = TestClient(app, base_url="http://testserver")
+    response = client.get("/admin")
+    assert response.status_code == 200
+
+    text = re.sub(r"\s+", " ", response.text)
+
+    assert (
+        '<a href="http://testserver/admin/post/list"'
+        ' class="dropdown-item">'
+        '<span class="dropdown-item-icon">'
+        '<i class="fa fa-envelope"></i>'
+        "</span>"
+    ) in text, "PostView dropdown item is missing its wrapped icon"
+
+    assert (
+        '<a href="/logs" class="dropdown-item" target="_self">'
+        '<span class="dropdown-item-icon">'
+        '<i class="fa fa-key"></i>'
+        "</span>Logs</a>"
+    ) in text, "Link dropdown item is missing its wrapped icon"
+
+    assert (
+        '<a href="http://testserver/admin/reports"'
+        ' class="dropdown-item">'
+        '<span class="dropdown-item-icon">'
+        '<i class="fa fa-chart-line"></i>'
+        "</span>Reports</a>"
+    ) in text, "CustomView dropdown item is missing its wrapped icon"
