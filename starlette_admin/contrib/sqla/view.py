@@ -41,6 +41,7 @@ from starlette_admin.fields import (
     StringField,
     TextAreaField,
     URLField,
+    UUIDField,
 )
 from starlette_admin.filters import FilterGroup, FilterRegistry
 from starlette_admin.helpers import (
@@ -332,6 +333,7 @@ class ModelView(BaseModelView):
                 ColorField,
                 EnumField,
                 IPAddressField,
+                UUIDField,
             ]:
                 attr = getattr(self.model, field.name)
                 clauses.append(cast(attr, String).ilike(f"%{term}%"))
