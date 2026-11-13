@@ -175,17 +175,23 @@ select.form-select-sm+.select2-container.select2-container--default .select2-sel
 }
 
 .select2-container--default .select2-results__option--selected {
-    background-color: var(--tblr-secondary-bg);
+    background-color: var(--tblr-bg-surface-secondary);
     color: var(--tblr-body-color);
-}
-
-[data-bs-theme="dark"] .select2-container--default .select2-results__option--selected {
-    background-color: var(--tblr-border-color);
 }
 
 .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
-    background-color: var(--tblr-tertiary-bg);
+    background-color: var(--tblr-bg-surface-secondary);
     color: var(--tblr-body-color);
+    position: relative;
+}
+
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable::before {
+    position: absolute;
+    content: "";
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    background-color: var(--tblr-primary);
 }
 
 .select2-container--default .select2-results__option--disabled {
