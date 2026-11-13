@@ -12,6 +12,7 @@ from sqlalchemy.orm import (
     Session,
     joinedload,
 )
+from sqlalchemy.orm.attributes import NO_VALUE
 from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette.responses import Response
@@ -706,6 +707,33 @@ class ModelView(BaseModelView):
                 arranged_data[field.name] = data[field.name]
         return arranged_data
 
+    def _is_unchanged(self, obj: Any, field: BaseField, value: Any) -> bool:
+        """Return True when assigning ``value`` would not change ``obj``.
+
+        SQLAlchemy marks an instance dirty on every ``setattr`` even when the
+        assigned value equals the current one, which triggers mapper events
+        such as ``before_update`` for a no-op edit. Compare the values with
+        the column type's comparator (and fall back to equality for
+        relationships and custom types) before assigning.
+        """
+        try:
+            current = inspect(obj).attrs[field.name].loaded_value
+        except Exception:  # pragma: no cover - defensive
+            return False
+        if current is NO_VALUE:
+            # The attribute is not loaded; comparing would trigger lazy I/O.
+            return False
+        attr = inspect(self.model).attrs.get(field.name)
+        if attr is not None and getattr(attr, "columns", None):
+            try:
+                return bool(attr.columns[0].type.compare_values(current, value))
+            except Exception:  # pragma: no cover - custom types
+                pass
+        try:
+            return bool(current == value)
+        except Exception:  # pragma: no cover - custom values
+            return False
+
     async def _populate_obj(
         self,
         request: Request,
@@ -720,12 +748,16 @@ class ModelView(BaseModelView):
             if isinstance(field, FileField) and field.storage is None:
                 value, should_be_deleted = not_none(value)
                 if should_be_deleted:
-                    setattr(obj, name, None)
-                elif (not field.multiple and value is not None) or (
-                    field.multiple and isinstance(value, list) and len(value) > 0
-                ):
+                    if not self._is_unchanged(obj, field, None):
+                        setattr(obj, name, None)
+                elif (
+                    (not field.multiple and value is not None)
+                    or (field.multiple and isinstance(value, list) and len(value) > 0)
+                ) and (not is_edit or not self._is_unchanged(obj, field, value)):
                     setattr(obj, name, value)
             else:
+                if is_edit and self._is_unchanged(obj, field, value):
+                    continue
                 setattr(obj, name, value)
         return obj
 
