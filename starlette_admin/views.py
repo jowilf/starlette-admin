@@ -2350,6 +2350,31 @@ class BaseModelView(BaseView):
             source = [f for f in source if f.name == inline_edit_field]
         return [f for f in source if self.can_access_field(request, f, action=action)]
 
+    def get_filterable_fields(
+        self, request: Request, *, include_nested: bool = True
+    ) -> Sequence[BaseField]:
+        """Return fields available for filtering.
+
+        Unlike `get_fields_list`, this method does NOT treat `exclude_from_list`
+        as a filter-blocking flag: `exclude_from_list=True` only hides a column
+        from the list table, but filtering on the field remains valid (for
+        example, filtering by a foreign-key column like `user_id` without
+        displaying it).
+
+        Access is still enforced through `can_access_field`, checked against
+        the DETAIL action so that role-based overrides of `can_access_field`
+        are respected. A field that is inaccessible on the detail page is
+        therefore not filterable either, matching the "don't leak field data
+        through filter probes" principle.
+        """
+        source = self._all_fields if include_nested else self._resolved_fields
+        return [
+            f
+            for f in source
+            if f.searchable
+            and self.can_access_field(request, f, action=RequestAction.DETAIL)
+        ]
+
     def _field_by_name(self, request: Request, name: str) -> BaseField | None:
         """Returns the accessible field named `name`, or `None` if it does
         not exist or is not accessible for the current request action."""
@@ -2404,7 +2429,7 @@ class BaseModelView(BaseView):
         registry = self.get_filter_registry()
         return any(
             f.data_type == FilterDataType.ARRAY
-            for field in self.get_fields_list(request)
+            for field in self.get_filterable_fields(request)
             for f in registry.filters_for(field)
         )
 
@@ -2829,9 +2854,7 @@ class BaseModelView(BaseView):
             ) from exc
 
         fields_by_name = {
-            f.name: f
-            for f in self.get_fields_list(request, include_nested=True)
-            if f.searchable
+            f.name: f for f in self.get_filterable_fields(request, include_nested=True)
         }
         registry = self.get_filter_registry()
         try:
@@ -2962,8 +2985,7 @@ class BaseModelView(BaseView):
 
         fields_by_name = {
             getattr(f, "_name", f.name): f
-            for f in self.get_fields_list(request, include_nested=True)
-            if f.searchable
+            for f in self.get_filterable_fields(request, include_nested=True)
         }
         registry = self.get_filter_registry()
         return logic, [
@@ -3095,9 +3117,7 @@ class BaseModelView(BaseView):
         """
         registry = self.get_filter_registry()
         result = []
-        for f in self.get_fields_list(request, include_nested=True):
-            if not f.searchable:
-                continue
+        for f in self.get_filterable_fields(request, include_nested=True):
             available = registry.filters_for(f)
             if available:
                 filters_data = []

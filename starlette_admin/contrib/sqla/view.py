@@ -359,7 +359,7 @@ class ModelView(BaseModelView):
             )
         if filters is not None and not filters.is_empty():
             _log.debug("Applying filter group to %s", self.model.__name__)
-            fields_by_name = {f.name: f for f in self.get_fields_list(request)}
+            fields_by_name = {f.name: f for f in self.get_filterable_fields(request)}
             clause = build_filter_clause(
                 filters, fields_by_name, self.get_filter_registry(), self, request
             )
