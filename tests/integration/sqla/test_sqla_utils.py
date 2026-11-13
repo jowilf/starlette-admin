@@ -246,6 +246,30 @@ async def test_create(client: AsyncClient, session: Session):
     assert response.status_code == 200
 
 
+async def test_search_uuid(client: AsyncClient, session: Session):
+    target_uuid = uuid.uuid4()
+    item = Model(uuid=target_uuid, email="uuid-search@example.com")
+    session.add(item)
+    session.commit()
+
+    # Partial UUID match
+    response = await client.get("/admin/model/list", params={"q": str(target_uuid)[:8]})
+    assert response.status_code == 200
+    assert str(target_uuid) in response.text
+
+    # Full UUID match
+    response = await client.get("/admin/model/list", params={"q": str(target_uuid)})
+    assert response.status_code == 200
+    assert str(target_uuid) in response.text
+
+    # Non-matching UUID
+    response = await client.get(
+        "/admin/model/list", params={"q": "00000000-0000-0000-0000-000000000000"}
+    )
+    assert response.status_code == 200
+    assert str(target_uuid) not in response.text
+
+
 async def test_composite_type():
     from sqlalchemy_utils.types.pg_composite import (
         CompositeType,
