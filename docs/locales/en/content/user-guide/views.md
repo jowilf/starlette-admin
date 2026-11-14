@@ -299,9 +299,9 @@ admin.add_view(PostView(Post, key="post-article"))
 
 When the admin needs to show a record as a single value, it falls back to the primary key. A `Post` linked to `Author #3` then renders as "3" in relationship columns, which tells the user almost nothing. Two optional methods, defined on the **model** rather than the view, replace that default with something meaningful. Both accept the current `Request` and can be synchronous or asynchronous.
 
-#### `__admin_repr__`
+#### `__admin_repr__` (or `__str__`)
 
-Returns a plain string, used wherever the record appears as text: relationship columns on the list and detail pages, breadcrumbs, and action confirmation messages.
+Returns a plain string, used wherever the record appears as text: relationship columns on the list and detail pages, breadcrumbs, and action confirmation messages. If `__admin_repr__` is not defined, the admin also checks for a custom `__str__` method on the model before falling back to `"{display_name}({pk})"`.
 
 ```python
 class Author(Base):
@@ -314,11 +314,11 @@ class Author(Base):
         return self.name
 ```
 
-With this method in place, a post's author renders as "Gabriel Garcia Marquez" instead of "3".
+With this method (or a standard `def __str__(self) -> str:`) in place, a post's author renders as "Gabriel Garcia Marquez" instead of "Author(3)".
 
 #### `__admin_select2_repr__`
 
-Returns an HTML snippet that renders the options in the `select2` dropdowns used by relationship form fields, so you can enrich choices with images, badges, or secondary text. Without this method, the admin falls back to the escaped output of `__admin_repr__`. Without either method, it falls back to a generated summary of the record's non-relation fields.
+Returns an HTML snippet that renders the options in the `select2` dropdowns used by relationship form fields, so you can enrich choices with images, badges, or secondary text. Without this method, the admin falls back to the escaped output of `__admin_repr__` or custom `__str__`. Without any of these methods, it falls back to a generated summary of the record's non-relation fields.
 
 ```python
 from jinja2 import Template

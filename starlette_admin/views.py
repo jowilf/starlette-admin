@@ -127,6 +127,28 @@ from starlette_admin.widgets import (
 _log = get_logger(__name__)
 
 
+_ORM_DEFAULT_STR_METHODS: frozenset[tuple[str | None, str]] = frozenset(
+    {
+        ("pydantic.main", "BaseModel.__str__"),
+        ("mongoengine.base.document", "BaseDocument.__str__"),
+        ("tortoise.models", "Model.__str__"),
+    }
+)
+
+
+def _has_custom_str(obj: Any) -> bool:
+    """Return `True` if `obj` defines a user-supplied `__str__` method,
+    ignoring default implementations inherited from `object` or ORM base classes.
+    """
+    str_method = type(obj).__str__
+    if str_method is object.__str__:
+        return False
+    return (
+        getattr(str_method, "__module__", None),
+        getattr(str_method, "__qualname__", ""),
+    ) not in _ORM_DEFAULT_STR_METHODS
+
+
 def _form_layout_field_names(node: BaseWidget) -> Iterator[str]:
     """Yield every `FieldRef.name` referenced anywhere in a normalized
     `form_layout` subtree, at any nesting depth.
@@ -2166,6 +2188,7 @@ class BaseModelView(BaseView):
         Returns a string representation of the given object, suitable for display in the admin interface.
 
         If the object defines a custom representation method, `__admin_repr__`, it is used to generate the string.
+        Otherwise, if the model defines a custom `__str__` method, `str(obj)` is returned.
         Otherwise, the fallback is `"{display_name}({pk})"`.
 
         Args:
@@ -2187,12 +2210,14 @@ class BaseModelView(BaseView):
             ```
         """
         repr_method = getattr(obj, "__admin_repr__", None)
-        if repr_method is None:
-            pk = await self.get_pk_value(request, obj)
-            return f"{self.display_name}({pk})"
-        if inspect.iscoroutinefunction(repr_method):
-            return await repr_method(request)
-        return repr_method(request)
+        if repr_method is not None:
+            if inspect.iscoroutinefunction(repr_method):
+                return await repr_method(request)
+            return repr_method(request)
+        if _has_custom_str(obj):
+            return str(obj)
+        pk = await self.get_pk_value(request, obj)
+        return f"{self.display_name}({pk})"
 
     async def select2_result(self, obj: Any, request: Request) -> str:
         """
@@ -2202,8 +2227,8 @@ class BaseModelView(BaseView):
         excluding relation and file attributes.
 
         If the object defines a custom representation method, `__admin_select2_repr__`, it is used to generate the
-        HTML-formatted string. If that method is not defined but `__admin_repr__` is, its (escaped) return value
-        is used instead.
+        HTML-formatted string. If that method is not defined but `__admin_repr__` or a custom `__str__` is, its
+        (escaped) return value is used instead.
 
         !!! note
 
@@ -2239,7 +2264,7 @@ class BaseModelView(BaseView):
                 return await html_repr_method(request)
             return html_repr_method(request)
 
-        if getattr(obj, "__admin_repr__", None) is not None:
+        if getattr(obj, "__admin_repr__", None) is not None or _has_custom_str(obj):
             return f"<span>{escape(await self.repr(obj, request))}</span>"
 
         template_str = (
