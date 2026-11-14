@@ -119,7 +119,8 @@ class ModelView(BaseModelView):
                 for f in list(self.model.__dict__.keys())
                 if type(self.model.__dict__[f]) is InstrumentedAttribute
             ]
-        self.fields = (converter or ModelConverter()).convert_fields_list(
+        converter = converter or ModelConverter()
+        self.fields = converter.convert_fields_list(
             fields=self.fields,
             model=self.model,
             mapper=mapper,
@@ -150,10 +151,9 @@ class ModelView(BaseModelView):
             for field in self.fields
             if not isinstance(field, (RelationField, FileField))
         ]
+        explicit_searchable = self.searchable_fields is not None
         self.searchable_fields = normalize_list(
-            self.searchable_fields
-            if (self.searchable_fields is not None)
-            else _default_list
+            self.searchable_fields if explicit_searchable else _default_list
         )
         self.sortable_fields = normalize_list(
             self.sortable_fields
@@ -164,6 +164,7 @@ class ModelView(BaseModelView):
             self.fields_default_sort, is_default_sort_list=True
         )
         super().__init__()
+        self._setup_filter_only_fields(mapper, converter, explicit_searchable)
         _log.info(
             "ModelView for %s registered (key=%r, pk=%s, %d field(s))",
             self.model.__name__,
@@ -171,6 +172,29 @@ class ModelView(BaseModelView):
             self.pk_attr,
             len(self.fields),
         )
+
+    def _setup_filter_only_fields(
+        self,
+        mapper: Mapper,
+        converter: BaseSQLAModelConverter,
+        explicit_searchable: bool,
+    ) -> None:
+        declared_names = {f.name for f in self._all_fields}
+        filter_only_fields: list[BaseField] = []
+        for attr in mapper.column_attrs:
+            column = attr.columns[0]
+            if column.foreign_keys and attr.key not in declared_names:
+                field = converter.convert(
+                    name=attr.key, type=column.type, column=column
+                )
+                field._name = field.name
+                field.exclude_from_list = attr.key in self.exclude_fields_from_list
+                field.exclude_from_detail = attr.key in self.exclude_fields_from_detail
+                field.searchable = not explicit_searchable or attr.key in (
+                    self.searchable_fields or ()
+                )
+                filter_only_fields.append(field)
+        self._filter_only_fields = filter_only_fields
 
     def _setup_primary_key(self) -> None:
         # Detect the model's primary key attribute(s).
@@ -359,7 +383,7 @@ class ModelView(BaseModelView):
             )
         if filters is not None and not filters.is_empty():
             _log.debug("Applying filter group to %s", self.model.__name__)
-            fields_by_name = {f.name: f for f in self.get_fields_list(request)}
+            fields_by_name = self._get_filter_fields_by_name(request)
             clause = build_filter_clause(
                 filters, fields_by_name, self.get_filter_registry(), self, request
             )
