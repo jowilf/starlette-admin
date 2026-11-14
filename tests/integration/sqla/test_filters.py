@@ -681,3 +681,148 @@ def test_custom_relation_filter_registered_in_registry(seeded_session):
     assert clause is not None
     rows = seeded_session.execute(select(Item).where(clause)).scalars().all()
     assert [r.name for r in rows] == ["Alpha"]
+
+
+# ── End-to-end: filtering on auto-detected foreign key columns ────────────────
+
+
+def test_auto_detected_fk_column_filterable_via_url(seeded_session):
+    from sqlalchemy.pool import StaticPool
+    from starlette.applications import Starlette
+    from starlette.testclient import TestClient
+    from starlette_admin.contrib.sqla import Admin, ModelView
+
+    eng = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(eng)
+    with Session(eng) as s:
+        cat = Category(name="Widgets")
+        s.add(cat)
+        s.flush()
+        cat_id = cat.id
+        s.add_all(
+            [
+                Item(
+                    name="Alpha",
+                    description="First item",
+                    count=10,
+                    price=9.99,
+                    is_available=True,
+                    created_at=datetime.datetime(2024, 3, 1, 12, 0),
+                    available_on=datetime.date(2024, 3, 1),
+                    available_from=datetime.time(8, 0),
+                    status=ItemStatus.ACTIVE,
+                    category_id=cat_id,
+                ),
+                Item(
+                    name="Beta",
+                    description="Second item",
+                    count=20,
+                    price=19.99,
+                    is_available=False,
+                    created_at=datetime.datetime(2024, 6, 1, 18, 0),
+                    available_on=datetime.date(2024, 6, 1),
+                    available_from=datetime.time(18, 0),
+                    status=ItemStatus.INACTIVE,
+                    category_id=None,
+                ),
+            ]
+        )
+        s.commit()
+
+    item_view = ModelView(Item)
+    # `category_id` is not part of regular view fields, only `_filter_only_fields`
+    assert "category_id" not in {f.name for f in item_view.fields}
+    assert "category_id" in {f.name for f in item_view._filter_only_fields}
+
+    app = Starlette()
+    admin = Admin(eng)
+    admin.add_view(item_view)
+    admin.add_view(ModelView(Category))
+    admin.mount_to(app)
+    client = TestClient(app)
+
+    # Unfiltered list page does not expose `category_id` as a table column or in the filter builder
+    unfiltered = client.get("/admin/item/list")
+    assert unfiltered.status_code == 200
+    assert 'data-column="category_id"' not in unfiltered.text
+    assert '"name": "category_id"' not in unfiltered.text
+
+    # Programmatic URL filter on `category_id` works and renders an active filter chip
+    filtered = client.get(
+        "/admin/item/list", params={"filter": f"category_id__eq={cat_id}"}
+    )
+    assert filtered.status_code == 200
+    assert "Alpha" in filtered.text
+    assert "Beta" not in filtered.text
+    assert "Category id:" in filtered.text
+
+
+def test_auto_detected_fk_column_respects_access_and_searchable_restrictions():
+    from sqlalchemy.pool import StaticPool
+    from starlette.applications import Starlette
+    from starlette.requests import Request
+    from starlette.testclient import TestClient
+    from starlette_admin import RequestAction
+    from starlette_admin.contrib.sqla import Admin, ModelView
+    from starlette_admin.fields import BaseField
+
+    eng = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(eng)
+
+    # 1. Explicitly declared `category_id` is not duplicated in `_filter_only_fields`
+    class ExplicitFkItemView(ModelView):
+        fields = ["id", "name", "category_id", "category"]
+
+    explicit_view = ExplicitFkItemView(Item)
+    assert "category_id" in {f.name for f in explicit_view.fields}
+    assert "category_id" not in {f.name for f in explicit_view._filter_only_fields}
+
+    # 2. `searchable_fields` excluding `category_id` blocks filtering on `category_id`
+    class NonSearchableFkItemView(ModelView):
+        searchable_fields = ["name"]
+
+    app1 = Starlette()
+    admin1 = Admin(eng)
+    admin1.add_view(NonSearchableFkItemView(Item))
+    admin1.add_view(ModelView(Category))
+    admin1.mount_to(app1)
+    client1 = TestClient(app1)
+    assert (
+        client1.get(
+            "/admin/item/list", params={"filter": "category_id__eq=1"}
+        ).status_code
+        == 400
+    )
+
+    # 3. `can_access_field` denying `category_id` blocks filtering on `category_id`
+    class RestrictedFkItemView(ModelView):
+        def can_access_field(
+            self,
+            request: Request,
+            field: BaseField,
+            action: RequestAction | None = None,
+        ) -> bool:
+            if field.name == "category_id":
+                return False
+            return super().can_access_field(request, field, action)
+
+    app2 = Starlette()
+    admin2 = Admin(eng)
+    admin2.add_view(RestrictedFkItemView(Item))
+    admin2.add_view(ModelView(Category))
+    admin2.mount_to(app2)
+    client2 = TestClient(app2)
+    assert (
+        client2.get(
+            "/admin/item/list", params={"filter": "category_id__eq=1"}
+        ).status_code
+        == 400
+    )
