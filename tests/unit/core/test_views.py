@@ -401,3 +401,100 @@ async def test_select2_result_falls_back_to_escaped_admin_repr():
     request = MagicMock()
     result = await view.select2_result(obj, request)
     assert result == "<span>&lt;b&gt;bold&lt;/b&gt;</span>"
+
+
+class _StrOnlyModel(TinydbBaseModel):
+    title: str
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class _StrAndAdminReprModel(TinydbBaseModel):
+    title: str
+
+    def __str__(self) -> str:
+        return f"str: {self.title}"
+
+    def __admin_repr__(self, request) -> str:
+        return f"admin_repr: {self.title}"
+
+
+class _StrAndSelect2ReprModel(TinydbBaseModel):
+    title: str
+
+    def __str__(self) -> str:
+        return f"str: {self.title}"
+
+    def __admin_select2_repr__(self, request) -> str:
+        return f"<b>{self.title}</b>"
+
+
+class _DefaultPydanticStrModel(TinydbBaseModel):
+    title: str
+
+
+class _PlainObjectModel:
+    def __init__(self, id: int, title: str) -> None:
+        self.id = id
+        self.title = title
+
+
+class _PlainObjectWithStrModel(_PlainObjectModel):
+    def __str__(self) -> str:
+        return self.title
+
+
+@pytest.mark.asyncio
+async def test_repr_uses_custom_str_when_admin_repr_absent():
+    """When `__admin_repr__` is absent but a custom `__str__` is defined,
+    `repr` returns `str(obj)`."""
+    view = _ReprOnlyView(_StrOnlyModel)
+    obj = _StrOnlyModel(id=1, title="Hello World")
+    request = MagicMock()
+    assert await view.repr(obj, request) == "Hello World"
+
+
+@pytest.mark.asyncio
+async def test_repr_prefers_admin_repr_over_custom_str():
+    """`__admin_repr__` takes precedence over a custom `__str__`."""
+    view = _ReprOnlyView(_StrAndAdminReprModel)
+    obj = _StrAndAdminReprModel(id=1, title="Hello")
+    request = MagicMock()
+    assert await view.repr(obj, request) == "admin_repr: Hello"
+
+
+@pytest.mark.asyncio
+async def test_repr_ignores_default_orm_and_object_str():
+    """Default `__str__` from `pydantic.BaseModel` or `object` is ignored,
+    falling back to `{display_name}({pk})`."""
+    view = _ReprOnlyView(_DefaultPydanticStrModel)
+    pydantic_obj = _DefaultPydanticStrModel(id=42, title="Hello")
+    plain_obj = _PlainObjectModel(id=7, title="Plain")
+    plain_str_obj = _PlainObjectWithStrModel(id=8, title="CustomPlain")
+    request = MagicMock()
+    assert await view.repr(pydantic_obj, request) == f"{view.display_name}(42)"
+    assert await view.repr(plain_obj, request) == f"{view.display_name}(7)"
+    assert await view.repr(plain_str_obj, request) == "CustomPlain"
+
+
+@pytest.mark.asyncio
+async def test_select2_result_falls_back_to_escaped_custom_str():
+    """When `__admin_select2_repr__` and `__admin_repr__` are absent but a
+    custom `__str__` is defined, `select2_result` wraps the escaped `str(obj)`
+    output in a span."""
+    view = _ReprOnlyView(_StrOnlyModel)
+    obj = _StrOnlyModel(id=1, title="<script>alert(1)</script>")
+    request = MagicMock()
+    result = await view.select2_result(obj, request)
+    assert result == "<span>&lt;script&gt;alert(1)&lt;/script&gt;</span>"
+
+
+@pytest.mark.asyncio
+async def test_select2_result_prefers_admin_select2_repr_over_str():
+    """`__admin_select2_repr__` takes precedence over a custom `__str__`."""
+    view = _ReprOnlyView(_StrAndSelect2ReprModel)
+    obj = _StrAndSelect2ReprModel(id=1, title="Hello")
+    request = MagicMock()
+    result = await view.select2_result(obj, request)
+    assert result == "<b>Hello</b>"

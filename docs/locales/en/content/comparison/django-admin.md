@@ -20,7 +20,7 @@ This guide maps every major `ModelAdmin` concept to its starlette-admin equivale
 | `admin.site.register(Model, ModelAdmin)` | `admin.add_view(MyView(Model))` |
 | `admin.site.urls` in `urlpatterns` | `admin.mount_to(app)` |
 | Django ORM | SQLAlchemy, SQLModel, MongoEngine, Beanie, or Tortoise ORM through `starlette_admin.contrib.*` |
-| `__str__` on the model | `__admin_repr__(self, request)`, which is async and request-aware |
+| `__str__` on the model | `__str__(self)` works out of the box, or `__admin_repr__(self, request)` for async and request-aware formatting |
 | Form fields inferred from model fields | [Fields](../user-guide/fields.md) inferred by the backend converter, customizable per field |
 
 ## Registering a model
