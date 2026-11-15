@@ -135,8 +135,10 @@ The following table lists every filter available out of the box, the URL slug yo
 | Is in the future | `in_future` | *(none)* |  |
 | Is true | `is_true` | *(none)* |  |
 | Is false | `is_false` | *(none)* |  |
-| Is one of | `in` | comma-separated list |  |
-| Is not one of | `not_in` | comma-separated list |  |
+| Is one of | `in` | comma-separated list (record picker on `HasOne`) |  |
+| Is not one of | `not_in` | comma-separated list (record picker on `HasOne`) |  |
+| Has any of | `any_of` | related primary keys (record picker on `HasMany`) |  |
+| Has none of | `none_of` | related primary keys (record picker on `HasMany`) |  |
 
 If you need a filter for a data type the built-ins don't cover, such as a JSON field or a geo-point, see [Custom Filters](../advanced/custom-filters.md) to write a `BaseFilter` subclass and register it globally or per field instance.
 

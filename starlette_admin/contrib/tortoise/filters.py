@@ -60,11 +60,21 @@ from starlette_admin.filters.numeric import (
     LessThanOrEqualFilter as BaseLessThanOrEqualFilter,
 )
 from starlette_admin.filters.numeric import NotEqualFilter as BaseNumericNotEqualFilter
+from starlette_admin.filters.relation import (
+    RelationAnyOfFilter as BaseRelationAnyOfFilter,
+)
+from starlette_admin.filters.relation import RelationInFilter as BaseRelationInFilter
+from starlette_admin.filters.relation import (
+    RelationNoneOfFilter as BaseRelationNoneOfFilter,
+)
+from starlette_admin.filters.relation import (
+    RelationNotInFilter as BaseRelationNotInFilter,
+)
 from starlette_admin.filters.string import ContainsFilter as BaseContainsFilter
 from starlette_admin.filters.string import EndsWithFilter as BaseEndsWithFilter
 from starlette_admin.filters.string import NotContainsFilter as BaseNotContainsFilter
 from starlette_admin.filters.string import StartsWithFilter as BaseStartsWithFilter
-from tortoise.expressions import Q
+from tortoise.expressions import Q, Subquery
 
 from .fields import BackwardHasOne
 from .helpers import relation_source_field
@@ -122,6 +132,79 @@ class RelationIsNotNullFilter(BaseIsNotNullFilter):
         source = relation_source_field(ctx.view.model, ctx.field_name)  # ty: ignore[unresolved-attribute]
         filters: dict[str, Any] = {f"{source}__isnull": False}
         return Q(**filters)
+
+
+# Relations by related record (primary keys picked in the filter builder)
+
+
+def _related_pks(ctx: FilterApplyContext) -> list[Any]:
+    """Convert the raw primary key strings in `ctx.value` to the related
+    model's primary key type."""
+    related_pk = _tortoise_field(ctx).related_model._meta.pk
+    return [related_pk.to_python_value(v) for v in ctx.value]
+
+
+def _to_one_in(ctx: FilterApplyContext) -> Q:
+    source = relation_source_field(ctx.view.model, ctx.field_name)  # ty: ignore[unresolved-attribute]
+    filters: dict[str, Any] = {f"{source}__in": _related_pks(ctx)}
+    return Q(**filters)
+
+
+def _to_one_not_in(ctx: FilterApplyContext) -> Q:
+    """Rows whose key is not among the selected ones, or that have no
+    related record at all (SQL `NOT IN` alone would drop NULL keys)."""
+    source = relation_source_field(ctx.view.model, ctx.field_name)  # ty: ignore[unresolved-attribute]
+    not_in: dict[str, Any] = {f"{source}__not_in": _related_pks(ctx)}
+    is_null: dict[str, Any] = {f"{source}__isnull": True}
+    return Q(**not_in) | Q(**is_null)
+
+
+def _joined_match(ctx: FilterApplyContext, negate: bool) -> Q:
+    """Match (or exclude) rows related to any of `ctx.value` through a
+    relation with no key column on this model (many-to-many, backward FK,
+    backward one-to-one). A subquery on this model's primary key avoids
+    duplicate rows from the join and gives correct "none of" semantics.
+    """
+    model = ctx.view.model  # ty: ignore[unresolved-attribute]
+    pk = model._meta.pk_attr
+    related_pk = _tortoise_field(ctx).related_model._meta.pk_attr
+    sub = Subquery(
+        model.filter(
+            **{f"{ctx.field_name}__{related_pk}__in": _related_pks(ctx)}
+        ).values(pk)
+    )
+    filters: dict[str, Any] = {f"{pk}__{'not_in' if negate else 'in'}": sub}
+    return Q(**filters)
+
+
+class RelationInFilter(BaseRelationInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Q:
+        return _to_one_in(ctx)
+
+
+class RelationNotInFilter(BaseRelationNotInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Q:
+        return _to_one_not_in(ctx)
+
+
+class BackwardRelationInFilter(BaseRelationInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Q:
+        return _joined_match(ctx, negate=False)
+
+
+class BackwardRelationNotInFilter(BaseRelationNotInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Q:
+        return _joined_match(ctx, negate=True)
+
+
+class RelationAnyOfFilter(BaseRelationAnyOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> Q:
+        return _joined_match(ctx, negate=False)
+
+
+class RelationNoneOfFilter(BaseRelationNoneOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> Q:
+        return _joined_match(ctx, negate=True)
 
 
 # String
@@ -483,12 +566,27 @@ class TortoiseFilterRegistry(FilterRegistry):
 
     @filters(HasOne)
     def to_one_relation_filters(self, field: BaseField) -> list[type[BaseFilter]]:
-        return [RelationIsNullFilter, RelationIsNotNullFilter]
+        return [
+            RelationInFilter,
+            RelationNotInFilter,
+            RelationIsNullFilter,
+            RelationIsNotNullFilter,
+        ]
 
-    @filters(HasMany, BackwardHasOne)
-    def to_many_relation_filters(self, field: BaseField) -> list[type[BaseFilter]]:
-        """To-many and backward relations have no raw key column on this model
-        to null-check, and Tortoise joins would drop unmatched rows, so no
-        filters are offered.
+    @filters(BackwardHasOne)
+    def backward_to_one_relation_filters(
+        self, field: BaseField
+    ) -> list[type[BaseFilter]]:
+        """Backward one-to-one relations have no raw key column on this model
+        to null-check, so only filtering by related record is offered
+        (through a subquery).
         """
-        return []
+        return [BackwardRelationInFilter, BackwardRelationNotInFilter]
+
+    @filters(HasMany)
+    def to_many_relation_filters(self, field: BaseField) -> list[type[BaseFilter]]:
+        """To-many relations have no raw key column on this model to
+        null-check, so only filtering by related record is offered (through
+        a subquery, so joins neither duplicate nor drop rows).
+        """
+        return [RelationAnyOfFilter, RelationNoneOfFilter]

@@ -44,6 +44,10 @@ from starlette_admin.contrib.mongoengine.filters import (
     ObjectIdInFilter,
     ObjectIdNotEqualFilter,
     ObjectIdNotInFilter,
+    RelationAnyOfFilter,
+    RelationInFilter,
+    RelationNoneOfFilter,
+    RelationNotInFilter,
     StartsWithFilter,
     _parse_object_id,
     _parse_object_id_list,
@@ -53,6 +57,7 @@ from starlette_admin.fields import (
     BaseField,
     BooleanField,
     DateField,
+    HasMany,
     RelationField,
     StringField,
     TagsField,
@@ -419,7 +424,23 @@ def test_registry_boolean_field():
 
 def test_registry_relation_field():
     names = {f.name for f in filter_registry.filters_for(RelationField("x"))}
-    assert names == {"is_null", "is_not_null"}
+    assert names == {"in", "not_in", "is_null", "is_not_null"}
+
+
+def test_registry_has_many_field():
+    names = {f.name for f in filter_registry.filters_for(HasMany("x", key="x"))}
+    assert names == {"any_of", "none_of", "is_null", "is_not_null"}
+
+
+def test_relation_filters_apply():
+    def q(filter_cls: Any) -> Any:
+        ctx = FilterApplyContext(query=None, field_name="author", value=["a", "b"])
+        return filter_cls().apply(ctx).query
+
+    assert q(RelationInFilter) == {"author__in": ["a", "b"]}
+    assert q(RelationAnyOfFilter) == {"author__in": ["a", "b"]}
+    assert q(RelationNotInFilter) == {"author__nin": ["a", "b"]}
+    assert q(RelationNoneOfFilter) == {"author__nin": ["a", "b"]}
 
 
 def test_registry_tags_field():
