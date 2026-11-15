@@ -564,7 +564,13 @@ class BaseModelView(BaseView):
         exclude_fields_from_detail: List of fields to exclude in Detail page.
         exclude_fields_from_create: List of fields to exclude from creation page.
         exclude_fields_from_edit: List of fields to exclude from editing page.
+        exclude_fields_from_filter: List of fields to exclude from the filter
+            builder and the `filter` query parameter.
         searchable_fields: List of searchable fields.
+        filterable_fields: List of fields offered in the list page's filter
+            builder (and accepted in the `filter` query parameter). Defaults
+            to `None`, meaning every non-file, non-computed field not listed in
+            `exclude_fields_from_filter`.
         sortable_fields: List of sortable fields.
         fields_default_sort: Initial order (sort) to apply to the table.
             Should be a sequence of field names or a tuple of
@@ -643,7 +649,9 @@ class BaseModelView(BaseView):
     exclude_fields_from_detail: Sequence[str] = []
     exclude_fields_from_create: Sequence[str] = []
     exclude_fields_from_edit: Sequence[str] = []
+    exclude_fields_from_filter: Sequence[str] = []
     searchable_fields: Sequence[str] | None = None
+    filterable_fields: Sequence[str] | None = None
     sortable_fields: Sequence[str] | None = None
     fields_default_sort: Sequence[tuple[str, bool] | str] | None = None
     exporters: Sequence[BaseExporter | str] = ["csv", "json"]
@@ -780,6 +788,17 @@ class BaseModelView(BaseView):
                 field.searchable = (self.searchable_fields is None) or (
                     name in self.searchable_fields
                 )
+                if (
+                    isinstance(field, ComputedField)
+                    or name in self.exclude_fields_from_filter
+                ):
+                    field.filterable = False
+                elif self.filterable_fields is not None:
+                    field.filterable = name in self.filterable_fields
+                else:
+                    field.filterable = bool(
+                        field.filterable
+                    ) and self._is_filterable_by_default(field, name)
                 field.orderable = (self.sortable_fields is None) or (
                     name in self.sortable_fields
                 )
@@ -801,6 +820,14 @@ class BaseModelView(BaseView):
             len(self._all_fields),
             all_field_names,
         )
+
+    def _is_filterable_by_default(self, field: BaseField, name: str) -> bool:
+        """Whether `field` is offered in the filter builder when the view does
+        not set `filterable_fields`. Backends override this to drop fields
+        their filters cannot query (e.g. SQLAlchemy fields backed by a plain
+        Python `property`).
+        """
+        return True
 
     def _validate_inline_editable_fields(self) -> None:
         """Validates `inline_editable_fields` at startup (fail fast): every
@@ -2430,6 +2457,7 @@ class BaseModelView(BaseView):
         return any(
             f.data_type == FilterDataType.ARRAY
             for field in self.get_fields_list(request)
+            if field.filterable
             for f in registry.filters_for(field)
         )
 
@@ -2856,7 +2884,7 @@ class BaseModelView(BaseView):
         fields_by_name = {
             f.name: f
             for f in self.get_fields_list(request, include_nested=True)
-            if f.searchable
+            if f.filterable
         }
         registry = self.get_filter_registry()
         try:
@@ -2988,7 +3016,7 @@ class BaseModelView(BaseView):
         fields_by_name = {
             getattr(f, "_name", f.name): f
             for f in self.get_fields_list(request, include_nested=True)
-            if f.searchable
+            if f.filterable
         }
         registry = self.get_filter_registry()
         return logic, [
@@ -3121,7 +3149,7 @@ class BaseModelView(BaseView):
         registry = self.get_filter_registry()
         result = []
         for f in self.get_fields_list(request, include_nested=True):
-            if not f.searchable:
+            if not f.filterable:
                 continue
             available = registry.filters_for(f)
             if available:

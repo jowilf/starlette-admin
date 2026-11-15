@@ -116,9 +116,14 @@ class ModelView(BaseModelView, Generic[T]):
         self.exclude_fields_from_import = normalize_field_list(
             field_list=self.exclude_fields_from_import
         )
+        self.exclude_fields_from_filter = normalize_field_list(
+            field_list=self.exclude_fields_from_filter
+        )
 
         if self.searchable_fields is not None:
             self.searchable_fields = normalize_field_list(list(self.searchable_fields))
+        if self.filterable_fields is not None:
+            self.filterable_fields = normalize_field_list(list(self.filterable_fields))
         if self.sortable_fields is not None:
             self.sortable_fields = normalize_field_list(list(self.sortable_fields))
         if self.fields_default_sort is not None:

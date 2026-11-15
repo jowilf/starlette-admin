@@ -101,7 +101,11 @@ class ModelView(BaseModelView):
         self.exclude_fields_from_import = (
             normalize_list(self.exclude_fields_from_import) or []
         )
+        self.exclude_fields_from_filter = (
+            normalize_list(self.exclude_fields_from_filter) or []
+        )
         self.searchable_fields = normalize_list(self.searchable_fields)
+        self.filterable_fields = normalize_list(self.filterable_fields)
         self.sortable_fields = normalize_list(self.sortable_fields)
         self.fields_default_sort = normalize_list(
             self.fields_default_sort, is_default_sort_list=True

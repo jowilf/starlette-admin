@@ -29,6 +29,9 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
+from starlette.exceptions import HTTPException
+from starlette.requests import Request
+from starlette_admin.contrib.sqla import ModelView
 from starlette_admin.contrib.sqla.filters import (
     BetweenFilter,
     ContainsFilter,
@@ -60,9 +63,15 @@ from starlette_admin.contrib.sqla.filters import (
     _build_rule_clause,
     build_filter_clause,
 )
-from starlette_admin.fields import NumberField, RelationField, StringField
+from starlette_admin.fields import (
+    ComputedField,
+    NumberField,
+    RelationField,
+    StringField,
+)
 from starlette_admin.filters import FilterApplyContext, FilterGroup, FilterRule
 from starlette_admin.filters.registry import FilterRegistry
+from starlette_admin.types import RequestAction
 
 # ── SA models ─────────────────────────────────────────────────────────────────
 
@@ -681,3 +690,70 @@ def test_custom_relation_filter_registered_in_registry(seeded_session):
     assert clause is not None
     rows = seeded_session.execute(select(Item).where(clause)).scalars().all()
     assert [r.name for r in rows] == ["Alpha"]
+
+
+@pytest.mark.asyncio
+async def test_filterable_fields_and_exclude_fields_from_filter(seeded_session):
+    """`filterable_fields` and `exclude_fields_from_filter` control filtering
+    independently of `searchable_fields`, and non-SQL properties/ComputedFields
+    are excluded by default."""
+
+    def _req(filter_str: str) -> Request:
+        req = Request(
+            {
+                "type": "http",
+                "method": "GET",
+                "path": "/",
+                "query_string": f"filter={filter_str}".encode() if filter_str else b"",
+                "headers": [],
+            }
+        )
+        req.state.action = RequestAction.LIST
+        return req
+
+    Item.plain_prop = property(lambda self: self.name)
+
+    class SearchRestrictedItemView(ModelView):
+        fields = [
+            "id",
+            "name",
+            "count",
+            "price",
+            StringField("plain_prop", exclude_from_create=True, exclude_from_edit=True),
+            ComputedField("comp", getter=lambda req, obj: "x"),
+        ]
+        searchable_fields = ["name"]
+        exclude_fields_from_filter = [Item.price]
+
+    class ExplicitFilterableItemView(ModelView):
+        fields = ["id", "name", "count"]
+        filterable_fields = [Item.name]
+
+    try:
+        default_view = SearchRestrictedItemView(Item)
+        explicit_view = ExplicitFilterableItemView(Item)
+
+        # `count` is not in `searchable_fields`, yet remains filterable by default
+        req = _req("count__eq=10")
+        fg = default_view._parse_filter_param(req)
+        stmt = await default_view._apply_search_and_filters(
+            request=req, stmt=select(Item), q=None, filters=fg
+        )
+        assert [r.name for r in seeded_session.execute(stmt).scalars().all()] == [
+            "Alpha"
+        ]
+
+        # `price` (in exclude_fields_from_filter), `plain_prop` (@property), and `comp` (ComputedField) are rejected
+        for blocked in ("price__gt=1", "plain_prop__eq=Alpha", "comp__eq=x"):
+            with pytest.raises(HTTPException):
+                default_view._parse_filter_param(_req(blocked))
+
+        # Explicit `filterable_fields = [Item.name]` allows `name` and rejects `count`
+        assert {f["name"] for f in explicit_view._filter_builder_fields(_req(""))} == {
+            "name"
+        }
+        assert not explicit_view._parse_filter_param(_req("name__eq=Alpha")).is_empty()
+        with pytest.raises(HTTPException):
+            explicit_view._parse_filter_param(_req("count__eq=10"))
+    finally:
+        delattr(Item, "plain_prop")
