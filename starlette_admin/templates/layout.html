@@ -25,10 +25,18 @@
                                          class="navbar-logo"
                                          alt="{{ app_title }}" />
                                 {% else %}
-                                    <h3 class="text-center text-wrap">{{ app_title }}</h3>
+                                    <h3 class="text-center text-nowrap mb-0">{{ app_title }}</h3>
                                 {% endif %}
                             {% endblock %}
                         </a>
+                        <button type="button"
+                                class="{{ cls('nav.sidebar_toggle_button') }}"
+                                data-bs-toggle="sidebar-folded"
+                                data-sa-hook="sidebar-toggle"
+                                aria-pressed="false"
+                                aria-label="{{ _('Toggle sidebar') }}">
+                            <i class="{{ icon('nav.sidebar_toggle') }}" aria-hidden="true"></i>
+                        </button>
                     </h1>
                     {% if current_user or i18n_config.language_switcher or (timezone_config and timezone_config.timezone_switcher) %}
                         <div class="navbar-nav flex-row d-lg-none">

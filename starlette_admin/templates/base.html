@@ -1,6 +1,8 @@
+{% set html_attrs = theme_html_attrs(request) %}
 <!DOCTYPE html>
 <html lang="{{ get_locale() }}"
-      {% for attr, val in theme_html_attrs(request).items() %}{{ attr }}="{{ val }}"{% endfor %}>
+      {% if "data-bs-navbar-position" not in html_attrs %}data-bs-navbar-position="combined"{% endif %}
+      {% for attr, val in html_attrs.items() %}{{ attr }}="{{ val }}"{% endfor %}>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport"
@@ -12,11 +14,23 @@
         {% endblock %}
         {% block head_meta %}{% endblock %}
         {% block title %}<title>{{ title or app_title }}</title>{% endblock %}
+        {# djlint:off #}
+        <script>
+            try {
+                var savedSidebar = localStorage.getItem("tabler-sidebar");
+                if (savedSidebar === "folded" || savedSidebar === "folded-hover") {
+                    document.documentElement.setAttribute("data-bs-sidebar", savedSidebar);
+                } else if (savedSidebar === "default") {
+                    document.documentElement.removeAttribute("data-bs-sidebar");
+                }
+            } catch (e) {}
+        </script>
+        {# djlint:on #}
         {% block core_css %}
             <link rel="stylesheet"
-                  href="{{ static_url(request, 'css/vendor/tabler.min.css', v='1.4.0') }}">
+                  href="{{ static_url(request, 'css/vendor/tabler.min.css', v='1.7.5') }}">
             <link rel="stylesheet"
-                  href="{{ static_url(request, 'css/vendor/tabler-theme.min.css', v='1.4.0') }}">
+                  href="{{ static_url(request, 'css/vendor/tabler-theme.min.css', v='1.7.5') }}">
         {% endblock %}
         {% block icon_css %}
             {% for link in icon_css_links(request) %}
@@ -74,6 +88,16 @@
                 .btn-animate-icon.btn-animate-icon-rotate:hover .sa-animate-icon {
                     transform: rotate(90deg);
                 }
+
+                @media (max-width: 991.98px) {
+                    [data-bs-toggle="sidebar-folded"] {
+                        display: none;
+                    }
+                }
+
+                [data-bs-toggle="sidebar-folded"][aria-pressed="true"]>i {
+                    transform: rotate(180deg);
+                }
             </style>
         {% endblock %}
         {% block head %}
@@ -89,7 +113,7 @@
             <script type="text/javascript"
                     src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
             <script type="text/javascript"
-                    src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.4.0') }}"></script>
+                    src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.7.5') }}"></script>
             <script type="text/javascript"
                     src="{{ static_url(request, 'js/sa-dom.js', v=1) }}"></script>
         {% endblock %}

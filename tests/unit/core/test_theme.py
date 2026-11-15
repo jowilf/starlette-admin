@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from starlette.requests import Request
-from starlette_admin.theme import BaseTheme, IconSet
+from starlette_admin.theme import BaseTheme, IconSet, TablerSettings
 
 
 def test_icon_set_css_links_default_is_empty():
@@ -23,3 +23,13 @@ def test_base_theme_resolved_package_falls_back_to_top_level_package():
 
     # `package` unset: resolves to the theme class's top-level import package.
     assert Theme().resolved_package() == "tests"
+
+
+def test_tabler_settings_sidebar_html_attrs():
+    assert "data-bs-sidebar" not in TablerSettings().html_attrs()
+    assert "data-bs-sidebar" not in TablerSettings(sidebar="default").html_attrs()
+    assert TablerSettings(sidebar="folded").html_attrs()["data-bs-sidebar"] == "folded"
+    assert (
+        TablerSettings(sidebar="folded-hover").html_attrs()["data-bs-sidebar"]
+        == "folded-hover"
+    )

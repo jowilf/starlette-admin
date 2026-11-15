@@ -62,6 +62,8 @@ class CoreIcons(IconSet):
         "nav.language": "fa-solid fa-language",
         "nav.world": "fa-solid fa-earth-americas",
         "nav.user": "fa-solid fa-user",
+        "nav.sidebar_toggle": "fa-solid fa-angles-left",
+        "nav.item_fallback": "fa-regular fa-circle-dot",
         # Flash messages
         "flash.success": "fa-solid fa-circle-check",
         "flash.warning": "fa-solid fa-triangle-exclamation",
@@ -168,6 +170,8 @@ class CoreClasses(ClassMap):
         "inline_edit.cancel_button": "btn btn-icon",
         # Field value buttons
         "field.copy_button": "btn btn-action btn-sm",
+        # Navigation / sidebar buttons
+        "nav.sidebar_toggle_button": "btn btn-action btn-sm",
         # Tabler-specific component classes
         "list.table": "table table-vcenter card-table",
         "detail.table": "table table-bordered table-vcenter table-mobile-md",
@@ -209,6 +213,8 @@ TablerPrimary = Literal[
 
 TablerRadius = float  # Valid values: 0, 0.5, 1, 1.5, 2.
 
+TablerSidebar = Literal["default", "folded", "folded-hover"]
+
 
 @dataclass
 class TablerSettings:
@@ -242,12 +248,17 @@ class TablerSettings:
         radius: Corner rounding scale applied to buttons, cards, and inputs.
             `None` omits the `data-bs-theme-radius` attribute.
         mode: Color scheme rendered on the page, `"light"` or `"dark"`.
+        sidebar: Initial desktop sidebar state: `"default"` (expanded),
+            `"folded"` (static icon rail), or `"folded-hover"` (folded rail
+            that expands on hover). `None` omits `data-bs-sidebar`, defaulting
+            to expanded while still honoring the user's saved toggle preference.
     """
 
     base: TablerBase | None = "stone"
     primary: TablerPrimary | None = "blue"
     radius: TablerRadius | None = 1
     mode: TablerMode = "light"
+    sidebar: TablerSidebar | None = None
 
     def html_attrs(self) -> dict[str, str]:
         """Build the `data-bs-theme-*` attribute dict for the `<html>` tag.
@@ -261,6 +272,8 @@ class TablerSettings:
             attrs["data-bs-theme-primary"] = self.primary
         if self.radius is not None:
             attrs["data-bs-theme-radius"] = str(self.radius)
+        if self.sidebar is not None and self.sidebar != "default":
+            attrs["data-bs-sidebar"] = self.sidebar
         return attrs
 
 
