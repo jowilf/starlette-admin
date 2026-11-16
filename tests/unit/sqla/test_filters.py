@@ -4,6 +4,7 @@ No database session is required. This module covers `parse_value` helpers, filte
 """
 
 import datetime
+import uuid
 from unittest.mock import MagicMock
 
 import pytest
@@ -21,6 +22,8 @@ from starlette_admin.contrib.sqla.filters import (
     SqlaFilterRegistry,
     TimeBetweenFilter,
     TimeEqualFilter,
+    UUIDEqualFilter,
+    UUIDNotEqualFilter,
     _build_rule_clause,
     build_filter_clause,
 )
@@ -36,8 +39,9 @@ from starlette_admin.fields import (
     StringField,
     TextAreaField,
     TimeField,
+    UUIDField,
 )
-from starlette_admin.filters import FilterGroup, FilterRule
+from starlette_admin.filters import FilterGroup, FilterRule, FilterValidationError
 from starlette_admin.filters.registry import FilterRegistry
 
 filter_registry = SqlaFilterRegistry()
@@ -295,3 +299,31 @@ def test_register_filters_plugin_api():
         assert registry.filters_for(_PluginField("x")) == [_PluginFilter]
     finally:
         del sqla_filters._EXTERNAL_FILTERS[_PluginField]
+
+
+def test_uuid_parse_value():
+    expected = uuid.UUID("01a1771e-8578-70b4-b57b-8f331bba0c4c")
+    assert UUIDEqualFilter().parse_value(str(expected)) == expected
+    assert UUIDNotEqualFilter().parse_value(str(expected)) == expected
+    with pytest.raises(FilterValidationError):
+        UUIDEqualFilter().parse_value("not-a-uuid")
+    with pytest.raises(FilterValidationError):
+        UUIDNotEqualFilter().parse_value("not-a-uuid")
+
+
+def test_registry_uuid_field():
+    filters = filter_registry.filters_for(UUIDField("x"))
+    names = {f.name for f in filters}
+    assert names == {
+        "contains",
+        "not_contains",
+        "startswith",
+        "endswith",
+        "eq",
+        "neq",
+        "is_null",
+        "is_not_null",
+    }
+    by_name = {f.name: f for f in filters}
+    assert by_name["eq"] is UUIDEqualFilter
+    assert by_name["neq"] is UUIDNotEqualFilter

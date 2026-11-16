@@ -1,6 +1,7 @@
 """Unit tests for all starlette_admin.filters.* modules."""
 
 import datetime
+import uuid
 
 import pytest
 from starlette_admin.filters.array import InFilter as ArrayInFilter
@@ -53,6 +54,11 @@ from starlette_admin.filters.string import (
     NotContainsFilter,
     StartsWithFilter,
 )
+from starlette_admin.filters.uuid import (
+    UUIDEqualFilter,
+    UUIDNotEqualFilter,
+    _parse_uuid,
+)
 
 # ── FilterValidationError ─────────────────────────────────────────────────────
 
@@ -103,6 +109,8 @@ _LessThanFilter = _concrete(LessThanFilter)
 _GreaterThanOrEqualFilter = _concrete(GreaterThanOrEqualFilter)
 _LessThanOrEqualFilter = _concrete(LessThanOrEqualFilter)
 _BetweenFilter = _concrete(BetweenFilter)
+_UUIDEqualFilter = _concrete(UUIDEqualFilter)
+_UUIDNotEqualFilter = _concrete(UUIDNotEqualFilter)
 
 
 # ── date filters ──────────────────────────────────────────────────────────────
@@ -561,3 +569,28 @@ def test_filter_apply_context_defaults():
     assert ctx.value2 is None
     assert ctx.request is None
     assert ctx.view is None
+
+
+# ── UUID filters ──────────────────────────────────────────────────────────────
+
+
+def test_parse_uuid_valid_and_trimmed():
+    raw = "  01A1771E-8578-70B4-B57B-8F331BBA0C4C  "
+    assert _parse_uuid(raw) == uuid.UUID("01a1771e-8578-70b4-b57b-8f331bba0c4c")
+
+
+def test_parse_uuid_invalid_raises():
+    with pytest.raises(FilterValidationError, match="not a valid UUID"):
+        _parse_uuid("not-a-uuid")
+
+
+def test_uuid_equal_and_not_equal_filters():
+    expected = uuid.UUID("01a1771e-8578-70b4-b57b-8f331bba0c4c")
+    eq = _UUIDEqualFilter()
+    neq = _UUIDNotEqualFilter()
+    assert eq.name == "eq"
+    assert neq.name == "neq"
+    assert eq.data_type == FilterDataType.STRING
+    assert neq.data_type == FilterDataType.STRING
+    assert eq.parse_value(str(expected)) == expected
+    assert neq.parse_value(str(expected)) == expected

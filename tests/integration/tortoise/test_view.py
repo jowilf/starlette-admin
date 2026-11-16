@@ -335,6 +335,27 @@ class TestFiltersThroughUrl:
         )
         assert await product_view.count(request, filters=group) == 5
 
+    async def test_uuid_filters_valid_and_invalid(self, client):
+        product = await Product.filter(title="IPhone 9").first()
+        res = await client.get(
+            "/admin/product/list", params={"filter": f"token__eq={product.token}"}
+        )
+        assert res.status_code == 200
+        assert _list_total(res.text) == 1
+
+        res = await client.get(
+            "/admin/product/list", params={"filter": f"token__neq={product.token}"}
+        )
+        assert res.status_code == 200
+        assert _list_total(res.text) == 4
+
+        for op in ("eq", "neq"):
+            bad = await client.get(
+                "/admin/product/list", params={"filter": f"token__{op}=not-a-uuid"}
+            )
+            assert bad.status_code == 400
+            assert "not a valid UUID" in bad.text
+
 
 class TestCrud:
     async def test_detail(self, client):
