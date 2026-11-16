@@ -154,13 +154,12 @@ def _coerce_pk(coerce: type, raw: str) -> Any:
         raise FilterValidationError(f"Invalid primary key {raw!r}: {exc}") from exc
 
 
-def validate_relation_pks(coercers: Sequence[type], pks: Sequence[str]) -> None:
-    """Validate raw PK strings (or comma-encoded composite PKs) against
+def coerce_relation_pks(coercers: Sequence[type], pks: Sequence[str]) -> list[Any]:
+    """Coerce raw PK strings (or comma-encoded composite PKs) against
     `coercers`, raising `FilterValidationError` on invalid values."""
     if len(coercers) == 1:
-        for pk in pks:
-            _coerce_pk(coercers[0], pk)
-        return
+        return [_coerce_pk(coercers[0], pk) for pk in pks]
+    coerced: list[tuple[Any, ...]] = []
     for pk in pks:
         parts = list(iterdecode(pk))
         if len(parts) != len(coercers):
@@ -168,8 +167,13 @@ def validate_relation_pks(coercers: Sequence[type], pks: Sequence[str]) -> None:
                 f"Invalid composite primary key {pk!r}: "
                 f"expected {len(coercers)} part(s), got {len(parts)}"
             )
-        for coerce, part in zip(coercers, parts, strict=True):
-            _coerce_pk(coerce, part)
+        coerced.append(
+            tuple(
+                _coerce_pk(coerce, part)
+                for coerce, part in zip(coercers, parts, strict=True)
+            )
+        )
+    return coerced
 
 
 def _related_pk_clause(column: InstrumentedAttribute, pks: list[str]) -> Any:
@@ -180,27 +184,15 @@ def _related_pk_clause(column: InstrumentedAttribute, pks: list[str]) -> Any:
     """
     pk_columns = list(column.property.mapper.primary_key)
     coercers = [extract_column_python_type(c) for c in pk_columns]  # type: ignore[arg-type]
+    coerced = coerce_relation_pks(coercers, pks)
     if len(pk_columns) == 1:
-        return pk_columns[0].in_([_coerce_pk(coercers[0], pk) for pk in pks])
-    clauses = []
-    for pk in pks:
-        parts = list(iterdecode(pk))
-        if len(parts) != len(pk_columns):
-            raise FilterValidationError(
-                f"Invalid composite primary key {pk!r}: "
-                f"expected {len(pk_columns)} part(s), got {len(parts)}"
-            )
-        clauses.append(
-            and_(
-                *[
-                    col == _coerce_pk(coerce, part)
-                    for col, coerce, part in zip(
-                        pk_columns, coercers, parts, strict=True
-                    )
-                ]
-            )
-        )
-    return or_(*clauses)
+        return pk_columns[0].in_(coerced)
+    return or_(
+        *[
+            and_(*[col == val for col, val in zip(pk_columns, vals, strict=True)])
+            for vals in coerced
+        ]
+    )
 
 
 def _relation_match(ctx: FilterApplyContext) -> Any:

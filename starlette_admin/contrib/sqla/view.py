@@ -26,7 +26,7 @@ from starlette_admin.contrib.sqla.fields import MultiplePKField
 from starlette_admin.contrib.sqla.filters import (
     SqlaFilterRegistry,
     build_filter_clause,
-    validate_relation_pks,
+    coerce_relation_pks,
 )
 from starlette_admin.contrib.sqla.helpers import (
     extract_column_python_type,
@@ -251,7 +251,7 @@ class ModelView(BaseModelView):
             if isinstance(self._pk_coerce, tuple)
             else (self._pk_coerce,)
         )
-        validate_relation_pks(coercers, pks)
+        coerce_relation_pks(coercers, pks)
 
     async def handle_action(
         self, request: Request, selection: ActionSelection, name: str
