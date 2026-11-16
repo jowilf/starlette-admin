@@ -32,7 +32,7 @@ from starlette_admin.filters import (
     FilterRule,
     filters,
 )
-from starlette_admin.filters.base import BaseFilter
+from starlette_admin.filters.base import BaseFilter, FilterValidationError
 from starlette_admin.filters.boolean import IsFalseFilter as BaseIsFalseFilter
 from starlette_admin.filters.boolean import IsTrueFilter as BaseIsTrueFilter
 from starlette_admin.filters.date import DateBetweenFilter as BaseDateBetweenFilter
@@ -137,11 +137,23 @@ class RelationIsNotNullFilter(BaseIsNotNullFilter):
 # Relations by related record (primary keys picked in the filter builder)
 
 
+def coerce_related_pks(pk_field: Any, pks: Sequence[str]) -> list[Any]:
+    """Convert raw primary key strings to `pk_field`'s Python type,
+    raising `FilterValidationError` when any value cannot be parsed."""
+    coerced: list[Any] = []
+    for v in pks:
+        try:
+            coerced.append(pk_field.to_python_value(v))
+        except (ValueError, TypeError) as exc:
+            raise FilterValidationError(f"Invalid primary key {v!r}: {exc}") from exc
+    return coerced
+
+
 def _related_pks(ctx: FilterApplyContext) -> list[Any]:
     """Convert the raw primary key strings in `ctx.value` to the related
     model's primary key type."""
     related_pk = _tortoise_field(ctx).related_model._meta.pk
-    return [related_pk.to_python_value(v) for v in ctx.value]
+    return coerce_related_pks(related_pk, ctx.value)
 
 
 def _to_one_in(ctx: FilterApplyContext) -> Q:

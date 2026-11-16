@@ -6,6 +6,7 @@ show the selected records' labels rather than their raw primary keys.
 
 import json
 import re
+import uuid
 from typing import Any, ClassVar
 
 import pytest
@@ -17,6 +18,7 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     Integer,
     String,
+    Uuid,
     create_engine,
     select,
 )
@@ -28,7 +30,12 @@ from starlette_admin import HasOne
 from starlette_admin.contrib.sqla import Admin
 from starlette_admin.contrib.sqla.filters import RelationInFilter
 from starlette_admin.contrib.sqla.view import ModelView
-from starlette_admin.filters import FilterApplyContext, FilterGroup, FilterRule
+from starlette_admin.filters import (
+    FilterApplyContext,
+    FilterGroup,
+    FilterRule,
+    FilterValidationError,
+)
 from starlette_admin.types import RequestAction
 
 
@@ -305,3 +312,83 @@ async def test_relation_filter_edge_cases_and_composite_pk(engine):
         assert (
             await c.get("/admin/book/list", params={"filter": "author__in=1"})
         ).status_code == 400
+
+
+class UuidOwner(Base):
+    __tablename__ = "relfilter_uuid_owner"
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
+
+
+class UuidItem(Base):
+    __tablename__ = "relfilter_uuid_item"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(50))
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("relfilter_uuid_owner.id"), nullable=True
+    )
+    owner: Mapped["UuidOwner | None"] = relationship("UuidOwner")
+
+
+@pytest.mark.asyncio
+async def test_relation_filter_invalid_pks_return_400(engine):
+    """Invalid PK strings on relation filters (e.g. `not-a-uuid`, `abc`,
+    or wrong composite-PK arity) fail fast with HTTP 400 rather than 500."""
+    owner_id = uuid.UUID("01a1766d-a785-7799-b758-cb78e3a272b1")
+    with Session(engine) as session:
+        owner = UuidOwner(id=owner_id, name="Zara")
+        session.add(owner)
+        session.add(UuidItem(id=1, title="Item 1", owner=owner))
+        session.commit()
+
+    app = Starlette()
+    admin = Admin(engine)
+    admin.add_view(AuthorView(Author))
+    admin.add_view(ModelView(CompositeTag))
+
+    class TagBookView(ModelView):
+        fields = ["id", "title", "author", "tag"]
+
+    admin.add_view(TagBookView(Book))
+    admin.add_view(ModelView(UuidOwner))
+    admin.add_view(ModelView(UuidItem))
+    admin.mount_to(app)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as c:
+        for url, bad_filter in [
+            ("/admin/book/list", "author__in=not-an-int"),
+            ("/admin/book/list", "author__not_in=1,not-an-int"),
+            ("/admin/book/list", "tag__in=only-one-part"),
+            ("/admin/uuid-item/list", "owner__in=not-a-uuid"),
+        ]:
+            res = await c.get(url, params={"filter": bad_filter})
+            assert res.status_code == 400, (url, bad_filter, res.status_code)
+
+        ok_uuid = await c.get(
+            "/admin/uuid-item/list", params={"filter": f"owner__in={owner_id}"}
+        )
+        assert ok_uuid.status_code == 200
+        assert _list_total(ok_uuid.text) == 1
+
+        ok_comp = await c.get(
+            "/admin/book/list", params={"filter": 'tag__in="sci,True"'}
+        )
+        assert ok_comp.status_code == 200
+        assert _list_total(ok_comp.text) == 1
+
+    # Direct filter apply() calls also raise FilterValidationError instead of raw ValueError
+    view = ModelView(Book)
+    with pytest.raises(FilterValidationError, match="Invalid primary key"):
+        RelationInFilter().apply(
+            FilterApplyContext(
+                query=None, field_name="author", value=["not-an-int"], view=view
+            )
+        )
+    with pytest.raises(FilterValidationError, match="Invalid composite primary key"):
+        RelationInFilter().apply(
+            FilterApplyContext(
+                query=None, field_name="tag", value=["only-one-part"], view=view
+            )
+        )

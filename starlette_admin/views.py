@@ -2944,11 +2944,14 @@ class BaseModelView(BaseView):
                 filter_cls is not None
                 and filter_cls.data_type == FilterDataType.RELATION
                 and isinstance(field, RelationField)
-                and self._relation_filter_foreign_view(request, field) is None
             ):
-                raise ValueError(
-                    f"unknown filter {rule.filter!r} for field {rule.field!r}"
-                )
+                foreign_view = self._relation_filter_foreign_view(request, field)
+                if foreign_view is None:
+                    raise ValueError(
+                        f"unknown filter {rule.filter!r} for field {rule.field!r}"
+                    )
+                if isinstance(rule.value, list):
+                    foreign_view._validate_relation_pks(rule.value)
         return rule
 
     @staticmethod
@@ -3266,6 +3269,11 @@ class BaseModelView(BaseView):
         except Exception:
             return None
         return {"url": url, "pk": foreign_view.pk_attr}
+
+    def _validate_relation_pks(self, pks: Sequence[str]) -> None:
+        """Validate raw primary key strings targeting this view in a
+        `RELATION` filter. Backends override this to fail fast with
+        `FilterValidationError` (HTTP 400) on unparsable keys."""
 
     async def _relation_filter_labels(
         self, request: Request, filters: FilterGroup

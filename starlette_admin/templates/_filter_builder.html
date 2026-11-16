@@ -13,11 +13,11 @@
                 {% endif %}
             </button>
             <div class="dropdown-menu dropdown-menu-end p-3"
-                 style="min-width: min(38rem, calc(100vw - 1rem));
+                 style="min-width: min(44rem, calc(100vw - 1rem));
                         max-height: 50vh;
                         overflow-y: auto;
                         z-index: 1031">
-                <form method="GET" id="filter-form" data-sa-hook="filter-form">
+                <form method="get" id="filter-form" data-sa-hook="filter-form">
                     <input type="hidden"
                            name="filter"
                            id="filter-json"
@@ -71,6 +71,31 @@
                 </form>
             </div>
         </div>
+        <style>
+            #filter-builder-dropdown .filter-row-field {
+                width: auto;
+                min-width: 7rem;
+                max-width: 11rem;
+                flex: 0 1 auto;
+            }
+            #filter-builder-dropdown .filter-row-op {
+                width: auto;
+                min-width: 6.5rem;
+                max-width: 10.5rem;
+                flex: 0 1 auto;
+            }
+            #filter-builder-dropdown .filter-row-value,
+            #filter-builder-dropdown .filter-row-value-select,
+            #filter-builder-dropdown .filter-row-value2 {
+                flex: 1 1 0%;
+                min-width: 0;
+            }
+            #filter-builder-dropdown .filter-row > .select2-container {
+                width: auto !important;
+                flex: 1 1 0%;
+                min-width: 0;
+            }
+        </style>
         <template id="filter-row-template" data-sa-hook="filter-row-template">
             <div class="filter-row d-flex align-items-center gap-2 mb-2"
                  data-sa-hook="filter-row">

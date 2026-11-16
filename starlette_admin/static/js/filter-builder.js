@@ -36,6 +36,47 @@ function initFilterBuilder(config) {
   let groupTemplate = document.querySelector('[data-sa-hook="filter-group-template"]');
   let $form = $('[data-sa-hook="filter-form"]');
   let $jsonInput = $('[data-sa-hook="filter-json"]');
+  let $dropdown = $form.closest(".dropdown");
+  let $dropdownMenu = $form.closest(".dropdown-menu");
+  let s2Interacting = false;
+
+  // Select2 dropdowns (for relation and tags filters) attach to document.body
+  // so they are never clipped by `.dropdown-menu`'s `overflow-y: auto`.
+  // Selecting an option or removing a tag can mutate/detach the target node
+  // before Bootstrap's `autoClose="outside"` click handler runs, so track
+  // mousedown inside Select2 and keep the filter dropdown open.
+  $(document)
+    .off(".saFilterS2")
+    .on("mousedown.saFilterS2", ".select2-container, .select2-dropdown", function () {
+      if (!$dropdownMenu.hasClass("show")) return;
+      s2Interacting = true;
+    })
+    .on("mouseup.saFilterS2 blur.saFilterS2", function () {
+      if (!s2Interacting) return;
+      setTimeout(function () {
+        s2Interacting = false;
+      }, 0);
+    });
+
+  function closeOpenSelect2() {
+    $rows.find("select.select2-hidden-accessible").each(function () {
+      if ($(this).data("s2")) $(this).select2("close");
+    });
+  }
+
+  $dropdown.on("hide.bs.dropdown", function (e) {
+    if (
+      s2Interacting ||
+      (e.clickEvent &&
+        $(e.clickEvent.target).closest(".select2-container, .select2-dropdown").length)
+    ) {
+      e.preventDefault();
+      return;
+    }
+    closeOpenSelect2();
+  });
+
+  $dropdownMenu.on("scroll", closeOpenSelect2);
 
   function fieldByName(name) {
     return config.fields.find(function (f) {
@@ -340,10 +381,9 @@ function initFilterBuilder(config) {
   function maybeInitRelationInput($el, field) {
     if ($el.data("s2") || !field || !field.relation) return;
     let rel = field.relation;
-    let $parent = $el.closest(".dropdown-menu");
     $el.data("s2", true).select2({
       width: "100%",
-      dropdownParent: $parent.length ? $parent : $(document.body),
+      dropdownParent: $(document.body),
       ajax: {
         url: rel.url,
         dataType: "json",

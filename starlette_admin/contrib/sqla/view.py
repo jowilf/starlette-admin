@@ -23,7 +23,11 @@ from starlette_admin.contrib.sqla.converters import (
 )
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.fields import MultiplePKField
-from starlette_admin.contrib.sqla.filters import SqlaFilterRegistry, build_filter_clause
+from starlette_admin.contrib.sqla.filters import (
+    SqlaFilterRegistry,
+    build_filter_clause,
+    validate_relation_pks,
+)
 from starlette_admin.contrib.sqla.helpers import (
     extract_column_python_type,
     normalize_list,
@@ -240,6 +244,14 @@ class ModelView(BaseModelView):
                 )
                 self.pk_field = StringField(_pk_attrs[0])
         self.pk_attr = self.pk_field.name
+
+    def _validate_relation_pks(self, pks: Sequence[str]) -> None:
+        coercers = (
+            self._pk_coerce
+            if isinstance(self._pk_coerce, tuple)
+            else (self._pk_coerce,)
+        )
+        validate_relation_pks(coercers, pks)
 
     async def handle_action(
         self, request: Request, selection: ActionSelection, name: str

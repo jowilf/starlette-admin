@@ -37,7 +37,7 @@ from starlette_admin.filters import (
     FilterRule,
     filters,
 )
-from starlette_admin.filters.base import BaseFilter
+from starlette_admin.filters.base import BaseFilter, FilterValidationError
 from starlette_admin.filters.boolean import IsFalseFilter as BaseIsFalseFilter
 from starlette_admin.filters.boolean import IsTrueFilter as BaseIsTrueFilter
 from starlette_admin.filters.date import (
@@ -146,7 +146,30 @@ class IsNotNullFilter(BaseIsNotNullFilter):
 
 
 def _coerce_pk(coerce: type, raw: str) -> Any:
-    return raw == "True" if coerce is bool else coerce(raw)
+    if coerce is bool:
+        return raw == "True"
+    try:
+        return coerce(raw)
+    except (ValueError, TypeError) as exc:
+        raise FilterValidationError(f"Invalid primary key {raw!r}: {exc}") from exc
+
+
+def validate_relation_pks(coercers: Sequence[type], pks: Sequence[str]) -> None:
+    """Validate raw PK strings (or comma-encoded composite PKs) against
+    `coercers`, raising `FilterValidationError` on invalid values."""
+    if len(coercers) == 1:
+        for pk in pks:
+            _coerce_pk(coercers[0], pk)
+        return
+    for pk in pks:
+        parts = list(iterdecode(pk))
+        if len(parts) != len(coercers):
+            raise FilterValidationError(
+                f"Invalid composite primary key {pk!r}: "
+                f"expected {len(coercers)} part(s), got {len(parts)}"
+            )
+        for coerce, part in zip(coercers, parts, strict=True):
+            _coerce_pk(coerce, part)
 
 
 def _related_pk_clause(column: InstrumentedAttribute, pks: list[str]) -> Any:
@@ -159,19 +182,25 @@ def _related_pk_clause(column: InstrumentedAttribute, pks: list[str]) -> Any:
     coercers = [extract_column_python_type(c) for c in pk_columns]  # type: ignore[arg-type]
     if len(pk_columns) == 1:
         return pk_columns[0].in_([_coerce_pk(coercers[0], pk) for pk in pks])
-    return or_(
-        *[
+    clauses = []
+    for pk in pks:
+        parts = list(iterdecode(pk))
+        if len(parts) != len(pk_columns):
+            raise FilterValidationError(
+                f"Invalid composite primary key {pk!r}: "
+                f"expected {len(pk_columns)} part(s), got {len(parts)}"
+            )
+        clauses.append(
             and_(
                 *[
                     col == _coerce_pk(coerce, part)
                     for col, coerce, part in zip(
-                        pk_columns, coercers, iterdecode(pk), strict=False
+                        pk_columns, coercers, parts, strict=True
                     )
                 ]
             )
-            for pk in pks
-        ]
-    )
+        )
+    return or_(*clauses)
 
 
 def _relation_match(ctx: FilterApplyContext) -> Any:

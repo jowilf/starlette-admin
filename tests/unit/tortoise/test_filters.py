@@ -3,6 +3,7 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import pytest
 from starlette_admin.contrib.tortoise import filters as tortoise_filters
 from starlette_admin.contrib.tortoise.fields import BackwardHasOne
 from starlette_admin.contrib.tortoise.filters import (
@@ -15,8 +16,11 @@ from starlette_admin.contrib.tortoise.filters import (
     RelationNotInFilter,
     TortoiseFilterRegistry,
 )
+from starlette_admin.contrib.tortoise.view import ModelView as TortoiseModelView
 from starlette_admin.fields import BaseField, HasMany, HasOne
-from starlette_admin.filters import FilterApplyContext
+from starlette_admin.filters import FilterApplyContext, FilterValidationError
+from tortoise import fields as t_fields
+from tortoise.models import Model as TortoiseModel
 
 
 def test_register_filters_plugin_api():
@@ -79,3 +83,20 @@ def test_tortoise_relation_filters_and_registry():
     assert "id__not_in" in BackwardRelationNotInFilter().apply(ctx_one).filters
     assert "id__in" in RelationAnyOfFilter().apply(ctx_many).filters
     assert "id__not_in" in RelationNoneOfFilter().apply(ctx_many).filters
+
+    bad_ctx = FilterApplyContext(
+        query=None,
+        field_name="author",
+        value=["not-an-int"],
+        view=view,
+    )
+    with pytest.raises(FilterValidationError, match="Invalid primary key"):
+        RelationInFilter().apply(bad_ctx)
+
+    class _Item(TortoiseModel):
+        id = t_fields.IntField(pk=True)
+
+    item_view = TortoiseModelView(_Item)
+    item_view._validate_relation_pks(["1", "2"])
+    with pytest.raises(FilterValidationError, match="Invalid primary key"):
+        item_view._validate_relation_pks(["not-an-int"])

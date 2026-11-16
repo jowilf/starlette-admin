@@ -10,6 +10,7 @@ from starlette_admin.contrib.tortoise.exceptions import InvalidModelError
 from starlette_admin.contrib.tortoise.filters import (
     TortoiseFilterRegistry,
     build_filter_query,
+    coerce_related_pks,
 )
 from starlette_admin.contrib.tortoise.helpers import (
     build_order_clauses,
@@ -199,6 +200,9 @@ class ModelView(BaseModelView):
         filters are available for each field on this view's list page.
         """
         return TortoiseFilterRegistry()
+
+    def _validate_relation_pks(self, pks: Sequence[str]) -> None:
+        coerce_related_pks(self._meta.pk, pks)
 
     def _prefetch_names(self, request: Request) -> list[str]:
         """Relation names to prefetch so serialization never triggers lazy loads."""
