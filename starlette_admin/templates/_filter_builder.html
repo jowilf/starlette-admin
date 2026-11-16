@@ -13,7 +13,8 @@
                 {% endif %}
             </button>
             <div class="dropdown-menu dropdown-menu-end p-3"
-                 style="min-width: min(44rem, calc(100vw - 1rem));
+                 style="width: min(44rem, calc(100vw - 1rem));
+                        max-width: calc(100vw - 1rem);
                         max-height: 50vh;
                         overflow-y: auto;
                         z-index: 1031">
@@ -94,6 +95,16 @@
                 width: auto !important;
                 flex: 1 1 0%;
                 min-width: 0;
+            }
+            #filter-builder-dropdown .select2-selection--multiple {
+                max-height: 7.5rem;
+                overflow-y: auto;
+            }
+            #filter-builder-dropdown .select2-selection--multiple .select2-selection__rendered {
+                display: flex;
+                flex-wrap: wrap;
+                width: 100%;
+                max-width: 100%;
             }
         </style>
         <template id="filter-row-template" data-sa-hook="filter-row-template">
