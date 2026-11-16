@@ -498,3 +498,74 @@ async def test_select2_result_prefers_admin_select2_repr_over_str():
     request = MagicMock()
     result = await view.select2_result(obj, request)
     assert result == "<b>Hello</b>"
+
+
+def test_parse_list_params_allows_default_sort_when_excluded_from_list():
+    """Default sort (pk) remains valid in ?sort= even when excluded from list."""
+
+    class _ExcludedPkView(_SortableView):
+        exclude_fields_from_list = ["id"]
+
+    view = _ExcludedPkView(_SortableModel)
+    request = _list_request({"q": "abc", "sort": "id__asc"})
+    params = view._parse_list_params(request)
+    assert params.q == "abc"
+    assert params.sorts == [("id", "asc")]
+
+
+def test_parse_list_params_allows_explicit_default_sort_excluded_from_list_and_export():
+    """Explicit fields_default_sort excluded from list/export works on both actions."""
+
+    class _ExcludedSortView(_SortableView):
+        fields_default_sort = [("views", True)]
+        exclude_fields_from_list = ["views"]
+        exclude_fields_from_export = ["views"]
+
+    view = _ExcludedSortView(_SortableModel)
+    for action in (RequestAction.LIST, RequestAction.EXPORT):
+        request = _list_request([("sort", "views__desc"), ("sort", "title__asc")])
+        request.state.action = action
+        params = view._parse_list_params(request)
+        assert params.sorts == [("views", "desc"), ("title", "asc")]
+
+
+def test_parse_list_params_rejects_non_default_sort_excluded_from_list():
+    """Excluded fields that are NOT in _default_sort() still raise 400."""
+
+    class _ExcludedNonDefaultView(_SortableView):
+        fields_default_sort = ["id"]
+        exclude_fields_from_list = ["id", "views"]
+
+    view = _ExcludedNonDefaultView(_SortableModel)
+    with pytest.raises(HTTPException) as exc_info:
+        view._parse_list_params(_list_request({"sort": "views__asc"}))
+    assert exc_info.value.status_code == 400
+
+
+def test_parse_list_params_rejects_default_sort_blocked_by_rbac():
+    """RBAC overrides of can_access_field and get_fields_list still reject 400."""
+
+    class _RbacCanAccessView(_SortableView):
+        def can_access_field(self, request, field, action=None):
+            if field.name == "id":
+                return False
+            return super().can_access_field(request, field, action)
+
+    view1 = _RbacCanAccessView(_SortableModel)
+    with pytest.raises(HTTPException) as exc1:
+        view1._parse_list_params(_list_request({"sort": "id__asc"}))
+    assert exc1.value.status_code == 400
+
+    class _RbacGetFieldsView(_SortableView):
+        fields_default_sort = ["views"]
+
+        def get_fields_list(self, request, *, include_nested=False, action=None):
+            fields = super().get_fields_list(
+                request, include_nested=include_nested, action=action
+            )
+            return [f for f in fields if f.name != "views"]
+
+    view2 = _RbacGetFieldsView(_SortableModel)
+    with pytest.raises(HTTPException) as exc2:
+        view2._parse_list_params(_list_request({"sort": "views__asc"}))
+    assert exc2.value.status_code == 400

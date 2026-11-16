@@ -2560,6 +2560,21 @@ class BaseModelView(BaseView):
             for f in self.get_fields_list(request, include_nested=True)
             if f.orderable
         }
+        # The list UI echoes active sorts (including _default_sort() on initial load)
+        # into search, filter, pagination, and export links, so an orderable default
+        # sort field must stay accepted by ?sort= even when excluded from list/export
+        # columns — while still honouring RBAC (can_access_field / get_fields_list).
+        default_sort_names = {
+            field for field, _ in self._default_sort()
+        } - accessible_sortable
+        if default_sort_names:
+            accessible_sortable.update(
+                f.name
+                for f in self.get_fields_list(
+                    request, include_nested=True, action=RequestAction.ACTION
+                )
+                if f.name in default_sort_names and f.orderable
+            )
         sorts = self._parse_sorts(query_params.getlist("sort"), accessible_sortable)
         if not sorts:
             default_sorts: list[tuple[str, Literal["asc", "desc"]]] = [

@@ -540,3 +540,76 @@ def test_sort_unknown_field_still_falls_back():
 
     response = c.get("/admin/article/list", params={"sort": "nonexistent_xyz__asc"})
     assert response.status_code == 200
+
+
+def test_list_excluded_default_sort_allows_search_filter_pagination_and_multisort():
+    """When the pk/default-sort field is excluded from list/export, links still
+    carry ?sort=id__asc; search, filter, pagination, and shift+click must return 200
+    while arbitrary non-default excluded fields still return 400."""
+
+    class HiddenPkArticleView(ArticleView):
+        sortable_fields = ("id", "title", "body")
+        exclude_fields_from_list = ["id", "body"]
+        exclude_fields_from_export = ["id"]
+
+    admin = BaseAdmin()
+    app = Starlette()
+    admin.add_view(HiddenPkArticleView(Article))
+    admin.mount_to(app)
+    c = TestClient(app)
+
+    assert (
+        c.get(
+            "/admin/article/list", params={"q": "Article", "sort": "id__asc"}
+        ).status_code
+        == 200
+    )
+    assert (
+        c.get(
+            "/admin/article/list", params={"page": "2", "sort": "id__asc"}
+        ).status_code
+        == 200
+    )
+    assert (
+        c.get(
+            "/admin/article/list",
+            params={"filter": "title__contains=Article", "sort": "id__asc"},
+        ).status_code
+        == 200
+    )
+    assert (
+        c.get(
+            "/admin/article/list",
+            params=[("sort", "id__asc"), ("sort", "title__asc")],
+        ).status_code
+        == 200
+    )
+    # Non-default excluded sortable field must still fail with 400
+    assert c.get("/admin/article/list", params={"sort": "body__asc"}).status_code == 400
+
+
+def test_sort_by_default_sort_field_blocked_by_can_access_field_returns_400():
+    """Even if a field is in fields_default_sort, blocking it via can_access_field
+    still raises HTTP 400 when explicitly requested in ?sort=."""
+
+    class RestrictedDefaultSortView(ArticleView):
+        fields_default_sort = ["title"]
+
+        def can_access_field(
+            self,
+            request: Request,
+            field: BaseField,
+            action: RequestAction | None = None,
+        ) -> bool:
+            if field.name == "title":
+                return False
+            return super().can_access_field(request, field, action)
+
+    admin = BaseAdmin()
+    app = Starlette()
+    admin.add_view(RestrictedDefaultSortView(Article))
+    admin.mount_to(app)
+    c = TestClient(app)
+
+    response = c.get("/admin/article/list", params={"sort": "title__asc"})
+    assert response.status_code == 400
