@@ -55,15 +55,16 @@
                 <link rel="stylesheet" href="{{ link }}">
             {% endfor %}
         {% endblock %}
-        {% block head_css %}
-        {% endblock %}
+        {% block head_css %}{% endblock %}
         {% block core_inline_css %}
             <link rel="stylesheet"
                   href="{{ static_url(request, 'css/select2-tabler.css', v=2) }}">
             <style>
                 .navbar-logo {
                     width: auto;
+                    max-width: 100%;
                     height: 2rem;
+                    object-fit: contain;
                 }
 
                 .mark,
@@ -89,36 +90,192 @@
                     transform: rotate(90deg);
                 }
 
+                .navbar-vertical .navbar-brand .brand-link {
+                    display: inline-flex;
+                    align-items: center;
+                    min-width: 0;
+                    color: inherit;
+                    text-decoration: none;
+                }
+
+                .navbar-vertical .sa-brand-title {
+                    display: block;
+                    font-size: var(--tblr-font-size-h3, 1rem);
+                    font-weight: var(--tblr-font-weight-semibold, 600);
+                    line-height: 1.25;
+                    color: inherit;
+                    white-space: normal;
+                    word-break: break-word;
+                }
+
+                .navbar-vertical .sa-brand-monogram {
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    width: 2rem;
+                    height: 2rem;
+                    border-radius: var(--tblr-border-radius);
+                    background: color-mix(in oklab, var(--tblr-navbar-color) 12%, transparent);
+                    font-size: 1rem;
+                    font-weight: var(--tblr-font-weight-semibold, 600);
+                    line-height: 1;
+                }
+
+                .navbar-vertical[class*="navbar-expand"] .navbar-nav {
+                    --tblr-sidebar-nav-padding-y: 0.5rem;
+                    --tblr-nav-link-icon-margin-end: 0.375rem;
+                }
+
+                .navbar-vertical[class*="navbar-expand"] .navbar-nav .nav-link-icon {
+                    align-items: center;
+                    justify-content: center;
+                    margin-inline-end: var(--tblr-nav-link-icon-margin-end);
+                }
+
+                .navbar-vertical[class*="navbar-expand"] .sa-nav-icon-fallback {
+                    font-size: 0.75em;
+                }
+
+                .navbar-vertical[class*="navbar-expand"] .navbar-collapse .dropdown-menu .dropdown-item {
+                    gap: 0.5rem;
+                }
+
+                .navbar-vertical[class*="navbar-expand"] .navbar-collapse .dropdown-menu .dropdown-item-icon {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    width: 1.25rem !important;
+                    height: 1.25rem !important;
+                    font-size: inherit;
+                    line-height: 1;
+                    color: var(--tblr-nav-link-icon-color);
+                }
+
+                .navbar-vertical[class*="navbar-expand"] .navbar-collapse .dropdown-menu .dropdown-item.active .dropdown-item-icon {
+                    color: currentColor;
+                }
+
                 @media (max-width: 991.98px) {
                     [data-bs-toggle="sidebar-folded"] {
                         display: none;
                     }
                 }
 
-                [data-bs-toggle="sidebar-folded"][aria-pressed="true"]>i {
+                @media (min-width: 992px) {
+                    html:not([data-bs-sidebar^="folded"]) .navbar-vertical .sa-nav-icon-fallback {
+                        display: none !important;
+                    }
+
+                    .navbar-vertical.navbar-expand-lg .navbar-brand {
+                        min-height: 3.5rem;
+                        gap: 0.5rem;
+                    }
+
+                    .navbar-vertical.navbar-expand-lg .navbar-brand .brand-link {
+                        flex: 1;
+                    }
+
+                    .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"] {
+                        opacity: 0.65;
+                        flex-shrink: 0;
+                    }
+
+                    .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"]:hover,
+                    .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"]:focus-visible,
+                    .navbar-vertical.navbar-expand-lg:hover [data-bs-toggle="sidebar-folded"] {
+                        opacity: 1;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .navbar-brand {
+                        justify-content: center;
+                        padding-inline: 0.5rem;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .brand-link {
+                        flex: 0 1 auto;
+                        justify-content: center;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .sa-brand-title {
+                        display: none;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .sa-brand-monogram {
+                        display: inline-flex;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] {
+                        width: var(--tblr-sidebar-folded-width);
+                        box-shadow: inset calc(-1 * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-navbar-border-color);
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] [data-bs-toggle="sidebar-folded"],
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] .nav-link.dropdown-toggle::after {
+                        display: none;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] .nav-link-title {
+                        width: 0;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        opacity: 0;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] .navbar-nav .nav-link {
+                        --tblr-nav-link-icon-margin-end: 0;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] .navbar-nav .nav-item.active > .nav-link.dropdown-toggle {
+                        background: var(--tblr-navbar-active-bg);
+                    }
+
+                    html[data-bs-sidebar="folded"] .navbar-vertical.navbar-expand-lg .navbar-brand {
+                        justify-content: center;
+                        padding-inline: 0.5rem;
+                    }
+
+                    html[data-bs-sidebar="folded"] .navbar-vertical.navbar-expand-lg .brand-link {
+                        display: none;
+                    }
+
+                    html[data-bs-sidebar="folded"] .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"] {
+                        display: inline-flex !important;
+                        opacity: 1;
+                    }
+                }
+
+                [data-bs-toggle="sidebar-folded"] > i {
+                    transition: transform .2s ease;
+                }
+
+                [data-bs-toggle="sidebar-folded"][aria-pressed="true"] > i {
                     transform: rotate(180deg);
+                }
+
+                [dir="rtl"] [data-bs-toggle="sidebar-folded"] > i {
+                    transform: rotate(180deg);
+                }
+
+                [dir="rtl"] [data-bs-toggle="sidebar-folded"][aria-pressed="true"] > i {
+                    transform: none;
                 }
             </style>
         {% endblock %}
-        {% block head %}
-        {% endblock %}
+        {% block head %}{% endblock %}
     </head>
     <body {% block body_attributes %}{% endblock %}>
-        {% block body %}
-        {% endblock %}
+        {% block body %}{% endblock %}
         {% block modal %}{% endblock %}
         {% block core_js %}
-            <script type="text/javascript"
-                    src="{{ static_url(request, 'js/vendor/jquery.min.js', v='v4.0.0') }}"></script>
-            <script type="text/javascript"
-                    src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
-            <script type="text/javascript"
-                    src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.7.5') }}"></script>
-            <script type="text/javascript"
-                    src="{{ static_url(request, 'js/sa-dom.js', v=1) }}"></script>
+            <script src="{{ static_url(request, 'js/vendor/jquery.min.js', v='v4.0.0') }}"></script>
+            <script src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
+            <script src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.7.5') }}"></script>
+            <script src="{{ static_url(request, 'js/sa-dom.js', v=1) }}"></script>
         {% endblock %}
         {% block plugin_js %}
-            {% for link in plugin_js_links(request) %}<script type="text/javascript" src="{{ link }}"></script>{% endfor %}
+            {% for link in plugin_js_links(request) %}<script src="{{ link }}"></script>{% endfor %}
         {% endblock %}
         {% block script %}{% endblock %}
         {# djlint:off #}
@@ -141,6 +298,64 @@
         if (Object.prototype.hasOwnProperty.call(classes, name)) return classes[name];
         return fallback !== undefined ? fallback : name;
     };
+
+    (function () {
+        var foldingCleanupTimer = null;
+
+        function syncSidebarTitles() {
+            var isStaticFolded = document.documentElement.getAttribute("data-bs-sidebar") === "folded";
+            document.querySelectorAll("aside.navbar-vertical .nav-link").forEach(function (link) {
+                var titleEl = link.querySelector(".nav-link-title");
+                if (!titleEl) return;
+                if (isStaticFolded) {
+                    link.setAttribute("title", (titleEl.textContent || "").trim());
+                } else {
+                    link.removeAttribute("title");
+                }
+            });
+        }
+
+        function clearFoldingState() {
+            var aside = document.querySelector("aside.navbar-vertical");
+            if (aside) {
+                aside.removeAttribute("data-sa-sidebar-folding");
+            }
+            if (foldingCleanupTimer !== null) {
+                clearTimeout(foldingCleanupTimer);
+                foldingCleanupTimer = null;
+            }
+            document.removeEventListener("mousemove", handleDocumentMoveDuringFold);
+        }
+
+        function handleDocumentMoveDuringFold() {
+            var aside = document.querySelector("aside.navbar-vertical");
+            if (!aside || !aside.matches(":hover")) {
+                clearFoldingState();
+            }
+        }
+
+        document.addEventListener("tabler:sidebar-folded", function (e) {
+            var aside = document.querySelector("aside.navbar-vertical");
+            var toggleBtn = document.querySelector('[data-bs-toggle="sidebar-folded"]');
+            if (toggleBtn && document.activeElement === toggleBtn) {
+                toggleBtn.blur();
+            }
+            clearFoldingState();
+            if (aside && e.detail && e.detail.folded && aside.matches(":hover")) {
+                aside.setAttribute("data-sa-sidebar-folding", "");
+                aside.addEventListener("mouseleave", clearFoldingState, { once: true });
+                document.addEventListener("mousemove", handleDocumentMoveDuringFold);
+                foldingCleanupTimer = setTimeout(function () {
+                    if (!aside.matches(":hover")) {
+                        clearFoldingState();
+                    }
+                }, 350);
+            }
+            syncSidebarTitles();
+        });
+
+        document.addEventListener("DOMContentLoaded", syncSidebarTitles);
+    })();
 
     $(function () {
         // Send CSRF token on every jQuery-initiated mutating request

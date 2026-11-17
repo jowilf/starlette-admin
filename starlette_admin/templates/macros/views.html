@@ -1,5 +1,5 @@
 {% macro _menu_icon(view) -%}
-    <span class="nav-link-icon d-lg-inline-block">
+    <span class="nav-link-icon d-lg-inline-flex{% if not view.icon %} sa-nav-icon-fallback{% endif %}">
         <i class="{{ icon(view.icon) if view.icon else icon('nav.item_fallback') }}"></i>
     </span>
 {% endmacro %}

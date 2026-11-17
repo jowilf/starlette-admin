@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from starlette.requests import Request
-from starlette_admin.theme import BaseTheme, IconSet, TablerSettings
+from starlette_admin.theme import BaseTheme, CoreIcons, IconSet, TablerSettings
 
 
 def test_icon_set_css_links_default_is_empty():
@@ -33,3 +33,7 @@ def test_tabler_settings_sidebar_html_attrs():
         TablerSettings(sidebar="folded-hover").html_attrs()["data-bs-sidebar"]
         == "folded-hover"
     )
+
+
+def test_core_icons_sidebar_toggle():
+    assert CoreIcons.icons["nav.sidebar_toggle"] == "fa-solid fa-outdent"

@@ -62,7 +62,7 @@ class CoreIcons(IconSet):
         "nav.language": "fa-solid fa-language",
         "nav.world": "fa-solid fa-earth-americas",
         "nav.user": "fa-solid fa-user",
-        "nav.sidebar_toggle": "fa-solid fa-angles-left",
+        "nav.sidebar_toggle": "fa-solid fa-outdent",
         "nav.item_fallback": "fa-regular fa-circle-dot",
         # Flash messages
         "flash.success": "fa-solid fa-circle-check",
