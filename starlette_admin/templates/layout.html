@@ -26,8 +26,7 @@
                                          alt="{{ app_title }}" />
                                 {% else %}
                                     <span class="sa-brand-title">{{ app_title }}</span>
-                                    <span class="sa-brand-monogram"
-                                          aria-hidden="true">{{ (app_title or '')[:1] | upper }}</span>
+                                    <span class="sa-brand-monogram" aria-hidden="true">{{ (app_title or '')[:1] | upper }}</span>
                                 {% endif %}
                             {% endblock %}
                         </a>

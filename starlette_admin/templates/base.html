@@ -55,7 +55,8 @@
                 <link rel="stylesheet" href="{{ link }}">
             {% endfor %}
         {% endblock %}
-        {% block head_css %}{% endblock %}
+        {% block head_css %}
+        {% endblock %}
         {% block core_inline_css %}
             <link rel="stylesheet"
                   href="{{ static_url(request, 'css/select2-tabler.css', v=2) }}">
@@ -162,6 +163,10 @@
                     [data-bs-toggle="sidebar-folded"] {
                         display: none;
                     }
+
+                    html[data-bs-sidebar^="folded"] .navbar-vertical .dropdown-menu.show:not([data-bs-popper]):not([data-tblr-popper]) {
+                        display: block;
+                    }
                 }
 
                 @media (min-width: 992px) {
@@ -192,7 +197,7 @@
                         text-overflow: ellipsis;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:hover:not([data-sa-sidebar-folding]) {
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) {
                         overflow-x: hidden;
                         overflow-y: auto;
                         transition-delay: .08s;
@@ -214,7 +219,7 @@
 
                     .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"]:hover,
                     .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"]:focus-visible,
-                    .navbar-vertical.navbar-expand-lg:hover [data-bs-toggle="sidebar-folded"] {
+                    .navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)) [data-bs-toggle="sidebar-folded"] {
                         opacity: 1;
                     }
 
@@ -301,7 +306,8 @@
                 }
             </style>
         {% endblock %}
-        {% block head %}{% endblock %}
+        {% block head %}
+        {% endblock %}
     </head>
     <body {% block body_attributes %}{% endblock %}>
         {% block body %}{% endblock %}
@@ -340,18 +346,19 @@
     (function () {
         var foldingCleanupTimer = null;
         var hoverExpandTimer = null;
+        var blockingTablerAutoHide = false;
+        var allowedClickHideToggle = null;
+        var autoHideResetTimer = null;
+        var desktopMql = window.matchMedia("(min-width: 992px)");
 
         // Capture server-rendered default-open state (active or always_open)
         // before Tabler's DOMContentLoaded listener strips `.show`.
-        function markDefaultOpenDropdowns() {
-            document.querySelectorAll("aside.navbar-vertical .dropdown-menu.show").forEach(function (menu) {
-                menu.setAttribute("data-sa-default-open", "");
-            });
-        }
-        markDefaultOpenDropdowns();
+        document.querySelectorAll("aside.navbar-vertical .dropdown-menu.show").forEach(function (menu) {
+            menu.setAttribute("data-sa-default-open", "");
+        });
 
         function isFoldedHoverMode() {
-            return document.documentElement.getAttribute("data-bs-sidebar") === "folded-hover" && window.innerWidth >= 992;
+            return desktopMql.matches && document.documentElement.getAttribute("data-bs-sidebar") === "folded-hover";
         }
 
         function getDropdownToggle(menu) {
@@ -401,8 +408,17 @@
             }
         }
 
+        function resetAutoHideGuard() {
+            blockingTablerAutoHide = false;
+            allowedClickHideToggle = null;
+            if (autoHideResetTimer !== null) {
+                clearTimeout(autoHideResetTimer);
+                autoHideResetTimer = null;
+            }
+        }
+
         function syncSidebarTitles() {
-            var isStaticFolded = document.documentElement.getAttribute("data-bs-sidebar") === "folded";
+            var isStaticFolded = desktopMql.matches && document.documentElement.getAttribute("data-bs-sidebar") === "folded";
             document.querySelectorAll("aside.navbar-vertical .nav-link").forEach(function (link) {
                 var titleEl = link.querySelector(".nav-link-title");
                 if (!titleEl) return;
@@ -433,6 +449,27 @@
             }
         }
 
+        // Tabler's folded click handler hides all sibling sidebar dropdowns;
+        // preserve multi-open (`data-bs-auto-close="false"`) in expanded folded-hover and mobile.
+        document.addEventListener("click", function (e) {
+            if (!(e.target instanceof Element)) return;
+            var aside = document.querySelector("aside.navbar-vertical");
+            if (!aside || !aside.contains(e.target)) return;
+            if (e.target.closest('[data-bs-toggle="sidebar-folded"], [data-tblr-toggle="sidebar-folded"]')) return;
+            if (desktopMql.matches && (!isFoldedHoverMode() || aside.hasAttribute("data-sa-sidebar-folding"))) return;
+            allowedClickHideToggle = e.target.closest('[data-bs-toggle="dropdown"], [data-tblr-toggle="dropdown"]');
+            blockingTablerAutoHide = true;
+            autoHideResetTimer = setTimeout(resetAutoHideGuard, 0);
+        }, true);
+
+        document.addEventListener("click", resetAutoHideGuard);
+
+        document.addEventListener("hide.bs.dropdown", function (e) {
+            if (blockingTablerAutoHide && e.target !== allowedClickHideToggle && e.target instanceof Element && e.target.closest("#sidebar-menu")) {
+                e.preventDefault();
+            }
+        });
+
         document.addEventListener("tabler:sidebar-folded", function (e) {
             var aside = document.querySelector("aside.navbar-vertical");
             var toggleBtn = document.querySelector('[data-bs-toggle="sidebar-folded"]');
@@ -460,7 +497,6 @@
         });
 
         document.addEventListener("DOMContentLoaded", function () {
-            markDefaultOpenDropdowns();
             syncSidebarTitles();
 
             var aside = document.querySelector("aside.navbar-vertical");
@@ -506,7 +542,25 @@
                 }
             });
 
-            if (isFoldedHoverMode() && !aside.hasAttribute("data-sa-sidebar-folding") && (aside.matches(":hover") || aside.matches(":has(:focus-visible)"))) {
+            desktopMql.addEventListener("change", function () {
+                cancelHoverExpand();
+                clearFoldingState();
+                syncSidebarTitles();
+                var sidebarAttr = document.documentElement.getAttribute("data-bs-sidebar");
+                if (!desktopMql.matches) {
+                    restoreDefaultDropdowns();
+                } else if (sidebarAttr === "folded") {
+                    collapseAllDropdowns();
+                } else if (sidebarAttr === "folded-hover") {
+                    if (aside.matches(":hover") || aside.matches(":has(:focus-visible)")) {
+                        restoreDefaultDropdowns();
+                    } else {
+                        collapseAllDropdowns();
+                    }
+                }
+            });
+
+            if (!desktopMql.matches || (isFoldedHoverMode() && !aside.hasAttribute("data-sa-sidebar-folding") && (aside.matches(":hover") || aside.matches(":has(:focus-visible)")))) {
                 restoreDefaultDropdowns();
             }
         });
