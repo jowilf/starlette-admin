@@ -877,3 +877,36 @@ def test_sidebar_brand_and_fallback_icon_markup() -> None:
     )
     assert "fa-solid fa-outdent" in text
     assert "nav-link-icon d-lg-inline-flex sa-nav-icon-fallback" in text
+
+
+def test_dropdown_aria_expanded_matches_open_state() -> None:
+    app = Starlette()
+    admin = BaseAdmin()
+    admin.add_view(
+        DropDown(
+            "Always Open",
+            icon="fa fa-folder",
+            always_open=True,
+            views=[PostView(model=Post)],
+        )
+    )
+    admin.add_view(
+        DropDown(
+            "Collapsible",
+            icon="fa fa-list",
+            always_open=False,
+            views=[Link(menu_label="Docs", url="/docs")],
+        )
+    )
+    admin.mount_to(app)
+
+    client = TestClient(app, base_url="http://testserver")
+    response = client.get("/admin")
+    assert response.status_code == 200
+    text = re.sub(r"\s+", " ", response.text)
+
+    always_open_block = text.split("Always Open", 1)[0].rsplit("<li", 1)[1]
+    assert 'aria-expanded="true"' in always_open_block
+
+    collapsible_block = text.split("Collapsible", 1)[0].rsplit("<li", 1)[1]
+    assert 'aria-expanded="false"' in collapsible_block

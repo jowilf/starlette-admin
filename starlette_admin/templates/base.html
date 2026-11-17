@@ -185,11 +185,22 @@
                         transition: transform .25s ease, width .25s ease;
                     }
 
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg .nav-link-title,
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg .dropdown-item {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
                     html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:hover:not([data-sa-sidebar-folding]) {
                         overflow-x: hidden;
                         overflow-y: auto;
                         transition-delay: .08s;
                         box-shadow: inset calc(-1 * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-border-color), 0 0.75rem 2rem rgba(0, 0, 0, 0.35);
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) .dropdown-menu.show {
+                        display: block;
                     }
 
                     .navbar-vertical.navbar-expand-lg .navbar-brand .brand-link {
@@ -328,6 +339,67 @@
 
     (function () {
         var foldingCleanupTimer = null;
+        var hoverExpandTimer = null;
+
+        // Capture server-rendered default-open state (active or always_open)
+        // before Tabler's DOMContentLoaded listener strips `.show`.
+        function markDefaultOpenDropdowns() {
+            document.querySelectorAll("aside.navbar-vertical .dropdown-menu.show").forEach(function (menu) {
+                menu.setAttribute("data-sa-default-open", "");
+            });
+        }
+        markDefaultOpenDropdowns();
+
+        function isFoldedHoverMode() {
+            return document.documentElement.getAttribute("data-bs-sidebar") === "folded-hover" && window.innerWidth >= 992;
+        }
+
+        function getDropdownToggle(menu) {
+            var parent = menu.parentElement;
+            if (!parent) return null;
+            for (var i = 0; i < parent.children.length; i++) {
+                var child = parent.children[i];
+                if (child.matches('[data-bs-toggle="dropdown"], [data-tblr-toggle="dropdown"]')) {
+                    return child;
+                }
+            }
+            return null;
+        }
+
+        function restoreDefaultDropdowns() {
+            document.querySelectorAll("aside.navbar-vertical .dropdown-menu[data-sa-default-open]").forEach(function (menu) {
+                menu.classList.add("show");
+                var toggle = getDropdownToggle(menu);
+                if (toggle) {
+                    toggle.setAttribute("aria-expanded", "true");
+                }
+            });
+        }
+
+        function collapseAllDropdowns() {
+            var DropdownCtor = (window.tabler && window.tabler.Dropdown) || (window.bootstrap && window.bootstrap.Dropdown);
+            document.querySelectorAll("aside.navbar-vertical .dropdown-menu.show").forEach(function (menu) {
+                var toggle = getDropdownToggle(menu);
+                var instance = toggle && DropdownCtor && DropdownCtor.getInstance(toggle);
+                if (instance) {
+                    instance.hide();
+                } else {
+                    menu.classList.remove("show");
+                    menu.removeAttribute("data-bs-popper");
+                    menu.removeAttribute("data-tblr-popper");
+                    if (toggle) {
+                        toggle.setAttribute("aria-expanded", "false");
+                    }
+                }
+            });
+        }
+
+        function cancelHoverExpand() {
+            if (hoverExpandTimer !== null) {
+                clearTimeout(hoverExpandTimer);
+                hoverExpandTimer = null;
+            }
+        }
 
         function syncSidebarTitles() {
             var isStaticFolded = document.documentElement.getAttribute("data-bs-sidebar") === "folded";
@@ -367,21 +439,77 @@
             if (toggleBtn && document.activeElement === toggleBtn) {
                 toggleBtn.blur();
             }
+            cancelHoverExpand();
             clearFoldingState();
-            if (aside && e.detail && e.detail.folded && aside.matches(":hover")) {
-                aside.setAttribute("data-sa-sidebar-folding", "");
-                aside.addEventListener("mouseleave", clearFoldingState, { once: true });
-                document.addEventListener("mousemove", handleDocumentMoveDuringFold);
-                foldingCleanupTimer = setTimeout(function () {
-                    if (!aside.matches(":hover")) {
-                        clearFoldingState();
-                    }
-                }, 350);
+            if (e.detail && e.detail.folded) {
+                collapseAllDropdowns();
+                if (aside && aside.matches(":hover")) {
+                    aside.setAttribute("data-sa-sidebar-folding", "");
+                    aside.addEventListener("mouseleave", clearFoldingState, { once: true });
+                    document.addEventListener("mousemove", handleDocumentMoveDuringFold);
+                    foldingCleanupTimer = setTimeout(function () {
+                        if (!aside.matches(":hover")) {
+                            clearFoldingState();
+                        }
+                    }, 350);
+                }
+            } else {
+                restoreDefaultDropdowns();
             }
             syncSidebarTitles();
         });
 
-        document.addEventListener("DOMContentLoaded", syncSidebarTitles);
+        document.addEventListener("DOMContentLoaded", function () {
+            markDefaultOpenDropdowns();
+            syncSidebarTitles();
+
+            var aside = document.querySelector("aside.navbar-vertical");
+            if (!aside) return;
+
+            aside.addEventListener("mouseenter", function () {
+                if (!isFoldedHoverMode() || aside.hasAttribute("data-sa-sidebar-folding")) return;
+                cancelHoverExpand();
+                hoverExpandTimer = setTimeout(function () {
+                    hoverExpandTimer = null;
+                    if (isFoldedHoverMode() && !aside.hasAttribute("data-sa-sidebar-folding") && aside.matches(":hover")) {
+                        restoreDefaultDropdowns();
+                    }
+                }, 80);
+            });
+
+            aside.addEventListener("mouseleave", function () {
+                cancelHoverExpand();
+                if (isFoldedHoverMode()) {
+                    collapseAllDropdowns();
+                }
+            });
+
+            aside.addEventListener("focusin", function () {
+                if (!isFoldedHoverMode() || aside.hasAttribute("data-sa-sidebar-folding")) return;
+                if (aside.matches(":has(:focus-visible)")) {
+                    cancelHoverExpand();
+                    restoreDefaultDropdowns();
+                }
+            });
+
+            aside.addEventListener("focusout", function (e) {
+                if (!isFoldedHoverMode()) return;
+                if ((!e.relatedTarget || !aside.contains(e.relatedTarget)) && !aside.matches(":hover")) {
+                    cancelHoverExpand();
+                    collapseAllDropdowns();
+                }
+            });
+
+            aside.addEventListener("click", function (e) {
+                if (e.target instanceof Element && e.target.closest('[data-bs-toggle="dropdown"], [data-tblr-toggle="dropdown"]')) {
+                    cancelHoverExpand();
+                }
+            });
+
+            if (isFoldedHoverMode() && !aside.hasAttribute("data-sa-sidebar-folding") && (aside.matches(":hover") || aside.matches(":has(:focus-visible)"))) {
+                restoreDefaultDropdowns();
+            }
+        });
     })();
 
     $(function () {
