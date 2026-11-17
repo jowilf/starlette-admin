@@ -49,7 +49,7 @@ This configuration applies `data-bs-theme*` attributes directly to the root `<ht
 | `base` | `str | None` | `"stone"` | `"slate"`, `"gray"`, `"zinc"`, `"neutral"`, `"stone"`, `"pink"` |
 | `primary` | `str | None` | `"blue"` | `"blue"`, `"azure"`, `"indigo"`, `"purple"`, `"pink"`, `"red"`, `"orange"`, `"yellow"`, `"lime"`, `"green"`, `"teal"`, `"cyan"`, `"inverted"` |
 | `radius` | `float | None` | `1` | `0`, `0.5`, `1`, `1.5`, `2` |
-| `sidebar` | `str | None` | `None` | `"default"`, `"folded"`, `"folded-hover"` |
+| `sidebar` | `str | None` | `None` | `"folded"`, `"folded-hover"` |
 
 Set `sidebar="folded"` for a static icon rail or `sidebar="folded-hover"` for a folded rail that expands on hover on desktop viewports; users can also toggle and persist the sidebar state in the browser (`localStorage`).
 

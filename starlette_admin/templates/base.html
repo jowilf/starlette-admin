@@ -17,9 +17,11 @@
         {# djlint:off #}
         <script>
             try {
+                var foldedMode = document.documentElement.getAttribute("data-bs-sidebar") === "folded" ? "folded" : "folded-hover";
+                window.__saFoldedMode = foldedMode;
                 var savedSidebar = localStorage.getItem("tabler-sidebar");
                 if (savedSidebar === "folded" || savedSidebar === "folded-hover") {
-                    document.documentElement.setAttribute("data-bs-sidebar", savedSidebar);
+                    document.documentElement.setAttribute("data-bs-sidebar", foldedMode);
                 } else if (savedSidebar === "default") {
                     document.documentElement.removeAttribute("data-bs-sidebar");
                 }
@@ -479,8 +481,15 @@
             cancelHoverExpand();
             clearFoldingState();
             if (e.detail && e.detail.folded) {
+                var targetMode = window.__saFoldedMode || "folded-hover";
+                if (document.documentElement.getAttribute("data-bs-sidebar") !== targetMode) {
+                    document.documentElement.setAttribute("data-bs-sidebar", targetMode);
+                    try {
+                        localStorage.setItem("tabler-sidebar", targetMode);
+                    } catch (err) {}
+                }
                 collapseAllDropdowns();
-                if (aside && aside.matches(":hover")) {
+                if (targetMode === "folded-hover" && aside && aside.matches(":hover")) {
                     aside.setAttribute("data-sa-sidebar-folding", "");
                     aside.addEventListener("mouseleave", clearFoldingState, { once: true });
                     document.addEventListener("mousemove", handleDocumentMoveDuringFold);

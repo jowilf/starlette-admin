@@ -90,7 +90,7 @@ admin = Admin(
 )
 ```
 
-The default theme uses Tabler. `mode`: light/dark. `base`: slate, gray, zinc, neutral, stone, pink. `primary`: blue, azure, indigo, purple, pink, red, orange, yellow, lime, green, teal, cyan, inverted. `radius`: 0 to 2 in 0.5 steps. `sidebar`: `"default"`, `"folded"`, `"folded-hover"` (optional initial desktop sidebar state). To build and publish reusable theme packages (similar to plugins), subclass `BaseTheme` to bundle an `IconSet`, `templates/`, and `static/`. For local template overrides, use `templates_dir` and `static_dir`. Example: `examples/08-themes`.
+The default theme uses Tabler. `mode`: light/dark. `base`: slate, gray, zinc, neutral, stone, pink. `primary`: blue, azure, indigo, purple, pink, red, orange, yellow, lime, green, teal, cyan, inverted. `radius`: 0 to 2 in 0.5 steps. `sidebar`: `"folded"`, `"folded-hover"` (optional initial desktop sidebar state). To build and publish reusable theme packages (similar to plugins), subclass `BaseTheme` to bundle an `IconSet`, `templates/`, and `static/`. For local template overrides, use `templates_dir` and `static_dir`. Example: `examples/08-themes`.
 
 ## Multiple admin instances
 

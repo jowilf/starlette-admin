@@ -27,7 +27,6 @@ def test_base_theme_resolved_package_falls_back_to_top_level_package():
 
 def test_tabler_settings_sidebar_html_attrs():
     assert "data-bs-sidebar" not in TablerSettings().html_attrs()
-    assert "data-bs-sidebar" not in TablerSettings(sidebar="default").html_attrs()
     assert TablerSettings(sidebar="folded").html_attrs()["data-bs-sidebar"] == "folded"
     assert (
         TablerSettings(sidebar="folded-hover").html_attrs()["data-bs-sidebar"]

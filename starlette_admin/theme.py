@@ -213,7 +213,7 @@ TablerPrimary = Literal[
 
 TablerRadius = float  # Valid values: 0, 0.5, 1, 1.5, 2.
 
-TablerSidebar = Literal["default", "folded", "folded-hover"]
+TablerSidebar = Literal["folded", "folded-hover"]
 
 
 @dataclass
@@ -248,10 +248,10 @@ class TablerSettings:
         radius: Corner rounding scale applied to buttons, cards, and inputs.
             `None` omits the `data-bs-theme-radius` attribute.
         mode: Color scheme rendered on the page, `"light"` or `"dark"`.
-        sidebar: Initial desktop sidebar state: `"default"` (expanded),
-            `"folded"` (static icon rail), or `"folded-hover"` (folded rail
-            that expands on hover). `None` omits `data-bs-sidebar`, defaulting
-            to expanded while still honoring the user's saved toggle preference.
+        sidebar: Initial desktop sidebar state: `"folded"` (static icon rail
+            with flyout menus) or `"folded-hover"` (folded rail that expands on
+            hover). `None` omits `data-bs-sidebar`, defaulting to expanded while
+            still honoring the user's saved toggle preference.
     """
 
     base: TablerBase | None = "stone"
@@ -272,7 +272,7 @@ class TablerSettings:
             attrs["data-bs-theme-primary"] = self.primary
         if self.radius is not None:
             attrs["data-bs-theme-radius"] = str(self.radius)
-        if self.sidebar is not None and self.sidebar != "default":
+        if self.sidebar is not None:
             attrs["data-bs-sidebar"] = self.sidebar
         return attrs
 
