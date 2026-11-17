@@ -104,8 +104,9 @@
                     font-weight: var(--tblr-font-weight-semibold, 600);
                     line-height: 1.25;
                     color: inherit;
-                    white-space: normal;
-                    word-break: break-word;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
 
                 .navbar-vertical .sa-brand-monogram {
@@ -168,9 +169,27 @@
                         display: none !important;
                     }
 
+                    .page > .page-wrapper,
+                    .page > header.navbar {
+                        transition: margin-inline-start .25s ease;
+                    }
+
                     .navbar-vertical.navbar-expand-lg .navbar-brand {
+                        height: 3.5rem;
                         min-height: 3.5rem;
                         gap: 0.5rem;
+                        overflow: hidden;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg {
+                        transition: transform .25s ease, width .25s ease;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:hover:not([data-sa-sidebar-folding]) {
+                        overflow-x: hidden;
+                        overflow-y: auto;
+                        transition-delay: .08s;
+                        box-shadow: inset calc(-1 * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-border-color), 0 0.75rem 2rem rgba(0, 0, 0, 0.35);
                     }
 
                     .navbar-vertical.navbar-expand-lg .navbar-brand .brand-link {
@@ -260,6 +279,14 @@
 
                 [dir="rtl"] [data-bs-toggle="sidebar-folded"][aria-pressed="true"] > i {
                     transform: none;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .page > .page-wrapper,
+                    .page > header.navbar,
+                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg {
+                        transition: none !important;
+                    }
                 }
             </style>
         {% endblock %}
