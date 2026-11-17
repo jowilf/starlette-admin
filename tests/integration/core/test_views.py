@@ -875,7 +875,7 @@ def test_sidebar_brand_and_fallback_icon_markup() -> None:
             0
         ]
     )
-    assert "fa-solid fa-outdent" in text
+    assert "fa-solid fa-angles-left" in text
     assert "nav-link-icon d-lg-inline-flex sa-nav-icon-fallback" in text
 
 

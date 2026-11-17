@@ -9,7 +9,7 @@ You can restyle the admin through theme settings, custom templates, and static f
 
 ## Applying a theme
 
-Use `TablerSettings` to set your color palette, border radius, and color mode. Pass it to `DefaultTheme`, then pass that to the `theme` parameter of your `Admin` instance.
+Use `TablerSettings` to set your color palette, border radius, color mode, and initial sidebar state. Pass it to `DefaultTheme`, then pass that to the `theme` parameter of your `Admin` instance.
 
 ```python
 from myapp.models import Post

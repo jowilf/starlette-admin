@@ -215,14 +215,11 @@
                     }
 
                     .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"] {
-                        opacity: 0.65;
                         flex-shrink: 0;
                     }
 
-                    .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"]:hover,
-                    .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"]:focus-visible,
-                    .navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)) [data-bs-toggle="sidebar-folded"] {
-                        opacity: 1;
+                    .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"] > i {
+                        font-size: 0.9375rem;
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .navbar-brand {
@@ -279,7 +276,6 @@
 
                     html[data-bs-sidebar="folded"] .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"] {
                         display: inline-flex !important;
-                        opacity: 1;
                     }
                 }
 
