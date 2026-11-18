@@ -215,11 +215,12 @@
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) > [class^="container"] {
-                        width: 16rem;
-                        min-width: 16rem;
+                        min-width: 0;
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-brand {
+                        width: 16rem;
+                        min-width: 16rem;
                         justify-content: space-between;
                         padding-inline: var(--tblr-sidebar-brand-padding-x, 1rem);
                     }
@@ -248,10 +249,26 @@
 
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-nav .nav-link {
                         --tblr-nav-link-icon-margin-end: 0.375rem;
+                        overflow: hidden;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-nav .nav-link-icon {
+                        flex-shrink: 0;
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .nav-link-title {
-                        width: auto;
+                        width: 11.5rem;
+                        max-width: 11.5rem;
+                        flex-shrink: 0;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .nav-link.dropdown-toggle > .nav-link-title {
+                        width: 10.25rem;
+                        max-width: 10.25rem;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .nav-link.dropdown-toggle::after {
+                        flex-shrink: 0;
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse {
@@ -283,6 +300,8 @@
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .dropdown-menu > .dropdown-menu-columns {
+                        width: 15rem;
+                        min-width: 15rem;
                         min-height: 0;
                         overflow: hidden;
                     }
