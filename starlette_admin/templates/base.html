@@ -267,10 +267,6 @@
                         max-width: 10.25rem;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .nav-link.dropdown-toggle::after {
-                        flex-shrink: 0;
-                    }
-
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse {
                         overflow-x: hidden;
                         overflow-y: auto;
@@ -278,6 +274,7 @@
 
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .nav-link.dropdown-toggle::after {
                         display: block;
+                        flex-shrink: 0;
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .dropdown-menu {
@@ -376,6 +373,14 @@
                         opacity: 1;
                         visibility: visible;
                         transition: opacity .18s ease .04s, visibility 0s;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-logo {
+                        transition: max-width .22s cubic-bezier(0.4, 0, 0.2, 1);
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .navbar-logo {
+                        max-width: 2rem;
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .sa-brand-title {
@@ -480,6 +485,7 @@
                     .page > header.navbar,
                     .navbar-vertical.navbar-expand-lg,
                     html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg :is(
+                        .navbar-logo,
                         .sa-brand-monogram,
                         .sa-brand-title,
                         [data-bs-toggle="sidebar-folded"],
