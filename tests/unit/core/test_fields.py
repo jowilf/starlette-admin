@@ -723,6 +723,12 @@ async def test_datetime_field_parse_with_tz_conversion():
     form = MagicMock(**{"get.return_value": "2024-03-15T10:30:00"})
     result = await field.parse_form_data(MagicMock(), form)
     assert isinstance(result, datetime.datetime)
+    assert result.tzinfo is None
+
+    aware_field = DateTimeField("created_at", timezone=True)
+    aware_result = await aware_field.parse_form_data(MagicMock(), form)
+    assert isinstance(aware_result, datetime.datetime)
+    assert aware_result.tzinfo is not None
 
 
 @pytest.mark.asyncio

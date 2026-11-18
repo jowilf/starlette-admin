@@ -1303,6 +1303,8 @@ class DateTimeField(NumberField):
     Parameters:
         search_format: The moment.js format to use for searching. Use `None` for ISO format.
         output_format: The format for displaying the output.
+        timezone: If `True`, `parse_form_data` returns a timezone-aware `datetime`
+            in the configured database timezone instead of stripping `tzinfo`.
     """
 
     input_type: str = "datetime-local"
@@ -1310,6 +1312,7 @@ class DateTimeField(NumberField):
     output_format: str | None = None
     search_format: str | None = None
     form_alt_format: str | None = "F j, Y  H:i:S"
+    timezone: bool = False
 
     def input_params(self) -> str:
         return html_params(
@@ -1348,6 +1351,8 @@ class DateTimeField(NumberField):
 
         # Preserves pre-timezone conversion behavior.
         if not is_timezone_conversion_enabled():
+            if self.timezone and dt.tzinfo is None:
+                dt = dt.replace(tzinfo=get_database_tzinfo())
             _log.debug(
                 "DateTimeField.parse_form_data: field=%r tz conversion disabled -> %r",
                 self.name,
@@ -1360,7 +1365,8 @@ class DateTimeField(NumberField):
             # Naive datetime (e.g. from a datetime-local form input), assumed to be in the user's timezone.
             user_tz = get_tzinfo()
             dt = dt.replace(tzinfo=user_tz)
-        result = dt.astimezone(database_tz).replace(tzinfo=None)
+        converted = dt.astimezone(database_tz)
+        result = converted if self.timezone else converted.replace(tzinfo=None)
         _log.debug(
             "DateTimeField.parse_form_data: field=%r tz-converted %r (db_tz=%s) -> %r",
             self.name,

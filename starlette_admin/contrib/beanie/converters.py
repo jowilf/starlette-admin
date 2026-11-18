@@ -115,7 +115,10 @@ class BeanieModelConverter(StandardModelConverter):
 
     @converts(AwareDatetime, NaiveDatetime, FutureDatetime, PastDatetime)
     def conv_aware_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
-        return DateTimeField(**self._standard_type_common(*args, **kwargs))
+        return DateTimeField(
+            **self._standard_type_common(*args, **kwargs),
+            timezone=kwargs.get("type") is AwareDatetime,
+        )
 
     @converts(PastDate, FutureDate)
     def conv_pydantic_date(self, *args: Any, **kwargs: Any) -> BaseField:

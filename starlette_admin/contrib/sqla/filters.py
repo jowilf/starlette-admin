@@ -10,6 +10,7 @@ per the `FilterGroup` tree, and `ModelView.find_all`/`count` apply the result
 once.
 """
 
+import datetime
 from collections.abc import Sequence
 from typing import Any
 
@@ -80,6 +81,7 @@ from starlette_admin.filters.string import (
     NotContainsFilter as BaseNotContainsFilter,
 )
 from starlette_admin.filters.string import StartsWithFilter as BaseStartsWithFilter
+from starlette_admin.i18n import get_database_tzinfo
 
 
 def _column(ctx: FilterApplyContext) -> InstrumentedAttribute:
@@ -192,6 +194,19 @@ class BetweenFilter(BaseBetweenFilter):
 # Date / datetime / time
 
 
+def _coerce_datetime_tz(column: InstrumentedAttribute, value: Any) -> Any:
+    """Attach the configured database `tzinfo` to a naive `datetime` when the
+    target SQLAlchemy column (or its `TypeDecorator.impl`) is timezone-aware.
+    """
+    if isinstance(value, datetime.datetime) and value.tzinfo is None:
+        col_type = getattr(column, "type", None)
+        if getattr(col_type, "timezone", False) or getattr(
+            getattr(col_type, "impl", None), "timezone", False
+        ):
+            return value.replace(tzinfo=get_database_tzinfo())
+    return value
+
+
 class DateEqualFilter(BaseDateEqualFilter):
     def apply(self, ctx: FilterApplyContext) -> Any:
         return _column(ctx) == ctx.value
@@ -199,7 +214,8 @@ class DateEqualFilter(BaseDateEqualFilter):
 
 class DateTimeEqualFilter(BaseDateTimeEqualFilter):
     def apply(self, ctx: FilterApplyContext) -> Any:
-        return _column(ctx) == ctx.value
+        col = _column(ctx)
+        return col == _coerce_datetime_tz(col, ctx.value)
 
 
 class TimeEqualFilter(BaseTimeEqualFilter):
@@ -214,7 +230,11 @@ class DateBetweenFilter(BaseDateBetweenFilter):
 
 class DateTimeBetweenFilter(BaseDateTimeBetweenFilter):
     def apply(self, ctx: FilterApplyContext) -> Any:
-        return _column(ctx).between(ctx.value, ctx.value2)
+        col = _column(ctx)
+        return col.between(
+            _coerce_datetime_tz(col, ctx.value),
+            _coerce_datetime_tz(col, ctx.value2),
+        )
 
 
 class TimeBetweenFilter(BaseTimeBetweenFilter):
