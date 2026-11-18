@@ -178,7 +178,11 @@
 
                     .page > .page-wrapper,
                     .page > header.navbar {
-                        transition: margin-inline-start .25s ease;
+                        transition: margin-inline-start .25s cubic-bezier(0.4, 0, 0.2, 1);
+                    }
+
+                    .navbar-vertical.navbar-expand-lg {
+                        transition: transform .25s cubic-bezier(0.4, 0, 0.2, 1), width .25s cubic-bezier(0.4, 0, 0.2, 1);
                     }
 
                     .navbar-vertical.navbar-expand-lg .navbar-brand {
@@ -188,81 +192,194 @@
                         overflow: hidden;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg {
-                        transition: transform .25s ease, width .25s ease;
-                    }
-
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg .nav-link-title,
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg .dropdown-item {
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) {
-                        overflow-x: hidden;
-                        overflow-y: auto;
-                        transition-delay: .08s;
-                        box-shadow: inset calc(-1 * var(--tblr-dir, 1) * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-border-color), 0 0.75rem 2rem rgba(0, 0, 0, 0.35);
-                    }
-
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) .dropdown-menu.show {
-                        display: block;
-                    }
-
                     .navbar-vertical.navbar-expand-lg .navbar-brand .brand-link {
+                        position: relative;
                         flex: 1;
+                        height: 2rem;
                     }
 
                     .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"] {
                         flex-shrink: 0;
                         opacity: 1;
+                        transition: opacity .18s ease;
                     }
 
                     .navbar-vertical.navbar-expand-lg [data-bs-toggle="sidebar-folded"] > i {
                         font-size: 0.9375rem;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .navbar-brand {
-                        justify-content: center;
-                        padding-inline: 0.5rem;
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) {
+                        overflow-x: hidden;
+                        overflow-y: auto;
+                        transition: transform .25s cubic-bezier(0.4, 0, 0.2, 1), width .25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .25s ease;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .brand-link {
-                        flex: 0 1 auto;
-                        justify-content: center;
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) > [class^="container"] {
+                        width: 16rem;
+                        min-width: 16rem;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .sa-brand-title {
-                        display: none;
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-brand {
+                        justify-content: space-between;
+                        padding-inline: var(--tblr-sidebar-brand-padding-x, 1rem);
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .sa-brand-monogram {
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-brand .brand-link {
+                        flex: 1;
+                        justify-content: flex-start;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .sa-brand-monogram {
+                        display: inline-flex;
+                        position: absolute;
+                        inset-inline-start: 0;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        pointer-events: none;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .sa-brand-title {
+                        display: block;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) [data-bs-toggle="sidebar-folded"] {
                         display: inline-flex;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] {
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-nav .nav-link {
+                        --tblr-nav-link-icon-margin-end: 0.375rem;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .nav-link-title {
+                        width: auto;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse {
+                        overflow-x: hidden;
+                        overflow-y: auto;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .nav-link.dropdown-toggle::after {
+                        display: block;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .dropdown-menu {
+                        display: grid;
+                        grid-template-rows: 0fr;
+                        position: static;
+                        z-index: auto;
+                        min-width: 0;
+                        padding: 0;
+                        margin: 0;
+                        color: inherit;
+                        background: none;
+                        background-clip: border-box;
+                        box-shadow: none;
+                        border: none;
+                        opacity: 0;
+                        visibility: hidden;
+                        pointer-events: none;
+                        transition: grid-template-rows .22s cubic-bezier(0.4, 0, 0.2, 1), opacity .18s ease, visibility 0s linear .22s;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .dropdown-menu > .dropdown-menu-columns {
+                        min-height: 0;
+                        overflow: hidden;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .dropdown-menu .dropdown-item {
+                        padding: var(--tblr-sidebar-nav-padding-y) var(--tblr-sidebar-nav-padding-x);
+                        padding-inline-start: calc(var(--tblr-sidebar-nav-padding-x) + var(--tblr-nav-link-icon-width) + var(--tblr-nav-link-icon-margin-end));
+                        color: inherit;
+                        border-radius: var(--tblr-border-radius);
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .dropdown-menu .dropdown-menu .dropdown-item {
+                        padding-inline-start: calc(var(--tblr-sidebar-nav-padding-x) + var(--tblr-nav-link-icon-width) + var(--tblr-nav-link-icon-margin-end) + var(--tblr-sidebar-nav-indent));
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-collapse .dropdown-menu .dropdown-menu .dropdown-menu .dropdown-item {
+                        padding-inline-start: calc(var(--tblr-sidebar-nav-padding-x) + var(--tblr-nav-link-icon-width) + var(--tblr-nav-link-icon-margin-end) + 2 * var(--tblr-sidebar-nav-indent));
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :not(:hover)) .navbar-nav .nav-item.active > .nav-link.dropdown-toggle {
+                        transition: background-color .22s ease;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) {
+                        width: 16rem;
+                        box-shadow: inset calc(-1 * var(--tblr-dir, 1) * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-border-color), 0 0.75rem 2rem rgba(0, 0, 0, 0.35);
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) .sa-brand-monogram {
+                        opacity: 0;
+                        visibility: hidden;
+                        transition: opacity .15s ease, visibility 0s linear .15s;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) .sa-brand-title {
+                        opacity: 1;
+                        visibility: visible;
+                        transition: opacity .2s ease .04s, visibility 0s;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) [data-bs-toggle="sidebar-folded"] {
+                        opacity: 1;
+                        visibility: visible;
+                        pointer-events: auto;
+                        transition: opacity .2s ease .04s, visibility 0s;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) .nav-link-title,
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) .navbar-collapse .nav-link.dropdown-toggle::after {
+                        opacity: 1;
+                        visibility: visible;
+                        transition: opacity .2s ease .03s, visibility 0s;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) .navbar-collapse .dropdown-menu.show {
+                        grid-template-rows: 1fr;
+                        opacity: 1;
+                        visibility: visible;
+                        pointer-events: auto;
+                        transition: grid-template-rows .22s cubic-bezier(0.4, 0, 0.2, 1), opacity .18s ease .04s, visibility 0s;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) {
                         width: var(--tblr-sidebar-folded-width);
                         box-shadow: inset calc(-1 * var(--tblr-dir, 1) * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-navbar-border-color);
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] [data-bs-toggle="sidebar-folded"],
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] .nav-link.dropdown-toggle::after {
-                        display: none;
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .sa-brand-monogram {
+                        opacity: 1;
+                        visibility: visible;
+                        transition: opacity .18s ease .04s, visibility 0s;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] .nav-link-title {
-                        width: 0;
-                        overflow: hidden;
-                        white-space: nowrap;
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .sa-brand-title {
                         opacity: 0;
+                        visibility: hidden;
+                        transition: opacity .15s ease, visibility 0s linear .15s;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] .navbar-nav .nav-link {
-                        --tblr-nav-link-icon-margin-end: 0;
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) [data-bs-toggle="sidebar-folded"] {
+                        opacity: 0;
+                        visibility: hidden;
+                        pointer-events: none;
+                        transition: opacity .15s ease, visibility 0s linear .15s;
                     }
 
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] .navbar-nav .nav-item.active > .nav-link.dropdown-toggle {
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .nav-link-title,
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .navbar-collapse .nav-link.dropdown-toggle::after {
+                        opacity: 0;
+                        visibility: hidden;
+                        transition: opacity .15s ease, visibility 0s linear .15s;
+                    }
+
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg:is(:not(:hover):not(:has(:focus-visible)), [data-sa-sidebar-folding]) .navbar-nav .nav-item.active > .nav-link.dropdown-toggle {
                         background: var(--tblr-navbar-active-bg);
                     }
 
@@ -342,7 +459,16 @@
                 @media (prefers-reduced-motion: reduce) {
                     .page > .page-wrapper,
                     .page > header.navbar,
-                    html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg {
+                    .navbar-vertical.navbar-expand-lg,
+                    html[data-bs-sidebar="folded-hover"] .navbar.navbar-vertical.navbar-expand-lg :is(
+                        .sa-brand-monogram,
+                        .sa-brand-title,
+                        [data-bs-toggle="sidebar-folded"],
+                        .nav-link-title,
+                        .nav-link.dropdown-toggle::after,
+                        .dropdown-menu,
+                        .nav-link.dropdown-toggle
+                    ) {
                         transition: none !important;
                     }
                 }
@@ -387,7 +513,6 @@
 
     (function () {
         var foldingCleanupTimer = null;
-        var hoverExpandTimer = null;
         var blockingTablerAutoHide = false;
         var allowedClickHideToggle = null;
         var autoHideResetTimer = null;
@@ -401,6 +526,10 @@
 
         function isFoldedHoverMode() {
             return desktopMql.matches && document.documentElement.getAttribute("data-bs-sidebar") === "folded-hover";
+        }
+
+        function isSidebarVisuallyExpanded(aside) {
+            return Boolean(aside && !aside.hasAttribute("data-sa-sidebar-folding") && (aside.matches(":hover") || aside.matches(":has(:focus-visible)")));
         }
 
         function getDropdownToggle(menu) {
@@ -443,13 +572,6 @@
             });
         }
 
-        function cancelHoverExpand() {
-            if (hoverExpandTimer !== null) {
-                clearTimeout(hoverExpandTimer);
-                hoverExpandTimer = null;
-            }
-        }
-
         function resetAutoHideGuard() {
             blockingTablerAutoHide = false;
             allowedClickHideToggle = null;
@@ -476,6 +598,7 @@
             var aside = document.querySelector("aside.navbar-vertical");
             if (aside) {
                 aside.removeAttribute("data-sa-sidebar-folding");
+                aside.scrollLeft = 0;
             }
             if (foldingCleanupTimer !== null) {
                 clearTimeout(foldingCleanupTimer);
@@ -518,7 +641,6 @@
             if (toggleBtn && document.activeElement === toggleBtn) {
                 toggleBtn.blur();
             }
-            cancelHoverExpand();
             clearFoldingState();
             if (e.detail && e.detail.folded) {
                 var targetMode = window.__saFoldedMode || "folded-hover";
@@ -529,7 +651,7 @@
                     } catch (err) {}
                 }
                 collapseAllDropdowns();
-                if (targetMode === "folded-hover" && aside && aside.matches(":hover")) {
+                if (targetMode === "folded-hover" && desktopMql.matches && aside && aside.matches(":hover")) {
                     aside.setAttribute("data-sa-sidebar-folding", "");
                     aside.addEventListener("mouseleave", clearFoldingState, { once: true });
                     document.addEventListener("mousemove", handleDocumentMoveDuringFold);
@@ -553,46 +675,32 @@
 
             aside.addEventListener("mouseenter", function () {
                 if (!isFoldedHoverMode() || aside.hasAttribute("data-sa-sidebar-folding")) return;
-                cancelHoverExpand();
-                hoverExpandTimer = setTimeout(function () {
-                    hoverExpandTimer = null;
-                    if (isFoldedHoverMode() && !aside.hasAttribute("data-sa-sidebar-folding") && aside.matches(":hover")) {
-                        restoreDefaultDropdowns();
-                    }
-                }, 80);
+                restoreDefaultDropdowns();
             });
 
             aside.addEventListener("mouseleave", function () {
-                cancelHoverExpand();
-                if (isFoldedHoverMode()) {
-                    collapseAllDropdowns();
-                }
+                if (!isFoldedHoverMode()) return;
+                if (!aside.hasAttribute("data-sa-sidebar-folding") && aside.matches(":has(:focus-visible)")) return;
+                collapseAllDropdowns();
+                aside.scrollLeft = 0;
             });
 
             aside.addEventListener("focusin", function () {
                 if (!isFoldedHoverMode() || aside.hasAttribute("data-sa-sidebar-folding")) return;
                 if (aside.matches(":has(:focus-visible)")) {
-                    cancelHoverExpand();
                     restoreDefaultDropdowns();
                 }
             });
 
             aside.addEventListener("focusout", function (e) {
                 if (!isFoldedHoverMode()) return;
-                if ((!e.relatedTarget || !aside.contains(e.relatedTarget)) && !aside.matches(":hover")) {
-                    cancelHoverExpand();
+                if ((!e.relatedTarget || !aside.contains(e.relatedTarget)) && (!aside.matches(":hover") || aside.hasAttribute("data-sa-sidebar-folding"))) {
                     collapseAllDropdowns();
-                }
-            });
-
-            aside.addEventListener("click", function (e) {
-                if (e.target instanceof Element && e.target.closest('[data-bs-toggle="dropdown"], [data-tblr-toggle="dropdown"]')) {
-                    cancelHoverExpand();
+                    aside.scrollLeft = 0;
                 }
             });
 
             desktopMql.addEventListener("change", function () {
-                cancelHoverExpand();
                 clearFoldingState();
                 syncSidebarTitles();
                 var sidebarAttr = document.documentElement.getAttribute("data-bs-sidebar");
@@ -601,7 +709,7 @@
                 } else if (sidebarAttr === "folded") {
                     collapseAllDropdowns();
                 } else if (sidebarAttr === "folded-hover") {
-                    if (aside.matches(":hover") || aside.matches(":has(:focus-visible)")) {
+                    if (isSidebarVisuallyExpanded(aside)) {
                         restoreDefaultDropdowns();
                     } else {
                         collapseAllDropdowns();
@@ -609,7 +717,7 @@
                 }
             });
 
-            if (!desktopMql.matches || (isFoldedHoverMode() && !aside.hasAttribute("data-sa-sidebar-folding") && (aside.matches(":hover") || aside.matches(":has(:focus-visible)")))) {
+            if (!desktopMql.matches || (isFoldedHoverMode() && isSidebarVisuallyExpanded(aside))) {
                 restoreDefaultDropdowns();
             }
         });
