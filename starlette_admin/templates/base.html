@@ -85,7 +85,7 @@
 
                 .btn-animate-icon:focus-visible .sa-animate-icon,
                 .btn-animate-icon:hover .sa-animate-icon {
-                    transform: translateX(4px);
+                    transform: translateX(calc(var(--tblr-dir, 1) * 4px));
                 }
 
                 .btn-animate-icon.btn-animate-icon-rotate:focus-visible .sa-animate-icon,
@@ -203,7 +203,7 @@
                         overflow-x: hidden;
                         overflow-y: auto;
                         transition-delay: .08s;
-                        box-shadow: inset calc(-1 * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-border-color), 0 0.75rem 2rem rgba(0, 0, 0, 0.35);
+                        box-shadow: inset calc(-1 * var(--tblr-dir, 1) * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-border-color), 0 0.75rem 2rem rgba(0, 0, 0, 0.35);
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg:is(:hover, :has(:focus-visible)):not([data-sa-sidebar-folding]) .dropdown-menu.show {
@@ -243,7 +243,7 @@
 
                     html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] {
                         width: var(--tblr-sidebar-folded-width);
-                        box-shadow: inset calc(-1 * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-navbar-border-color);
+                        box-shadow: inset calc(-1 * var(--tblr-dir, 1) * var(--tblr-navbar-border-width)) 0 0 0 var(--tblr-navbar-border-color);
                     }
 
                     html[data-bs-sidebar="folded-hover"] .navbar-vertical.navbar-expand-lg[data-sa-sidebar-folding] [data-bs-toggle="sidebar-folded"],
@@ -279,6 +279,10 @@
                         display: inline-flex !important;
                         opacity: 1;
                     }
+
+                    [dir="rtl"] .navbar-vertical.navbar-expand-lg:where(:not(.navbar-end):not(.navbar-right)) {
+                        box-shadow: inset var(--tblr-navbar-border-width) 0 0 0 var(--tblr-navbar-border-color);
+                    }
                 }
 
                 [data-bs-toggle="sidebar-folded"] > i {
@@ -295,6 +299,44 @@
 
                 [dir="rtl"] [data-bs-toggle="sidebar-folded"][aria-pressed="true"] > i {
                     transform: none;
+                }
+
+                [dir="rtl"] .dropdown-toggle::after,
+                [dir="rtl"] .nav-link-toggle::after {
+                    transform: rotate(45deg);
+                }
+
+                [dir="rtl"] .dropup .dropdown-toggle::after {
+                    transform: rotate(-135deg);
+                }
+
+                [dir="rtl"] .dropend .dropdown-toggle::after {
+                    transform: rotate(135deg);
+                }
+
+                [dir="rtl"] .dropstart .dropdown-toggle::before {
+                    transform: rotate(-45deg);
+                }
+
+                [dir="rtl"] .form-select {
+                    --tblr-control-select-bg-position: left var(--tblr-control-padding-x) center;
+                }
+
+                [dir="rtl"] .form-control.is-invalid,
+                [dir="rtl"] .form-control.is-valid {
+                    background-position: left var(--tblr-form-feedback-icon-inset) center !important;
+                }
+
+                [dir="rtl"] textarea.form-control.is-invalid,
+                [dir="rtl"] textarea.form-control.is-valid {
+                    background-position: top var(--tblr-form-feedback-icon-inset) left var(--tblr-form-feedback-icon-inset) !important;
+                }
+
+                [dir="rtl"] .form-select.is-invalid:not([multiple]):not([size]),
+                [dir="rtl"] .form-select.is-invalid:not([multiple])[size="1"],
+                [dir="rtl"] .form-select.is-valid:not([multiple]):not([size]),
+                [dir="rtl"] .form-select.is-valid:not([multiple])[size="1"] {
+                    background-position: var(--tblr-control-select-bg-position), center left var(--tblr-control-select-indicator-padding);
                 }
 
                 @media (prefers-reduced-motion: reduce) {
