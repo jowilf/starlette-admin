@@ -1,4 +1,6 @@
+import copy
 from collections.abc import Sequence
+from enum import Enum
 from typing import Any, ClassVar
 
 from starlette.requests import Request
@@ -41,6 +43,7 @@ from starlette_admin.views import BaseModelView
 from starlette_admin.views import InlineModelView as BaseInlineModelView
 from tortoise.exceptions import ValidationError
 from tortoise.expressions import Q
+from tortoise.fields.relational import RelationalField
 from tortoise.models import Model
 from tortoise.queryset import QuerySet
 
@@ -324,6 +327,21 @@ class ModelView(BaseModelView):
                 arranged_data[field.name] = data.get(field.name)
         return arranged_data
 
+    def _is_unchanged(self, obj: Model, field: BaseField, value: Any) -> bool:
+        """Return ``True`` when the attribute on *obj* already matches *value*."""
+        current = getattr(obj, field.name, None)
+        if current == value:
+            return True
+        if isinstance(current, Enum) and not isinstance(value, Enum):
+            return bool(current.value == value)
+        model_field = self._meta.fields_map.get(field.name)
+        if model_field is not None and not isinstance(model_field, RelationalField):
+            try:
+                return bool(current == model_field.to_python_value(value))
+            except (TypeError, ValueError):
+                return False
+        return False
+
     async def _populate_obj(
         self,
         request: Request,
@@ -341,16 +359,23 @@ class ModelView(BaseModelView):
             name, value = field.name, data.get(field.name)
             if isinstance(field, HasMany):
                 m2m_values[name] = value or []
-            else:
+            elif not (is_edit and self._is_unchanged(obj, field, value)):
                 setattr(obj, name, value)
         return m2m_values
 
     async def _sync_m2m(
         self, obj: Model, m2m_values: dict[str, list[Any]], clear: bool = False
     ) -> None:
-        """Write pending many-to-many values through their relation managers."""
+        """Write pending many-to-many values through their relation managers, skipping no-op updates."""
         for name, items in m2m_values.items():
             manager = getattr(obj, name)
+            if clear and getattr(manager, "_fetched", False):
+                current_pks = {
+                    getattr(x, x._meta.pk_attr) for x in manager.related_objects
+                }
+                target_pks = {getattr(x, x._meta.pk_attr) for x in items}
+                if current_pks == target_pks:
+                    continue
             if clear:
                 await manager.clear()
             if items:
@@ -372,6 +397,7 @@ class ModelView(BaseModelView):
             return await self.handle_exception(request, e)
 
     async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
+        """Update the record identified by `pk`, skipping `save()` when no columns changed."""
         try:
             data = await self._arrange_data(request, data, True)
             await self.validate(request, data)
@@ -381,9 +407,27 @@ class ModelView(BaseModelView):
                 f.name: getattr(obj, f.name, None)
                 for f in self.get_fields_list(request)
             }
+            auto_now_fields = [
+                name
+                for name in self._meta.fields_db_projection
+                if name != self.pk_attr
+                and getattr(self._meta.fields_map[name], "auto_now", False)
+            ]
+            snapshot = {
+                name: copy.deepcopy(getattr(obj, name))
+                for name in self._meta.fields_db_projection
+                if name != self.pk_attr and not self._meta.fields_map[name].generated
+            }
             m2m_values = await self._populate_obj(request, obj, data, True)
             await self._emit_before_edit(request, data, obj, pk=pk, old_data=old_data)
-            await obj.save()
+            changed_fields = [
+                name for name, prev in snapshot.items() if getattr(obj, name) != prev
+            ]
+            if changed_fields:
+                for name in auto_now_fields:
+                    if name not in changed_fields:
+                        changed_fields.append(name)
+                await obj.save(update_fields=changed_fields)
             await self._sync_m2m(obj, m2m_values, clear=True)
             await self._emit_after_edit(request, obj, pk=pk, old_data=old_data)
             _log.info("Edited %s pk=%r", self.model.__name__, pk)

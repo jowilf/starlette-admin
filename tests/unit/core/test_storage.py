@@ -619,3 +619,15 @@ def test_storable_file_value_shapes():
         info.to_dict(),
         info.to_dict(),
     ]
+
+
+async def test_process_file_fields_preserves_none_on_edit(tmp_path):
+    storage = LocalStorage(base_dir=tmp_path, name="preserve-none-test")
+    multi = FileField("docs", storage=storage, multiple=True)
+    view = MagicMock()
+    view.key = "doc"
+    view.get_fields_list.return_value = [multi]
+    obj = MagicMock(docs=None)
+    data = {"docs": ([], False)}
+    await BaseAdmin()._process_file_fields(_make_request(), view, data, obj=obj)
+    assert data["docs"] is None

@@ -1,11 +1,14 @@
 from collections.abc import Callable, Sequence
+from enum import Enum
 from typing import Any, ClassVar
+from uuid import UUID
 
 import anyio.to_thread
 from sqlalchemy import String, and_, cast, func, inspect, or_, select, tuple_
 from sqlalchemy.exc import DBAPIError, NoInspectionAvailable, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
+    NO_VALUE,
     InstrumentedAttribute,
     Mapper,
     RelationshipProperty,
@@ -616,6 +619,7 @@ class ModelView(BaseModelView):
             return await self.handle_exception(request, e)
 
     async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
+        """Update the record identified by `pk`, skipping `flush()`/`refresh()` when unmodified."""
         _log.debug(
             "edit %s pk=%r: arranging and validating data", self.model.__name__, pk
         )
@@ -624,8 +628,14 @@ class ModelView(BaseModelView):
             data = await self._arrange_data(request, data, True)
             await self.validate(request, data)
             obj = await self.find_by_pk(request, pk)
+            state = inspect(obj)
             old_data = {
-                f.name: getattr(obj, f.name, None)
+                f.name: (
+                    None
+                    if f.name in state.attrs
+                    and state.attrs[f.name].loaded_value is NO_VALUE
+                    else getattr(obj, f.name, None)
+                )
                 for f in self.get_fields_list(request)
             }
             if isinstance(session, AsyncSession):
@@ -634,20 +644,30 @@ class ModelView(BaseModelView):
                     await self._emit_before_edit(
                         request, data, obj, pk=pk, old_data=old_data
                     )
-                    session.add(obj)
-                    await session.flush()
-                await session.refresh(obj, self._refresh_attr_names(request))
+                    flushed = inspect(obj).modified or bool(
+                        session.new or session.dirty or session.deleted
+                    )
+                    if flushed:
+                        session.add(obj)
+                        await session.flush()
+                if flushed:
+                    await session.refresh(obj, self._refresh_attr_names(request))
             else:
                 with session.begin_nested():
                     await self._populate_obj(request, obj, data, True)
                     await self._emit_before_edit(
                         request, data, obj, pk=pk, old_data=old_data
                     )
-                    session.add(obj)
-                    await anyio.to_thread.run_sync(session.flush)
-                await anyio.to_thread.run_sync(
-                    session.refresh, obj, self._refresh_attr_names(request)
-                )
+                    flushed = inspect(obj).modified or bool(
+                        session.new or session.dirty or session.deleted
+                    )
+                    if flushed:
+                        session.add(obj)
+                        await anyio.to_thread.run_sync(session.flush)
+                if flushed:
+                    await anyio.to_thread.run_sync(
+                        session.refresh, obj, self._refresh_attr_names(request)
+                    )
             await self._emit_after_edit(request, obj, pk=pk, old_data=old_data)
             on_commit(
                 request,
@@ -706,6 +726,42 @@ class ModelView(BaseModelView):
                 arranged_data[field.name] = data[field.name]
         return arranged_data
 
+    @staticmethod
+    def _is_column_unchanged(col_type: Any, current: Any, value: Any) -> bool:
+        """Compare loaded SQLAlchemy column *current* against parsed form *value*."""
+        if col_type.compare_values(current, value):
+            return True
+        if isinstance(current, Enum) and not isinstance(value, Enum):
+            return bool(current.value == value)
+        if isinstance(current, list) and isinstance(value, list):
+            return [c.value if isinstance(c, Enum) else c for c in current] == [
+                v.value if isinstance(v, Enum) else v for v in value
+            ]
+        if isinstance(current, UUID) and isinstance(value, str):
+            try:
+                return current == UUID(value)
+            except ValueError:
+                return False
+        if hasattr(col_type, "_coerce"):
+            try:
+                return bool(col_type.compare_values(current, col_type._coerce(value)))
+            except (TypeError, ValueError):
+                return False
+        return False
+
+    def _is_unchanged(self, obj: Any, field: BaseField, value: Any) -> bool:
+        """Return ``True`` when the already-loaded attribute on *obj* matches *value*."""
+        state = inspect(obj)
+        if field.name not in state.attrs:
+            return False
+        current = state.attrs[field.name].loaded_value
+        if current is NO_VALUE:
+            return False
+        attr = inspect(self.model).attrs.get(field.name)
+        if attr is not None and getattr(attr, "columns", None):
+            return self._is_column_unchanged(attr.columns[0].type, current, value)
+        return bool(current == value)
+
     async def _populate_obj(
         self,
         request: Request,
@@ -720,12 +776,13 @@ class ModelView(BaseModelView):
             if isinstance(field, FileField) and field.storage is None:
                 value, should_be_deleted = not_none(value)
                 if should_be_deleted:
-                    setattr(obj, name, None)
+                    if not (is_edit and self._is_unchanged(obj, field, None)):
+                        setattr(obj, name, None)
                 elif (not field.multiple and value is not None) or (
                     field.multiple and isinstance(value, list) and len(value) > 0
                 ):
                     setattr(obj, name, value)
-            else:
+            elif not (is_edit and self._is_unchanged(obj, field, value)):
                 setattr(obj, name, value)
         return obj
 

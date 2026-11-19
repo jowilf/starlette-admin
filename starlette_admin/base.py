@@ -2468,7 +2468,11 @@ class BaseAdmin:
                 )
                 data[field.name] = [] if field.multiple else None
             else:
-                data[field.name] = self._storable_file_value(field, old_value)
+                data[field.name] = (
+                    None
+                    if obj is not None and old_value is None
+                    else self._storable_file_value(field, old_value)
+                )
 
     async def _store_upload(self, field: FileField, upload: UploadFile) -> FileInfo:
         storage = not_none(field.storage)
