@@ -342,8 +342,8 @@ class DefaultTheme(BaseTheme):
     """starlette-admin's default theme: Tabler CSS framework, FontAwesome icons.
 
     Its `templates/` and `static/` are starlette-admin's own, so it needs no
-    extra assets beyond the `TablerSettings` palette it renders as
-    `data-bs-theme-*` attributes.
+    extra assets beyond the `TablerSettings` configuration it renders as
+    `data-bs-*` attributes.
     """
 
     name = "core"

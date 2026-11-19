@@ -31,7 +31,7 @@ admin.add_view(ModelView(Post))
 
 See [examples/08-themes](https://github.com/jowilf/starlette-admin/tree/main/examples/08-themes) for a runnable app that picks a random theme on every startup.
 
-This configuration applies `data-bs-theme*` attributes directly to the root `<html>` element:
+This configuration applies `data-bs-*` attributes directly to the root `<html>` element:
 
 ```html
 <html data-bs-theme="dark"
@@ -51,7 +51,7 @@ This configuration applies `data-bs-theme*` attributes directly to the root `<ht
 | `radius` | `float | None` | `1` | `0`, `0.5`, `1`, `1.5`, `2` |
 | `sidebar` | `str | None` | `None` | `"folded"`, `"folded-hover"` |
 
-Set `sidebar="folded"` for a static icon rail or `sidebar="folded-hover"` for a folded rail that expands on hover on desktop viewports; users can also toggle and persist the sidebar state in the browser (`localStorage`).
+Set `sidebar="folded"` for a static icon rail with flyout menus, `sidebar="folded-hover"` for a folded rail that expands on hover on desktop viewports, or `None` (default) to start expanded; users can also toggle and persist the sidebar state in the browser (`localStorage`).
 
 ## Restyling components with a class map
 
