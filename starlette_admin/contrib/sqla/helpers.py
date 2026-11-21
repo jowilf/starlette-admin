@@ -72,9 +72,16 @@ def normalize_list(
 
 def extract_column_python_type(attr: InstrumentedAttribute) -> type:
     try:
-        return attr.type.python_type
+        python_type = attr.type.python_type
     except NotImplementedError:
         _log.debug(
             "extract_column_python_type: %s has no python_type, defaulting to str", attr
         )
         return str
+    if python_type is object:
+        _log.debug(
+            "extract_column_python_type: %s has no concrete python_type, defaulting to str",
+            attr,
+        )
+        return str
+    return python_type
