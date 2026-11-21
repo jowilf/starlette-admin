@@ -1,7 +1,9 @@
+from enum import Enum
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from beanie import Document, Link
+from beanie import Document, Link, PydanticObjectId
+from beanie.odm.settings.document import DocumentSettings
 from bson import DBRef
 from starlette_admin.contrib.beanie.fields import BeanieObjectIdField
 from starlette_admin.contrib.beanie.view import (
@@ -191,3 +193,51 @@ async def test_get_pk_value_with_link_object():
 
     result = await view.get_pk_value(MagicMock(), link)
     assert result == "abc123"
+
+
+async def test_edit_skips_replace_when_unchanged():
+    class _PlainColor(Enum):
+        RED = "red"
+
+    class _Item(Document):
+        name: str
+        color: _PlainColor = _PlainColor.RED
+        post: Link[_Post] | None = None
+        tags: list[Link[_TagWithLink]] = []
+
+    _Item._document_settings = DocumentSettings(name="_Item")
+    oid = PydanticObjectId()
+    doc = _Item(
+        id=oid,
+        name="same",
+        color=_PlainColor.RED,
+        post=Link(DBRef("_Post", oid), _Post),
+        tags=[Link(DBRef("_TagWithLink", oid), _TagWithLink)],
+    )
+    view = ModelView(_Item)
+    view.validate = AsyncMock()
+    view._emit_before_edit = AsyncMock()
+    view._emit_after_edit = AsyncMock()
+
+    with (
+        patch.object(_Item, "get", new=AsyncMock(return_value=doc)),
+        patch.object(_Item, "replace", new_callable=AsyncMock) as mock_replace,
+    ):
+        updated = await view.edit(
+            MagicMock(),
+            oid,
+            {"name": "same", "color": "red", "post": str(oid), "tags": [str(oid)]},
+        )
+    mock_replace.assert_not_awaited()
+    assert updated.name == "same"
+
+    with (
+        patch.object(_Item, "get", new=AsyncMock(return_value=doc)),
+        patch.object(_Item, "replace", new=AsyncMock(return_value=doc)) as mock_replace,
+    ):
+        await view.edit(
+            MagicMock(),
+            oid,
+            {"name": "changed", "color": "red", "post": str(oid), "tags": [str(oid)]},
+        )
+    mock_replace.assert_awaited_once()

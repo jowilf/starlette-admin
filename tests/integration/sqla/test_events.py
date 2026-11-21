@@ -9,17 +9,39 @@ verified.
 
 from __future__ import annotations
 
+import uuid
+from enum import Enum
 from typing import Any
 
 import pytest
 from httpx2 import AsyncClient
-from sqlalchemy import Integer, String, func, select
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Uuid,
+    event,
+    func,
+    select,
+)
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    Session,
+    deferred,
+    mapped_column,
+    relationship,
+)
 from sqlalchemy.pool import StaticPool
 from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette_admin import RequestAction
 from starlette_admin.contrib.sqla import Admin
 from starlette_admin.contrib.sqla.view import ModelView
 from starlette_admin.events import (
@@ -629,3 +651,219 @@ async def test_view_bus_handler_fires_directly(
     )
 
     assert fired == ["Direct bus"]
+
+
+# ── No-op edit avoidance ──────────────────────────────────────────────────────
+
+
+async def test_edit_unchanged_skips_before_update_and_preserves_hook_mutations(
+    admin: Admin, client: AsyncClient, engine: Engine | AsyncEngine
+):
+    """Unchanged edit does not trigger SQLAlchemy before_update/flush, while
+    BEFORE_EDIT/AFTER_EDIT still fire and BEFORE_EDIT mutations persist."""
+    updates: list[str] = []
+    before_calls: list[Any] = []
+    after_calls: list[Any] = []
+
+    def _on_before_update(mapper: Any, conn: Any, target: Post) -> None:
+        updates.append(target.title)
+
+    event.listen(Post, "before_update", _on_before_update)
+    admin.events.on(AdminEvent.BEFORE_EDIT, before_calls.append)
+    admin.events.on(AdminEvent.AFTER_EDIT, after_calls.append)
+    try:
+        pk = await _get_pk(engine)
+        resp = await client.post(
+            f"/admin/post/edit?pk={pk}",
+            data={"title": "Original"},
+            follow_redirects=False,
+        )
+        assert resp.status_code == 303
+        assert updates == []
+        assert len(before_calls) == 1
+        assert len(after_calls) == 1
+        assert after_calls[0].obj.title == "Original"
+
+        admin.events.on(
+            AdminEvent.BEFORE_EDIT,
+            lambda ctx: setattr(ctx.obj, "title", "FromHook"),
+        )
+        resp2 = await client.post(
+            f"/admin/post/edit?pk={pk}",
+            data={"title": "Original"},
+            follow_redirects=False,
+        )
+        assert resp2.status_code == 303
+        assert updates == ["FromHook"]
+    finally:
+        event.remove(Post, "before_update", _on_before_update)
+
+
+class _Color(Enum):
+    RED = "red"
+    BLUE = "blue"
+
+
+class _ComplexBase(DeclarativeBase):
+    pass
+
+
+_item_tags = Table(
+    "noop_item_tags",
+    _ComplexBase.metadata,
+    Column("item_id", ForeignKey("noop_items.id"), primary_key=True),
+    Column("tag_id", ForeignKey("noop_tags.id"), primary_key=True),
+)
+
+
+class _Cat(_ComplexBase):
+    __tablename__ = "noop_cats"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
+
+
+class _Tag(_ComplexBase):
+    __tablename__ = "noop_tags"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
+
+
+class _Item(_ComplexBase):
+    __tablename__ = "noop_items"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    color: Mapped[_Color] = mapped_column(SAEnum(_Color))
+    uid: Mapped[uuid.UUID] = mapped_column(Uuid, default=uuid.uuid4)
+    secret: Mapped[str | None] = deferred(mapped_column(String(50)))
+    doc: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    cat_id: Mapped[int | None] = mapped_column(ForeignKey("noop_cats.id"))
+    cat: Mapped[_Cat | None] = relationship(lazy="selectin")
+    tags: Mapped[list[_Tag]] = relationship(secondary=_item_tags, lazy="selectin")
+
+    @property
+    def label(self) -> str:
+        return str(self.color.value)
+
+    @label.setter
+    def label(self, _value: str) -> None:
+        pass
+
+
+async def test_edit_unchanged_complex_attributes(
+    engine: Engine | AsyncEngine,
+) -> None:
+    """Covers plain Enum, deferred column (NO_VALUE), HasOne, HasMany,
+    unmapped @property, FileField(storage=None) delete-when-None, and Enum lists."""
+    from starlette_admin.contrib.sqla.fields import FileField as SQLAFileField
+    from starlette_admin.fields import EnumField, HasMany, HasOne, StringField
+
+    class _ItemView(ModelView):
+        fields = [
+            "id",
+            EnumField("color", enum=_Color),
+            StringField("secret"),
+            SQLAFileField("doc"),
+            HasOne("cat", key="cat"),
+            HasMany("tags", key="tag"),
+            StringField("label"),
+        ]
+
+    if isinstance(engine, AsyncEngine):
+        async with engine.begin() as conn:
+            await conn.run_sync(_ComplexBase.metadata.create_all)
+        async with AsyncSession(engine, expire_on_commit=False) as s:
+            c = _Cat(name="c1")
+            t = _Tag(name="t1")
+            it = _Item(color=_Color.RED, secret="hidden", doc=None, cat=c, tags=[t])
+            s.add_all([c, t, it])
+            await s.commit()
+            pk, cat_id, tag_id = it.id, c.id, t.id
+    else:
+        _ComplexBase.metadata.create_all(engine)
+        with Session(engine) as s:
+            c = _Cat(name="c1")
+            t = _Tag(name="t1")
+            it = _Item(color=_Color.RED, secret="hidden", doc=None, cat=c, tags=[t])
+            s.add_all([c, t, it])
+            s.commit()
+            pk, cat_id, tag_id = it.id, c.id, t.id
+
+    adm = Admin(engine)
+    adm.add_view(ModelView(_Cat, key="cat"))
+    adm.add_view(ModelView(_Tag, key="tag"))
+    adm.add_view(_ItemView(_Item, key="item"))
+    app = Starlette()
+    adm.mount_to(app)
+
+    updates: list[int] = []
+
+    def _on_update(mapper: Any, conn: Any, target: _Item) -> None:
+        updates.append(target.id)
+
+    event.listen(_Item, "before_update", _on_update)
+    try:
+        item_view = next(v for v in adm._views if v.key == "item")
+        if not isinstance(engine, AsyncEngine):
+            async with csrf_async_client(app) as c_client:
+                resp = await c_client.post(
+                    f"/admin/item/edit?pk={pk}",
+                    data={
+                        "color": "red",
+                        "secret": "hidden",
+                        "_doc-delete": "on",
+                        "cat": str(cat_id),
+                        "tags": [str(tag_id)],
+                        "label": "red",
+                    },
+                    follow_redirects=False,
+                )
+                assert resp.status_code == 303
+                assert updates == []
+
+        # Direct edit() with deferred secret still NO_VALUE avoids lazy load in old_data
+        before_old: list[dict[str, Any]] = []
+        item_view.events.on(
+            AdminEvent.BEFORE_EDIT, lambda ctx: before_old.append(ctx.old_data)
+        )
+        req = Request({"type": "http", "headers": [], "query_string": b""})
+        req.state.action = RequestAction.EDIT
+        payload = {
+            "color": _Color.RED,
+            "secret": "new",
+            "doc": (None, False),
+            "cat": None,
+            "tags": [],
+            "label": "red",
+        }
+        if isinstance(engine, AsyncEngine):
+            async with AsyncSession(engine) as s:
+                req.state.session = s
+                await item_view.edit(req, pk, payload)
+        else:
+            with Session(engine) as s:
+                req.state.session = s
+                await item_view.edit(req, pk, payload)
+        assert len(before_old) == 1 and before_old[0]["secret"] is None
+        assert updates == [pk]
+
+        # Test _is_unchanged directly for NO_VALUE (deferred), plain Enum, and list[Enum]
+        enum_field = next(f for f in item_view.fields if f.name == "color")
+        secret_field = next(f for f in item_view.fields if f.name == "secret")
+        unloaded = _Item(color=_Color.RED)
+        assert not item_view._is_unchanged(unloaded, secret_field, "hidden")
+        assert item_view._is_unchanged(unloaded, enum_field, "red")
+        obj_list = _Item(color=_Color.RED)
+        obj_list.color = [_Color.RED]  # type: ignore[assignment]
+        assert item_view._is_unchanged(obj_list, enum_field, ["red"])
+        assert not item_view._is_unchanged(obj_list, enum_field, ["blue"])
+        uid_val = uuid.uuid4()
+        uid_obj = _Item(color=_Color.RED, uid=uid_val)
+        uid_field = StringField("uid")
+        assert item_view._is_unchanged(uid_obj, uid_field, str(uid_val))
+        assert not item_view._is_unchanged(uid_obj, uid_field, "not-a-uuid")
+    finally:
+        event.remove(_Item, "before_update", _on_update)
+        if isinstance(engine, AsyncEngine):
+            async with engine.begin() as conn:
+                await conn.run_sync(_ComplexBase.metadata.drop_all)
+        else:
+            _ComplexBase.metadata.drop_all(engine)

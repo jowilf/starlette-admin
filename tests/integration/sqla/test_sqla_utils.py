@@ -245,6 +245,42 @@ async def test_create(client: AsyncClient, session: Session):
     response = await client.get(f"/admin/model/detail?pk={model.uuid}")
     assert response.status_code == 200
 
+    # Submitting the exact same values on edit must not trigger before_update
+    updates: list[UUID] = []
+
+    def _on_update(mapper, conn, target):
+        updates.append(target.uuid)
+
+    event.listen(Model, "before_update", _on_update)
+    try:
+        edit_response = await client.post(
+            f"/admin/model/edit?pk={model.uuid}",
+            data={
+                "choice": "1",
+                "counter": "one",
+                "arrow": "2023-01-06T16:12:16+00:00",
+                "url": "https://example.com",
+                "email": "admin@example.com",
+                "ip_address": "192.123.45.55",
+                "country": "BJ",
+                "color": "#fde",
+                "timezone": "Africa/Porto-Novo",
+                "currency": "XOF",
+                "scalars.1": "item-1",
+                "scalars.2": "item-2",
+                "phonenumber": "+358401234567",
+                "password": "pass1234",
+            },
+            follow_redirects=False,
+        )
+        assert edit_response.status_code == 303
+        assert updates == []
+    finally:
+        event.remove(Model, "before_update", _on_update)
+    view = ModelView(Model)
+    arrow_field = next(f for f in view.fields if f.name == "arrow")
+    assert not view._is_unchanged(model, arrow_field, "not-a-date")
+
 
 async def test_composite_type():
     from sqlalchemy_utils.types.pg_composite import (

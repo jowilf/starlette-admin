@@ -1,9 +1,10 @@
 import re
 from enum import StrEnum
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import mongoengine as me
 import pytest
+from bson import DBRef, ObjectId
 from starlette_admin import (
     BooleanField,
     DateField,
@@ -288,3 +289,55 @@ def test_inline_detect_fk_multiple_reference_fields():
 
     with pytest.raises(ValueError, match="cannot auto-detect fk_attr"):
         _Inline(parent_view=_ParentView(MeParent))
+
+
+@pytest.mark.asyncio
+async def test_edit_skips_save_when_unchanged_and_converts_references():
+    view = ModelView(User)
+    oid = ObjectId()
+    doc = User._from_son({"_id": ObjectId(), "name": "Alice", "documents": [oid]})
+    view.validate = AsyncMock()
+    view._emit_before_edit = AsyncMock()
+    view._emit_after_edit = AsyncMock()
+
+    assert ModelView._to_ref_value(me.ObjectIdField(), str(oid)) == oid
+    assert isinstance(ModelView._to_ref_value(User.documents.field, str(oid)), DBRef)
+
+    from starlette_admin.types import RequestAction
+
+    req = MagicMock()
+    req.state.action = RequestAction.EDIT
+    with (
+        patch.object(view, "find_by_pk", new=AsyncMock(return_value=doc)),
+        patch.object(doc, "save") as mock_save,
+    ):
+        await view.edit(req, str(doc.id), {"name": "Alice", "documents": [str(oid)]})
+    mock_save.assert_not_called()
+
+    with (
+        patch.object(view, "find_by_pk", new=AsyncMock(return_value=doc)),
+        patch.object(doc, "save") as mock_save,
+    ):
+        await view.edit(req, str(doc.id), {"name": "Bob", "documents": [str(oid)]})
+    mock_save.assert_called_once()
+
+    att = Attachment()
+    att_view = ModelView(Attachment)
+    att_view._handle_file_field(att, "image", (None, True))
+    assert att._get_changed_fields() == []
+    import uuid as _uuid
+
+    class _UuidDoc(me.Document):
+        uid = me.UUIDField(binary=True)
+
+    u = _uuid.uuid4()
+    u_doc = _UuidDoc._from_son({"_id": ObjectId(), "uid": u})
+    u_view = ModelView(_UuidDoc)
+    await u_view._set_field(
+        req, u_doc, "uid", str(u), _UuidDoc.uid, StringField("uid"), True
+    )
+    assert u_doc._get_changed_fields() == []
+    await u_view._set_field(
+        req, u_doc, "uid", "not-a-uuid", _UuidDoc.uid, StringField("uid"), True
+    )
+    assert u_doc._get_changed_fields() == ["uid"]

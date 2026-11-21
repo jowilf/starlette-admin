@@ -4,6 +4,7 @@ import os
 import re
 from enum import StrEnum
 from typing import Annotated, Any
+from unittest.mock import patch
 
 import pymongo
 import pytest
@@ -589,6 +590,31 @@ class TestBeanieView:
         await product.sync()
 
         assert product.description == "Pinephone Pro"
+
+    async def test_edit_unchanged_skips_replace(self, client):
+        store = Store(name="Store 1")
+        await store.save()
+        product = await ProductDescriptionTest(
+            description="Unchanged description",
+            store=store,
+        ).save()
+        orig_replace = ProductDescriptionTest.replace
+
+        with patch.object(
+            ProductDescriptionTest,
+            "replace",
+            autospec=True,
+            side_effect=orig_replace,
+        ) as mock_replace:
+            response = await client.post(
+                f"/admin/product-description-test/edit?pk={product.id}",
+                data={"description": "Unchanged description", "store": store.id},
+                follow_redirects=False,
+            )
+            assert response.status_code == 303
+            mock_replace.assert_not_awaited()
+            assert self.product_test_view.before_edit_count == 1
+            assert self.product_test_view.after_edit_count == -1
 
     async def test_unsearchable_document(self, client):
         store = Store(name="Store 1")

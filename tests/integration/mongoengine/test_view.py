@@ -436,6 +436,51 @@ class TestMongoBasic:
         user = User.objects(name="John").get()
         assert user.store.name == "Jewelry store"
 
+    def test_edit_unchanged_skips_save(self, client):
+        p = Product.objects(title="IPhone 9").get()
+        store = Store(name="Test store", products=[p]).save()
+        user = User(name="Alice", store=store).save()
+        saves: list[Any] = []
+
+        def _on_pre_save(sender, document, **kwargs):
+            saves.append(document)
+
+        me.signals.pre_save.connect(_on_pre_save)
+        try:
+            # Unchanged Product (including _image-delete on an already-empty ImageField)
+            r1 = client.post(
+                f"/admin/product/edit?pk={p.id}",
+                data={
+                    "title": p.title,
+                    "description": p.description,
+                    "price": str(p.price),
+                    "brand": p.brand.value,
+                    **(
+                        {"created_at": p.created_at.isoformat()} if p.created_at else {}
+                    ),
+                    "_image-delete": "on",
+                },
+                follow_redirects=False,
+            )
+            assert r1.status_code == 303
+            # Unchanged User (ReferenceField HasOne)
+            r2 = client.post(
+                f"/admin/user/edit?pk={user.id}",
+                data={"name": user.name, "store": str(store.id)},
+                follow_redirects=False,
+            )
+            assert r2.status_code == 303
+            # Unchanged Store (ListField(ReferenceField) HasMany)
+            r3 = client.post(
+                f"/admin/store/edit?pk={store.id}",
+                data={"name": store.name, "products": [str(p.id)]},
+                follow_redirects=False,
+            )
+            assert r3.status_code == 303
+            assert saves == []
+        finally:
+            me.signals.pre_save.disconnect(_on_pre_save)
+
 
 class TestMongoFilters:
     """Filter system integration tests for the MongoEngine backend.
