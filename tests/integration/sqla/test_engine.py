@@ -26,6 +26,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    event,
     func,
     select,
 )
@@ -44,7 +45,7 @@ from sqlalchemy.orm import (
 from sqlalchemy_file.storage import StorageManager
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette_admin import IntegerField, StringField
+from starlette_admin import FileField, IntegerField, RequestAction, StringField
 from starlette_admin.contrib.sqla import Admin
 from starlette_admin.contrib.sqla.view import ModelView
 
@@ -97,6 +98,26 @@ class User(Base):
     @classmethod
     def _name_length_expression(cls) -> ColumnElement[int]:
         return func.length(cls.name)
+
+
+class NoopItem(Base):
+    __tablename__ = "noop_item"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
+    count: Mapped[int | None] = mapped_column(Integer)
+
+
+class DeferredItem(Base):
+    __tablename__ = "deferred_item"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
+    note: Mapped[str | None] = mapped_column(String(50), deferred=True)
+
+
+class LegacyFileItem(Base):
+    __tablename__ = "legacy_file_item"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    attachment: Mapped[str | None] = mapped_column(String(50))
 
 
 # Views
@@ -159,6 +180,18 @@ class UserView(ModelView):
     sortable_fields = ["name", "name_length"]
 
 
+class NoopItemView(ModelView):
+    fields = [IntegerField("id"), StringField("name"), IntegerField("count")]
+
+
+class DeferredItemView(ModelView):
+    fields = [IntegerField("id"), StringField("name"), StringField("note")]
+
+
+class LegacyFileItemView(ModelView):
+    fields = [IntegerField("id"), FileField("attachment", storage=None)]
+
+
 # Sync-to-async session adapter
 
 
@@ -184,6 +217,9 @@ class _SyncToAsync:
 
     async def get(self, model: type, pk: Any) -> Any:
         return self._s.get(model, pk)
+
+    async def refresh(self, obj: Any, attribute_names: list[str] | None = None) -> None:
+        self._s.refresh(obj, attribute_names)
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -416,6 +452,129 @@ async def test_edit(client: AsyncClient, session):
     assert product.price == data["price"]
     assert product.brand == data["brand"]
     assert product.sku == "server-sku"
+
+
+def _edit_request(session) -> Request:
+    request = Request(
+        {
+            "type": "http",
+            "method": "POST",
+            "path": "/",
+            "headers": [],
+            "query_string": b"",
+        }
+    )
+    request.state.session = session
+    request.state.action = RequestAction.EDIT
+    return request
+
+
+async def test_edit_unchanged_columns_do_not_trigger_before_update(session):
+    item = NoopItem(id=1, name="same", count=3)
+    session.add(item)
+    await session.commit()
+    await session.refresh(item)
+    view = NoopItemView(NoopItem)
+    updates = []
+
+    def listener(mapper, connection, target):
+        updates.append(target.id)
+
+    event.listen(NoopItem, "before_update", listener)
+    try:
+        await view._populate_obj(
+            _edit_request(session),
+            item,
+            {"id": 1, "name": "same", "count": 3},
+            is_edit=True,
+        )
+        await session.execute(select(NoopItem))
+        assert updates == []
+    finally:
+        event.remove(NoopItem, "before_update", listener)
+
+
+async def test_edit_changed_column_persists_and_triggers_before_update(session):
+    item = NoopItem(id=1, name="same", count=3)
+    session.add(item)
+    await session.commit()
+    await session.refresh(item)
+    view = NoopItemView(NoopItem)
+    updates = []
+
+    def listener(mapper, connection, target):
+        updates.append(target.id)
+
+    event.listen(NoopItem, "before_update", listener)
+    try:
+        await view._populate_obj(
+            _edit_request(session),
+            item,
+            {"id": 1, "name": "changed", "count": 3},
+            is_edit=True,
+        )
+        await session.execute(select(NoopItem))
+        assert updates == [1]
+        assert item.name == "changed"
+    finally:
+        event.remove(NoopItem, "before_update", listener)
+
+
+async def test_edit_unloaded_deferred_column_is_assigned(session):
+    item = DeferredItem(id=1, name="same", note="x")
+    session.add(item)
+    await session.commit()
+    await session.refresh(item, ["id", "name"])
+    view = DeferredItemView(DeferredItem)
+    await view._populate_obj(
+        _edit_request(session),
+        item,
+        {"id": 1, "name": "same", "note": "x"},
+        is_edit=True,
+    )
+    await session.execute(select(DeferredItem))
+    assert item.note == "x"
+
+
+async def test_edit_unloaded_file_delete_does_not_trigger_lazy_load(session):
+    item = LegacyFileItem(id=1, attachment="file")
+    session.add(item)
+    await session.commit()
+    await session.refresh(item, ["id"])
+    view = LegacyFileItemView(LegacyFileItem)
+    await view._populate_obj(
+        _edit_request(session),
+        item,
+        {"id": 1, "attachment": (None, True)},
+        is_edit=True,
+    )
+    await session.execute(select(LegacyFileItem))
+    assert item.attachment is None
+
+
+async def test_edit_delete_already_null_file_does_not_trigger_before_update(session):
+    item = LegacyFileItem(id=1, attachment=None)
+    session.add(item)
+    await session.commit()
+    await session.refresh(item)
+    view = LegacyFileItemView(LegacyFileItem)
+    updates = []
+
+    def listener(mapper, connection, target):
+        updates.append(target.id)
+
+    event.listen(LegacyFileItem, "before_update", listener)
+    try:
+        await view._populate_obj(
+            _edit_request(session),
+            item,
+            {"id": 1, "attachment": (None, True)},
+            is_edit=True,
+        )
+        await session.execute(select(LegacyFileItem))
+        assert updates == []
+    finally:
+        event.remove(LegacyFileItem, "before_update", listener)
 
 
 async def test_delete(client: AsyncClient, session):
