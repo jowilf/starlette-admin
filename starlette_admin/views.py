@@ -689,6 +689,7 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
     inlines: Sequence[Union[type["InlineModelView"], "InlineModelView"]] = []
 
     _find_foreign_view: Callable[[str], "BaseModelView"]
+    _filter_only_fields: Sequence[BaseField] = ()
 
     def __init__(self) -> None:
         _log.debug(
@@ -2843,6 +2844,13 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
             return '"' + v.replace("\\", "\\\\").replace('"', '\\"') + '"'
         return v
 
+    def _get_filter_fields_by_name(self, request: Request) -> dict[str, BaseField]:
+        fields = [
+            *self.get_fields_list(request, include_nested=True),
+            *(f for f in self._filter_only_fields if self.can_access_field(request, f)),
+        ]
+        return {f._name or f.name: f for f in fields if f.searchable}
+
     def _parse_filter_param(
         self, request: Request, query_params: Mapping[str, str] | None = None
     ) -> FilterGroup:
@@ -2877,11 +2885,7 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
                 HTTP_400_BAD_REQUEST, f"Invalid 'filter' parameter: {exc}"
             ) from exc
 
-        fields_by_name = {
-            f.name: f
-            for f in self.get_fields_list(request, include_nested=True)
-            if f.searchable
-        }
+        fields_by_name = self._get_filter_fields_by_name(request)
         registry = self.get_filter_registry()
         try:
             node = self._build_filter_node(data, fields_by_name, registry)
@@ -3009,11 +3013,7 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         if not isinstance(rules, list):
             return "and", []
 
-        fields_by_name = {
-            getattr(f, "_name", f.name): f
-            for f in self.get_fields_list(request, include_nested=True)
-            if f.searchable
-        }
+        fields_by_name = self._get_filter_fields_by_name(request)
         registry = self.get_filter_registry()
         return logic, [
             FilterChip(
