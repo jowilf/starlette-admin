@@ -1,0 +1,13 @@
+{% if field.multiple %}
+    <ul class="mb-0 ps-3">
+        {% for value in data %}
+            <li>
+                {% with data=value %}
+                    {% include "fields/detail/text.html" %}
+                {% endwith %}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    {% include "fields/detail/text.html" %}
+{% endif %}

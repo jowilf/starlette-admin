@@ -273,6 +273,17 @@ def test_list_default_sort_tuple_format():
     assert response.status_code == 200
 
 
+def test_default_sort_rejects_unresolved_field_reference():
+    """_default_sort() fails loudly when a backend left a reference unresolved."""
+
+    class UnresolvedSortView(TinydbModelView):
+        fields = [IntegerField("id"), StringField("title")]
+        fields_default_sort = [(object(), True)]
+
+    with pytest.raises(TypeError, match="unresolved field reference"):
+        UnresolvedSortView(Article)._default_sort()
+
+
 def test_filter_base_model_view_default_registry():
     """get_filter_registry on the base returns an empty FilterRegistry."""
 
