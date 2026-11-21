@@ -185,7 +185,7 @@ class ModelView(BaseModelView[ExpressionField], Generic[T]):
         filter_query: dict = {}
         if filters and not filters.is_empty():
             registry = self.get_filter_registry()
-            fields_by_name = {f.name: f for f in self.get_fields_list(request)}
+            fields_by_name = {f.name: f for f in self.get_filterable_fields(request)}
             fq = build_filter_query(filters, fields_by_name, registry, self, request)
             if fq:
                 filter_query = fq

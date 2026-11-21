@@ -287,7 +287,7 @@ class TinydbModelView(BaseModelView):
             if sq is not None:
                 query = sq
         if filters is not None and not filters.is_empty():
-            fields_by_name = {f.name: f for f in self.get_fields_list(request)}
+            fields_by_name = {f.name: f for f in self.get_filterable_fields(request)}
             fq = _build_filter_query(
                 filters, fields_by_name, self.get_filter_registry()
             )
