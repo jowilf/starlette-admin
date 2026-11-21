@@ -122,6 +122,16 @@ def test_sql_expression_defaults_are_skipped():
 
     assert fields_by_name["func_now"] == DateTimeField("func_now")
 
+    class TzModel(Base):
+        __tablename__ = "tz_model"
+        id: Mapped[int] = mapped_column(Integer, primary_key=True)
+        aware_dt: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    assert (
+        DateTimeField("aware_dt", required=True, timezone=True)
+        in ModelView(TzModel).fields
+    )
+
 
 def test_server_defaults_are_skipped():
     view = ModelView(DefaultModel)

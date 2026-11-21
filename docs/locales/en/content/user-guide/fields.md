@@ -306,6 +306,7 @@ class EventView(ModelView):
 | --- | --- | --- | --- |
 | `output_format` | `str | None` | `None` | Babel display format: `"short"`, `"medium"`, `"long"`, `"full"`, or a custom pattern. |
 | `search_format` | `str | None` | ORM-specific | Format used to build database search queries. |
+| `timezone` | `bool` | `False` | `DateTimeField` only. Keep `tzinfo` on parsed datetimes for timezone-aware database columns. |
 
 !!! note
     When timezone support is on, `DateTimeField` converts between the display timezone and the database timezone for you.

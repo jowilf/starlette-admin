@@ -359,8 +359,14 @@ class ModelConverter(BaseSQLAModelConverter):
 
     @converts("DateTime")
     def conv_datetime(self, *args: Any, **kwargs: Any) -> BaseField:
+        _type = kwargs["type"]
+        timezone = bool(
+            getattr(_type, "timezone", False)
+            or getattr(getattr(_type, "impl", None), "timezone", False)
+        )
         return DateTimeField(
             **self._field_common(*args, **kwargs),
+            timezone=timezone,
         )
 
     @converts("Date")
