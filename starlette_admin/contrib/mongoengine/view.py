@@ -6,6 +6,7 @@ import mongoengine as me
 import starlette_admin.fields as sa
 from bson import ObjectId
 from mongoengine.base import BaseDocument
+from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.errors import DoesNotExist, ValidationError
 from mongoengine.fields import GridFSProxy
 from mongoengine.queryset import QNode
@@ -35,7 +36,7 @@ from starlette_admin.views import InlineModelView as BaseInlineModelView
 _log = get_logger(__name__)
 
 
-class ModelView(BaseModelView):
+class ModelView(BaseModelView[MongoBaseField]):
     """`BaseModelView` backed by a `mongoengine.Document`.
 
     Wraps a document class and implements CRUD, search, filtering, and sorting
@@ -478,7 +479,7 @@ class ModelView(BaseModelView):
         )
 
 
-class InlineModelView(BaseInlineModelView, ModelView):
+class InlineModelView(BaseInlineModelView[MongoBaseField], ModelView):
     """Inline editing of MongoEngine-backed related documents inside a parent form.
 
     Declare ``document`` as a class attribute. The parent reference field is
