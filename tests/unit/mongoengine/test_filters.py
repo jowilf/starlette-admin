@@ -443,6 +443,29 @@ def test_relation_filters_apply():
     assert q(RelationNoneOfFilter) == {"author__nin": ["a", "b"]}
 
 
+def test_validate_relation_pks():
+    import mongoengine as me
+    from starlette_admin.contrib.mongoengine.view import (
+        ModelView as MongoEngineModelView,
+    )
+
+    class _Author(me.Document):
+        name = me.StringField()
+
+    class _IntAuthor(me.Document):
+        code = me.IntField(primary_key=True)
+
+    author_view = MongoEngineModelView(_Author)
+    author_view._validate_relation_pks([str(ObjectId())])
+    with pytest.raises(FilterValidationError, match="Invalid primary key"):
+        author_view._validate_relation_pks(["not-an-objectid"])
+
+    int_view = MongoEngineModelView(_IntAuthor)
+    int_view._validate_relation_pks(["42"])
+    with pytest.raises(FilterValidationError, match="Invalid primary key"):
+        int_view._validate_relation_pks(["not-an-int"])
+
+
 def test_registry_tags_field():
     names = {f.name for f in filter_registry.filters_for(TagsField("x"))}
     assert names == {"in", "not_in", "is_null", "is_not_null"}

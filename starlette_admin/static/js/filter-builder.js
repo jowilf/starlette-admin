@@ -381,7 +381,8 @@ function initFilterBuilder(config) {
   function maybeInitRelationInput($el, field) {
     if ($el.data("s2") || !field || !field.relation) return;
     let rel = field.relation;
-    $el.data("s2", true).select2({
+    let initToken = ($el.data("s2Token") || 0) + 1;
+    $el.data("s2", true).data("s2Token", initToken).select2({
       width: "100%",
       dropdownParent: $(document.body),
       ajax: {
@@ -411,6 +412,7 @@ function initFilterBuilder(config) {
     });
 
     let prefill = ($el.data("filterPrefill") || []).map(String);
+    $el.removeData("filterPrefill");
     if (!prefill.length) return;
     prefill.forEach(function (v) {
       $el.append(new Option(v, v, true, true));
@@ -419,6 +421,7 @@ function initFilterBuilder(config) {
     let sep = rel.url.indexOf("?") === -1 ? "?" : "&";
     $.ajax({ url: rel.url + sep + $.param({ pks: prefill }, true), dataType: "json" }).then(
       function (data) {
+        if (!$el.data("s2") || $el.data("s2Token") !== initToken) return;
         (data.items || []).forEach(function (obj) {
           let id = String(obj[rel.pk]);
           $el.find("option").each(function () {
@@ -435,6 +438,12 @@ function initFilterBuilder(config) {
   function destroyRelationInput($el) {
     if ($el.data("s2")) $el.select2("destroy").removeData("s2");
     $el.empty();
+  }
+
+  function destroySelect2In($container) {
+    $container.find("select.select2-hidden-accessible").each(function () {
+      if ($(this).data("s2")) $(this).select2("destroy").removeData("s2");
+    });
   }
 
   // ── DOM creation ──────────────────────────────────────────────────────────
@@ -553,6 +562,7 @@ function initFilterBuilder(config) {
     });
     $op.on("change", syncValueInputs);
     $row.find('[data-sa-action="filter-row-remove"]').on("click", function () {
+      destroySelect2In($row);
       $row.remove();
     });
 
@@ -601,6 +611,7 @@ function initFilterBuilder(config) {
       $children.append(createGroup(null));
     });
     $group.find('[data-sa-action="filter-group-remove"]').on("click", function () {
+      destroySelect2In($group);
       $group.remove();
     });
 

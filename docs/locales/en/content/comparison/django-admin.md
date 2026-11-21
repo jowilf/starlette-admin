@@ -67,8 +67,8 @@ Two structural differences stand out:
 | `list_display` | `fields` minus [`exclude_fields_from_list`](../user-guide/views.md#field-selection-and-customization) | A single field list drives every page. |
 | `list_display` with a callable or `@admin.display` | [`ComputedField`](../user-guide/fields.md#computedfield), or `getter=` on any field | For example, `ComputedField("full_name", getter=lambda request, obj: ...)`. Use `getter=` on a typed field, such as a date or image field, to keep that type's rendering. |
 | Reformatting a real column for display | [`formatter=`](../user-guide/fields.md#computing-formatting-and-parsing-values) on the field | A `dict[RequestAction, callable]`, so list, detail, and export can format differently. Django needs a callable plus `admin_order_field` to keep sorting; here the column stays sortable. |
-| `search_fields` | [`searchable_fields`](../user-guide/views.md#search-and-sort) | Powers both full-text search and the filter builder. |
-| `list_filter` | `searchable_fields` combined with per-field `filters=` | Users get a visual builder with nested `AND`/`OR` groups instead of a fixed sidebar. See [Filters](../user-guide/filters.md). |
+| `search_fields` | [`searchable_fields`](../user-guide/views.md#search-and-sort) | Powers the full-text search box (`q` query parameter). |
+| `list_filter` | [`filterable_fields`](../user-guide/views.md#search-and-sort) / `exclude_fields_from_filter` combined with per-field `filters=` | Users get a visual builder with nested `AND`/`OR` groups instead of a fixed sidebar. See [Filters](../user-guide/filters.md). |
 | `ordering` | [`fields_default_sort`](../user-guide/views.md#search-and-sort) | For example, `fields_default_sort = [("created_at", True)]` sorts in descending order. |
 | `admin_order_field` / sortability | [`sortable_fields`](../user-guide/views.md#search-and-sort) | Every field is sortable by default. |
 | `list_editable` | [`inline_editable_fields`](../user-guide/inline-edit.md) | Users select a cell and edit it in place. |

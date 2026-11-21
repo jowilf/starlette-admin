@@ -584,7 +584,7 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         searchable_fields: List of searchable fields.
         filterable_fields: List of fields offered in the list page's filter
             builder (and accepted in the `filter` query parameter). Defaults
-            to `None`, meaning every non-file, non-computed field not listed in
+            to `None`, meaning every queryable, non-computed field not listed in
             `exclude_fields_from_filter`.
         sortable_fields: List of sortable fields.
         fields_default_sort: Initial order (sort) to apply to the table.
@@ -2476,7 +2476,7 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         registry = self.get_filter_registry()
         return any(
             f.data_type in (FilterDataType.ARRAY, FilterDataType.RELATION)
-            for field in self.get_fields_list(request)
+            for field in self.get_fields_list(request, include_nested=True)
             if field.filterable
             for f in registry.filters_for(field)
         )
@@ -3308,6 +3308,12 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         read "Author: Is one of John Doe" rather than "... 42". Keys that
         cannot be resolved are left out (the pill then shows the raw key).
         """
+        registry = self.get_filter_registry()
+        fields = {
+            f.name: f
+            for f in self.get_fields_list(request, include_nested=True)
+            if isinstance(f, RelationField) and f.filterable
+        }
         wanted: dict[str, set[str]] = {}
 
         def collect(node: FilterGroup | FilterRule) -> None:
@@ -3315,29 +3321,22 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
                 for child in node.rules:
                     collect(child)
                 return
-            values = node.value if isinstance(node.value, list) else []
-            if values:
-                wanted.setdefault(node.field, set()).update(str(v) for v in values)
+            field = fields.get(node.field)
+            if field is None or not isinstance(node.value, list) or not node.value:
+                return
+            filter_cls = registry.get_filter(field, node.filter)
+            if (
+                filter_cls is not None
+                and filter_cls.data_type == FilterDataType.RELATION
+            ):
+                wanted.setdefault(node.field, set()).update(str(v) for v in node.value)
 
         collect(filters)
-        if not wanted:
-            return {}
-
-        registry = self.get_filter_registry()
-        fields = {
-            f.name: f
-            for f in self.get_fields_list(request, include_nested=True)
-            if isinstance(f, RelationField) and f.filterable
-        }
         result: dict[str, dict[str, str]] = {}
         for field_name, pks in wanted.items():
-            field = fields.get(field_name)
-            if field is None or not any(
-                fc.data_type == FilterDataType.RELATION
-                for fc in registry.filters_for(field)
-            ):
-                continue
-            labels = await self._resolve_relation_labels(request, field, pks)
+            labels = await self._resolve_relation_labels(
+                request, fields[field_name], pks
+            )
             if labels is not None:
                 result[field_name] = labels
         return result

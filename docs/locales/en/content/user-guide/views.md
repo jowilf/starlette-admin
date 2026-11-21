@@ -202,7 +202,7 @@ See [Form Layouts](../advanced/form-layout.md) for multi-column rows with explic
 
 ### Data table features
 
-#### Search, filter, and sort
+#### Search, filter, and sort {#search-and-sort}
 
 Control how users find and order data with `searchable_fields`, `filterable_fields`, `exclude_fields_from_filter`, and `sortable_fields`.
 

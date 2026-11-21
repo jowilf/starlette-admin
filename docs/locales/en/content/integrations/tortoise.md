@@ -128,7 +128,7 @@ The integration maps database relations to admin fields based on the field type.
 | **Backward** | `related_name` properties | Renders read-only. Must be added to `fields` explicitly to display. |
 
 **Filtering and Sorting on Relations:**
-To-one relations offer "Is null" and "Is not null" filters targeting the raw key column. To expose a relation in the filter builder, add the relation name to `searchable_fields`. To enable sorting by the raw key column, add the relation name to `sortable_fields`.
+Relations are filterable by default whenever the foreign model has a registered, accessible `ModelView` (customize with `filterable_fields` and `exclude_fields_from_filter`). Forward to-one relations offer "Is one of", "Is not one of", "Is null", and "Is not null"; backward to-one relations offer "Is one of" and "Is not one of"; and to-many relations offer "Has any of" and "Has none of". To enable sorting by a to-one relation's raw key column, add the relation name to `sortable_fields`.
 
 ## Search and filtering
 
