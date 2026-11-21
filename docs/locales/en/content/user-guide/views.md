@@ -202,19 +202,21 @@ See [Form Layouts](../advanced/form-layout.md) for multi-column rows with explic
 
 ### Data table features
 
-#### Search and sort
+#### Search, filter, and sort
 
-Control how users find and order data with `searchable_fields` and `sortable_fields`.
+Control how users find and order data with `searchable_fields`, `filterable_fields`, `exclude_fields_from_filter`, and `sortable_fields`.
 
 ```python
 class PostView(ModelView):
     fields = ["id", "title", "content", "published", "created_at"]
     searchable_fields = ["title", "content"]
+    filterable_fields = ["title", "published", "created_at"]
     sortable_fields = ["title", "created_at"]
     fields_default_sort = [("created_at", True)]  # Sort newest first
 ```
 
-* **`searchable_fields`**: Turns on the filter builder and the global search box. Global search runs a full-text query against these fields.
+* **`searchable_fields`**: Turns on the global search box (`q` query parameter), which runs a full-text query against these fields.
+* **`filterable_fields` and `exclude_fields_from_filter`**: Control which fields are offered in the filter builder and accepted in the `filter` query parameter. When `filterable_fields` is left unset, every queryable field not listed in `exclude_fields_from_filter` is filterable.
 * **`sortable_fields`**: Restricts which column headers users can sort by. A sort query for another field, passed through URL parameters, is ignored.
 * **`fields_default_sort`**: Sets the initial table state. Pass a bare string to sort ascending, a tuple with `True` to sort descending, or a tuple with `False` to sort ascending explicitly. Chain several items for a multi-column sort.
 
