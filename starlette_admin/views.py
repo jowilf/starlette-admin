@@ -810,7 +810,7 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         if self.sortable_fields is None:
             self.sortable_fields = all_field_names[:]
         if self.fields_default_sort is None and self.pk_attr:
-            self.fields_default_sort = [self.pk_attr]
+            self.fields_default_sort = self._pk_attrs()
         _log.debug(
             "_init_fields done: key=%r resolved %d leaf field(s): %s",
             self.key,
@@ -837,7 +837,9 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
                     f"{type(self).__name__}: inline_editable_fields references "
                     f"{name!r}, which is not declared in `fields`."
                 )
-            if name == self.pk_attr:
+            if name == self.pk_attr or name in getattr(
+                getattr(self, "pk_field", None), "pk_attrs", ()
+            ):
                 raise ValueError(
                     f"{type(self).__name__}: inline_editable_fields cannot "
                     f"include the primary key field {name!r}."
@@ -2497,6 +2499,19 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         """
         return FilterRegistry()
 
+    def _pk_attrs(self) -> list[str]:
+        """Return the model's primary key field name(s).
+
+        For single-column primary keys this is ``[self.pk_attr]``; for composite
+        primary keys backed by a ``MultiplePKField``, ``self.pk_attr`` is the
+        comma-joined virtual key used in serialized row dicts while
+        ``self.pk_field.pk_attrs`` holds the underlying model field names.
+        """
+        pk_attrs = getattr(getattr(self, "pk_field", None), "pk_attrs", None)
+        if pk_attrs:
+            return list(pk_attrs)
+        return [not_none(self.pk_attr)]
+
     def _default_sort(self) -> list[tuple[str, bool]]:
         """
         Returns a list of tuples, ``[(field_name, descending), ...]``, to use when the URL does not
@@ -2505,7 +2520,7 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         if no other sort is specified.
         """
         sorts: list[tuple[str, bool]] = []
-        for item in self.fields_default_sort or [not_none(self.pk_attr)]:
+        for item in self.fields_default_sort or self._pk_attrs():
             name, descending = item if isinstance(item, tuple) else (item, False)
             if not isinstance(name, str):
                 raise TypeError(
