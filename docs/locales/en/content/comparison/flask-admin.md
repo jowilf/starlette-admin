@@ -65,7 +65,7 @@ There's no `template_mode` switch. The UI uses [Tabler](https://tabler.io) (Boot
 | Model properties or callables in `column_list` | [`ComputedField`](../user-guide/fields.md#computedfield) or `getter=` on any field | Adds virtual columns, or redirects an existing field's value lookup, without a subclass. |
 | Custom WTForms fields (value coercion) | [`parser=`](../user-guide/fields.md#computing-formatting-and-parsing-values) on the field | Replaces the field's default form or import parsing per `RequestAction`. |
 | `column_searchable_list` | [`searchable_fields`](../user-guide/views.md#search-and-sort) |  |
-| `column_filters` | `searchable_fields` combined with per-field `filters=` | Replaces the flat filter list with a [visual builder](../user-guide/filters.md) that supports nested `AND`/`OR` groups. |
+| `column_filters` | [`filterable_fields`](../user-guide/views.md#search-and-sort) / `exclude_fields_from_filter` combined with per-field `filters=` | Replaces the flat filter list with a [visual builder](../user-guide/filters.md) that supports nested `AND`/`OR` groups. |
 | `column_sortable_list` | [`sortable_fields`](../user-guide/views.md#search-and-sort) |  |
 | `column_default_sort` | [`fields_default_sort`](../user-guide/views.md#search-and-sort) | For example, `[("created_at", True)]` sorts in descending order. |
 | `column_editable_list` | [`inline_editable_fields`](../user-guide/inline-edit.md) | Users select a cell and edit it in place. |

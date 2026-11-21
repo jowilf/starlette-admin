@@ -16,6 +16,7 @@ from typing import Any
 from sqlalchemy import String, and_, cast, false, func, not_, or_, true
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from starlette.requests import Request
+from starlette_admin.contrib.sqla.helpers import extract_column_python_type
 from starlette_admin.fields import (
     BaseField,
     BooleanField,
@@ -36,7 +37,7 @@ from starlette_admin.filters import (
     FilterRule,
     filters,
 )
-from starlette_admin.filters.base import BaseFilter
+from starlette_admin.filters.base import BaseFilter, FilterValidationError
 from starlette_admin.filters.boolean import IsFalseFilter as BaseIsFalseFilter
 from starlette_admin.filters.boolean import IsTrueFilter as BaseIsTrueFilter
 from starlette_admin.filters.date import (
@@ -74,12 +75,25 @@ from starlette_admin.filters.numeric import (
 from starlette_admin.filters.numeric import (
     NotEqualFilter as BaseNumericNotEqualFilter,
 )
+from starlette_admin.filters.relation import (
+    RelationAnyOfFilter as BaseRelationAnyOfFilter,
+)
+from starlette_admin.filters.relation import (
+    RelationInFilter as BaseRelationInFilter,
+)
+from starlette_admin.filters.relation import (
+    RelationNoneOfFilter as BaseRelationNoneOfFilter,
+)
+from starlette_admin.filters.relation import (
+    RelationNotInFilter as BaseRelationNotInFilter,
+)
 from starlette_admin.filters.string import ContainsFilter as BaseContainsFilter
 from starlette_admin.filters.string import EndsWithFilter as BaseEndsWithFilter
 from starlette_admin.filters.string import (
     NotContainsFilter as BaseNotContainsFilter,
 )
 from starlette_admin.filters.string import StartsWithFilter as BaseStartsWithFilter
+from starlette_admin.tools import iterdecode
 
 
 def _column(ctx: FilterApplyContext) -> InstrumentedAttribute:
@@ -126,6 +140,88 @@ class IsNullFilter(BaseIsNullFilter):
 class IsNotNullFilter(BaseIsNotNullFilter):
     def apply(self, ctx: FilterApplyContext) -> Any:
         return _is_not_null(_column(ctx))
+
+
+# Relations (filter by related record primary key)
+
+
+def _coerce_pk(coerce: type, raw: str) -> Any:
+    if coerce is bool:
+        return raw == "True"
+    try:
+        return coerce(raw)
+    except (ValueError, TypeError) as exc:
+        raise FilterValidationError(f"Invalid primary key {raw!r}: {exc}") from exc
+
+
+def coerce_relation_pks(coercers: Sequence[type], pks: Sequence[str]) -> list[Any]:
+    """Coerce raw PK strings (or comma-encoded composite PKs) against
+    `coercers`, raising `FilterValidationError` on invalid values."""
+    if len(coercers) == 1:
+        return [_coerce_pk(coercers[0], pk) for pk in pks]
+    coerced: list[tuple[Any, ...]] = []
+    for pk in pks:
+        parts = list(iterdecode(pk))
+        if len(parts) != len(coercers):
+            raise FilterValidationError(
+                f"Invalid composite primary key {pk!r}: "
+                f"expected {len(coercers)} part(s), got {len(parts)}"
+            )
+        coerced.append(
+            tuple(
+                _coerce_pk(coerce, part)
+                for coerce, part in zip(coercers, parts, strict=True)
+            )
+        )
+    return coerced
+
+
+def _related_pk_clause(column: InstrumentedAttribute, pks: list[str]) -> Any:
+    """Build a clause over the *related* model's primary key column(s)
+    matching any of `pks` (raw strings as sent by the filter builder; a
+    composite key arrives comma-encoded, as produced by `MultiplePKField`).
+    Used as the criterion of `relationship.has()` / `relationship.any()`.
+    """
+    pk_columns = list(column.property.mapper.primary_key)
+    coercers = [extract_column_python_type(c) for c in pk_columns]  # type: ignore[arg-type]
+    coerced = coerce_relation_pks(coercers, pks)
+    if len(pk_columns) == 1:
+        return pk_columns[0].in_(coerced)
+    return or_(
+        *[
+            and_(*[col == val for col, val in zip(pk_columns, vals, strict=True)])
+            for vals in coerced
+        ]
+    )
+
+
+def _relation_match(ctx: FilterApplyContext) -> Any:
+    """`EXISTS` clause: the row is related to at least one of `ctx.value`."""
+    column = _column(ctx)
+    criterion = _related_pk_clause(column, ctx.value)
+    if not column.property.uselist:
+        return column.has(criterion)
+    return column.any(criterion)
+
+
+class RelationInFilter(BaseRelationInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return _relation_match(ctx)
+
+
+class RelationNotInFilter(BaseRelationNotInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return not_(_relation_match(ctx))
+
+
+class RelationAnyOfFilter(BaseRelationAnyOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return _relation_match(ctx)
+
+
+class RelationNoneOfFilter(BaseRelationNoneOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return not_(_relation_match(ctx))
 
 
 # String
@@ -448,4 +544,20 @@ class SqlaFilterRegistry(FilterRegistry):
 
     @filters(RelationField)
     def relation_filters(self, field: BaseField) -> list[type[BaseFilter]]:
-        return [IsNullFilter, IsNotNullFilter]
+        """Relations are filterable by related record (picked from a
+        searchable dropdown of the foreign view) or by whether any related
+        record exists at all.
+        """
+        if getattr(field, "multiple", False):
+            return [
+                RelationAnyOfFilter,
+                RelationNoneOfFilter,
+                IsNullFilter,
+                IsNotNullFilter,
+            ]
+        return [
+            RelationInFilter,
+            RelationNotInFilter,
+            IsNullFilter,
+            IsNotNullFilter,
+        ]

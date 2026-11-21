@@ -271,8 +271,12 @@ async def test_composite_type():
         CollectionField(
             "balance",
             fields=[
-                CurrencyField("currency", searchable=False, orderable=False),
-                IntegerField("amount", searchable=False, orderable=False),
+                CurrencyField(
+                    "currency", searchable=False, filterable=False, orderable=False
+                ),
+                IntegerField(
+                    "amount", searchable=False, filterable=False, orderable=False
+                ),
             ],
         ),
     ]

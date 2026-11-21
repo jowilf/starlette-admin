@@ -66,6 +66,16 @@ from starlette_admin.filters.numeric import (
     LessThanOrEqualFilter as BaseLessThanOrEqualFilter,
 )
 from starlette_admin.filters.numeric import NotEqualFilter as BaseNumericNotEqualFilter
+from starlette_admin.filters.relation import (
+    RelationAnyOfFilter as BaseRelationAnyOfFilter,
+)
+from starlette_admin.filters.relation import RelationInFilter as BaseRelationInFilter
+from starlette_admin.filters.relation import (
+    RelationNoneOfFilter as BaseRelationNoneOfFilter,
+)
+from starlette_admin.filters.relation import (
+    RelationNotInFilter as BaseRelationNotInFilter,
+)
 from starlette_admin.filters.string import ContainsFilter as BaseContainsFilter
 from starlette_admin.filters.string import EndsWithFilter as BaseEndsWithFilter
 from starlette_admin.filters.string import NotContainsFilter as BaseNotContainsFilter
@@ -336,6 +346,33 @@ class ObjectIdNotInFilter(BaseArrayNotInFilter):
         return Q(**{f"{ctx.field_name}__nin": ctx.value})
 
 
+# Relations by related record. The raw primary key strings are handed to
+# MongoEngine as-is: `ReferenceField`/`ListField(ReferenceField)` convert
+# them through the referenced document's primary key field (e.g. str ->
+# ObjectId) when preparing the query. `__in` on a list matches if any element
+# matches; `__nin` matches documents with no matching element (or no value).
+
+
+class RelationInFilter(BaseRelationInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return Q(**{f"{ctx.field_name}__in": ctx.value})
+
+
+class RelationNotInFilter(BaseRelationNotInFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return Q(**{f"{ctx.field_name}__nin": ctx.value})
+
+
+class RelationAnyOfFilter(BaseRelationAnyOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return Q(**{f"{ctx.field_name}__in": ctx.value})
+
+
+class RelationNoneOfFilter(BaseRelationNoneOfFilter):
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return Q(**{f"{ctx.field_name}__nin": ctx.value})
+
+
 # Combine a parsed FilterGroup tree into a single QNode
 
 
@@ -524,7 +561,14 @@ class MongoEngineFilterRegistry(FilterRegistry):
 
     @filters(RelationField)
     def relation_filters(self, field: BaseField) -> list[type[BaseFilter]]:
-        return [IsNullFilter, IsNotNullFilter]
+        if getattr(field, "multiple", False):
+            return [
+                RelationAnyOfFilter,
+                RelationNoneOfFilter,
+                IsNullFilter,
+                IsNotNullFilter,
+            ]
+        return [RelationInFilter, RelationNotInFilter, IsNullFilter, IsNotNullFilter]
 
     @filters(TagsField)
     def tags_filters(self, field: BaseField) -> list[type[BaseFilter]]:
