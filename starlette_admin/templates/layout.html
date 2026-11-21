@@ -139,7 +139,7 @@
         {% block navbar %}
             {% if current_user or i18n_config.language_switcher or (timezone_config and timezone_config.timezone_switcher) %}
                 <header class="navbar navbar-expand-md d-none d-lg-flex d-print-none">
-                    <div class="container-xl">
+                    <div class="container-fluid">
                         <button class="navbar-toggler"
                                 type="button"
                                 data-bs-toggle="collapse"
@@ -150,13 +150,12 @@
                             <span class="navbar-toggler-icon"></span>
                         </button>
                         <div class="navbar-nav flex-row order-md-last gap-2">
-                            {% block navbar_extra %}
-                            {% endblock %}
+                            {% block navbar_extra %}{% endblock %}
                             {% if i18n_config.language_switcher %}
                                 <div class="nav-item dropdown">
                                     <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown">
                                         <i class="{{ icon('nav.language') }}"></i>
-                                        {{ get_locale_display_name(get_locale() ) }}
+                                        {{ get_locale_display_name(get_locale()) }}
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         {% for lang in i18n_config.language_switcher %}
@@ -173,7 +172,7 @@
                                 <div class="nav-item dropdown">
                                     <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown">
                                         <i class="{{ icon('nav.world') }}"></i>
-                                        {{ get_timezone_display_name(get_timezone() ) }}
+                                        {{ get_timezone_display_name(get_timezone()) }}
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                                         {% for tz in timezone_config.timezone_switcher %}
@@ -203,13 +202,12 @@
         {% endblock %}
         <div class="page-wrapper">
             <div class="page-header d-print-none">
-                <div class="container-xl">
-                    {% block header %}
-                    {% endblock %}
+                <div class="container-fluid">
+                    {% block header %}{% endblock %}
                 </div>
             </div>
             <div class="page-body flex-grow-1">
-                <div class="container-xl">
+                <div class="container-fluid">
                     {% block flash_messages %}
                         <div id="alertContainer">
                             {%- if flashed_messages %}
@@ -229,14 +227,12 @@
                             {%- endif %}
                         </div>
                     {% endblock %}
-                    {% block content_before %}
-                    {% endblock %}
+                    {% block content_before %}{% endblock %}
                     {% block content %}{% endblock %}
                     {% block content_after %}{% endblock %}
                 </div>
             </div>
-            {% block page_footer %}
-            {% endblock %}
+            {% block page_footer %}{% endblock %}
         </div>
     </div>
     {% include "_sa_templates.html" %}
