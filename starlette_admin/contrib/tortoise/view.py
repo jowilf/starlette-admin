@@ -50,7 +50,7 @@ from tortoise.queryset import QuerySet
 _log = get_logger(__name__)
 
 
-class ModelView(BaseModelView):
+class ModelView(BaseModelView[str]):
     """A view for managing Tortoise ORM models."""
 
     def __init__(
@@ -468,7 +468,7 @@ class ModelView(BaseModelView):
         raise exc
 
 
-class InlineModelView(BaseInlineModelView, ModelView):
+class InlineModelView(BaseInlineModelView[str], ModelView):
     """Inline editing of Tortoise-backed related records inside a parent form.
 
     Declare ``model`` as a class attribute. The FK is either set explicitly

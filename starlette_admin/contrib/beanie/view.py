@@ -15,6 +15,7 @@ from typing import (
 import bson.errors
 import starlette_admin.fields as sa
 from beanie import Document, Link, PydanticObjectId
+from beanie.odm.fields import ExpressionField
 from beanie.odm.operators.find import BaseFindOperator
 from beanie.odm.utils.dump import get_dict
 from beanie.operators import In, Or, RegEx, Text
@@ -48,7 +49,7 @@ _log = get_logger(__name__)
 T = TypeVar("T", bound=Document)
 
 
-class ModelView(BaseModelView, Generic[T]):
+class ModelView(BaseModelView[ExpressionField], Generic[T]):
     """A view for managing Beanie documents."""
 
     full_text_override_order_by: bool = False
@@ -402,7 +403,7 @@ def _get_link_target(ann: type) -> type | None:
     return None
 
 
-class InlineModelView(BaseInlineModelView, ModelView):
+class InlineModelView(BaseInlineModelView[ExpressionField], ModelView):
     """Inline editing of Beanie-backed related documents inside a parent form.
 
     Declare ``document`` as a class attribute. The FK field is either set
