@@ -853,3 +853,60 @@ def test_dropdown_item_icon_rendered() -> None:
         '<i class="fa fa-chart-line"></i>'
         "</span>Reports</a>"
     ) in text, "CustomView dropdown item is missing its wrapped icon"
+
+
+def test_sidebar_brand_and_fallback_icon_markup() -> None:
+    app = Starlette()
+    admin = BaseAdmin(title="Karvex Admin")
+    admin.add_view(PostView(model=Post))
+    admin.mount_to(app)
+
+    client = TestClient(app, base_url="http://testserver")
+    response = client.get("/admin")
+    assert response.status_code == 200
+
+    text = re.sub(r"\s+", " ", response.text)
+    assert '<div class="navbar-brand navbar-brand-autodark">' in text
+    assert '<span class="sa-brand-title">Karvex Admin</span>' in text
+    assert '<span class="sa-brand-monogram" aria-hidden="true">K</span>' in text
+    assert (
+        "<h3"
+        not in text.split("navbar-brand navbar-brand-autodark", 1)[1].split("</a>", 1)[
+            0
+        ]
+    )
+    assert "fa-solid fa-angles-left" in text
+    assert "nav-link-icon d-lg-inline-flex sa-nav-icon-fallback" in text
+
+
+def test_dropdown_aria_expanded_matches_open_state() -> None:
+    app = Starlette()
+    admin = BaseAdmin()
+    admin.add_view(
+        DropDown(
+            "Always Open",
+            icon="fa fa-folder",
+            always_open=True,
+            views=[PostView(model=Post)],
+        )
+    )
+    admin.add_view(
+        DropDown(
+            "Collapsible",
+            icon="fa fa-list",
+            always_open=False,
+            views=[Link(menu_label="Docs", url="/docs")],
+        )
+    )
+    admin.mount_to(app)
+
+    client = TestClient(app, base_url="http://testserver")
+    response = client.get("/admin")
+    assert response.status_code == 200
+    text = re.sub(r"\s+", " ", response.text)
+
+    always_open_block = text.split("Always Open", 1)[0].rsplit("<li", 1)[1]
+    assert 'aria-expanded="true"' in always_open_block
+
+    collapsible_block = text.split("Collapsible", 1)[0].rsplit("<li", 1)[1]
+    assert 'aria-expanded="false"' in collapsible_block

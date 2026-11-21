@@ -315,7 +315,7 @@ These variables are available in every template without being passed in. `Admin`
 | `get_timezone` | `callable` | `get_timezone()` → Active timezone string (requires no `request` argument) |
 | `get_timezone_display_name` | `callable` | `get_timezone_display_name(timezone, show_offset=False)` → Human-readable name of a timezone string |
 | `timezone_config` | `TimezoneConfig | None` | The admin's timezone configuration |
-| `theme_settings` | `TablerSettings` | Active Tabler theme configuration (base, primary, radius, mode) exposed by `DefaultTheme` |
+| `theme_settings` | `TablerSettings` | Active Tabler theme configuration (base, primary, radius, mode, sidebar) exposed by `DefaultTheme` |
 | `csrf_input` | `callable` | `csrf_input(request)` → Renders the hidden CSRF `<input>` |
 
 !!! note

@@ -17,7 +17,7 @@
                             aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-                    <h1 class="navbar-brand navbar-brand-autodark">
+                    <div class="navbar-brand navbar-brand-autodark">
                         <a class="brand-link" href="{{ url_for(__name__ ~ ':index') }}">
                             {% block brand %}
                                 {% if logo_url(request) %}
@@ -25,11 +25,20 @@
                                          class="navbar-logo"
                                          alt="{{ app_title }}" />
                                 {% else %}
-                                    <h3 class="text-center text-wrap">{{ app_title }}</h3>
+                                    <span class="sa-brand-title">{{ app_title }}</span>
+                                    <span class="sa-brand-monogram" aria-hidden="true">{{ (app_title or '')[:1] | upper }}</span>
                                 {% endif %}
                             {% endblock %}
                         </a>
-                    </h1>
+                        <button type="button"
+                                class="{{ cls('nav.sidebar_toggle_button') }}"
+                                data-bs-toggle="sidebar-folded"
+                                data-sa-hook="sidebar-toggle"
+                                aria-pressed="false"
+                                aria-label="{{ _('Toggle sidebar') }}">
+                            <i class="{{ icon('nav.sidebar_toggle') }}" aria-hidden="true"></i>
+                        </button>
+                    </div>
                     {% if current_user or i18n_config.language_switcher or (timezone_config and timezone_config.timezone_switcher) %}
                         <div class="navbar-nav flex-row d-lg-none">
                             {% if i18n_config.language_switcher %}

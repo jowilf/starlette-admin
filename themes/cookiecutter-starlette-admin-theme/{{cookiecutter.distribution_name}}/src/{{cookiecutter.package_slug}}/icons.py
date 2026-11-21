@@ -44,6 +44,8 @@ class {{ cookiecutter.class_prefix }}Icons(IconSet):
         "nav.language": "ti ti-language",
         "nav.world": "ti ti-world",
         "nav.user": "ti ti-user",
+        "nav.sidebar_toggle": "ti ti-chevrons-left",
+        "nav.item_fallback": "ti ti-circle-dot",
         # Flash messages
         "flash.success": "ti ti-circle-check",
         "flash.warning": "ti ti-alert-triangle",
