@@ -4,7 +4,7 @@ import os
 import re
 from enum import StrEnum
 from typing import Annotated, Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pymongo
 import pytest
@@ -603,7 +603,8 @@ class TestBeanieView:
         with patch.object(
             ProductDescriptionTest,
             "replace",
-            new=AsyncMock(side_effect=orig_replace, autospec=True),
+            autospec=True,
+            side_effect=orig_replace,
         ) as mock_replace:
             response = await client.post(
                 f"/admin/product-description-test/edit?pk={product.id}",

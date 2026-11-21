@@ -325,8 +325,19 @@ async def test_edit_skips_save_when_unchanged_and_converts_references():
     att_view = ModelView(Attachment)
     att_view._handle_file_field(att, "image", (None, True))
     assert att._get_changed_fields() == []
-    m = MyDocument._from_son({"_id": ObjectId(), "int": 1})
-    await ModelView(MyDocument)._set_field(
-        req, m, "int", 1, MyDocument.int, IntegerField("int"), True
+    import uuid as _uuid
+
+    class _UuidDoc(me.Document):
+        uid = me.UUIDField(binary=True)
+
+    u = _uuid.uuid4()
+    u_doc = _UuidDoc._from_son({"_id": ObjectId(), "uid": u})
+    u_view = ModelView(_UuidDoc)
+    await u_view._set_field(
+        req, u_doc, "uid", str(u), _UuidDoc.uid, StringField("uid"), True
     )
-    assert m._get_changed_fields() == []
+    assert u_doc._get_changed_fields() == []
+    await u_view._set_field(
+        req, u_doc, "uid", "not-a-uuid", _UuidDoc.uid, StringField("uid"), True
+    )
+    assert u_doc._get_changed_fields() == ["uid"]

@@ -3,7 +3,7 @@ import json
 import os
 from enum import StrEnum
 from typing import Annotated
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest_asyncio
 from beanie import BackLink, Document, Indexed, Link, init_beanie
@@ -291,7 +291,7 @@ class TestBeanieRelations:
         # Submitting unchanged Store (with website + empty list[Link]) skips replace
         orig_replace = Store.replace
         with patch.object(
-            Store, "replace", new=AsyncMock(side_effect=orig_replace, autospec=True)
+            Store, "replace", autospec=True, side_effect=orig_replace
         ) as mock_replace:
             resp = await client.post(
                 f"/admin/store/edit?pk={store.id}",

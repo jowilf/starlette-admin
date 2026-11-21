@@ -301,9 +301,14 @@ class ModelView(BaseModelView[MongoBaseField]):
                 and me_field is not None
                 and value is not None
                 and not isinstance(me_field, me.ReferenceField)
-                and getattr(obj, name, None) == me_field.to_python(value)
             ):
-                return
+                current = getattr(obj, name, None)
+                if current is not None:
+                    try:
+                        if me_field.to_mongo(current) == me_field.to_mongo(value):
+                            return
+                    except (TypeError, ValueError, ValidationError):
+                        pass
             setattr(obj, name, value)
 
     @staticmethod

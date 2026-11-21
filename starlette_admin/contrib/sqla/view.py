@@ -746,7 +746,7 @@ class ModelView(BaseModelView[Mapped[Any]]):
         if hasattr(col_type, "_coerce"):
             try:
                 return bool(col_type.compare_values(current, col_type._coerce(value)))
-            except (TypeError, ValueError):
+            except Exception:
                 return False
         return False
 
