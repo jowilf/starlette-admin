@@ -81,6 +81,27 @@ def register_converter(
     return wrap
 
 
+def _pydantic_field_title(model: type[Any], name: str) -> str | None:
+    """Return the Pydantic ``title`` declared for ``name``, if any."""
+    model_fields = getattr(model, "model_fields", None) or getattr(
+        model, "__fields__", {}
+    )
+    field = model_fields.get(name)
+    if field is None:
+        return None
+    title = getattr(field, "title", None)
+    if title is None:
+        title = getattr(getattr(field, "field_info", None), "title", None)
+    return title or None
+
+
+def _apply_pydantic_field_title(model: type[Any], name: str, field: BaseField) -> None:
+    """Use the Pydantic field ``title`` as the label when it was not customized."""
+    title = _pydantic_field_title(model, name)
+    if title and field.label == field.name.replace("_", " ").capitalize():
+        field.label = title
+
+
 class BaseSQLAModelConverter(BaseModelConverter):
     def _external_converters(self) -> dict[Any, Callable[..., BaseField]]:
         return _EXTERNAL_CONVERTERS
@@ -248,11 +269,11 @@ class BaseSQLAModelConverter(BaseModelConverter):
                     )
                     if is_inherited_pk:
                         column = attr.columns[0]
-                        converted_fields.append(
-                            self.convert(
-                                name=attr.key, type=column.type, column=column
-                            ),
+                        converted_field = self.convert(
+                            name=attr.key, type=column.type, column=column
                         )
+                        _apply_pydantic_field_title(model, attr.key, converted_field)
+                        converted_fields.append(converted_field)
                     else:
                         assert len(attr.columns) == 1, (
                             "Multiple-column properties are not supported"
@@ -261,6 +282,9 @@ class BaseSQLAModelConverter(BaseModelConverter):
                         if not column.foreign_keys or explicit_fields:
                             converted_field = self.convert(
                                 name=attr.key, type=column.type, column=column
+                            )
+                            _apply_pydantic_field_title(
+                                model, attr.key, converted_field
                             )
                             converted_fields.append(converted_field)
         _log.debug(
