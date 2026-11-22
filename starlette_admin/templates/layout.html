@@ -3,6 +3,7 @@
 {% if is_auth_enabled and not request.state.is_anonymous %}
     {% set current_user = request.state.admin_user %}
 {% endif %}
+{% set show_timezone_switcher = timezone_config and timezone_config.timezone_switcher and (not is_auth_enabled or not request.state.is_anonymous) %}
 {% block body %}
     <div class="page">
         {% block sidebar %}
@@ -30,7 +31,7 @@
                             {% endblock %}
                         </a>
                     </h1>
-                    {% if current_user or i18n_config.language_switcher or (timezone_config and timezone_config.timezone_switcher) %}
+                    {% if current_user or i18n_config.language_switcher or show_timezone_switcher %}
                         <div class="navbar-nav flex-row d-lg-none">
                             {% if i18n_config.language_switcher %}
                                 <div class="nav-item dropdown">
@@ -52,7 +53,7 @@
                                     </div>
                                 </div>
                             {% endif %}
-                            {% if timezone_config and timezone_config.timezone_switcher %}
+                            {% if show_timezone_switcher %}
                                 <div class="nav-item dropdown">
                                     <a href="#"
                                        class="nav-link"
@@ -137,7 +138,7 @@
             </aside>
         {% endblock %}
         {% block navbar %}
-            {% if current_user or i18n_config.language_switcher or (timezone_config and timezone_config.timezone_switcher) %}
+            {% if current_user or i18n_config.language_switcher or show_timezone_switcher %}
                 <header class="navbar navbar-expand-md d-none d-lg-flex d-print-none">
                     <div class="container-fluid">
                         <button class="navbar-toggler"
@@ -168,7 +169,7 @@
                                     </div>
                                 </div>
                             {% endif %}
-                            {% if timezone_config and timezone_config.timezone_switcher %}
+                            {% if show_timezone_switcher %}
                                 <div class="nav-item dropdown">
                                     <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown">
                                         <i class="{{ icon('nav.world') }}"></i>
