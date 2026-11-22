@@ -17,7 +17,7 @@
         {% endblock %}
         <form class="card card-md"
               action="{{ request.url }}"
-              method="POST"
+              method="post"
               autocomplete="off">
             {{ csrf_input(request) }}
             <div class="card-body">
@@ -38,8 +38,7 @@
                            aria-label="close"></a>
                     </div>
                 {% endif %}
-                {% block login_form_before %}
-                {% endblock %}
+                {% block login_form_before %}{% endblock %}
                 {% block login_fields %}
                     <div class="mb-3">
                         <label class="form-label" for="username">{{ _("Username") }}</label>
@@ -50,7 +49,7 @@
                                placeholder="{{ _('Username') }}"
                                autocomplete="username"
                                {% if form_errors and form_errors.has('username') %}aria-invalid="true" aria-describedby="username-error"{% endif %} />
-                        {% if form_errors and form_errors.has('username') %}
+                        {% if form_errors and form_errors.has("username") %}
                             <div class="invalid-feedback" id="username-error">{{ form_errors.msg("username") }}</div>
                         {% endif %}
                     </div>
@@ -108,7 +107,7 @@
                                 </a>
                             </span>
                         </div>
-                        {% if form_errors and form_errors.has('password') %}
+                        {% if form_errors and form_errors.has("password") %}
                             <div class="invalid-feedback" id="password-error">{{ form_errors.msg("password") }}</div>
                         {% endif %}
                     </div>
