@@ -135,7 +135,7 @@ def test_get_set_database_timezone():
 
 def test_get_timezone_display_name():
     name = get_timezone_display_name("UTC")
-    assert name is not None
+    assert name == "Coordinated Universal Time"
 
 
 def test_get_timezone_display_name_with_offset():
