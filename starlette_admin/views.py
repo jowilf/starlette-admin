@@ -3333,7 +3333,7 @@ class InlineModelView(BaseModelView[FieldReferenceT]):
         """
         raise NotImplementedError()
 
-    def _find_foreign_view(self, key: str) -> "BaseModelView":
+    def _find_foreign_view(self, key: str) -> "BaseModelView":  # ty: ignore[incompatible-mutable-override]
         """Delegate foreign-view lookup to the parent view.
 
         RelationField.serialize_value calls ``self._view._find_foreign_view``

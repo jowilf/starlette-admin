@@ -9,7 +9,8 @@
         <div class="modal-content">
             {% block import_modal_header %}
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modal-import-title">{% block import_modal_title %}{{ _("Import") }}{% endblock %}</h5>
+                    <h5 class="modal-title"
+                        id="modal-import-title">{% block import_modal_title %}{{ _("Import") }}{% endblock %}</h5>
                     <button type="button"
                             class="btn-close"
                             data-bs-dismiss="modal"
@@ -226,7 +227,7 @@
     </template>
     <template data-sa-template="import-button-spinner-label">
         <span><span class="spinner-border spinner-border-sm me-2"
-      role="status"
-      aria-hidden="true"></span><span data-sa-slot="label"></span></span>
+                    role="status"
+                    aria-hidden="true"></span><span data-sa-slot="label"></span></span>
     </template>
 {% endblock %}
