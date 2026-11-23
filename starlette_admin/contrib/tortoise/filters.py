@@ -24,6 +24,7 @@ from starlette_admin.fields import (
     StringField,
     TextAreaField,
     TimeField,
+    UUIDField,
 )
 from starlette_admin.filters import (
     FilterApplyContext,
@@ -64,6 +65,8 @@ from starlette_admin.filters.string import ContainsFilter as BaseContainsFilter
 from starlette_admin.filters.string import EndsWithFilter as BaseEndsWithFilter
 from starlette_admin.filters.string import NotContainsFilter as BaseNotContainsFilter
 from starlette_admin.filters.string import StartsWithFilter as BaseStartsWithFilter
+from starlette_admin.filters.uuid import UUIDEqualFilter as BaseUUIDEqualFilter
+from starlette_admin.filters.uuid import UUIDNotEqualFilter as BaseUUIDNotEqualFilter
 from tortoise.expressions import Q
 
 from .fields import BackwardHasOne
@@ -155,6 +158,19 @@ class StringEqualFilter(BaseEqualFilter):
 class StringNotEqualFilter(BaseNotEqualFilter):
     def apply(self, ctx: FilterApplyContext) -> Q:
         return ~Q(**{f"{ctx.field_name}__iexact": ctx.value})
+
+
+# UUID
+
+
+class UUIDEqualFilter(BaseUUIDEqualFilter):
+    def apply(self, ctx: FilterApplyContext) -> Q:
+        return Q(**{ctx.field_name: ctx.value})
+
+
+class UUIDNotEqualFilter(BaseUUIDNotEqualFilter):
+    def apply(self, ctx: FilterApplyContext) -> Q:
+        return ~Q(**{ctx.field_name: ctx.value})
 
 
 # Numeric
@@ -403,6 +419,19 @@ class TortoiseFilterRegistry(FilterRegistry):
             EndsWithFilter,
             StringEqualFilter,
             StringNotEqualFilter,
+            IsNullFilter,
+            IsNotNullFilter,
+        ]
+
+    @filters(UUIDField)
+    def uuid_filters(self, field: BaseField) -> list[type[BaseFilter]]:
+        return [
+            ContainsFilter,
+            NotContainsFilter,
+            StartsWithFilter,
+            EndsWithFilter,
+            UUIDEqualFilter,
+            UUIDNotEqualFilter,
             IsNullFilter,
             IsNotNullFilter,
         ]
