@@ -87,7 +87,16 @@ try:
 
     def get_timezone_display_name(timezone: str, show_offset: bool = False) -> str:
         tz = zoneinfo.ZoneInfo(timezone)
-        tz_name = get_timezone_name(tz, locale=get_locale())
+        locale = Locale.parse(get_locale())
+        tz_name = get_timezone_name(tz, locale=locale)
+
+        # Non-regional zones such as UTC and GMT lack a CLDR "generic" name,
+        # causing Babel to fall back to "Unknown Region (...)". Fall back to
+        # the "standard" variant (e.g. "Coordinated Universal Time") while
+        # keeping generic DST-independent names for regional timezones.
+        unknown_region = locale.territories.get("ZZ")
+        if unknown_region and unknown_region in tz_name:
+            tz_name = get_timezone_name(tz, locale=locale, zone_variant="standard")
 
         if not show_offset:
             return tz_name
