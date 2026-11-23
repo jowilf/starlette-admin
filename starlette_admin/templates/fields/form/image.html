@@ -7,7 +7,7 @@
     {% if field.help_text %}<small class="form-hint">{{ field.help_text }}</small>{% endif %}
 </div>
 {% include "fields/form/_error.html" %}
-{% if request.state.action=='EDIT' and field._isvalid_value(data) %}
+{% if request.state.action=="EDIT" and field._isvalid_value(data) %}
     <div class="mt-2 border p-2">
         {% include "fields/detail/image.html" %}
         {% include "fields/form/_delete.html" %}
