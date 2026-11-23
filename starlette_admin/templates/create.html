@@ -17,11 +17,10 @@
 {% endblock %}
 {% block content %}
     <form action="{{ request.url }}"
-          method="POST"
+          method="post"
           enctype="multipart/form-data">
         {{ csrf_input(request) }}
-        {% block form_before %}
-        {% endblock %}
+        {% block form_before %}{% endblock %}
         <div class="row row-deck row-cards">
             <div class="col-12">
                 <div class="card">
@@ -62,10 +61,9 @@
 {% endblock %}
 {% block script %}
     {{ super() }}
-    <script type="text/javascript"
-            src="{{ static_url(request, 'js/form.js', v=1) }}"></script>
-    {% for link in widget_additional_js %}<script type="text/javascript" src="{{ link }}"></script>{% endfor %}
-    {% for link in view._additional_js_links(request) %}
-        <script type="text/javascript" src="{{ link }}"></script>
+    <script src="{{ static_url(request, 'js/form.js', v=1) }}"></script>
+    {% for link in widget_additional_js %}
+        <script src="{{ link }}"></script>
     {% endfor %}
+    {% for link in view._additional_js_links(request) %}<script src="{{ link }}"></script>{% endfor %}
 {% endblock %}
