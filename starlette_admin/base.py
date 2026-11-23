@@ -873,7 +873,7 @@ class BaseAdmin:
                 raise HTTPException(HTTP_403_FORBIDDEN)
             return await handler(request)
 
-        wrapper._login_not_required = getattr(  # ty: ignore[unresolved-attribute]
+        wrapper._login_not_required = getattr(  # ty: ignore[missing-attribute]
             handler, "_login_not_required", False
         )
         return wrapper

@@ -11,6 +11,7 @@
             {% for value in data %}<option selected="selected">{{ value }}</option>{% endfor %}
         {% endif %}
     </select>
-    {% if field.help_text %}<small class="form-hint mt-2" id="{{ field.id }}-help">{{ field.help_text }}</small>{% endif %}
+    {% if field.help_text %}<small class="form-hint mt-2"
+                                   id="{{ field.id }}-help">{{ field.help_text }}</small>{% endif %}
 </div>
 {% include "fields/form/_error.html" %}

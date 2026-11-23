@@ -25,7 +25,7 @@ def filters(
     def wrap(
         method: Callable[..., Sequence[type["BaseFilter"]]],
     ) -> Callable[..., Sequence[type["BaseFilter"]]]:
-        method._filters_for = frozenset(field_types)  # ty: ignore[unresolved-attribute]
+        method._filters_for = frozenset(field_types)  # ty: ignore[missing-attribute]
         return method
 
     return wrap

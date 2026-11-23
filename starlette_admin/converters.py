@@ -40,7 +40,7 @@ def converts(
     Callable[..., BaseField],
 ]:
     def wrap(func: Callable[..., BaseField]) -> Callable[..., BaseField]:
-        func._converter_for = frozenset(args)  # ty: ignore[unresolved-attribute]
+        func._converter_for = frozenset(args)  # ty: ignore[missing-attribute]
         return func
 
     return wrap
