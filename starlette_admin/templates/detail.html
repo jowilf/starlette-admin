@@ -23,8 +23,7 @@
 {% endblock %}
 {% block content %}
     <div class="row row-deck row-cards">
-        {% block detail_before %}
-        {% endblock %}
+        {% block detail_before %}{% endblock %}
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
@@ -124,17 +123,13 @@
 {% endblock %}
 {% block script %}
     {{ super() }}
-    <script type="text/javascript"
-            src="{{ static_url(request, 'js/alerts.js', v=3) }}"></script>
-    <script type="text/javascript"
-            src="{{ static_url(request, 'js/actions.js', v=2) }}"></script>
-    <script type="text/javascript"
-            src="{{ static_url(request, 'js/utils.js', v=1) }}"></script>
+    <script src="{{ static_url(request, 'js/alerts.js', v=3) }}"></script>
+    <script src="{{ static_url(request, 'js/actions.js', v=2) }}"></script>
+    <script src="{{ static_url(request, 'js/utils.js', v=1) }}"></script>
     {% for link in view._additional_js_links(request) %}
-        <script type="text/javascript" src="{{ link }}"></script>
+        <script src="{{ link }}"></script>
     {% endfor %}
-    <script type="text/javascript"
-            src="{{ static_url(request, 'js/detail.js', v=1) }}"></script>
+    <script src="{{ static_url(request, 'js/detail.js', v=1) }}"></script>
     {# djlint:off #}
     <script>
         var actionManager = new ActionManager(
