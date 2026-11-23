@@ -19,7 +19,7 @@
         {% for s_name, s_dir in list_params.sorts %}
             {% if s_name == field.name %}
                 {% set ns2.found = true %}
-                {% if s_dir == 'asc' %}
+                {% if s_dir == "asc" %}
                     {% set ns2.new_sorts = ns2.new_sorts + [field.name ~ '__desc'] %}
                 {% endif %}
             {% else %}

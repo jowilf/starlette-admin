@@ -13,6 +13,7 @@
             data-pk="{{ fpk }}"
             {% if data %}data-initial="{{ (data if field.multiple else [data]) |tojson |forceescape }}"{% endif %}
             {% if field.multiple %}multiple{% endif %}></select>
-    {% if field.help_text %}<small class="form-hint mt-2" id="{{ field.id }}-help">{{ field.help_text }}</small>{% endif %}
+    {% if field.help_text %}<small class="form-hint mt-2"
+                                   id="{{ field.id }}-help">{{ field.help_text }}</small>{% endif %}
 </div>
 {% include "fields/form/_error.html" %}

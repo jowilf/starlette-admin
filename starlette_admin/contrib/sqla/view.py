@@ -874,7 +874,7 @@ class InlineModelView(BaseInlineModelView[Mapped[Any]], ModelView):
             raise RuntimeError(
                 "Cannot auto-detect fk_attr before the inline is wired to a parent view"
             )
-        parent_mapper = inspect(self.parent_view.model)  # ty: ignore[unresolved-attribute]
+        parent_mapper = inspect(self.parent_view.model)  # ty: ignore[missing-attribute]
         child_mapper: Any = inspect(self.model)
         for rel in parent_mapper.relationships:
             if rel.mapper.class_ is not self.model:
@@ -891,7 +891,7 @@ class InlineModelView(BaseInlineModelView[Mapped[Any]], ModelView):
                     "%s: auto-detected fk_attr=%r from relationship to %s",
                     type(self).__name__,
                     fk_keys[0],
-                    self.parent_view.model.__name__,  # ty: ignore[unresolved-attribute]
+                    self.parent_view.model.__name__,  # ty: ignore[missing-attribute]
                 )
                 return fk_keys[0]
             if fk_keys:
@@ -899,18 +899,18 @@ class InlineModelView(BaseInlineModelView[Mapped[Any]], ModelView):
                     "%s: auto-detected composite fk_attr=%r from relationship to %s",
                     type(self).__name__,
                     tuple(fk_keys),
-                    self.parent_view.model.__name__,  # ty: ignore[unresolved-attribute]
+                    self.parent_view.model.__name__,  # ty: ignore[missing-attribute]
                 )
                 return tuple(fk_keys)
         _log.error(
             "%s: cannot auto-detect fk_attr, no relationship from %s to %s",
             type(self).__name__,
-            self.parent_view.model.__name__,  # ty: ignore[unresolved-attribute]
+            self.parent_view.model.__name__,  # ty: ignore[missing-attribute]
             self.model.__name__,
         )
         raise ValueError(
             f"{type(self).__name__}: cannot auto-detect fk_attr, "
-            f"no relationship from {self.parent_view.model.__name__} to "  # ty: ignore[unresolved-attribute]
+            f"no relationship from {self.parent_view.model.__name__} to "  # ty: ignore[missing-attribute]
             f"{self.model.__name__} found. Set fk_attr explicitly."
         )
 
