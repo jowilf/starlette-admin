@@ -57,8 +57,7 @@
                 <link rel="stylesheet" href="{{ link }}">
             {% endfor %}
         {% endblock %}
-        {% block head_css %}
-        {% endblock %}
+        {% block head_css %}{% endblock %}
         {% block core_inline_css %}
             <link rel="stylesheet"
                   href="{{ static_url(request, 'css/select2-tabler.css', v=2) }}">
@@ -511,8 +510,7 @@
                 }
             </style>
         {% endblock %}
-        {% block head %}
-        {% endblock %}
+        {% block head %}{% endblock %}
     </head>
     <body {% block body_attributes %}{% endblock %}>
         {% block body %}{% endblock %}
