@@ -10,6 +10,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[1.0.4\] - 2026-11-22
+
+### Added
+
+- Fall back to the model's custom `__str__` in `__admin_repr__` and Select2 results
+  by [@MortezaKarimi77](https://github.com/MortezaKarimi77)
+  in [#921](https://github.com/jowilf/starlette-admin/pull/921)
+
+- Type field lists by each backend's field references by [@Bear-03](https://github.com/Bear-03)
+  in [#904](https://github.com/jowilf/starlette-admin/pull/904)
+
+- Support field names in `BaseModelView.fields` annotation by [@jowilf](https://github.com/jowilf)
+  in [#890](https://github.com/jowilf/starlette-admin/pull/890)
+
+- Add `target` option to `link_row_action` to open links in a new tab by [@jowilf](https://github.com/jowilf)
+  in [#879](https://github.com/jowilf/starlette-admin/pull/879)
+
+### Changed
+
+- Refine Select2 option states by [@MortezaKarimi77](https://github.com/MortezaKarimi77)
+  in [#910](https://github.com/jowilf/starlette-admin/pull/910)
+
+- Use a full-width `container-fluid` layout for the page header and body
+  by [@MortezaKarimi77](https://github.com/MortezaKarimi77)
+  in [#899](https://github.com/jowilf/starlette-admin/pull/899)
+
+### Fixed
+
+- Keep the nav-link icon visible at the `md` breakpoint by [@MortezaKarimi77](https://github.com/MortezaKarimi77)
+  in [#908](https://github.com/jowilf/starlette-admin/pull/908)
+
+- Render `EnumField(multiple=True)` as a list in list and detail views
+  by [@MortezaKarimi77](https://github.com/MortezaKarimi77)
+  in [#901](https://github.com/jowilf/starlette-admin/pull/901)
+
+- Render sub-view icons inside the sidebar `DropDown` menu by [@MortezaKarimi77](https://github.com/MortezaKarimi77)
+  in [#897](https://github.com/jowilf/starlette-admin/pull/897)
+
+- Include `IPAddressField` in the SQLAlchemy default full-text search query
+  by [@MortezaKarimi77](https://github.com/MortezaKarimi77)
+  in [#893](https://github.com/jowilf/starlette-admin/pull/893)
+
+- Style the Select2 dropdown and search field with Tabler theme variables to fix dark mode
+  by [@jowilf](https://github.com/jowilf)
+  in [#889](https://github.com/jowilf/starlette-admin/pull/889)
+
 ## \[1.0.3\] - 2026-10-24
 
 ### Added
