@@ -36,7 +36,7 @@
                 <div class="card-header">
                     <div class="card-title d-flex align-items-center gap-3">
                         {% block list_search %}
-                            <form method="GET" class="d-flex">
+                            <form method="get" class="d-flex">
                                 <div class="input-group">
                                     <input type="search"
                                            name="q"
@@ -133,8 +133,7 @@
                 {% if filter_chips %}
                     <div class="card-body border-bottom py-2">{{ filter_bar(filter_chips, filter_logic, list_params) }}</div>
                 {% endif %}
-                {% block list_before_table %}
-                {% endblock %}
+                {% block list_before_table %}{% endblock %}
                 {% block list_table %}
                     {% if total > (rows | length) %}
                         <div id="select-all-banner"
@@ -142,7 +141,7 @@
                              class="alert {{ cls('alert.info') }} py-2 mb-0 d-none d-flex align-items-center justify-content-between"
                              role="alert">
                             <span id="select-all-banner-page" data-sa-hook="select-all-banner-page">
-                                {{ _("All %(count)s rows on this page are selected.", count=(rows | length) ) }}
+                                {{ _("All %(count)s rows on this page are selected.", count=(rows | length)) }}
                                 <a href="#"
                                    id="select-all-matching-link"
                                    data-sa-hook="select-all-matching-link">{{ _("Select all %(total)s rows matching the current filter.", total=total) }}</a>
@@ -171,9 +170,13 @@
                                                        aria-label="{{ _('Select all rows') }}" />
                                             </th>
                                         {% endif %}
-                                        {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}<th scope="col" class="w-1"></th>{% endif %}
+                                        {% if view.row_actions_position.value == "BEFORE_COLUMNS" %}
+                                            <th scope="col" class="w-1"></th>
+                                        {% endif %}
                                         {% for field in fields %}<th scope="col" data-column="{{ field.name }}">{{ column_header(field, list_params) }}</th>{% endfor %}
-                                        {% if view.row_actions_position.value == "AFTER_COLUMNS" %}<th scope="col" class="w-1"></th>{% endif %}
+                                        {% if view.row_actions_position.value == "AFTER_COLUMNS" %}
+                                            <th scope="col" class="w-1"></th>
+                                        {% endif %}
                                     </tr>
                                 {% endblock %}
                             </thead>
@@ -233,28 +236,21 @@
 {% endblock %}
 {% block script %}
     {{ super() }}
-    <script type="text/javascript"
-            src="{{ static_url(request, 'js/utils.js', v=1) }}"></script>
-    <script type="text/javascript"
-            src="{{ static_url(request, 'js/alerts.js', v=3) }}"></script>
-    <script type="text/javascript"
-            src="{{ static_url(request, 'js/actions.js', v=2) }}"></script>
+    <script src="{{ static_url(request, 'js/utils.js', v=1) }}"></script>
+    <script src="{{ static_url(request, 'js/alerts.js', v=3) }}"></script>
+    <script src="{{ static_url(request, 'js/actions.js', v=2) }}"></script>
     {% if inline_edit_enabled %}
-        <script type="text/javascript"
-                src="{{ static_url(request, 'js/form.js', v=1) }}"></script>
+        <script src="{{ static_url(request, 'js/form.js', v=1) }}"></script>
     {% endif %}
     {% for link in view._additional_js_links(request) %}
-        <script type="text/javascript" src="{{ link }}"></script>
+        <script src="{{ link }}"></script>
     {% endfor %}
-    <script type="text/javascript"
-            src="{{ static_url(request, 'js/list.js', v=10) }}"></script>
+    <script src="{{ static_url(request, 'js/list.js', v=10) }}"></script>
     {% if filter_builder_fields %}
-        <script type="text/javascript"
-                src="{{ static_url(request, 'js/filter-builder.js', v=1) }}"></script>
+        <script src="{{ static_url(request, 'js/filter-builder.js', v=1) }}"></script>
     {% endif %}
     {% if view.can_import(request) and view.importers %}
-        <script type="text/javascript"
-                src="{{ static_url(request, 'js/import.js', v=3) }}"></script>
+        <script src="{{ static_url(request, 'js/import.js', v=3) }}"></script>
     {% endif %}
     {# djlint:off #}
     <script>
