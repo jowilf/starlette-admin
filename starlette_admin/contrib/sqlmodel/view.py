@@ -118,7 +118,7 @@ class InlineModelView(SQLAInlineModelView):
         ```
     """
 
-    model: ClassVar[type[SQLModel]]  # type: ignore[misc]
+    model: ClassVar[type[SQLModel]]  # type: ignore[misc]  # ty: ignore[incompatible-mutable-override]
 
     async def validate(self, request: Request, data: dict[str, Any]) -> None:
         fields = self.get_fields_list(request)

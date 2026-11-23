@@ -11,6 +11,6 @@
 {% block script %}
     {{ super() }}
     {% for link in widget_additional_js %}
-        <script type="text/javascript" src="{{ link }}"></script>
+        <script src="{{ link }}"></script>
     {% endfor %}
 {% endblock script %}

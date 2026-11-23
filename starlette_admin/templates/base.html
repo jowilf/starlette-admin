@@ -41,8 +41,7 @@
                 <link rel="stylesheet" href="{{ link }}">
             {% endfor %}
         {% endblock %}
-        {% block head_css %}
-        {% endblock %}
+        {% block head_css %}{% endblock %}
         {% block core_inline_css %}
             <link rel="stylesheet"
                   href="{{ static_url(request, 'css/select2-tabler.css', v=2) }}">
@@ -76,25 +75,19 @@
                 }
             </style>
         {% endblock %}
-        {% block head %}
-        {% endblock %}
+        {% block head %}{% endblock %}
     </head>
     <body {% block body_attributes %}{% endblock %}>
-        {% block body %}
-        {% endblock %}
+        {% block body %}{% endblock %}
         {% block modal %}{% endblock %}
         {% block core_js %}
-            <script type="text/javascript"
-                    src="{{ static_url(request, 'js/vendor/jquery.min.js', v='v4.0.0') }}"></script>
-            <script type="text/javascript"
-                    src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
-            <script type="text/javascript"
-                    src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.4.0') }}"></script>
-            <script type="text/javascript"
-                    src="{{ static_url(request, 'js/sa-dom.js', v=1) }}"></script>
+            <script src="{{ static_url(request, 'js/vendor/jquery.min.js', v='v4.0.0') }}"></script>
+            <script src="{{ static_url(request, 'js/vendor/js.cookie.min.js', v='3.0.8') }}"></script>
+            <script src="{{ static_url(request, 'js/vendor/tabler.min.js', v='1.4.0') }}"></script>
+            <script src="{{ static_url(request, 'js/sa-dom.js', v=1) }}"></script>
         {% endblock %}
         {% block plugin_js %}
-            {% for link in plugin_js_links(request) %}<script type="text/javascript" src="{{ link }}"></script>{% endfor %}
+            {% for link in plugin_js_links(request) %}<script src="{{ link }}"></script>{% endfor %}
         {% endblock %}
         {% block script %}{% endblock %}
         {# djlint:off #}

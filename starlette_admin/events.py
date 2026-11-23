@@ -200,7 +200,7 @@ def on(*events: AdminEvent | str, priority: int = 0) -> Callable:
         if not hasattr(fn, _ADMIN_EVENTS_ATTR):
             fn._admin_events = []  # ty: ignore[invalid-assignment]
         for event in events:
-            fn._admin_events.append((event, priority))  # ty: ignore[unresolved-attribute]
+            fn._admin_events.append((event, priority))  # ty: ignore[missing-attribute]
         return fn
 
     return decorator
@@ -256,7 +256,7 @@ class EventBus:
             self._handlers[key].sort(key=lambda x: x[0], reverse=True)
             logger.debug(
                 "EventBus: registered handler %s for event %r (priority=%d)",
-                fn.__qualname__,  # ty: ignore[unresolved-attribute]
+                fn.__qualname__,  # ty: ignore[missing-attribute]
                 key,
                 priority,
             )
@@ -308,7 +308,7 @@ class EventBus:
         for _priority, handler in handlers:
             logger.debug(
                 "EventBus: calling %s (priority=%d)",
-                handler.__qualname__,  # ty: ignore[unresolved-attribute]
+                handler.__qualname__,  # ty: ignore[missing-attribute]
                 _priority,
             )
             result = handler(ctx)
