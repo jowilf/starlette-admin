@@ -172,7 +172,7 @@ try:
         # Returns a `LazyProxy`, which behaves like a `str` but defers
         # translation until the value is used, so the locale in effect at
         # render time is applied rather than the one active at call time.
-        return LazyProxy(  # ty: ignore[invalid-return-type]
+        return LazyProxy(  # ty: ignore[invalid-explicit-return]
             gettext, message, enable_cache=False
         )
 

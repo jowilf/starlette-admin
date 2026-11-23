@@ -17,7 +17,7 @@
                         max-height: 50vh;
                         overflow-y: auto;
                         z-index: 1031">
-                <form method="GET" id="filter-form" data-sa-hook="filter-form">
+                <form method="get" id="filter-form" data-sa-hook="filter-form">
                     <input type="hidden"
                            name="filter"
                            id="filter-json"
@@ -65,7 +65,8 @@
                         <div class="btn-list">
                             <a href="{{ list_url(request, filter=None, page=None) }}"
                                class="{{ cls('filter.reset_button') }}">{{ _("Reset") }}</a>
-                            <button type="submit" class="{{ cls('filter.apply_button') }}">{{ _("Apply filters") }}</button>
+                            <button type="submit"
+                                    class="{{ cls('filter.apply_button') }}">{{ _("Apply filters") }}</button>
                         </div>
                     </div>
                 </form>

@@ -737,7 +737,7 @@ class DecimalField(NumberField):
     Erroneous input is ignored and will not be accepted as a value.
     """
 
-    step: str = "any"
+    step: str = "any"  # ty: ignore[incompatible-mutable-override]
     class_: str = "field-decimal form-control"
 
     async def parse_form_data(
@@ -891,7 +891,7 @@ class TagsField(BaseField):
             len(result),
             result,
         )
-        return result  # ty: ignore[invalid-return-type]
+        return result  # ty: ignore[invalid-explicit-return]
 
     async def serialize_value(self, request: Request, value: Any) -> Any:
         action = request.state.action
@@ -1468,7 +1468,7 @@ class DateField(DateTimeField):
     input_type: str = "date"
     class_: str = "field-date form-control"
     output_format: str | None = None
-    search_format: str = "YYYY-MM-DD"
+    search_format: str = "YYYY-MM-DD"  # ty: ignore[incompatible-mutable-override]
     form_alt_format: str | None = "F j, Y"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
@@ -1526,7 +1526,7 @@ class TimeField(DateTimeField):
     input_type: str = "time"
     class_: str = "field-time form-control"
     output_format: str | None = None
-    search_format: str = "HH:mm:ss"
+    search_format: str = "HH:mm:ss"  # ty: ignore[incompatible-mutable-override]
     form_alt_format: str | None = "H:i:S"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
@@ -1796,7 +1796,7 @@ class FileField(BaseField):
             non_empty = [
                 f
                 for f in files
-                if not is_empty_file(f.file)  # ty: ignore[unresolved-attribute]
+                if not is_empty_file(f.file)  # ty: ignore[missing-union-attribute]
             ]
             _log.debug(
                 "FileField.parse_form_data: field=%r %d/%d files non-empty",
@@ -1804,11 +1804,11 @@ class FileField(BaseField):
                 len(non_empty),
                 len(files),
             )
-            return non_empty, should_be_deleted  # ty: ignore[invalid-return-type]
+            return non_empty, should_be_deleted  # ty: ignore[invalid-explicit-return]
         file = form_data.get(self.id)
         result = (
             None
-            if (file and is_empty_file(file.file))  # ty: ignore[unresolved-attribute]
+            if (file and is_empty_file(file.file))  # ty: ignore[missing-union-attribute]
             else file
         )
         _log.debug(
@@ -1817,7 +1817,7 @@ class FileField(BaseField):
             getattr(file, "filename", file),
             result is None and file is not None,
         )
-        return result, should_be_deleted  # ty: ignore[invalid-return-type]
+        return result, should_be_deleted  # ty: ignore[invalid-explicit-return]
 
     async def serialize_value(self, request: Request, value: Any) -> Any:
         _log.debug(
@@ -2728,10 +2728,10 @@ class ComputedField(StringField):
     display so the user sees the current computed value.
     """
 
-    read_only: bool = True
-    searchable: bool = False
-    orderable: bool = False
-    exclude_from_create: bool = True
+    read_only: bool = True  # ty: ignore[incompatible-mutable-override]
+    searchable: bool = False  # ty: ignore[incompatible-mutable-override]
+    orderable: bool = False  # ty: ignore[incompatible-mutable-override]
+    exclude_from_create: bool = True  # ty: ignore[incompatible-mutable-override]
     form_template: str = "fields/form/computed.html"
 
     async def parse_form_data(self, request: Request, form_data: FormData) -> Any:
