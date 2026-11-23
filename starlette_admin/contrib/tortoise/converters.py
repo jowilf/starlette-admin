@@ -32,6 +32,7 @@ from tortoise.fields.relational import (
     OneToOneFieldInstance,
 )
 from tortoise.models import Model
+from tortoise.timezone import get_use_tz
 
 # Converters registered by plugins for Tortoise field types, merged into
 # every BaseTortoiseModelConverter instance (see
@@ -143,7 +144,7 @@ class ModelConverter(BaseTortoiseModelConverter):
 
     @converts(tfields.DatetimeField)
     def conv_datetime(self, name: str, field: tfields.Field) -> BaseField:
-        return DateTimeField(**self._common(name, field))
+        return DateTimeField(**self._common(name, field), timezone=get_use_tz())
 
     @converts(tfields.DateField)
     def conv_date(self, name: str, field: tfields.Field) -> BaseField:

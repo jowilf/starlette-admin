@@ -384,6 +384,13 @@ def test_datetime_equal_filter_with_timezone_conversion(seeded_session):
         clause = DateTimeEqualFilter().apply(_ctx("created_at", value))
         rows = seeded_session.execute(select(Item).where(clause)).scalars().all()
         assert [r.name for r in rows] == ["Alpha"]
+
+        # Timezone-aware column (or TypeDecorator with timezone=True impl) receives tzinfo.
+        tz_col = MagicMock(type=DateTime(timezone=True))
+        tz_view = type("_TzView", (), {"model": MagicMock(created_at=tz_col)})
+        DateTimeEqualFilter().apply(_ctx("created_at", value, view_cls=tz_view))
+        bound = tz_col.__eq__.call_args[0][0]
+        assert bound.tzinfo is not None
     finally:
         _current_timezone.set(original_tz)
         _current_database_timezone.set(original_db_tz)
@@ -411,6 +418,14 @@ def test_datetime_between_filter_with_timezone_conversion(seeded_session):
         clause = DateTimeBetweenFilter().apply(_ctx("created_at", value, value2))
         rows = seeded_session.execute(select(Item).where(clause)).scalars().all()
         assert [r.name for r in rows] == ["Alpha"]
+
+        tz_col = MagicMock(type=DateTime(timezone=True))
+        tz_view = type("_TzView", (), {"model": MagicMock(created_at=tz_col)})
+        DateTimeBetweenFilter().apply(
+            _ctx("created_at", value, value2, view_cls=tz_view)
+        )
+        b1, b2 = tz_col.between.call_args[0]
+        assert b1.tzinfo is not None and b2.tzinfo is not None
     finally:
         _current_timezone.set(original_tz)
         _current_database_timezone.set(original_db_tz)

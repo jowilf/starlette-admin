@@ -1,16 +1,20 @@
 from beanie import Document
-from pydantic import FutureDate, IPvAnyAddress, PastDate
+from pydantic import AwareDatetime, FutureDate, IPvAnyAddress, NaiveDatetime, PastDate
 from starlette_admin.contrib.beanie.view import ModelView
-from starlette_admin.fields import DateField, IPAddressField
+from starlette_admin.fields import DateField, DateTimeField, IPAddressField
 
 
 def test_conv_pydantic_date_past():
     class MyModel(Document):
         expires: PastDate
+        created_at: AwareDatetime
+        updated_at: NaiveDatetime
 
     view = ModelView(MyModel)
     date_field = next(f for f in view.fields if f.name == "expires")
     assert isinstance(date_field, DateField)
+    assert DateTimeField("created_at", required=True, timezone=True) in view.fields
+    assert DateTimeField("updated_at", required=True, timezone=False) in view.fields
 
 
 def test_conv_pydantic_date_future():
