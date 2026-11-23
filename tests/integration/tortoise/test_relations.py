@@ -6,6 +6,7 @@ create/edit through the admin forms, sorting and filtering on relations.
 """
 
 import re
+from unittest.mock import AsyncMock, patch
 
 import pytest_asyncio
 from starlette.applications import Starlette
@@ -13,7 +14,9 @@ from starlette_admin.contrib.tortoise import Admin, ModelView
 from starlette_admin.contrib.tortoise.fields import BackwardHasOne
 from starlette_admin.fields import HasMany, HasOne
 from tortoise import Tortoise, fields
+from tortoise.fields.relational import ManyToManyRelation
 from tortoise.models import Model
+from tortoise.signals import Signals
 
 from tests.integration.tortoise.utils import reset_schema, tortoise_init
 from tests.utils import csrf_async_client
@@ -211,3 +214,38 @@ class TestRelationForms:
         updated = await Post.get(pk=post.id).prefetch_related("author", "tags")
         assert updated.author is None
         assert list(updated.tags) == []
+
+    async def test_edit_unchanged_relations_skips_save_and_m2m(self, client):
+        post = (
+            await Post.filter(title="Hello").prefetch_related("author", "tags").first()
+        )
+        saves = []
+
+        async def _on_pre_save(sender, instance, using_db, update_fields):
+            saves.append(update_fields)
+
+        Post.register_listener(Signals.pre_save, _on_pre_save)
+        try:
+            with (
+                patch.object(
+                    ManyToManyRelation, "clear", new_callable=AsyncMock
+                ) as mock_clear,
+                patch.object(
+                    ManyToManyRelation, "add", new_callable=AsyncMock
+                ) as mock_add,
+            ):
+                response = await client.post(
+                    f"/admin/post/edit?pk={post.id}",
+                    data={
+                        "title": post.title,
+                        "author": str(post.author.id),
+                        "tags": [str(t.id) for t in post.tags],
+                    },
+                    follow_redirects=False,
+                )
+            assert response.status_code == 303
+            assert saves == []
+            mock_clear.assert_not_awaited()
+            mock_add.assert_not_awaited()
+        finally:
+            Post._listeners[Signals.pre_save][Post].remove(_on_pre_save)

@@ -4,7 +4,7 @@ from typing import Any, ClassVar
 
 import mongoengine as me
 import starlette_admin.fields as sa
-from bson import ObjectId
+from bson import DBRef, ObjectId
 from mongoengine.base import BaseDocument
 from mongoengine.base.fields import BaseField as MongoBaseField
 from mongoengine.errors import DoesNotExist, ValidationError
@@ -194,9 +194,10 @@ class ModelView(BaseModelView[MongoBaseField]):
             await self.handle_exception(request, e)
 
     async def edit(self, request: Request, pk: Any, data: dict[str, Any]) -> Any:
-        """Apply converted form data to the document identified by `pk` and save it.
+        """Apply converted form data to the document identified by `pk` and save changes.
 
-        Emits `BeforeEditContext`/`AfterEditContext` events around the save.
+        Emits `BeforeEditContext`/`AfterEditContext` events around persistence and
+        skips `save()` when neither form data nor `before_edit` modified any fields.
         Exceptions are routed through `handle_exception`.
         """
         _log.debug("edit: key=%r pk=%s populating document", self.key, pk)
@@ -210,8 +211,9 @@ class ModelView(BaseModelView[MongoBaseField]):
                 True,
             )
             await self._emit_before_edit(request, data, obj, pk=pk)
-            obj.save()
-            _log.info("edit: key=%r pk=%s saved", self.key, pk)
+            if obj._get_changed_fields():  # type: ignore[union-attr]
+                obj.save()  # type: ignore[union-attr]
+                _log.info("edit: key=%r pk=%s saved", self.key, pk)
             await self._emit_after_edit(request, obj, pk=pk)
             return obj
         except Exception as e:
@@ -269,7 +271,8 @@ class ModelView(BaseModelView[MongoBaseField]):
         """Assign `value` to `obj`'s `name` attribute, dispatching on field type:
         file fields go through GridFS handling, embedded documents and lists of
         embedded documents recurse through `_populate_obj`, relation fields are
-        converted to `ObjectId`, and everything else is a plain `setattr`.
+        converted via `_to_ref_value`, and unchanged scalar fields on edit are
+        skipped before falling back to `setattr`.
         """
         if isinstance(field, (FileField, ImageField)):
             self._handle_file_field(obj, name, value)
@@ -286,11 +289,37 @@ class ModelView(BaseModelView[MongoBaseField]):
                 request, obj, name, value, me_field, field, is_edit
             )
         elif isinstance(field, sa.HasOne) and value is not None:
-            setattr(obj, name, ObjectId(value))
+            setattr(obj, name, self._to_ref_value(me_field, value))
         elif isinstance(field, sa.HasMany) and value is not None:
-            setattr(obj, name, [ObjectId(v) for v in value])
+            ref_field = (
+                me_field.field if isinstance(me_field, me.ListField) else me_field
+            )
+            setattr(obj, name, [self._to_ref_value(ref_field, v) for v in value])
         else:
+            if (
+                is_edit
+                and me_field is not None
+                and value is not None
+                and not isinstance(me_field, me.ReferenceField)
+            ):
+                current = getattr(obj, name, None)
+                if current is not None:
+                    try:
+                        if me_field.to_mongo(current) == me_field.to_mongo(value):
+                            return
+                    except (TypeError, ValueError, ValidationError):
+                        pass
             setattr(obj, name, value)
+
+    @staticmethod
+    def _to_ref_value(me_field: Any, value: Any) -> Any:
+        """Convert a foreign PK to a `DBRef` matching MongoEngine `_data`, or `ObjectId` otherwise."""
+        if isinstance(me_field, me.ReferenceField):
+            return DBRef(
+                me_field.document_type._get_collection_name(),
+                me_field.document_type.id.to_python(value),
+            )
+        return ObjectId(value)
 
     def _handle_file_field(self, obj: me.Document, name: str, value: Any) -> None:
         """Delete, replace, or store a file in the GridFS proxy at `obj.<name>`.
@@ -302,7 +331,8 @@ class ModelView(BaseModelView[MongoBaseField]):
         proxy: GridFSProxy = getattr(obj, name)
         value, should_be_deleted = not_none(value)
         if should_be_deleted:
-            proxy.delete()
+            if proxy.grid_id is not None:
+                proxy.delete()
         elif isinstance(value, UploadFile):
             if proxy.grid_id is not None:
                 proxy.replace(

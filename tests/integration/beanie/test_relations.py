@@ -3,6 +3,7 @@ import json
 import os
 from enum import StrEnum
 from typing import Annotated
+from unittest.mock import patch
 
 import pytest_asyncio
 from beanie import BackLink, Document, Indexed, Link, init_beanie
@@ -286,3 +287,20 @@ class TestBeanieRelations:
         assert response.status_code == 303, response.text
         store = await Store.find(Store.name == "Jewelry store").first_or_none()
         assert store.products == []
+
+        # Submitting unchanged Store (with website + empty list[Link]) skips replace
+        orig_replace = Store.replace
+        with patch.object(
+            Store, "replace", autospec=True, side_effect=orig_replace
+        ) as mock_replace:
+            resp = await client.post(
+                f"/admin/store/edit?pk={store.id}",
+                data={
+                    "name": "Jewelry store",
+                    "products": [],
+                    "website": "https://jewelry.com",
+                },
+                follow_redirects=False,
+            )
+            assert resp.status_code == 303
+            mock_replace.assert_not_awaited()

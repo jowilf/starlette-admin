@@ -15,6 +15,7 @@ import pytest_asyncio
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette_admin.contrib.tortoise import Admin, ModelView
+from starlette_admin.events import AdminEvent
 from starlette_admin.exceptions import FormValidationError
 from starlette_admin.fields import StringField
 from starlette_admin.filters import FilterGroup, FilterRule
@@ -22,6 +23,7 @@ from starlette_admin.types import RequestAction
 from tortoise import Tortoise, fields
 from tortoise.exceptions import ValidationError
 from tortoise.models import Model
+from tortoise.signals import Signals
 
 from tests.integration.tortoise.utils import reset_schema, tortoise_init
 from tests.utils import csrf_async_client
@@ -52,6 +54,7 @@ class Product(Model):
     quantity = fields.IntField(default=0)
     release_date = fields.DateField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
+    updated_at = fields.DatetimeField(auto_now=True)
     launched_at = fields.DatetimeField(null=True)
     open_at = fields.TimeField(null=True)
     config = fields.JSONField(null=True)
@@ -432,6 +435,57 @@ class TestCrud:
         assert updated.title == "IPhone 9 Pro"
         assert updated.in_stock is False  # unchecked checkbox
         assert updated.created_at == product.created_at  # excluded from edit
+
+    async def test_edit_unchanged_skips_save_and_updates_auto_now_only_on_change(
+        self, admin, client
+    ):
+        product = await Product.filter(title="IPhone 9").first()
+        saves = []
+
+        async def _on_pre_save(sender, instance, using_db, update_fields):
+            saves.append(set(update_fields or []))
+
+        Product.register_listener(Signals.pre_save, _on_pre_save)
+        try:
+            payload = {
+                "title": product.title,
+                "description": product.description,
+                "price": str(product.price),
+                "rating": str(product.rating),
+                "brand": product.brand.value,
+                "status": str(product.status.value),
+                "in_stock": "on",
+                "quantity": str(product.quantity),
+                "release_date": product.release_date.isoformat(),
+                "launched_at": product.launched_at.isoformat(),
+                "token": str(product.token),
+            }
+            response = await client.post(
+                f"/admin/product/edit?pk={product.id}",
+                data=payload,
+                follow_redirects=False,
+            )
+            assert response.status_code == 303
+            assert saves == []
+            assert (await Product.get(pk=product.id)).updated_at == product.updated_at
+
+            admin.events.on(
+                AdminEvent.BEFORE_EDIT,
+                lambda ctx: setattr(ctx.obj, "title", "IPhone 9 Hooked"),
+            )
+            response2 = await client.post(
+                f"/admin/product/edit?pk={product.id}",
+                data=payload,
+                follow_redirects=False,
+            )
+            assert response2.status_code == 303
+            assert saves == [{"title", "updated_at"}]
+            assert (await Product.get(pk=product.id)).title == "IPhone 9 Hooked"
+            product_view = next(v for v in admin._views if v.model is Product)
+            token_field = next(f for f in product_view.fields if f.name == "token")
+            assert not product_view._is_unchanged(product, token_field, "not-a-uuid")
+        finally:
+            Product._listeners[Signals.pre_save][Product].remove(_on_pre_save)
 
     async def test_edit_validation_error(self, client):
         product = await Product.filter(title="IPhone 9").first()

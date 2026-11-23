@@ -1,6 +1,7 @@
 import functools
 import types as _types
 from collections.abc import Iterable, Sequence
+from enum import Enum
 from typing import (
     Any,
     ClassVar,
@@ -16,6 +17,7 @@ import starlette_admin.fields as sa
 from beanie import Document, Link, PydanticObjectId
 from beanie.odm.fields import ExpressionField
 from beanie.odm.operators.find import BaseFindOperator
+from beanie.odm.utils.dump import get_dict
 from beanie.operators import In, Or, RegEx, Text
 from pydantic import ValidationError
 from starlette.requests import Request
@@ -315,11 +317,28 @@ class ModelView(BaseModelView[ExpressionField], Generic[T]):
         except Exception as e:
             await self.handle_exception(request, e)
 
+    @staticmethod
+    def _is_field_unchanged(current: Any, value: Any) -> bool:
+        """Return ``True`` when the attribute on *doc* already matches *value*."""
+        if isinstance(current, Link):
+            return isinstance(value, PydanticObjectId) and current.ref.id == value
+        if isinstance(current, list) and all(
+            isinstance(item, Link) for item in current
+        ):
+            return (
+                isinstance(value, list) and [item.ref.id for item in current] == value
+            )
+        if isinstance(current, Enum) and not isinstance(value, Enum):
+            return current.value == value
+        return bool(current == value)
+
     async def edit(self, request: Request, pk: PydanticObjectId, data: dict) -> Any:
+        """Validate, populate, and replace document *pk* when its DB state changes."""
         doc: Document | None = await self.document.get(pk)
         assert doc is not None, "Document not found"
         try:
             await self.validate(request, data)
+            original_state = get_dict(doc, to_db=True)
             for key, value in data.items():
                 if key in self.document.model_fields:
                     field_type = self.document.model_fields[key].annotation
@@ -335,14 +354,18 @@ class ModelView(BaseModelView[ExpressionField], Generic[T]):
                     else:
                         coerced = value
 
-                    setattr(doc, key, coerced)
+                    if not self._is_field_unchanged(getattr(doc, key), coerced):
+                        setattr(doc, key, coerced)
 
             # Re-validate the whole document: setattr() bypasses the
             # validation pydantic normally runs at construction time.
             validated_doc: T = self.document.model_validate(doc.model_dump())
 
             await self._emit_before_edit(request, data=data, obj=validated_doc, pk=pk)
-            updated_doc = await validated_doc.replace()
+            if get_dict(validated_doc, to_db=True) != original_state:
+                updated_doc = await validated_doc.replace()
+            else:
+                updated_doc = validated_doc
             await self._emit_after_edit(request, updated_doc, pk=pk)
 
             return updated_doc
