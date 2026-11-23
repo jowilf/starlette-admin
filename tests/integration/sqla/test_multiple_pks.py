@@ -70,6 +70,16 @@ async def test_pk_field(session: Session):
 
     assert isinstance(view.pk_field, MultiplePKField)
     assert view.pk_field.name == "id1,id2,id3"
+    assert view.fields_default_sort == ["id1", "id2", "id3"]
+    assert view._default_sort() == [("id1", False), ("id2", False), ("id3", False)]
+
+    class InvalidInlineRecordView(ModelView):
+        inline_editable_fields = ["id1"]
+
+    with pytest.raises(
+        ValueError, match="inline_editable_fields cannot include the primary key field"
+    ):
+        InvalidInlineRecordView(Record)
 
 
 async def test_load_creation_form(client: AsyncClient, session: Session):
@@ -85,6 +95,17 @@ async def test_find_by_pks(client: AsyncClient, session: Session):
     assert response.status_code == 200
     data = response.json()
     assert {"1st record", "3rd record"} == {x["name"] for x in data["items"]}
+
+    lookup_all = await client.get("/admin/_api/record/relation-lookup")
+    assert lookup_all.status_code == 200
+    assert [x["name"] for x in lookup_all.json()["items"]] == [
+        "1st record",
+        "3rd record",
+    ]
+
+    list_resp = await client.get("/admin/record/list")
+    assert list_resp.status_code == 200
+    assert "id1,id2,id3__asc" not in list_resp.text
 
 
 async def test_create(client: AsyncClient, session: Session):

@@ -911,7 +911,7 @@ class BaseAdmin:
                 skip=skip,
                 limit=limit,
                 q=q,
-                sorts=[(not_none(view.pk_attr), "asc")],
+                sorts=[(pk, "asc") for pk in view._pk_attrs()],
             )
             total = await view.count(request=request, q=q)
         serialized_items = [
