@@ -28,7 +28,7 @@
             <li class="page-item{{ ' disabled' if on_first else '' }}">
                 {% set prev_page = [1, list_params.page - 1] | max %}
                 <a class="page-link"
-                   href="{{ list_url(request, page=(None if prev_page == 1 else prev_page) ) }}"
+                   href="{{ list_url(request, page=(None if prev_page == 1 else prev_page)) }}"
                    aria-label="{{ _('Previous page') }}"
                    {% if on_first %}tabindex="-1" aria-disabled="true"{% endif %}>
                     <i class="{{ icon('pagination.prev') }}" aria-hidden="true"></i>
@@ -39,7 +39,7 @@
             {% for p in range(window_start, window_end + 1) %}
                 <li class="page-item{{ ' active' if p == list_params.page else '' }}">
                     <a class="page-link"
-                       href="{{ list_url(request, page=(None if p == 1 else p) ) }}"
+                       href="{{ list_url(request, page=(None if p == 1 else p)) }}"
                        {% if p == list_params.page %}aria-current="page"{% endif %}>{{ p }}</a>
                 </li>
             {% endfor %}
@@ -59,7 +59,7 @@
             </li>
         </ul>
         {% if view.show_goto_page %}
-            <form method="GET"
+            <form method="get"
                   class="d-flex align-items-center gap-2 text-muted text-nowrap">
                 <div class="input-group">
                     <input type="number"
