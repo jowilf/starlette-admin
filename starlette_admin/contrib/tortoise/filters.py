@@ -157,7 +157,7 @@ def _related_pks(ctx: FilterApplyContext) -> list[Any]:
 
 
 def _to_one_in(ctx: FilterApplyContext) -> Q:
-    source = relation_source_field(ctx.view.model, ctx.field_name)  # ty: ignore[unresolved-attribute]
+    source = relation_source_field(ctx.view.model, ctx.field_name)  # ty: ignore[missing-attribute]
     filters: dict[str, Any] = {f"{source}__in": _related_pks(ctx)}
     return Q(**filters)
 
@@ -165,7 +165,7 @@ def _to_one_in(ctx: FilterApplyContext) -> Q:
 def _to_one_not_in(ctx: FilterApplyContext) -> Q:
     """Rows whose key is not among the selected ones, or that have no
     related record at all (SQL `NOT IN` alone would drop NULL keys)."""
-    source = relation_source_field(ctx.view.model, ctx.field_name)  # ty: ignore[unresolved-attribute]
+    source = relation_source_field(ctx.view.model, ctx.field_name)  # ty: ignore[missing-attribute]
     not_in: dict[str, Any] = {f"{source}__not_in": _related_pks(ctx)}
     is_null: dict[str, Any] = {f"{source}__isnull": True}
     return Q(**not_in) | Q(**is_null)
@@ -177,7 +177,7 @@ def _joined_match(ctx: FilterApplyContext, negate: bool) -> Q:
     backward one-to-one). A subquery on this model's primary key avoids
     duplicate rows from the join and gives correct "none of" semantics.
     """
-    model = ctx.view.model  # ty: ignore[unresolved-attribute]
+    model = ctx.view.model  # ty: ignore[missing-attribute]
     pk = model._meta.pk_attr
     related_pk = _tortoise_field(ctx).related_model._meta.pk_attr
     sub = Subquery(

@@ -118,8 +118,8 @@ class ModelView(BaseModelView[MongoBaseField]):
         return MongoEngineFilterRegistry()
 
     def _validate_relation_pks(self, pks: Sequence[str]) -> None:
-        id_field = self.document._meta["id_field"]  # ty: ignore[unresolved-attribute]
-        pk_field = self.document._fields[id_field]  # ty: ignore[unresolved-attribute]
+        id_field = self.document._meta["id_field"]  # ty: ignore[missing-attribute]
+        pk_field = self.document._fields[id_field]  # ty: ignore[missing-attribute]
         for pk in pks:
             try:
                 pk_field.prepare_query_value("$in", pk)
