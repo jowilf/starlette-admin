@@ -66,6 +66,7 @@ from starlette_admin.contrib.sqla.filters import (
 from starlette_admin.fields import (
     ComputedField,
     NumberField,
+    PasswordField,
     RelationField,
     StringField,
 )
@@ -695,8 +696,8 @@ def test_custom_relation_filter_registered_in_registry(seeded_session):
 @pytest.mark.asyncio
 async def test_filterable_fields_and_exclude_fields_from_filter(seeded_session):
     """`filterable_fields` and `exclude_fields_from_filter` control filtering
-    independently of `searchable_fields`, and non-SQL properties/ComputedFields
-    are excluded by default."""
+    independently of `searchable_fields`, and PasswordFields, ComputedFields,
+    and non-SQL properties are excluded by default."""
 
     def _req(filter_str: str) -> Request:
         req = Request(
@@ -719,6 +720,7 @@ async def test_filterable_fields_and_exclude_fields_from_filter(seeded_session):
             "name",
             "count",
             "price",
+            PasswordField("description"),
             StringField("plain_prop", exclude_from_create=True, exclude_from_edit=True),
             ComputedField("comp", getter=lambda req, obj: "x"),
         ]
@@ -743,8 +745,19 @@ async def test_filterable_fields_and_exclude_fields_from_filter(seeded_session):
             "Alpha"
         ]
 
-        # `price` (in exclude_fields_from_filter), `plain_prop` (@property), and `comp` (ComputedField) are rejected
-        for blocked in ("price__gt=1", "plain_prop__eq=Alpha", "comp__eq=x"):
+        # `price` (in exclude_fields_from_filter), `description` (PasswordField),
+        # `plain_prop` (@property), and `comp` (ComputedField) are excluded from the
+        # filter builder and rejected in `?filter=`
+        builder_names = {
+            f["name"] for f in default_view._filter_builder_fields(_req(""))
+        }
+        assert {"price", "description", "plain_prop", "comp"}.isdisjoint(builder_names)
+        for blocked in (
+            "price__gt=1",
+            "description__contains=a",
+            "plain_prop__eq=Alpha",
+            "comp__eq=x",
+        ):
             with pytest.raises(HTTPException):
                 default_view._parse_filter_param(_req(blocked))
 

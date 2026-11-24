@@ -254,7 +254,7 @@ These `StringField` variants render a matching HTML input type and format the va
 
 ### PasswordField
 
-Renders an `<input type="password">` element on forms to obscure what the user types.
+Renders an `<input type="password">` element on forms to obscure what the user types. `filterable` defaults to `False` so secret values are excluded from the filter builder and `filter` query parameter unless explicitly enabled.
 
 !!! danger
     `PasswordField` masks the input on create and edit forms only. It doesn't override the display templates, so values render as **plain text** on list and detail pages, and it logs raw submitted values at `DEBUG` level.

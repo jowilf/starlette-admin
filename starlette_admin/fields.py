@@ -1031,10 +1031,15 @@ class ColorField(StringField):
 
 @dataclass
 class PasswordField(StringField):
-    """A StringField, except renders an `<input type="password">`."""
+    """A StringField, except renders an `<input type="password">`.
+
+    Not filterable by default (`filterable=False`) so secret values cannot be
+    probed through list-page filters.
+    """
 
     input_type: str = "password"
     class_: str = "field-password form-control"
+    filterable: bool | None = False
 
 
 @dataclass

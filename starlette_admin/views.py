@@ -583,8 +583,9 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         searchable_fields: List of searchable fields.
         filterable_fields: List of fields offered in the list page's filter
             builder (and accepted in the `filter` query parameter). Defaults
-            to `None`, meaning every non-file, non-computed field not listed in
-            `exclude_fields_from_filter`.
+            to `None`, meaning every queryable field with `filterable=True`
+            (which excludes `ComputedField` and `PasswordField` by default)
+            not listed in `exclude_fields_from_filter`.
         sortable_fields: List of sortable fields.
         fields_default_sort: Initial order (sort) to apply to the table.
             Should be a sequence of field names or a tuple of
