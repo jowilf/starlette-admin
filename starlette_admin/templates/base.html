@@ -136,8 +136,13 @@
                     margin-inline-end: var(--tblr-nav-link-icon-margin-end);
                 }
 
+                .navbar-vertical[class*="navbar-expand"] .navbar-nav .nav-link:focus .nav-link-icon {
+                    color: var(--tblr-nav-link-hover-icon-color);
+                }
+
                 .navbar-vertical[class*="navbar-expand"] .navbar-nav .nav-item.active>.nav-link,
-                .navbar-vertical[class*="navbar-expand"] .navbar-nav .nav-link.active {
+                .navbar-vertical[class*="navbar-expand"] .navbar-nav .nav-link.active,
+                .navbar-vertical[class*="navbar-expand"] .navbar-nav .nav-link.show {
                     --tblr-nav-link-icon-color: currentColor;
                     --tblr-nav-link-hover-icon-color: currentColor;
                 }
@@ -172,7 +177,7 @@
                     color: var(--tblr-nav-link-icon-color);
                 }
 
-                .navbar-vertical[class*="navbar-expand"] .navbar-collapse .dropdown-menu .dropdown-item:not(.active):hover .dropdown-item-icon {
+                .navbar-vertical[class*="navbar-expand"] .navbar-collapse .dropdown-menu .dropdown-item:not(.active):is(:hover, :focus) .dropdown-item-icon {
                     color: var(--tblr-nav-link-hover-icon-color);
                 }
 
