@@ -85,7 +85,7 @@
                             {% if current_user %}
                                 <div class="nav-item dropdown ms-3">
                                     <a href="#"
-                                       class="nav-link d-flex lh-1 text-reset p-0"
+                                       class="nav-link d-flex lh-1 text-reset p-1"
                                        data-bs-toggle="dropdown"
                                        aria-label="Open user menu">
                                         {% block user_menu_trigger %}
@@ -133,7 +133,9 @@
                                           method="post"
                                           class="m-0">
                                         {{ csrf_input(request) }}
-                                        <button type="submit" class="btn btn-light mx-1 mt-2">
+                                        <button type="submit"
+                                                class="btn btn-light mx-1 mt-2 sa-sidebar-logout"
+                                                aria-label="{{ _('Logout') }}">
                                             <i class="{{ icon('auth.logout') }}"></i>
                                             <span class="ms-2">{{ _("Logout") }}</span>
                                         </button>
@@ -198,7 +200,7 @@
                             {% if current_user %}
                                 <div class="nav-item dropdown ms-3">
                                     <a href="#"
-                                       class="nav-link d-flex lh-1 text-reset p-0"
+                                       class="nav-link d-flex lh-1 text-reset px-2"
                                        data-bs-toggle="dropdown"
                                        aria-label="Open user menu">{{ self.user_menu_trigger() }}</a>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">{{ self.user_menu_items() }}</div>

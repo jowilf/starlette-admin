@@ -46,7 +46,7 @@ This configuration applies `data-bs-*` attributes directly to the root `<html>` 
 | Attribute | Type | Default | Valid values |
 | --- | --- | --- | --- |
 | `mode` | `str` | `"light"` | `"light"`, `"dark"` |
-| `base` | `str | None` | `"stone"` | `"slate"`, `"gray"`, `"zinc"`, `"neutral"`, `"stone"`, `"pink"` |
+| `base` | `str | None` | `"stone"` | `"slate"`, `"gray"`, `"zinc"`, `"neutral"`, `"stone"`, `"mist"` |
 | `primary` | `str | None` | `"blue"` | `"blue"`, `"azure"`, `"indigo"`, `"purple"`, `"pink"`, `"red"`, `"orange"`, `"yellow"`, `"lime"`, `"green"`, `"teal"`, `"cyan"`, `"inverted"` |
 | `radius` | `float | None` | `1` | `0`, `0.5`, `1`, `1.5`, `2` |
 | `sidebar` | `str | None` | `None` | `"folded"`, `"folded-hover"` |

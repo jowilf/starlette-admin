@@ -193,7 +193,7 @@ class CoreClasses(ClassMap):
 
 TablerMode = Literal["light", "dark"]
 
-TablerBase = Literal["slate", "gray", "zinc", "neutral", "stone", "pink"]
+TablerBase = Literal["slate", "gray", "zinc", "neutral", "stone", "mist"]
 
 TablerPrimary = Literal[
     "blue",
