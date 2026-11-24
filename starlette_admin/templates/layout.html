@@ -17,7 +17,7 @@
                             aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-                    <h1 class="navbar-brand navbar-brand-autodark">
+                    <div class="navbar-brand navbar-brand-autodark">
                         <a class="brand-link" href="{{ url_for(__name__ ~ ':index') }}">
                             {% block brand %}
                                 {% if logo_url(request) %}
@@ -25,11 +25,21 @@
                                          class="navbar-logo"
                                          alt="{{ app_title }}" />
                                 {% else %}
-                                    <h3 class="text-center text-wrap">{{ app_title }}</h3>
+                                    <span class="sa-brand-title">{{ app_title }}</span>
+                                    <span class="sa-brand-monogram"
+                                          aria-hidden="true">{{ (app_title or '')[:1] | upper }}</span>
                                 {% endif %}
                             {% endblock %}
                         </a>
-                    </h1>
+                        <button type="button"
+                                class="{{ cls('nav.sidebar_toggle_button') }}"
+                                data-bs-toggle="sidebar-folded"
+                                data-sa-hook="sidebar-toggle"
+                                aria-pressed="false"
+                                aria-label="{{ _('Toggle sidebar') }}">
+                            <i class="{{ icon('nav.sidebar_toggle') }}" aria-hidden="true"></i>
+                        </button>
+                    </div>
                     {% if current_user or i18n_config.language_switcher or (timezone_config and timezone_config.timezone_switcher) %}
                         <div class="navbar-nav flex-row d-lg-none">
                             {% if i18n_config.language_switcher %}
@@ -75,7 +85,7 @@
                             {% if current_user %}
                                 <div class="nav-item dropdown ms-3">
                                     <a href="#"
-                                       class="nav-link d-flex lh-1 text-reset p-0"
+                                       class="nav-link d-flex lh-1 text-reset p-1"
                                        data-bs-toggle="dropdown"
                                        aria-label="Open user menu">
                                         {% block user_menu_trigger %}
@@ -123,7 +133,9 @@
                                           method="post"
                                           class="m-0">
                                         {{ csrf_input(request) }}
-                                        <button type="submit" class="btn btn-light mx-1 mt-2">
+                                        <button type="submit"
+                                                class="btn btn-light mx-1 mt-2 sa-sidebar-logout"
+                                                aria-label="{{ _('Logout') }}">
                                             <i class="{{ icon('auth.logout') }}"></i>
                                             <span class="ms-2">{{ _("Logout") }}</span>
                                         </button>
@@ -188,7 +200,7 @@
                             {% if current_user %}
                                 <div class="nav-item dropdown ms-3">
                                     <a href="#"
-                                       class="nav-link d-flex lh-1 text-reset p-0"
+                                       class="nav-link d-flex lh-1 text-reset px-2"
                                        data-bs-toggle="dropdown"
                                        aria-label="Open user menu">{{ self.user_menu_trigger() }}</a>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">{{ self.user_menu_items() }}</div>

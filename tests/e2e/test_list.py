@@ -140,3 +140,36 @@ def test_removing_one_active_filter_chip_keeps_the_other(page: Page):
     expect(page.locator("#active-filters")).not_to_contain_text("In stock")
     # Price > 10 alone (in-stock or not) matches 8 books in the seed data.
     expect(page.locator("tbody tr[data-sa-pk]")).to_have_count(8)
+
+
+def test_sidebar_fold_toggle_and_persistence(page: Page):
+    """Desktop sidebar folds immediately on toggle, shows brand monogram, and remembers its state."""
+    page.goto("/admin/book/list")
+    aside = page.locator("aside.navbar-vertical")
+    toggle = page.locator('[data-sa-hook="sidebar-toggle"]')
+    expect(toggle).to_have_attribute("aria-pressed", "false")
+
+    toggle.click()
+    expect(page.locator("html")).to_have_attribute("data-bs-sidebar", "folded-hover")
+    expect(toggle).to_have_attribute("aria-pressed", "true")
+    expect(aside).to_have_css("width", "64px")
+    expect(page.locator(".sa-brand-monogram")).to_be_visible()
+    expect(page.locator(".sa-brand-title")).to_be_hidden()
+
+    page.mouse.move(700, 400)
+    expect(aside).to_have_css("width", "64px")
+
+    page.reload()
+    page.mouse.move(700, 400)
+    expect(page.locator("html")).to_have_attribute("data-bs-sidebar", "folded-hover")
+    expect(aside).to_have_css("width", "64px")
+
+    aside.hover()
+    expect(aside).to_have_css("width", "256px")
+    expect(page.locator(".sa-brand-title")).to_be_visible()
+    toggle.click()
+    expect(page.locator("html")).not_to_have_attribute(
+        "data-bs-sidebar", re.compile(r".*")
+    )
+    expect(toggle).to_have_attribute("aria-pressed", "false")
+    expect(aside).to_have_css("width", "256px")

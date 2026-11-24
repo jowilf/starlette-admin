@@ -9,7 +9,7 @@ You can restyle the admin through theme settings, custom templates, and static f
 
 ## Applying a theme
 
-Use `TablerSettings` to set your color palette, border radius, and color mode. Pass it to `DefaultTheme`, then pass that to the `theme` parameter of your `Admin` instance.
+Use `TablerSettings` to set your color palette, border radius, color mode, and initial sidebar state. Pass it to `DefaultTheme`, then pass that to the `theme` parameter of your `Admin` instance.
 
 ```python
 from myapp.models import Post
@@ -31,7 +31,7 @@ admin.add_view(ModelView(Post))
 
 See [examples/08-themes](https://github.com/jowilf/starlette-admin/tree/main/examples/08-themes) for a runnable app that picks a random theme on every startup.
 
-This configuration applies `data-bs-theme*` attributes directly to the root `<html>` element:
+This configuration applies `data-bs-*` attributes directly to the root `<html>` element:
 
 ```html
 <html data-bs-theme="dark"
@@ -46,9 +46,12 @@ This configuration applies `data-bs-theme*` attributes directly to the root `<ht
 | Attribute | Type | Default | Valid values |
 | --- | --- | --- | --- |
 | `mode` | `str` | `"light"` | `"light"`, `"dark"` |
-| `base` | `str | None` | `"stone"` | `"slate"`, `"gray"`, `"zinc"`, `"neutral"`, `"stone"`, `"pink"` |
+| `base` | `str | None` | `"stone"` | `"slate"`, `"gray"`, `"zinc"`, `"neutral"`, `"stone"`, `"mist"` |
 | `primary` | `str | None` | `"blue"` | `"blue"`, `"azure"`, `"indigo"`, `"purple"`, `"pink"`, `"red"`, `"orange"`, `"yellow"`, `"lime"`, `"green"`, `"teal"`, `"cyan"`, `"inverted"` |
 | `radius` | `float | None` | `1` | `0`, `0.5`, `1`, `1.5`, `2` |
+| `sidebar` | `str | None` | `None` | `"folded"`, `"folded-hover"` |
+
+Set `sidebar="folded"` for a static icon rail with flyout menus, `sidebar="folded-hover"` for a folded rail that expands on hover on desktop viewports, or `None` (default) to start expanded; users can also toggle and persist the sidebar state in the browser (`localStorage`).
 
 ## Restyling components with a class map
 
