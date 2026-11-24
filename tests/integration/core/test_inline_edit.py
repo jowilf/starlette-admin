@@ -363,6 +363,35 @@ class TestInlineEditPost:
         assert response.status_code == 403
         assert PostView._get(1).content == "body"
 
+    def test_post_uses_field_parser_for_inline_edit(self):
+        class ParsedPostView(PostView):
+            fields = [
+                IntegerField("id"),
+                StringField(
+                    "title",
+                    required=True,
+                    parser={
+                        RequestAction.INLINE_EDIT: lambda _request, raw: (
+                            (raw or "").strip().upper()
+                        ),
+                    },
+                ),
+            ]
+            inline_editable_fields = ["title"]
+
+        admin = BaseAdmin()
+        app = Starlette()
+        admin.add_view(AuthorView(Author))
+        admin.add_view(ParsedPostView(Post))
+        admin.mount_to(app)
+        client = CsrfTestClient(app, base_url="http://testserver")
+        response = client.post(
+            "/admin/_api/inline-edit-post/inline-edit?pk=1&field=title",
+            data={"title": "  updated title  "},
+        )
+        assert response.status_code == 200
+        assert ParsedPostView._get(1).title == "UPDATED TITLE"
+
 
 class TestInlineEditRow:
     """`GET /_api/{key}/inline-edit/row` renders one list `<tr>` through the

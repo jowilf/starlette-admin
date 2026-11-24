@@ -972,7 +972,7 @@ class BaseAdmin:
             )
 
         form = await request.form()
-        value = await field.parse_form_data(request, form)
+        value = await field.parse_input(request, form)
         data = {field.name: value}
         try:
             await view.validate_fields(request, data)
