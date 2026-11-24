@@ -2199,7 +2199,7 @@ class BaseAdmin:
         request: Request,
         view: BaseModelView,
         form_data: FormData,
-    ) -> tuple[dict[str, list[dict[str, Any]]], dict[str | int, Any]]:
+    ) -> tuple[dict[str, list[dict[str, Any]]], dict[str, Any]]:
         """Parse every inline formset for *view*.
 
         Returns a tuple of ``(inline_data, errors)`` where ``inline_data`` is a
@@ -2210,7 +2210,7 @@ class BaseAdmin:
         inline templates.
         """
         inline_data: dict[str, list[dict[str, Any]]] = {}
-        errors: dict[str | int, Any] = {}
+        errors: dict[str, Any] = {}
         for inline in view._inline_instances:
             key = not_none(inline.key)
             rows, row_errors = await self._parse_inline_formset(
@@ -2275,7 +2275,7 @@ class BaseAdmin:
         is raised after attempting the remaining rows. On full success, a flash
         message is emitted per created or edited inline item.
         """
-        errors: dict[str | int, Any] = {}
+        errors: dict[str, Any] = {}
         successes: list[tuple[Any, str, Any]] = []
         _log.debug(
             "save inlines: %d inline(s) for view key=%s",

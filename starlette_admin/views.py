@@ -1616,7 +1616,7 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
             data: The parsed form data, keyed by field name.
             exclude: Field names to skip (e.g., a primary key nulled on import).
         """
-        errors: dict[str | int, Any] = {}
+        errors: dict[str, Any] = {}
         for field in self.get_fields_list(request):
             if field.read_only or field.name in exclude:
                 continue
@@ -1650,8 +1650,8 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
 
             class PostView(ModelView):
 
-                async def validate(self, request: Request, data: Dict[str, Any]) -> None:
-                    errors: Dict[str, str] = dict()
+                async def validate(self, request: Request, data: dict[str, Any]) -> None:
+                    errors: dict[str, str] = {}
                     if data["date"] is not None and data["date"] < data["created_at"]:
                         errors["date"] = "Publication cannot predate creation"
                     if len(errors) > 0:

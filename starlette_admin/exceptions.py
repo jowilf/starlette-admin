@@ -6,9 +6,19 @@ class StarletteAdminException(Exception):
 
 
 class FormValidationError(StarletteAdminException):
+    """Raised when submitted form data fails validation.
+
+    Parameters:
+        errors: Mapping of field names to error messages (or nested error
+            dicts for composite fields such as `CollectionField` and
+            `ListField`). Also accepts `dict[str | int, Any]` for
+            compatibility with callers building nested path dicts (e.g. from
+            Pydantic `ValidationError` locations).
+    """
+
     def __init__(
         self,
-        errors: dict[str | int, Any],
+        errors: dict[str, Any] | dict[str | int, Any],
     ) -> None:
         if not isinstance(errors, dict):
             raise TypeError(f"errors must be a dict, got {type(errors).__name__!r}")
