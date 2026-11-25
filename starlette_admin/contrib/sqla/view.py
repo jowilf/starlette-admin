@@ -24,7 +24,11 @@ from starlette_admin.contrib.sqla.converters import (
 )
 from starlette_admin.contrib.sqla.exceptions import InvalidModelError
 from starlette_admin.contrib.sqla.fields import MultiplePKField
-from starlette_admin.contrib.sqla.filters import SqlaFilterRegistry, build_filter_clause
+from starlette_admin.contrib.sqla.filters import (
+    SqlaFilterRegistry,
+    build_filter_clause,
+    coerce_relation_pks,
+)
 from starlette_admin.contrib.sqla.helpers import (
     extract_column_python_type,
     normalize_list,
@@ -146,6 +150,9 @@ class ModelView(BaseModelView[Mapped[Any]]):
         self.exclude_fields_from_import = (
             normalize_list(self.exclude_fields_from_import) or []
         )
+        self.exclude_fields_from_filter = (
+            normalize_list(self.exclude_fields_from_filter) or []
+        )
         _default_list = [
             field.name
             for field in self.fields
@@ -156,6 +163,8 @@ class ModelView(BaseModelView[Mapped[Any]]):
             if (self.searchable_fields is not None)
             else _default_list
         )
+        if self.filterable_fields is not None:
+            self.filterable_fields = normalize_list(self.filterable_fields)
         self.sortable_fields = normalize_list(
             self.sortable_fields
             if (self.sortable_fields is not None)
@@ -172,6 +181,25 @@ class ModelView(BaseModelView[Mapped[Any]]):
             self.pk_attr,
             len(self.fields),
         )
+
+    def _is_filterable_by_default(self, field: BaseField, name: str) -> bool:
+        """Also require a SQL-expressible model attribute: SQLAlchemy filters
+        resolve the field with `getattr(model, name)`, so a field backed by
+        a plain Python `property` (or no attribute at all) cannot be queried
+        and is left out of the filter builder. Columns, relationships,
+        `column_property` and `hybrid_property` attributes all qualify.
+        Declare `filterable_fields` explicitly to override this.
+        """
+        attr = getattr(self.model, name, None) if "." not in name else None
+        if attr is None or not hasattr(attr, "__clause_element__"):
+            _log.debug(
+                "ModelView %r: field %r is not backed by a SQL expression; "
+                "excluded from the filter builder",
+                self.key,
+                name,
+            )
+            return False
+        return True
 
     def _setup_primary_key(self) -> None:
         # Detect the model's primary key attribute(s).
@@ -217,6 +245,14 @@ class ModelView(BaseModelView[Mapped[Any]]):
                 )
                 self.pk_field = StringField(_pk_attrs[0])
         self.pk_attr = self.pk_field.name
+
+    def _validate_relation_pks(self, pks: Sequence[str]) -> None:
+        coercers = (
+            self._pk_coerce
+            if isinstance(self._pk_coerce, tuple)
+            else (self._pk_coerce,)
+        )
+        coerce_relation_pks(coercers, pks)
 
     async def handle_action(
         self, request: Request, selection: ActionSelection, name: str

@@ -31,6 +31,7 @@ from starlette_admin.fields import (
     DateTimeField,
     EnumField,
     FloatField,
+    HasMany,
     NumberField,
     RelationField,
     StringField,
@@ -269,7 +270,12 @@ def test_registry_enum_field():
 
 def test_registry_relation_field():
     names = {f.name for f in filter_registry.filters_for(RelationField("x"))}
-    assert names == {"is_null", "is_not_null"}
+    assert names == {"in", "not_in", "is_null", "is_not_null"}
+
+
+def test_registry_has_many_field():
+    names = {f.name for f in filter_registry.filters_for(HasMany("x", key="x"))}
+    assert names == {"any_of", "none_of", "is_null", "is_not_null"}
 
 
 def test_registry_base_field_fallback():

@@ -100,7 +100,7 @@ The list page no longer uses DataTables. The attributes that previously configur
 | Removed | Replacement |
 | --- | --- |
 | `datatables_options` | None. The table is server-rendered. Customize via templates. |
-| `search_builder` | The new [filter builder](user-guide/filters.md), enabled by `searchable_fields`. |
+| `search_builder` | The new [filter builder](user-guide/filters.md), configured with `filterable_fields` and `exclude_fields_from_filter`. |
 | `responsive_table` | None. The table handles overflow natively. |
 | `save_state` | Always on. List state (page, sort, filters, search, visible columns) now lives in the URL. |
 | `BaseField.search_builder_type` | `BaseField.filters` (a list of filter classes). |

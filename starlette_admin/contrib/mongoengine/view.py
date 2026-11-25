@@ -27,7 +27,7 @@ from starlette_admin.contrib.mongoengine.helpers import (
     normalize_list,
 )
 from starlette_admin.exceptions import FormValidationError
-from starlette_admin.filters import FilterGroup, FilterRegistry
+from starlette_admin.filters import FilterGroup, FilterRegistry, FilterValidationError
 from starlette_admin.helpers import not_none, prettify_class_name, slugify_class_name
 from starlette_admin.logging import get_logger
 from starlette_admin.views import BaseModelView
@@ -102,7 +102,11 @@ class ModelView(BaseModelView[MongoBaseField]):
         self.exclude_fields_from_import = (
             normalize_list(self.exclude_fields_from_import) or []
         )
+        self.exclude_fields_from_filter = (
+            normalize_list(self.exclude_fields_from_filter) or []
+        )
         self.searchable_fields = normalize_list(self.searchable_fields)
+        self.filterable_fields = normalize_list(self.filterable_fields)
         self.sortable_fields = normalize_list(self.sortable_fields)
         self.fields_default_sort = normalize_list(
             self.fields_default_sort, is_default_sort_list=True
@@ -112,6 +116,17 @@ class ModelView(BaseModelView[MongoBaseField]):
     def get_filter_registry(self) -> FilterRegistry:
         """Return the registry used to resolve available filters for this view's fields."""
         return MongoEngineFilterRegistry()
+
+    def _validate_relation_pks(self, pks: Sequence[str]) -> None:
+        id_field = self.document._meta["id_field"]  # ty: ignore[missing-attribute]
+        pk_field = self.document._fields[id_field]  # ty: ignore[missing-attribute]
+        for pk in pks:
+            try:
+                pk_field.prepare_query_value("$in", pk)
+            except (ValidationError, ValueError, TypeError) as exc:
+                raise FilterValidationError(
+                    f"Invalid primary key {pk!r}: {exc}"
+                ) from exc
 
     async def count(
         self,

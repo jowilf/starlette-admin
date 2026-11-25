@@ -86,7 +86,13 @@ def test_parse_filter_string_comma_list():
 
 def test_parse_filter_string_comma_with_quoted_item():
     result = BaseModelView._parse_filter_string('title__in="a, b",c')
-    assert result == {"field": "title", "filter": "in", "value": ['"a, b"', "c"]}
+    assert result == {"field": "title", "filter": "in", "value": ["a, b", "c"]}
+
+
+def test_parse_filter_string_quoted_list_roundtrip():
+    raw = 'title__in="a, b",c'
+    parsed = BaseModelView._parse_filter_string(raw)
+    assert BaseModelView._serialize_filter_string(parsed) == raw
 
 
 def test_parse_filter_string_and_group():

@@ -104,3 +104,13 @@ importable filter classes.
 ::: starlette_admin.filters.array.InFilter
 
 ::: starlette_admin.filters.array.NotInFilter
+
+## Relation
+
+::: starlette_admin.filters.relation.RelationInFilter
+
+::: starlette_admin.filters.relation.RelationNotInFilter
+
+::: starlette_admin.filters.relation.RelationAnyOfFilter
+
+::: starlette_admin.filters.relation.RelationNoneOfFilter

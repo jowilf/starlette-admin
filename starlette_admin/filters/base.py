@@ -23,6 +23,7 @@ class FilterDataType(StrEnum):
         BOOLEAN: True/false toggle.
         ENUM: Single or multi-select dropdown.
         ARRAY: Free-text tag input (Select2 tags) (for list or array fields such as `TagsField`). The value is parsed as a comma-separated list.
+        RELATION: Searchable multi-select of related records (Select2, backed by the foreign view's `relation-lookup` API) (for `HasOne`/`HasMany`). The value is a comma-separated list of the selected records' primary keys.
         NONE: No input (for filters that do not require a value, e.g., "is null").
     """
 
@@ -34,6 +35,7 @@ class FilterDataType(StrEnum):
     BOOLEAN = "boolean"
     ENUM = "enum"
     ARRAY = "array"
+    RELATION = "relation"
     NONE = "none"
 
 

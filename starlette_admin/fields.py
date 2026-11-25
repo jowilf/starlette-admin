@@ -128,6 +128,8 @@ class BaseField:
         exclude_from_export: If `True`, excludes the field when exporting data.
         exclude_from_import: If `True`, ignores the field when importing data.
         searchable: If `True`, the field is included in search queries.
+        filterable: If `True`, the field is offered in the list page's filter
+            builder (and accepted in the `filter` query parameter).
         orderable: If `True`, allows sorting by this field in the list view.
         inline_editable: If `True`, this field can be edited inline from the
             list page. Set automatically by the view from
@@ -173,6 +175,7 @@ class BaseField:
     exclude_from_export: bool | None = False
     exclude_from_import: bool | None = False
     searchable: bool | None = True
+    filterable: bool | None = True
     orderable: bool | None = True
     inline_editable: bool | None = False
     copy_to_clipboard: bool | None = False
@@ -2730,6 +2733,7 @@ class ComputedField(StringField):
 
     read_only: bool = True  # ty: ignore[incompatible-mutable-override]
     searchable: bool = False  # ty: ignore[incompatible-mutable-override]
+    filterable: bool = False  # ty: ignore[incompatible-mutable-override]
     orderable: bool = False  # ty: ignore[incompatible-mutable-override]
     exclude_from_create: bool = True  # ty: ignore[incompatible-mutable-override]
     form_template: str = "fields/form/computed.html"
