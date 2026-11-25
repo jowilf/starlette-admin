@@ -13,7 +13,8 @@
                 {% endif %}
             </button>
             <div class="dropdown-menu dropdown-menu-end p-3"
-                 style="min-width: min(38rem, calc(100vw - 1rem));
+                 style="width: min(44rem, calc(100vw - 1rem));
+                        max-width: calc(100vw - 1rem);
                         max-height: 50vh;
                         overflow-y: auto;
                         z-index: 1031">
@@ -72,6 +73,86 @@
                 </form>
             </div>
         </div>
+        <style>
+            #filter-builder-dropdown .filter-row-field {
+                width: auto;
+                min-width: 8.5rem;
+                max-width: 12rem;
+                flex: 0 0 auto;
+            }
+
+            #filter-builder-dropdown .filter-row-op {
+                width: auto;
+                min-width: 7.5rem;
+                max-width: 11rem;
+                flex: 0 0 auto;
+            }
+
+            #filter-builder-dropdown .filter-row-value,
+            #filter-builder-dropdown .filter-row-value-select,
+            #filter-builder-dropdown .filter-row-value2 {
+                flex: 1 1 0%;
+                min-width: 0;
+            }
+
+            #filter-builder-dropdown .filter-row>.select2-container {
+                width: auto !important;
+                flex: 1 1 0%;
+                min-width: 0;
+            }
+
+            #filter-builder-dropdown .select2-selection--multiple {
+                align-items: flex-start;
+                max-height: 7.5rem;
+                overflow-y: auto;
+                padding-top: .1875rem;
+                padding-bottom: .1875rem;
+            }
+
+            #filter-builder-dropdown .select2-selection--multiple .select2-selection__rendered {
+                display: flex;
+                flex-wrap: wrap;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .sa-filter-enum-dropdown .select2-results__option--selected {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-weight: 500;
+            }
+
+            .sa-filter-enum-dropdown .select2-results__option--selected::after {
+                content: "\2713";
+                content: "\2713" / "";
+                color: var(--tblr-primary);
+                font-weight: 600;
+                flex-shrink: 0;
+                margin-inline-start: .5rem;
+            }
+
+            @media (max-width: 575.98px) {
+                #filter-builder-dropdown .filter-row {
+                    flex-wrap: wrap;
+                }
+
+                #filter-builder-dropdown .filter-row-field,
+                #filter-builder-dropdown .filter-row-op {
+                    min-width: 0;
+                    max-width: none;
+                    flex: 1 1 40%;
+                }
+
+                #filter-builder-dropdown .filter-row-value,
+                #filter-builder-dropdown .filter-row-value-select,
+                #filter-builder-dropdown .filter-row-value2,
+                #filter-builder-dropdown .filter-row>.select2-container {
+                    flex: 1 1 0%;
+                    min-width: 10rem;
+                }
+            }
+        </style>
         <template id="filter-row-template" data-sa-hook="filter-row-template">
             <div class="filter-row d-flex align-items-center gap-2 mb-2"
                  data-sa-hook="filter-row">
