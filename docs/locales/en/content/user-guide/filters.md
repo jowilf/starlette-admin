@@ -16,13 +16,13 @@ from starlette_admin.contrib.sqla import ModelView
 
 class PostView(ModelView):
     fields = ["id", "title", "content", "published", "created_at"]
-    # Enable filtering and searching for these specific fields
-    searchable_fields = ["title", "content", "published", "created_at"]
+    # Choose which fields are offered in the filter builder (defaults to every field)
+    filterable_fields = ["title", "content", "published", "created_at"]
 ```
 
 See [examples/02-filters](https://github.com/jowilf/starlette-admin/tree/main/examples/02-filters) for a runnable app that covers default filters, per-field overrides, and a custom `BaseFilter` subclass.
 
-Every field you list in `searchable_fields` gets a **Filters** dropdown in the list toolbar. From there, users combine any number of filters to find the rows they need.
+Every field you list in `filterable_fields` (or every queryable field not listed in `exclude_fields_from_filter` when `filterable_fields` is left unset) gets a **Filters** dropdown in the list toolbar. From there, users combine any number of filters to find the rows they need.
 
 ## How the filter builder works
 
@@ -109,7 +109,7 @@ Wrap a value in quotes when it contains a space or a parenthesis: `name__eq="quo
 When the URL contains an invalid `filter` string, such as an unknown field, an unavailable operator, or an unparseable value, the application returns an `HTTP 400` error instead of silently dropping part of the condition.
 
 !!! important
-    Only the fields you list in `searchable_fields` receive filters. If you leave `searchable_fields` unset, every field receives them.
+    Only the fields you list in `filterable_fields` (or every field not listed in `exclude_fields_from_filter` when `filterable_fields` is left unset) receive filters.
 
 
 ## Built-in filter reference
@@ -146,4 +146,4 @@ If you need a filter for a data type the built-ins don't cover, such as a JSON f
 
 * **[Custom Filters](../advanced/custom-filters.md):** Write and register a `BaseFilter` subclass.
 * **[Actions](actions.md):** Add bulk and row actions to your list pages.
-* **[Views](views.md):** Learn more about `searchable_fields` and the rest of the list-page configuration.
+* **[Views](views.md):** Learn more about `filterable_fields`, `searchable_fields`, and the rest of the list-page configuration.

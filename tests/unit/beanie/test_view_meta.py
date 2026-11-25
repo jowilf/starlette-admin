@@ -155,6 +155,7 @@ def test_fields_customisation():
         exclude_fields_from_create = ["tags"]
         exclude_fields_from_detail = ["id"]
         exclude_fields_from_edit = ["name"]
+        filterable_fields = ["id", "name", "tags"]
 
     assert MyModelView(MyModel).fields == [
         BeanieObjectIdField(

@@ -146,6 +146,9 @@ class ModelView(BaseModelView[Mapped[Any]]):
         self.exclude_fields_from_import = (
             normalize_list(self.exclude_fields_from_import) or []
         )
+        self.exclude_fields_from_filter = (
+            normalize_list(self.exclude_fields_from_filter) or []
+        )
         _default_list = [
             field.name
             for field in self.fields
@@ -156,6 +159,8 @@ class ModelView(BaseModelView[Mapped[Any]]):
             if (self.searchable_fields is not None)
             else _default_list
         )
+        if self.filterable_fields is not None:
+            self.filterable_fields = normalize_list(self.filterable_fields)
         self.sortable_fields = normalize_list(
             self.sortable_fields
             if (self.sortable_fields is not None)
@@ -173,13 +178,41 @@ class ModelView(BaseModelView[Mapped[Any]]):
             len(self.fields),
         )
 
+    def _is_filterable_by_default(self, field: BaseField, name: str) -> bool:
+        """Also require a SQL-expressible model attribute: SQLAlchemy filters
+        resolve the field with `getattr(model, name)`, so a field backed by
+        a plain Python `property`, a Python-only `hybrid_property`, or no
+        attribute at all cannot be queried and is left out of the filter
+        builder. Columns, relationships, `column_property`, and SQL-backed
+        `hybrid_property` attributes all qualify. Declare `filterable_fields`
+        explicitly to override this.
+        """
+        is_sql_expr = False
+        if "." not in name:
+            try:
+                attr = getattr(self.model, name, None)
+                if attr is not None and hasattr(attr, "__clause_element__"):
+                    attr.__clause_element__()
+                    is_sql_expr = True
+            except Exception:
+                is_sql_expr = False
+        if not is_sql_expr:
+            _log.debug(
+                "ModelView %r: field %r is not backed by a SQL expression; "
+                "excluded from the filter builder",
+                self.key,
+                name,
+            )
+            return False
+        return True
+
     def _setup_primary_key(self) -> None:
         # Detect the model's primary key attribute(s).
         _pk_attrs = []
         self._pk_column: tuple[InstrumentedAttribute, ...] | InstrumentedAttribute = ()
         self._pk_coerce: tuple[type, ...] | type = ()
         for key in list(self.model.__dict__.keys()):
-            attr = getattr(self.model, key)
+            attr = self.model.__dict__[key]
             if isinstance(attr, InstrumentedAttribute) and getattr(
                 attr, "primary_key", False
             ):

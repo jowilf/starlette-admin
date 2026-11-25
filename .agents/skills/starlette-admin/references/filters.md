@@ -1,6 +1,6 @@
 # Filters
 
-Every field listed in `searchable_fields` (or every field when unset) gets a Filters dropdown on the list page. Users combine operators into nested AND/OR trees; the whole state serializes into the `filter` query parameter, so filtered lists are shareable URLs. Defaults derive from the field type (text fields get contains/startswith/eq/is_null, numbers get gt/lt/between, and so on).
+Every field listed in `filterable_fields` (or every queryable field not listed in `exclude_fields_from_filter` when unset) gets a Filters dropdown on the list page. Users combine operators into nested AND/OR trees; the whole state serializes into the `filter` query parameter, so filtered lists are shareable URLs. Defaults derive from the field type (text fields get contains/startswith/eq/is_null, numbers get gt/lt/between, and so on).
 
 ## Overriding filters per field
 

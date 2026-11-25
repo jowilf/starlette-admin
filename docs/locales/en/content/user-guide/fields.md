@@ -25,6 +25,7 @@ Every field type inherits this set of configuration attributes from `BaseField`.
 | `formatter` | `dict[RequestAction, Callable] | None` | `None` | Per-action display formatting, which replaces serialization for that action. See [Computing, formatting, and parsing values](#computing-formatting-and-parsing-values). |
 | `parser` | `dict[RequestAction, Callable] | None` | `None` | Per-action input parsing, which replaces the field's default parsing. See [Computing, formatting, and parsing values](#computing-formatting-and-parsing-values). |
 | `searchable` | `bool` | `True` | Included when the `q` search parameter matches. |
+| `filterable` | `bool` | `True` | Offered in the list page filter builder and accepted in the `filter` query parameter. |
 | `orderable` | `bool` | `True` | Adds a sort link in the list header. |
 | `copy_to_clipboard` | `bool` | `False` | Adds a copy button next to the value on the detail page. |
 | `filters` | `list | None` | `None` | Explicit override for the list page filters. |
@@ -253,7 +254,7 @@ These `StringField` variants render a matching HTML input type and format the va
 
 ### PasswordField
 
-Renders an `<input type="password">` element on forms to obscure what the user types.
+Renders an `<input type="password">` element on forms to obscure what the user types. `filterable` defaults to `False` so secret values are excluded from the filter builder and `filter` query parameter unless explicitly enabled.
 
 !!! danger
     `PasswordField` masks the input on create and edit forms only. It doesn't override the display templates, so values render as **plain text** on list and detail pages, and it logs raw submitted values at `DEBUG` level.

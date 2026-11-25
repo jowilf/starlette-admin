@@ -12,7 +12,7 @@ Fields are plain Python dataclasses; every constructor argument is a dataclass f
 - Visibility flags per field: `exclude_from_list`, `exclude_from_detail`, `exclude_from_create`, `exclude_from_edit`, `exclude_from_export`, `exclude_from_import` (all default `False`). The view-level `exclude_fields_from_*` lists do the same by name.
 - `FloatField` renders a plain text input coerced to float; it does not support `min`/`max`/`step` (use `IntegerField` or `DecimalField` for those).
 - `SlugField(populate_from=...)` auto-fills client-side from another field on the same form; manual edits stop the auto-fill. `populate_from` is required.
-- `ComputedField` is virtual and read-only: pass `getter=lambda request, obj: ...` or subclass and override `parse_obj(request, obj)`. Automatically excluded from create forms, non-editable, non-searchable, non-orderable.
+- `ComputedField` is virtual and read-only: pass `getter=lambda request, obj: ...` or subclass and override `parse_obj(request, obj)`. Automatically excluded from create forms, non-editable, non-searchable, non-filterable, non-orderable.
 - `EnumField(multiple=True)` renders a select2 multi-select and stores a list. `TimeZoneField`, `CountryField`, `CurrencyField` are `EnumField` subclasses backed by Babel data (i18n extra).
 - `JSONField` renders a tree/code editor storing a `dict`; pass a JSON Schema to `validation_schema` for client-side feedback.
 - `DateTimeField(output_format=...)` accepts Babel formats (`"short"`, `"medium"`, `"long"`, `"full"`, or custom) and converts timezones automatically when timezone support is enabled.

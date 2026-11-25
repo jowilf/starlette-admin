@@ -16,7 +16,12 @@ The primary key is auto-detected; set `pk_attr` only when detection fails. Prima
 
 ```python
 class PostView(ModelView):
-    searchable_fields = ["title", "content"]  # global search + filter builder
+    searchable_fields = ["title", "content"]  # global search box
+    filterable_fields = [
+        "title",
+        "published",
+        "created_at",
+    ]  # filter builder (or use exclude_fields_from_filter)
     sortable_fields = ["title", "created_at"]  # clickable column headers
     fields_default_sort = [
         ("created_at", True)

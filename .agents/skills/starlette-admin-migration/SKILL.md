@@ -54,7 +54,7 @@ Detect: `grep -rn "datatables_options\|search_builder\|responsive_table\|save_st
 | Removed | Replacement |
 | --- | --- |
 | `datatables_options` | Delete. Table is server-rendered; customize via templates. |
-| `search_builder` | Delete. Filter builder is enabled by `searchable_fields`. |
+| `search_builder` | Delete. Filter builder is configured via `filterable_fields` and `exclude_fields_from_filter`. |
 | `responsive_table` | Delete. |
 | `save_state` | Delete. List state lives in the URL. |
 | `BaseField.search_builder_type` | `BaseField.filters` (list of filter classes). |

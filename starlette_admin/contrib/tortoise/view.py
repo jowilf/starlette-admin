@@ -115,6 +115,23 @@ class ModelView(BaseModelView[str]):
             len(self.fields),
         )
 
+    def _is_filterable_by_default(self, field: BaseField, name: str) -> bool:
+        """Require a Tortoise ORM field on the model: Tortoise filters build
+        `Q` lookups against `self._meta.fields_map`, so a field backed by a
+        plain Python `property` (or no model field at all) cannot be queried
+        and is left out of the filter builder. Declare `filterable_fields`
+        explicitly to override this.
+        """
+        if name not in self._meta.fields_map:
+            _log.debug(
+                "ModelView %r: field %r is not a Tortoise model field; "
+                "excluded from the filter builder",
+                self.key,
+                name,
+            )
+            return False
+        return True
+
     def _ensure_relations_initialized(self) -> None:
         """Fail fast when the model's relations have not been resolved yet.
 

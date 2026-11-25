@@ -1948,6 +1948,7 @@ def test_computed_field_defaults():
     field = _FullName("full_name")
     assert field.read_only is True
     assert field.searchable is False
+    assert field.filterable is False
     assert field.orderable is False
     assert field.exclude_from_create is True
 
