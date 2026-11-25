@@ -45,18 +45,9 @@ function initFilterBuilder(config) {
   // Selecting an option or removing a tag can mutate/detach the target node
   // before Bootstrap's `autoClose="outside"` click handler runs, so track
   // mousedown inside Select2 and keep the filter dropdown open.
-  $(document)
-    .off(".saFilterS2")
-    .on("mousedown.saFilterS2", ".select2-container, .select2-dropdown", function () {
-      if (!$dropdownMenu.hasClass("show")) return;
-      s2Interacting = true;
-    })
-    .on("mouseup.saFilterS2 blur.saFilterS2", function () {
-      if (!s2Interacting) return;
-      setTimeout(function () {
-        s2Interacting = false;
-      }, 0);
-    });
+  function hasOpenSelect2() {
+    return $rows.find(".select2-container--open").length > 0;
+  }
 
   function closeOpenSelect2() {
     $rows.find("select.select2-hidden-accessible").each(function () {
@@ -64,11 +55,66 @@ function initFilterBuilder(config) {
     });
   }
 
+  function clearS2Interacting() {
+    if (!s2Interacting) return;
+    setTimeout(function () {
+      s2Interacting = false;
+    }, 0);
+  }
+
+  $(document)
+    .off(".saFilterS2")
+    .on(
+      "mousedown.saFilterS2",
+      "#filter-builder-dropdown .select2-container, .sa-filter-s2-dropdown",
+      function (e) {
+        if ((e.button && e.button !== 0) || !$dropdownMenu.hasClass("show")) return;
+        s2Interacting = true;
+      }
+    )
+    .on("mouseup.saFilterS2", clearS2Interacting);
+  $(window).off(".saFilterS2").on("blur.saFilterS2", clearS2Interacting);
+
+  // Intercept Escape on `window` in the capture phase (before Bootstrap 5's
+  // `document` capture listener) so:
+  // 1. Pressing Escape while a Select2 dropdown is open closes ONLY Select2
+  //    (leaving the filter builder menu open, e.g. to click "Apply filters"),
+  //    even when focus has moved to document.body after clicking an option.
+  // 2. The matching Escape keyup never reaches Select2 4.1.0's inline-search
+  //    `keyup.search` listener (which omits ESC from its ignore list and would
+  //    otherwise immediately re-open the dropdown).
+  if (window._saFilterS2Keydown) {
+    window.removeEventListener("keydown", window._saFilterS2Keydown, true);
+  }
+  if (window._saFilterS2Keyup) {
+    window.removeEventListener("keyup", window._saFilterS2Keyup, true);
+  }
+  window._saFilterS2Keydown = function (e) {
+    if (e.key === "Escape" && $dropdownMenu.hasClass("show") && hasOpenSelect2()) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      closeOpenSelect2();
+    }
+  };
+  window._saFilterS2Keyup = function (e) {
+    if (
+      e.key === "Escape" &&
+      $dropdownMenu.hasClass("show") &&
+      $(e.target).closest(".select2-search--inline").length
+    ) {
+      e.stopPropagation();
+    }
+  };
+  window.addEventListener("keydown", window._saFilterS2Keydown, true);
+  window.addEventListener("keyup", window._saFilterS2Keyup, true);
+
   $dropdown.on("hide.bs.dropdown", function (e) {
     if (
       s2Interacting ||
       (e.clickEvent &&
-        $(e.clickEvent.target).closest(".select2-container, .select2-dropdown").length)
+        $(e.clickEvent.target).closest(
+          "#filter-builder-dropdown .select2-container, .sa-filter-s2-dropdown"
+        ).length)
     ) {
       e.preventDefault();
       return;
@@ -351,15 +397,34 @@ function initFilterBuilder(config) {
     }
   }
 
-  // ── Select2 tags initialisation ───────────────────────────────────────────
+  // ── Select2 helpers ───────────────────────────────────────────────────────
+
+  function destroySelect2($el) {
+    if ($el.data("s2")) {
+      $el.select2("destroy").removeData("s2");
+    }
+  }
+
+  function destroySelect2In($container) {
+    $container.find("select.select2-hidden-accessible").each(function () {
+      destroySelect2($(this));
+    });
+  }
 
   function maybeInitTagsInput($el) {
-    if ($el.data("s2")) return;
+    if ($el.data("s2") || !$.fn.select2) return;
     let prefill = $el.data("filterPrefill") || [];
+    $el.removeData("filterPrefill");
     prefill.forEach(function (v) {
       $el.append(new Option(v, v, true, true));
     });
-    $el.data("s2", true).select2({ tags: true, tokenSeparators: [","], width: "100%" });
+    $el.data("s2", true).select2({
+      tags: true,
+      tokenSeparators: [","],
+      width: "100%",
+      dropdownParent: $(document.body),
+      dropdownCssClass: "sa-filter-s2-dropdown",
+    });
   }
 
   // ── Select2 relation record picker ────────────────────────────────────────
@@ -379,12 +444,13 @@ function initFilterBuilder(config) {
    * raw first and then swapped for their rendered labels once resolved.
    */
   function maybeInitRelationInput($el, field) {
-    if ($el.data("s2") || !field || !field.relation) return;
+    if ($el.data("s2") || !$.fn.select2 || !field || !field.relation) return;
     let rel = field.relation;
     let initToken = ($el.data("s2Token") || 0) + 1;
     $el.data("s2", true).data("s2Token", initToken).select2({
       width: "100%",
       dropdownParent: $(document.body),
+      dropdownCssClass: "sa-filter-s2-dropdown",
       ajax: {
         url: rel.url,
         dataType: "json",
@@ -436,14 +502,8 @@ function initFilterBuilder(config) {
   }
 
   function destroyRelationInput($el) {
-    if ($el.data("s2")) $el.select2("destroy").removeData("s2");
+    destroySelect2($el);
     $el.empty();
-  }
-
-  function destroySelect2In($container) {
-    $container.find("select.select2-hidden-accessible").each(function () {
-      if ($(this).data("s2")) $(this).select2("destroy").removeData("s2");
-    });
   }
 
   // ── DOM creation ──────────────────────────────────────────────────────────
@@ -501,31 +561,40 @@ function initFilterBuilder(config) {
       $valueTags.toggleClass("d-none", !showTags);
       $valueRelation.toggleClass("d-none", !isRelation);
       if (isRelation) {
-        // Defer init so Select2 runs after the row is appended to the live DOM.
-        setTimeout(function () {
-          if (
-            !$valueRelation.hasClass("d-none") &&
-            document.body &&
-            document.body.contains($valueRelation[0])
-          ) {
-            maybeInitRelationInput($valueRelation, fieldByName($field.val()));
-          }
-        }, 0);
+        if (document.body && document.body.contains($valueRelation[0])) {
+          maybeInitRelationInput($valueRelation, fieldByName($field.val()));
+        } else {
+          // Defer init so Select2 runs after the row is appended to the live DOM.
+          setTimeout(function () {
+            if (
+              !$valueRelation.hasClass("d-none") &&
+              document.body &&
+              document.body.contains($valueRelation[0])
+            ) {
+              maybeInitRelationInput($valueRelation, fieldByName($field.val()));
+            }
+          }, 0);
+        }
       } else if ($valueRelation.data("s2")) {
         destroyRelationInput($valueRelation);
       }
       if (showTags) {
-        // Defer init so Select2 runs after the row is appended to the live DOM.
-        setTimeout(function () {
-          if (!$valueTags.hasClass("d-none") && document.body && document.body.contains($valueTags[0])) {
-            maybeInitTagsInput($valueTags);
-          }
-        }, 0);
-      } else if ($valueTags.data("s2")) {
-        // Tear down Select2 when the tags input is hidden; otherwise its
-        // generated container stays in the DOM as a sibling of the hidden
-        // <select> and keeps showing after the user switches field/op.
-        $valueTags.select2("destroy").removeData("s2");
+        if (document.body && document.body.contains($valueTags[0])) {
+          maybeInitTagsInput($valueTags);
+        } else {
+          // Defer init so Select2 runs after the row is appended to the live DOM.
+          setTimeout(function () {
+            if (
+              !$valueTags.hasClass("d-none") &&
+              document.body &&
+              document.body.contains($valueTags[0])
+            ) {
+              maybeInitTagsInput($valueTags);
+            }
+          }, 0);
+        }
+      } else {
+        destroySelect2($valueTags);
       }
       $value2
         .attr("type", inputType)
@@ -560,7 +629,10 @@ function initFilterBuilder(config) {
       }
       $value2.val("");
     });
-    $op.on("change", syncValueInputs);
+    $op.on("change", function () {
+      closeOpenSelect2();
+      syncValueInputs();
+    });
     $row.find('[data-sa-action="filter-row-remove"]').on("click", function () {
       destroySelect2In($row);
       $row.remove();
