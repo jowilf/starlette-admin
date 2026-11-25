@@ -39,6 +39,7 @@ from starlette_admin.exceptions import (
 )
 from starlette_admin.export import ExportConfig
 from starlette_admin.fields import BaseField, CollectionField, FileField, RelationField
+from starlette_admin.filters import FilterValidationError
 from starlette_admin.flash import FlashMiddleware, flash, get_flashed_messages
 from starlette_admin.helpers import (
     HTTP_422,
@@ -1701,17 +1702,22 @@ class BaseAdmin:
             if list_params.page_size > 0
             else 0
         )
-        items = await view.find_all(
-            request=request,
-            skip=skip,
-            limit=list_params.page_size,
-            q=list_params.q,
-            sorts=list_params.sorts,
-            filters=list_params.filters,
-        )
-        total = await view.count(
-            request=request, q=list_params.q, filters=list_params.filters
-        )
+        try:
+            items = await view.find_all(
+                request=request,
+                skip=skip,
+                limit=list_params.page_size,
+                q=list_params.q,
+                sorts=list_params.sorts,
+                filters=list_params.filters,
+            )
+            total = await view.count(
+                request=request, q=list_params.q, filters=list_params.filters
+            )
+        except FilterValidationError as exc:
+            raise HTTPException(
+                HTTP_400_BAD_REQUEST, f"Invalid 'filter' parameter: {exc}"
+            ) from exc
         rows = []
         row_actions: dict[Any, list[dict[str, Any]]] = {}
         for item in items:

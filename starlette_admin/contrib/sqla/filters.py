@@ -10,11 +10,30 @@ per the `FilterGroup` tree, and `ModelView.find_all`/`count` apply the result
 once.
 """
 
+import enum
 from collections.abc import Sequence
 from typing import Any
 
-from sqlalchemy import String, and_, cast, false, func, not_, or_, true
+from sqlalchemy import (
+    ARRAY,
+    JSON,
+    Boolean,
+    String,
+    TypeDecorator,
+    and_,
+    bindparam,
+    cast,
+    false,
+    func,
+    not_,
+    or_,
+    true,
+)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
+from sqlalchemy.sql.elements import ColumnElement
+from sqlalchemy.sql.visitors import InternalTraversal
 from starlette.requests import Request
 from starlette_admin.fields import (
     BaseField,
@@ -36,7 +55,7 @@ from starlette_admin.filters import (
     FilterRule,
     filters,
 )
-from starlette_admin.filters.base import BaseFilter
+from starlette_admin.filters.base import BaseFilter, FilterValidationError
 from starlette_admin.filters.boolean import IsFalseFilter as BaseIsFalseFilter
 from starlette_admin.filters.boolean import IsTrueFilter as BaseIsTrueFilter
 from starlette_admin.filters.date import (
@@ -50,12 +69,13 @@ from starlette_admin.filters.date import DateInPastFilter as BaseDateInPastFilte
 from starlette_admin.filters.date import (
     DateTimeBetweenFilter as BaseDateTimeBetweenFilter,
 )
-from starlette_admin.filters.date import (
-    DateTimeEqualFilter as BaseDateTimeEqualFilter,
-)
+from starlette_admin.filters.date import DateTimeEqualFilter as BaseDateTimeEqualFilter
 from starlette_admin.filters.date import TimeBetweenFilter as BaseTimeBetweenFilter
 from starlette_admin.filters.date import TimeEqualFilter as BaseTimeEqualFilter
+from starlette_admin.filters.enum import AllOfFilter as BaseEnumAllOfFilter
+from starlette_admin.filters.enum import AnyOfFilter as BaseEnumAnyOfFilter
 from starlette_admin.filters.enum import InFilter as BaseInFilter
+from starlette_admin.filters.enum import NoneOfFilter as BaseEnumNoneOfFilter
 from starlette_admin.filters.enum import NotInFilter as BaseNotInFilter
 from starlette_admin.filters.generic import EqualFilter as BaseEqualFilter
 from starlette_admin.filters.generic import IsNotNullFilter as BaseIsNotNullFilter
@@ -245,17 +265,223 @@ class IsFalseFilter(BaseIsFalseFilter):
         return _column(ctx) == false()
 
 
-# Enum
+# Enum (scalar and multi-value ARRAY / JSONB / JSON columns)
+
+
+class _JsonArrayContains(ColumnElement[bool]):
+    """Dialect-portable predicate testing whether a `JSON` array column
+    contains a single scalar element `value`.
+
+    All three dialect-specific `bindparam`s are held on the element and listed
+    in `_traverse_internals` so SQLAlchemy's statement cache rebinds fresh
+    values cleanly across executions.
+    """
+
+    type = Boolean()
+    inherit_cache = True
+    _traverse_internals = [  # noqa: RUF012
+        ("column", InternalTraversal.dp_clauseelement),
+        ("scalar_param", InternalTraversal.dp_clauseelement),
+        ("json_param", InternalTraversal.dp_clauseelement),
+        ("jsonb_param", InternalTraversal.dp_clauseelement),
+    ]
+
+    def __init__(self, column: Any, value: Any) -> None:
+        self.column = column
+        self.scalar_param = bindparam(None, value)
+        self.json_param = bindparam(None, [value], type_=JSON())
+        self.jsonb_param = bindparam(None, [value], type_=JSONB())
+
+
+@compiles(_JsonArrayContains, "sqlite")
+def _compile_json_array_contains_sqlite(
+    element: _JsonArrayContains, compiler: Any, **kw: Any
+) -> str:
+    col = compiler.process(element.column, **kw)
+    val = compiler.process(element.scalar_param, **kw)
+    return f"EXISTS (SELECT 1 FROM json_each({col}) WHERE json_each.value = {val})"
+
+
+@compiles(_JsonArrayContains, "postgresql")
+def _compile_json_array_contains_postgresql(
+    element: _JsonArrayContains, compiler: Any, **kw: Any
+) -> str:
+    col = compiler.process(cast(element.column, JSONB), **kw)
+    val = compiler.process(element.jsonb_param, **kw)
+    return f"({col} @> {val})"
+
+
+@compiles(_JsonArrayContains, "mysql")
+@compiles(_JsonArrayContains, "mariadb")
+def _compile_json_array_contains_mysql(
+    element: _JsonArrayContains, compiler: Any, **kw: Any
+) -> str:
+    col = compiler.process(element.column, **kw)
+    val = compiler.process(element.json_param, **kw)
+    return f"JSON_CONTAINS({col}, {val})"
+
+
+@compiles(_JsonArrayContains)
+def _compile_json_array_contains_default(
+    element: _JsonArrayContains, compiler: Any, **kw: Any
+) -> str:
+    raise NotImplementedError(
+        f"JSON array filtering is not supported for dialect {compiler.dialect.name!r}"
+    )
+
+
+def _unwrap_column_type(column: InstrumentedAttribute) -> Any:
+    """Return the underlying SQLAlchemy type, unwrapping any `TypeDecorator`."""
+    col_type = getattr(column, "type", None)
+    while isinstance(col_type, TypeDecorator):
+        col_type = col_type.impl_instance
+    return col_type
+
+
+def _unwrap_array_type(column: InstrumentedAttribute) -> ARRAY | None:
+    """Return the underlying `ARRAY` type when `column` is an array column."""
+    col_type = _unwrap_column_type(column)
+    return col_type if isinstance(col_type, ARRAY) else None
+
+
+def _is_jsonb_column(column: InstrumentedAttribute) -> bool:
+    """Return `True` when `column` is backed by a PostgreSQL `JSONB` type."""
+    return isinstance(_unwrap_column_type(column), JSONB)
+
+
+def _is_json_column(column: InstrumentedAttribute) -> bool:
+    """Return `True` when `column` is backed by a SQLAlchemy `JSON` type."""
+    return isinstance(_unwrap_column_type(column), JSON)
+
+
+def _is_multi_value_column(column: InstrumentedAttribute) -> bool:
+    """Return `True` when `column` stores a collection (`ARRAY`, `JSONB`, or `JSON`)."""
+    return _unwrap_array_type(column) is not None or _is_json_column(column)
+
+
+def _coerce_enum_element(enum_cls: type[enum.Enum], raw: Any) -> enum.Enum:
+    try:
+        return enum_cls(raw)
+    except ValueError:
+        pass
+    if isinstance(raw, str) and raw in enum_cls.__members__:
+        return enum_cls[raw]
+    raw_str = str(raw)
+    for member in enum_cls:
+        if str(member.value) == raw_str:
+            return member
+    raise FilterValidationError(f"Invalid value {raw!r} for {enum_cls.__name__}")
+
+
+def _coerce_array_element(py_type: type, raw: Any) -> Any:
+    """Coerce a raw filter value string to an array element's Python type."""
+    if isinstance(raw, py_type):
+        return raw
+    if issubclass(py_type, enum.Enum):
+        return _coerce_enum_element(py_type, raw)
+    if py_type is bool:
+        lower = str(raw).strip().lower()
+        if lower in ("true", "1"):
+            return True
+        if lower in ("false", "0"):
+            return False
+        raise FilterValidationError(f"Invalid boolean value {raw!r}")
+    try:
+        return py_type(raw)
+    except (ValueError, TypeError) as exc:
+        raise FilterValidationError(f"Invalid value {raw!r}: {exc}") from exc
+
+
+def _coerce_array_values(
+    column: InstrumentedAttribute, values: Sequence[Any]
+) -> list[Any]:
+    """Coerce raw string values to the element Python type of an `ARRAY` column."""
+    array_type = _unwrap_array_type(column)
+    if array_type is None:
+        return list(values)
+    try:
+        py_type = array_type.item_type.python_type
+    except NotImplementedError:
+        return list(values)
+    return [_coerce_array_element(py_type, v) for v in values]
+
+
+def _array_any_of(column: InstrumentedAttribute, values: Sequence[Any]) -> Any:
+    """Match rows whose `ARRAY`/`JSONB`/`JSON` column contains at least one
+    value from `values`.
+    """
+    if _unwrap_array_type(column) is not None:
+        coerced = _coerce_array_values(column, values)
+        return column.op("&&", return_type=Boolean())(
+            bindparam(None, coerced, type_=column.type)
+        )
+    if _is_jsonb_column(column):
+        return or_(*[column.contains([v]) for v in values])
+    if _is_json_column(column):
+        return or_(*[_JsonArrayContains(column, v) for v in values])
+    return column.in_(values)
+
+
+def _array_all_of(column: InstrumentedAttribute, values: Sequence[Any]) -> Any:
+    """Match rows whose `ARRAY`/`JSONB`/`JSON` column contains every value in
+    `values`.
+    """
+    if _unwrap_array_type(column) is not None:
+        coerced = _coerce_array_values(column, values)
+        return column.op("@>", return_type=Boolean())(
+            bindparam(None, coerced, type_=column.type)
+        )
+    if _is_jsonb_column(column):
+        return column.contains(list(values))
+    if _is_json_column(column):
+        return and_(*[_JsonArrayContains(column, v) for v in values])
+    return and_(*[column == v for v in values])
+
+
+def _array_none_of(column: InstrumentedAttribute, values: Sequence[Any]) -> Any:
+    """Match rows whose `ARRAY`/`JSONB`/`JSON` column contains none of `values`
+    (including `NULL` or empty collections).
+    """
+    if _is_multi_value_column(column):
+        return or_(column.is_(None), not_(_array_any_of(column, values)))
+    return or_(column.is_(None), column.not_in(values))
 
 
 class InFilter(BaseInFilter):
     def apply(self, ctx: FilterApplyContext) -> Any:
-        return _column(ctx).in_(ctx.value)
+        column = _column(ctx)
+        if _is_multi_value_column(column):
+            return _array_any_of(column, ctx.value)
+        return column.in_(ctx.value)
 
 
 class NotInFilter(BaseNotInFilter):
     def apply(self, ctx: FilterApplyContext) -> Any:
-        return _column(ctx).not_in(ctx.value)
+        column = _column(ctx)
+        if _is_multi_value_column(column):
+            return _array_none_of(column, ctx.value)
+        return column.not_in(ctx.value)
+
+
+class EnumAnyOfFilter(BaseEnumAnyOfFilter):
+    """Multi-value enum filter (`any_of`) for `ARRAY`, `JSONB`, and `JSON` columns."""
+
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return _array_any_of(_column(ctx), ctx.value)
+
+
+class EnumAllOfFilter(BaseEnumAllOfFilter):
+    """Multi-value enum filter (`all_of`) for `ARRAY`, `JSONB`, and `JSON` columns."""
+
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return _array_all_of(_column(ctx), ctx.value)
+
+
+class EnumNoneOfFilter(BaseEnumNoneOfFilter):
+    """Multi-value enum filter (`none_of`) for `ARRAY`, `JSONB`, and `JSON` columns."""
+
+    def apply(self, ctx: FilterApplyContext) -> Any:
+        return _array_none_of(_column(ctx), ctx.value)
 
 
 # Combining a parsed FilterGroup tree into a single clause
@@ -388,6 +614,18 @@ class SqlaFilterRegistry(FilterRegistry):
 
     @filters(EnumField)
     def enum_filters(self, field: BaseField) -> list[type[BaseFilter]]:
+        """Filters for `EnumField`. Multi-value fields (`multiple=True`) get
+        collection-aware filters (`any_of`, `all_of`, `none_of`) instead of
+        scalar comparisons.
+        """
+        if getattr(field, "multiple", False):
+            return [
+                EnumAnyOfFilter,
+                EnumAllOfFilter,
+                EnumNoneOfFilter,
+                IsNullFilter,
+                IsNotNullFilter,
+            ]
         return [
             EqualFilter,
             NotEqualFilter,

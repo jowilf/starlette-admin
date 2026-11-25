@@ -197,7 +197,7 @@ Every field type receives a default set of filters from `SqlaFilterRegistry`. Th
     The `Is null` filter on a relationship evaluates `~column.has()` (for many-to-one relations) or `~column.any()` (for one-to-many and many-to-many relations) instead of `column.is_(None)`. Because a relationship attribute is not a standard column containing a `NULL` value, its nullability depends entirely on whether any related rows exist.
 
 !!! note
-    The SQLAlchemy backend does not provide `ArrayInFilter` or `ArrayNotInFilter` (the "is one of" filters for list-valued columns) as Beanie and MongoEngine do. You must write your own `apply()` logic if you require "is one of" filtering on a `TagsField`-backed JSON or ARRAY column. Consult the [Custom Filters](../advanced/custom-filters.md) documentation for more details.
+    `EnumField(multiple=True)` receives collection-aware filters (`Has any of`, `Has all of`, `Has none of`) out of the box on PostgreSQL `ARRAY` and `JSONB` columns as well as dialect-portable `JSON` columns (SQLite, PostgreSQL, MySQL/MariaDB). For free-form `TagsField` columns, the SQLAlchemy backend does not provide `ArrayInFilter` or `ArrayNotInFilter` as Beanie and MongoEngine do; consult [Custom Filters](../advanced/custom-filters.md) to write your own `apply()` logic.
 
 ## Sessions and transactions
 

@@ -111,6 +111,7 @@ Every field type includes a fixed set of filters provided by the `MongoEngineFil
 | `StringField` | contains, not contains, starts with, ends with, equals, not equals, is null, is not null |
 | `TextAreaField` | contains, not contains, starts with, ends with, is null, is not null |
 | `EnumField` | equals, not equals, in, not in, is null, is not null |
+| `EnumField(multiple=True)` | has any of, has all of, has none of, is null, is not null |
 | `NumberField` | equals, not equals, greater than, less than, between, is null, is not null |
 | `FloatField` | equals, not equals, greater than, less than, between, is null, is not null |
 | `DateField` | equals, between, in the past, in the future, is null, is not null |
