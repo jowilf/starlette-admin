@@ -3,13 +3,15 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from starlette.datastructures import QueryParams, State
+from starlette.datastructures import URL, QueryParams, State
 from starlette.exceptions import HTTPException
 from starlette_admin import (
     CollectionField,
+    EnumField,
     IntegerField,
     StringField,
 )
+from starlette_admin.filters import BaseFilter, FilterDataType, FilterRegistry
 from starlette_admin.types import RequestAction
 from starlette_admin.views import BaseModelView, CustomView, DefaultIndexView
 from starlette_admin.widgets import (
@@ -498,3 +500,59 @@ async def test_select2_result_prefers_admin_select2_repr_over_str():
     request = MagicMock()
     result = await view.select2_result(obj, request)
     assert result == "<b>Hello</b>"
+
+
+# ── Select2 assets on LIST for ENUM filters ──────────────────────────────────
+
+
+def test_list_loads_select2_assets_for_searchable_enum_filters():
+    """List pages load Select2 assets for searchable top-level and nested
+    ENUM filters, and skip them when the enum field is not searchable."""
+
+    class _EnumInFilter(BaseFilter):
+        name = "in"
+        label = "Is one of"
+        data_type = FilterDataType.ENUM
+
+        def apply(self, field, value, value2=None):
+            return (field.name, "in", value)
+
+    def _make_view(fields_, searchable=None):
+        class _View(TinydbModelView):
+            fields = fields_
+            searchable_fields = searchable
+
+            def get_filter_registry(self) -> FilterRegistry:
+                registry = FilterRegistry()
+                registry.register(EnumField, _EnumInFilter)
+                return registry
+
+        return _View(_ReprOnlyModel)
+
+    request = _mock_request()
+    request.state.action = RequestAction.LIST
+    request.url_for.side_effect = lambda _name, **kw: URL(
+        f"/admin/statics/{kw['path']}"
+    )
+
+    top_level = _make_view([EnumField("status", choices=[("a", "A")], select2=False)])
+    nested = _make_view(
+        [CollectionField("meta", fields=[EnumField("status", choices=[("a", "A")])])]
+    )
+    unsearchable = _make_view(
+        [StringField("title"), EnumField("status", choices=[("a", "A")])],
+        searchable=["title"],
+    )
+
+    for view in (top_level, nested):
+        assert view._has_array_filter(request) is True
+        assert any("select2.min.css" in u for u in view._additional_css_links(request))
+        assert any("select2.min.js" in u for u in view._additional_js_links(request))
+
+    assert unsearchable._has_array_filter(request) is False
+    assert not any(
+        "select2.min.css" in u for u in unsearchable._additional_css_links(request)
+    )
+    assert not any(
+        "select2.min.js" in u for u in unsearchable._additional_js_links(request)
+    )

@@ -2442,10 +2442,14 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         return _resolve_form_layout_node(root, accessible, obj, errors)
 
     def _has_array_filter(self, request: Request) -> bool:
+        """Whether any filter offered on the list page renders a Select2
+        input (tag input for ARRAY, multi-select for ENUM), so the Select2
+        assets must be loaded."""
         registry = self.get_filter_registry()
         return any(
-            f.data_type == FilterDataType.ARRAY
-            for field in self.get_fields_list(request)
+            f.data_type in (FilterDataType.ARRAY, FilterDataType.ENUM)
+            for field in self.get_fields_list(request, include_nested=True)
+            if field.searchable
             for f in registry.filters_for(field)
         )
 

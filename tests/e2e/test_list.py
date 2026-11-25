@@ -110,6 +110,53 @@ def test_filter_builder_numeric_greater_than(page: Page):
     expect(page.locator("tbody tr").first).to_contain_text("Asimov's Guide to Science")
 
 
+def test_filter_builder_enum_multiselect_select2(page: Page):
+    """Multi-value Enum filters render a Select2 picker where plain clicks
+    toggle multiple choices without holding Ctrl/Cmd and without closing the
+    filter builder panel."""
+    page.goto("/admin/book/list")
+
+    dropdown_menu = page.locator("#filter-builder-dropdown .dropdown-menu")
+    page.get_by_role("button", name="Filters").click()
+    expect(dropdown_menu).to_be_visible()
+
+    row = page.locator(".filter-row").first
+    row.locator(".filter-row-field").select_option(label="Genre")
+    row.locator(".filter-row-op").select_option(label="Is one of")
+
+    s2_container = row.locator(".select2-container")
+    expect(s2_container).to_be_visible()
+    expect(row.locator(".select2-selection__choice")).to_have_count(0)
+
+    s2_container.click()
+    s2_dropdown = page.locator(".select2-dropdown.sa-filter-enum-dropdown")
+    expect(s2_dropdown).to_be_visible()
+
+    # Plain clicks select multiple values and toggle off on re-click.
+    s2_dropdown.get_by_role("option", name="FICTION", exact=True).click()
+    s2_dropdown.get_by_role("option", name="NON FICTION", exact=True).click()
+    s2_dropdown.get_by_role("option", name="SCIENCE FICTION", exact=True).click()
+    s2_dropdown.get_by_role("option", name="SCIENCE FICTION", exact=True).click()
+    expect(row.locator(".select2-selection__choice")).to_have_count(2)
+    expect(s2_dropdown).to_be_visible()
+    expect(dropdown_menu).to_be_visible()
+
+    # Pressing Escape closes only the Select2 list, leaving the filter panel open.
+    page.keyboard.press("Escape")
+    expect(s2_dropdown).to_have_count(0)
+    expect(dropdown_menu).to_be_visible()
+
+    page.get_by_role("button", name="Apply filters").click()
+    expect(page).to_have_url(re.compile(r"filter=.*genre__in"))
+    # 5 FICTION + 1 NON FICTION in the seed data.
+    expect(page.locator("tbody tr[data-sa-pk]")).to_have_count(6)
+
+    # Re-opening the filter panel restores the selected choices as Select2 chips.
+    page.get_by_role("button", name="Filters").click()
+    reopened_row = page.locator(".filter-row").first
+    expect(reopened_row.locator(".select2-selection__choice")).to_have_count(2)
+
+
 def test_removing_one_active_filter_chip_keeps_the_other(page: Page):
     """Two filters applied at once (In stock + Price) render as two removable
     chips; removing one must drop only that filter, not the whole set."""
