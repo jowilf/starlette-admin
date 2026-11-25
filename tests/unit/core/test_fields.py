@@ -27,7 +27,6 @@ from starlette_admin.fields import (
     IPAddressField,
     JSONField,
     ListField,
-    PasswordField,
     SlugField,
     TagsField,
     TimeField,
@@ -1952,12 +1951,6 @@ def test_computed_field_defaults():
     assert field.filterable is False
     assert field.orderable is False
     assert field.exclude_from_create is True
-
-
-def test_password_field_defaults():
-    field = PasswordField("secret")
-    assert field.input_type == "password"
-    assert field.filterable is False
 
 
 @pytest.mark.asyncio

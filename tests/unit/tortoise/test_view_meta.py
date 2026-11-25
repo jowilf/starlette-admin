@@ -101,3 +101,12 @@ def test_register_converter_plugin_api():
         assert converter.get_converter(_PluginFieldType()) is _conv_plugin_type
     finally:
         del _EXTERNAL_CONVERTERS[_PluginFieldType]
+
+
+def test_non_model_field_excluded_from_filter_by_default():
+    class ItemView(ModelView):
+        fields = ["id", "name", StringField("plain_prop")]
+
+    by_name = {f.name: f for f in ItemView(Item).fields}
+    assert by_name["name"].filterable is True
+    assert by_name["plain_prop"].filterable is False

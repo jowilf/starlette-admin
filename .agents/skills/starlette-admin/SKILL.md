@@ -105,11 +105,16 @@ class PostView(ModelView):
     # What is shown; strings are auto-converted, or pass field instances
     fields = ["id", StringField("title", required=True), "content", "author"]
 
-    # Surface-specific hiding: _create, _edit, _list, _detail, _export, _import
+    # Surface-specific hiding: _create, _edit, _list, _detail, _export, _import, _filter
     exclude_fields_from_create = ["created_at"]
 
     # List page behavior
-    searchable_fields = ["title", "content"]  # enables search box + filter builder
+    searchable_fields = ["title", "content"]  # enables global search box
+    filterable_fields = [
+        "title",
+        "published",
+        "created_at",
+    ]  # optional: defaults to every queryable field
     sortable_fields = ["title", "created_at"]
     fields_default_sort = [("created_at", True)]  # True = descending
     page_size = 25

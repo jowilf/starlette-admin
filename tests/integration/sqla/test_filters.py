@@ -26,8 +26,10 @@ from sqlalchemy import (
     Text,
     Time,
     create_engine,
+    func,
     select,
 )
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
@@ -65,6 +67,7 @@ from starlette_admin.contrib.sqla.filters import (
 )
 from starlette_admin.fields import (
     ComputedField,
+    IntegerField,
     NumberField,
     PasswordField,
     RelationField,
@@ -713,6 +716,14 @@ async def test_filterable_fields_and_exclude_fields_from_filter(seeded_session):
         return req
 
     Item.plain_prop = property(lambda self: self.name)
+    Item.bad_hybrid_raise = hybrid_property(lambda self: len(self.name))
+    Item.bad_hybrid_val = hybrid_property(
+        lambda self: "yes" if self.name == "Alpha" else "no"
+    )
+    Item.good_hybrid = hybrid_property(
+        fget=lambda self: len(self.name),
+        expr=lambda cls: func.length(cls.name),
+    )
 
     class SearchRestrictedItemView(ModelView):
         fields = [
@@ -722,6 +733,15 @@ async def test_filterable_fields_and_exclude_fields_from_filter(seeded_session):
             "price",
             PasswordField("description"),
             StringField("plain_prop", exclude_from_create=True, exclude_from_edit=True),
+            IntegerField(
+                "bad_hybrid_raise", exclude_from_create=True, exclude_from_edit=True
+            ),
+            StringField(
+                "bad_hybrid_val", exclude_from_create=True, exclude_from_edit=True
+            ),
+            IntegerField(
+                "good_hybrid", exclude_from_create=True, exclude_from_edit=True
+            ),
             ComputedField("comp", getter=lambda req, obj: "x"),
         ]
         searchable_fields = ["name"]
@@ -745,17 +765,37 @@ async def test_filterable_fields_and_exclude_fields_from_filter(seeded_session):
             "Alpha"
         ]
 
+        # SQL-backed `@hybrid_property` remains filterable by default
+        req_hybrid = _req("good_hybrid__eq=5")
+        fg_hybrid = default_view._parse_filter_param(req_hybrid)
+        stmt_hybrid = await default_view._apply_search_and_filters(
+            request=req_hybrid, stmt=select(Item), q=None, filters=fg_hybrid
+        )
+        assert [
+            r.name for r in seeded_session.execute(stmt_hybrid).scalars().all()
+        ] == ["Alpha"]
+
         # `price` (in exclude_fields_from_filter), `description` (PasswordField),
-        # `plain_prop` (@property), and `comp` (ComputedField) are excluded from the
-        # filter builder and rejected in `?filter=`
+        # `plain_prop` (@property), Python-only hybrid_properties, and `comp`
+        # (ComputedField) are excluded from the filter builder and rejected in `?filter=`
         builder_names = {
             f["name"] for f in default_view._filter_builder_fields(_req(""))
         }
-        assert {"price", "description", "plain_prop", "comp"}.isdisjoint(builder_names)
+        assert {
+            "price",
+            "description",
+            "plain_prop",
+            "bad_hybrid_raise",
+            "bad_hybrid_val",
+            "comp",
+        }.isdisjoint(builder_names)
+        assert "good_hybrid" in builder_names
         for blocked in (
             "price__gt=1",
             "description__contains=a",
             "plain_prop__eq=Alpha",
+            "bad_hybrid_raise__eq=5",
+            "bad_hybrid_val__eq=yes",
             "comp__eq=x",
         ):
             with pytest.raises(HTTPException):
@@ -769,4 +809,5 @@ async def test_filterable_fields_and_exclude_fields_from_filter(seeded_session):
         with pytest.raises(HTTPException):
             explicit_view._parse_filter_param(_req("count__eq=10"))
     finally:
-        delattr(Item, "plain_prop")
+        for attr in ("plain_prop", "bad_hybrid_raise", "bad_hybrid_val", "good_hybrid"):
+            delattr(Item, attr)

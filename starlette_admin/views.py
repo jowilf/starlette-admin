@@ -841,8 +841,8 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
     def _is_filterable_by_default(self, field: BaseField, name: str) -> bool:
         """Whether `field` is offered in the filter builder when the view does
         not set `filterable_fields`. Backends override this to drop fields
-        their filters cannot query (e.g. SQLAlchemy fields backed by a plain
-        Python `property`).
+        their filters cannot query (e.g. fields backed by a plain Python
+        `property`).
         """
         return True
 
@@ -2473,7 +2473,7 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
         registry = self.get_filter_registry()
         return any(
             f.data_type == FilterDataType.ARRAY
-            for field in self.get_fields_list(request)
+            for field in self.get_fields_list(request, include_nested=True)
             if field.filterable
             for f in registry.filters_for(field)
         )

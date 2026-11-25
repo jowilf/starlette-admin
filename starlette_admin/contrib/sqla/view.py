@@ -181,13 +181,22 @@ class ModelView(BaseModelView[Mapped[Any]]):
     def _is_filterable_by_default(self, field: BaseField, name: str) -> bool:
         """Also require a SQL-expressible model attribute: SQLAlchemy filters
         resolve the field with `getattr(model, name)`, so a field backed by
-        a plain Python `property` (or no attribute at all) cannot be queried
-        and is left out of the filter builder. Columns, relationships,
-        `column_property` and `hybrid_property` attributes all qualify.
-        Declare `filterable_fields` explicitly to override this.
+        a plain Python `property`, a Python-only `hybrid_property`, or no
+        attribute at all cannot be queried and is left out of the filter
+        builder. Columns, relationships, `column_property`, and SQL-backed
+        `hybrid_property` attributes all qualify. Declare `filterable_fields`
+        explicitly to override this.
         """
-        attr = getattr(self.model, name, None) if "." not in name else None
-        if attr is None or not hasattr(attr, "__clause_element__"):
+        is_sql_expr = False
+        if "." not in name:
+            try:
+                attr = getattr(self.model, name, None)
+                if attr is not None and hasattr(attr, "__clause_element__"):
+                    attr.__clause_element__()
+                    is_sql_expr = True
+            except Exception:
+                is_sql_expr = False
+        if not is_sql_expr:
             _log.debug(
                 "ModelView %r: field %r is not backed by a SQL expression; "
                 "excluded from the filter builder",
@@ -203,7 +212,7 @@ class ModelView(BaseModelView[Mapped[Any]]):
         self._pk_column: tuple[InstrumentedAttribute, ...] | InstrumentedAttribute = ()
         self._pk_coerce: tuple[type, ...] | type = ()
         for key in list(self.model.__dict__.keys()):
-            attr = getattr(self.model, key)
+            attr = self.model.__dict__[key]
             if isinstance(attr, InstrumentedAttribute) and getattr(
                 attr, "primary_key", False
             ):

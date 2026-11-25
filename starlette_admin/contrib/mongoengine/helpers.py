@@ -57,7 +57,8 @@ def normalize_list(
 ) -> Sequence[str | tuple[str, bool]] | None:
     """Normalize a list of field references into a list of field-name strings.
 
-    Lets view configuration attributes (e.g. `searchable_fields`, `sortable_fields`,
+    Lets view configuration attributes (e.g. `searchable_fields`, `filterable_fields`,
+    `sortable_fields`,
     `fields_default_sort`) accept mongoengine field objects (e.g. `Document.name`)
     in addition to plain strings.
 
