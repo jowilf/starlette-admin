@@ -25,7 +25,14 @@ from starlette_admin.filters.date import (
     TimeEqualFilter,
     _parse_temporal,
 )
-from starlette_admin.filters.enum import InFilter, NotInFilter, _parse_choices
+from starlette_admin.filters.enum import (
+    AllOfFilter,
+    AnyOfFilter,
+    InFilter,
+    NoneOfFilter,
+    NotInFilter,
+    _parse_choices,
+)
 from starlette_admin.filters.generic import (
     EqualFilter,
     IsNotNullFilter,
@@ -94,6 +101,9 @@ _DateInPastFilter = _concrete(DateInPastFilter)
 _DateInFutureFilter = _concrete(DateInFutureFilter)
 _InFilter = _concrete(InFilter)
 _NotInFilter = _concrete(NotInFilter)
+_AnyOfFilter = _concrete(AnyOfFilter)
+_AllOfFilter = _concrete(AllOfFilter)
+_NoneOfFilter = _concrete(NoneOfFilter)
 _ArrayInFilter = _concrete(ArrayInFilter)
 _ArrayNotInFilter = _concrete(ArrayNotInFilter)
 _NumericEqualFilter = _concrete(NumericEqualFilter)
@@ -273,6 +283,18 @@ def test_not_in_filter():
     f = _NotInFilter()
     assert f.data_type == FilterDataType.ENUM
     assert f.parse_value(["p", "q"]) == ["p", "q"]
+
+
+@pytest.mark.parametrize(
+    ("filter_cls", "slug"),
+    [(_AnyOfFilter, "any_of"), (_AllOfFilter, "all_of"), (_NoneOfFilter, "none_of")],
+)
+def test_multi_enum_filters(filter_cls, slug):
+    f = filter_cls()
+    assert f.name == slug
+    assert f.data_type == FilterDataType.ENUM
+    assert f.parse_value('"read, write",*:*') == ["read, write", "*:*"]
+    assert f.parse_value(['"in progress"', "done"]) == ["in progress", "done"]
 
 
 # ── array filters ─────────────────────────────────────────────────────────────

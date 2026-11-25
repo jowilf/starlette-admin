@@ -108,7 +108,7 @@ While it renders and validates exactly like a standard `StringField`, it maintai
 Every field type receives a default set of filters from the `BeanieFilterRegistry`.
 
 - **String matching:** The equality filter uses case-insensitive regular expressions to maintain consistency with other text searches like "Contains" or "Starts with".
-- **Array operations:** The registry provides built-in support for array-based filtering, allowing "Is one of" operations on list-valued fields (like `TagsField`) to work out of the box.
+- **Array operations:** The registry provides built-in support for array-based filtering, including "Is one of" / "Is not one of" on `TagsField` and "Has any of" / "Has all of" / "Has none of" on `EnumField(multiple=True)`.
 - **Primary keys:** The `id` field automatically remaps to MongoDB's native `_id` when building query fragments.
 
 ## Full-text search

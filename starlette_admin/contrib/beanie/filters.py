@@ -52,7 +52,10 @@ from starlette_admin.filters.date import (
     DateTimeBetweenFilter as BaseDateTimeBetweenFilter,
 )
 from starlette_admin.filters.date import DateTimeEqualFilter as BaseDateTimeEqualFilter
+from starlette_admin.filters.enum import AllOfFilter as BaseEnumAllOfFilter
+from starlette_admin.filters.enum import AnyOfFilter as BaseEnumAnyOfFilter
 from starlette_admin.filters.enum import InFilter as BaseInFilter
+from starlette_admin.filters.enum import NoneOfFilter as BaseEnumNoneOfFilter
 from starlette_admin.filters.enum import NotInFilter as BaseNotInFilter
 from starlette_admin.filters.generic import EqualFilter as BaseEqualFilter
 from starlette_admin.filters.generic import IsNotNullFilter as BaseIsNotNullFilter
@@ -272,6 +275,27 @@ class NotInFilter(BaseNotInFilter):
         return {ctx.field_name: {"$nin": ctx.value}}
 
 
+class EnumAnyOfFilter(BaseEnumAnyOfFilter):
+    """Multi-value enum filter (`any_of`) for list-valued enum fields."""
+
+    def apply(self, ctx: FilterApplyContext) -> dict:
+        return {ctx.field_name: {"$in": ctx.value}}
+
+
+class EnumAllOfFilter(BaseEnumAllOfFilter):
+    """Multi-value enum filter (`all_of`) for list-valued enum fields."""
+
+    def apply(self, ctx: FilterApplyContext) -> dict:
+        return {ctx.field_name: {"$all": ctx.value}}
+
+
+class EnumNoneOfFilter(BaseEnumNoneOfFilter):
+    """Multi-value enum filter (`none_of`) for list-valued enum fields."""
+
+    def apply(self, ctx: FilterApplyContext) -> dict:
+        return {ctx.field_name: {"$nin": ctx.value}}
+
+
 # ObjectId (BeanieObjectIdField / id field)
 
 
@@ -485,6 +509,18 @@ class BeanieFilterRegistry(FilterRegistry):
 
     @filters(EnumField)
     def enum_filters(self, field: BaseField) -> list[type[BaseFilter]]:
+        """Filters for `EnumField`. Multi-value fields (`multiple=True`) get
+        collection-aware filters (`any_of`, `all_of`, `none_of`) instead of
+        scalar comparisons.
+        """
+        if getattr(field, "multiple", False):
+            return [
+                EnumAnyOfFilter,
+                EnumAllOfFilter,
+                EnumNoneOfFilter,
+                IsNullFilter,
+                IsNotNullFilter,
+            ]
         return [
             EqualFilter,
             NotEqualFilter,

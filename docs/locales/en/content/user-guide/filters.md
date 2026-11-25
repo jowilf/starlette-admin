@@ -137,6 +137,9 @@ The following table lists every filter available out of the box, the URL slug yo
 | Is false | `is_false` | *(none)* |  |
 | Is one of | `in` | comma-separated list |  |
 | Is not one of | `not_in` | comma-separated list |  |
+| Has any of | `any_of` | comma-separated list |  |
+| Has all of | `all_of` | comma-separated list |  |
+| Has none of | `none_of` | comma-separated list |  |
 
 If you need a filter for a data type the built-ins don't cover, such as a JSON field or a geo-point, see [Custom Filters](../advanced/custom-filters.md) to write a `BaseFilter` subclass and register it globally or per field instance.
 

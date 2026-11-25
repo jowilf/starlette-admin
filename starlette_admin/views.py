@@ -2965,6 +2965,16 @@ class BaseModelView(BaseView, Generic[FieldReferenceT]):
                         f"filter {filter_slug!r} on field {field_name!r} requires a second value"
                     )
                 value2 = filter_instance.parse_value(node["value2"])
+            if (
+                isinstance(field, EnumField)
+                and field.coerce is not str
+                and filter_instance.data_type
+                in (FilterDataType.ENUM, FilterDataType.STRING)
+            ):
+                if isinstance(value, list):
+                    value = [field.coerce(v) for v in value]
+                elif value is not None:
+                    value = field.coerce(value)
 
         assert isinstance(filter_slug, str)
         return FilterRule(

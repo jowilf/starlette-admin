@@ -551,3 +551,57 @@ def test_sort_unknown_field_still_falls_back():
 
     response = c.get("/admin/article/list", params={"sort": "nonexistent_xyz__asc"})
     assert response.status_code == 200
+
+
+def test_multi_int_enum_filter_coercion_and_invalid_400():
+    import enum
+
+    from starlette_admin import EnumField
+    from starlette_admin.filters.enum import AnyOfFilter
+
+    class Level(enum.IntEnum):
+        LOW = 1
+        HIGH = 2
+
+    class _AnyOf(AnyOfFilter):
+        def apply(self, ctx):
+            return ctx.query
+
+    class LevelView(ArticleView):
+        fields = [
+            IntegerField("id"),
+            StringField("title"),
+            EnumField("levels", enum=Level, multiple=True),
+        ]
+        searchable_fields = ("title", "levels")
+
+        def get_filter_registry(self):
+            reg = FilterRegistry()
+            reg.register(EnumField, _AnyOf)
+            return reg
+
+    view = LevelView(Article)
+    req = Request(
+        {
+            "type": "http",
+            "method": "GET",
+            "path": "/admin/article/list",
+            "query_string": b"filter=levels__any_of=1,2",
+            "headers": [],
+        }
+    )
+    req.state.action = RequestAction.LIST
+    parsed = view._parse_filter_param(req)
+    assert parsed.rules[0].value == [1, 2]
+
+    admin = BaseAdmin()
+    app = Starlette()
+    admin.add_view(view)
+    admin.mount_to(app)
+    c = TestClient(app)
+    assert (
+        c.get(
+            "/admin/article/list", params={"filter": "levels__any_of=bad"}
+        ).status_code
+        == 400
+    )
